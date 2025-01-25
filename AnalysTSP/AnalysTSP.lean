@@ -15,6 +15,8 @@ import Mathlib.Algebra.Ring.Parity
 import Mathlib.Algebra.Group.Even
 import Mathlib.Algebra.Group.Basic
 import Mathlib.Algebra.Algebra.Prod
+import Mathlib.Data.Real.Basic
+import Mathlib.Topology.MetricSpace.Defs
 
 --gitttest
 --The ultimate goal is to show there exists no rectifiable path
@@ -705,6 +707,10 @@ theorem rat_prod_countable : Set.Countable E := by {
   apply Set.injOn_of_injective
   exact rat_prod_fun_inj
 }
+
+variable {X : Type*} [MetricSpace X] (a b c : X)
+
+#check (dist a b : ℝ)
 
 --#check (([0,1] : Set ℝ))
 
