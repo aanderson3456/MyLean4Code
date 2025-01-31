@@ -16,7 +16,9 @@ import Mathlib.Algebra.Group.Even
 import Mathlib.Algebra.Group.Basic
 import Mathlib.Algebra.Algebra.Prod
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Real.Sqrt
 import Mathlib.Topology.MetricSpace.Defs
+import Mathlib.Topology.MetricSpace.Pseudo.Basic
 
 --gitttest
 --The ultimate goal is to show there exists no rectifiable path
@@ -708,9 +710,34 @@ theorem rat_prod_countable : Set.Countable E := by {
   exact rat_prod_fun_inj
 }
 
-variable {X : Type*} [MetricSpace X] (a b c : X)
+variable (a b c : (ℝ × ℝ))
 
-#check (dist a b : ℝ)
+noncomputable def euclidean_norm (x : (ℝ × ℝ)) : ℝ :=
+  Real.sqrt (x.1^2 + x.2^2)
+
+noncomputable def euclidean_dist (x y : (ℝ × ℝ)) : ℝ :=
+  euclidean_norm (x-y)
+
+def myPoint1 : (ℝ × ℝ) :=
+  ⟨ 3 , 5 ⟩
+
+noncomputable def myPoint2 : (ℝ × ℝ) :=
+  ⟨ Real.sqrt 3, 4 ⟩
+
+def myPoint3 : (ℝ × ℝ) :=
+  ⟨ -1.4, 4⟩
+
+#eval myPoint1
+
+#eval (dist myPoint1 myPoint3 : ℝ)
+
+#check (euclidean_dist myPoint1 myPoint3)
+
+#check (ℝ × ℝ).MetricSpace
+
+#check Real.pseudoMetricSpace
+
+
 
 --#check (([0,1] : Set ℝ))
 
