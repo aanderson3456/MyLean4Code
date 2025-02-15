@@ -222,7 +222,8 @@ theorem spread_fun_inj : spread_fun.Injective := by {
     simp at ha1not0
     apply (neg_fit_iff_pos a1).mp
     simp
-    rw [← ha1not0]
+    rw [ha1not0]
+    simp
   have ha1r : a1 = -↑a1.natAbs := by
     cases' ha1 with ha1
     rw [← ha1] at ha1notl
@@ -242,7 +243,9 @@ theorem spread_fun_inj : spread_fun.Injective := by {
     simp at ha2not0
     apply (neg_fit_iff_pos a2).mp
     simp
-    rw [← ha2not0]
+    #check ha2not0
+    rw [ha2not0]
+    simp
   have ha2r : a2 = -↑a2.natAbs := by
     cases' ha2 with ha2
     rw [← ha2] at ha2notl
