@@ -17,8 +17,11 @@ import Mathlib.Algebra.Group.Basic
 import Mathlib.Algebra.Algebra.Prod
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
+import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Topology.MetricSpace.Defs
 import Mathlib.Topology.MetricSpace.Pseudo.Basic
+import Mathlib.Topology.MetricSpace.Pseudo.Lemmas
+import Mathlib.Topology.MetricSpace.Pseudo.Pi
 
 --gitttest
 --The ultimate goal is to show there exists no rectifiable path
@@ -733,9 +736,17 @@ def myPoint3 : (ℝ × ℝ) :=
 
 #check (euclidean_dist myPoint1 myPoint3)
 
-#check (ℝ × ℝ).MetricSpace
+
+#check PseudoMetricSpace (ℝ × ℝ)
 
 #check Real.pseudoMetricSpace
+
+#check PseudoMetricSpace (ℝ)
+
+#check MetricSpace (ℝ)
+
+#check Real.metricSpace
+
 
 
 
