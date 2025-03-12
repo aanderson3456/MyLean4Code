@@ -739,7 +739,6 @@ def myPoint3 : (ℝ × ℝ) :=
 
 #check (euclidean_dist myPoint1 myPoint3)
 
-
 #check PseudoMetricSpace (ℝ × ℝ)
 
 #check Real.pseudoMetricSpace
@@ -749,6 +748,7 @@ def myPoint3 : (ℝ × ℝ) :=
 #check MetricSpace (ℝ)
 
 #check Real.metricSpace
+
 
 
 
