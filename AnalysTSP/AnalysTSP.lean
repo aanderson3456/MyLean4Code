@@ -718,11 +718,11 @@ theorem rat_prod_countable : Set.Countable E := by {
 
 variable (a b c : (ℝ × ℝ))
 
-noncomputable def euclidean_norm (x : (ℝ × ℝ)) : ℝ :=
+noncomputable def euclideanNorm (x : (ℝ × ℝ)) : ℝ :=
   Real.sqrt (x.1^2 + x.2^2)
 
-noncomputable def euclidean_dist (x y : (ℝ × ℝ)) : ℝ :=
-  euclidean_norm (x-y)
+noncomputable def euclideanDist (x y : (ℝ × ℝ)) : ℝ :=
+  euclideanNorm (x-y)
 
 def myPoint1 : (ℝ × ℝ) :=
   ⟨ 3 , 5 ⟩
@@ -737,7 +737,7 @@ def myPoint3 : (ℝ × ℝ) :=
 
 #eval (dist myPoint1 myPoint3 : ℝ)
 
-#check (euclidean_dist myPoint1 myPoint3)
+#check (euclideanDist myPoint1 myPoint3)
 
 #check PseudoMetricSpace (ℝ × ℝ)
 
@@ -747,7 +747,18 @@ def myPoint3 : (ℝ × ℝ) :=
 
 #check MetricSpace (ℝ)
 
+#check MetricSpace (ℝ × ℝ)
+
 #check Real.metricSpace
+
+section Real2
+
+instance Real2.metricSpace : MetricSpace (ℝ × ℝ) := .ofT0PseudoMetricSpace (ℝ × ℝ)
+
+end Real2
+
+#check Real2.metricSpace
+
 
 
 

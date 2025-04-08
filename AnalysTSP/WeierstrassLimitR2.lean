@@ -3,6 +3,11 @@ import Mathlib.Analysis.Normed.Group.Basic -- For abs
 import Mathlib.Data.Real.Sqrt -- For Real.sqrt
 import Mathlib.Tactic.Linarith -- Useful for proving inequalities
 
+variable (x : (ℝ × ℝ))
+
+#check ‖x‖
+
+
 -- Let's work in a new namespace to avoid conflicts
 namespace ManualEuclideanR2
 
@@ -97,7 +102,6 @@ example : Limit proj₁ pt_a limit_val := by {
 end examples
 
 end ManualEuclideanR2
-
 
 -- Check the definition using our manual distance
 #check ManualEuclideanR2.Limit
