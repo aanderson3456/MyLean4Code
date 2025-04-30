@@ -362,9 +362,6 @@ lemma range_lem (b c : ℕ) : (c*(c+1) < b*(b+1) + 2*c) → (c ≤ b) := by {
   simp
   apply pred_legit c at hn0
   rcases hn0 with ⟨a, ha⟩
-  have ha' : a = c-1 := by
-    rw [ha]
-    simp
   contrapose h
   simp at h
   have hba : b ≤ a := by
@@ -482,10 +479,6 @@ theorem diag_fun_inj : diag_fun.Injective := by {
     cases' hacases with h0a hna
     rw [h0a,h0b] at h
     simp at h
-    have hfin1 : b.2 ≤ a.1 := by
-      have hf2 : b.2*(b.2+1) ≤ a.1*(a.1+1) := by
-        exact Nat.le.intro (id (Eq.symm h))
-      exact (n_sq_add_n_monotone b.2 a.1).mpr hf2
     rw [h0a]
     simp
     have hc : a.1 > 0 ∨ a.1 = 0 := by
@@ -511,8 +504,6 @@ theorem diag_fun_inj : diag_fun.Injective := by {
     --LLMStep has only one suggestion here: linarith. but fails
     have h6 : 2*a.2 > 0 := by
       exact Nat.succ_mul_pos 1 hna
-    have h7 : 2*(a.1+a.2) < 2*(a.1+a.2) + 2*a.2 := by
-      exact Nat.lt_add_of_pos_right h6
     exact lt_add_of_pos_of_le h6 h5
     have h8 : b.2 < a.1 + a.2 := by
       have h9 : b.2 < b.2 + b.1 := by
