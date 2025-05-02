@@ -3,17 +3,28 @@ import Mathlib.Analysis.Normed.Group.Basic -- For abs
 import Mathlib.Data.Real.Sqrt -- For Real.sqrt
 import Mathlib.Tactic.Linarith -- Useful for proving inequalities
 
-variable (x : (ℝ × ℝ))
+variable (x y: (ℝ × ℝ))
 
-#check ‖x‖
+#check (x-y)
+#check (x-y).1
+example : (x-y).1 = x.1 - y.1 := by {
+  rfl
+}
 
 
 -- Let's work in a new namespace to avoid conflicts
 namespace ManualEuclideanR2
 
--- Define the squared Euclidean distance first (often simpler)
+noncomputable def sqNorm (x : ℝ × ℝ) : ℝ := x.1^2 + x.2^2
+
 noncomputable def sqDist (x y : ℝ × ℝ) : ℝ :=
   (x.1 - y.1)^2 + (x.2 - y.2)^2
+
+example : sqDist x y = sqNorm (x-y) := by {
+  rfl
+}
+noncomputable def euclideanNorm (x : ℝ × ℝ) : ℝ :=
+  Real.sqrt (sqNorm x)
 
 -- Define the Euclidean distance using square root
 noncomputable def euclideanDist (x y : ℝ × ℝ) : ℝ :=
@@ -100,6 +111,14 @@ example : Limit proj₁ pt_a limit_val := by {
 }
 
 end examples
+
+def IsOpen (S : Set (ℝ × ℝ)) : Prop :=
+  ∀ s ∈ S, ∃ δ : ℝ, δ > 0 ∧ ∀ x : ℝ × ℝ, euclideanDist s x < δ → x ∈ S
+
+def IsBounded (s : Set (ℝ × ℝ)) : Prop :=
+  ∃ C : ℝ, ∀ x ∈ s, euclideanNorm x ≤ C
+
+#check Metric.ball
 
 end ManualEuclideanR2
 
