@@ -2,6 +2,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.Normed.Group.Basic -- For abs
 import Mathlib.Data.Real.Sqrt -- For Real.sqrt
 import Mathlib.Tactic.Linarith -- Useful for proving inequalities
+import Mathlib.Data.Set.Basic
 
 variable (x y: (ℝ × ℝ))
 
@@ -112,11 +113,47 @@ example : Limit proj₁ pt_a limit_val := by {
 
 end examples
 
-def IsOpen (S : Set (ℝ × ℝ)) : Prop :=
+def IsOpenR2 (S : Set (ℝ × ℝ)) : Prop :=
   ∀ s ∈ S, ∃ δ : ℝ, δ > 0 ∧ ∀ x : ℝ × ℝ, euclideanDist s x < δ → x ∈ S
 
-def IsBounded (s : Set (ℝ × ℝ)) : Prop :=
+def IsClosedR2 (S : Set (ℝ × ℝ)) : Prop :=
+  IsOpenR2 Sᶜ
+
+lemma checkUniv (S : Set (ℝ × ℝ)) : S = Set.univ → IsOpenR2 S := by {
+  intro h_S_eq_univ
+  unfold IsOpenR2
+  -- Substitute S with Set.univ in the goal IsOpenR2 S
+  rw [h_S_eq_univ]
+  -- Now the goal is IsOpenR2 Set.univ
+  -- Unfold the definition of IsOpenR2
+  -- Goal: ∀ s ∈ Set.univ, ∃ δ > 0, ∀ x, dist s x < δ → x ∈ Set.univ
+  -- Take an arbitrary point s. The condition s ∈ Set.univ is always true for s : ℝ × ℝ
+  intro s _hs -- We use _hs as the fact s ∈ Set.univ is trivial and not needed further
+  -- We need to provide a δ > 0. Let's choose δ = 1.
+  use 1
+  -- We now have two goals from the conjunction: 1 > 0 and ∀ x, dist s x < 1 → x ∈ Set.univ
+  constructor
+  · -- Goal 1: Prove 1 > 0
+    exact zero_lt_one -- This is a standard lemma in Mathlib
+  · -- Goal 2: Prove ∀ x, dist s x < 1 → x ∈ Set.univ
+    -- Take an arbitrary x and assume dist s x < 1
+    intro x _hx -- We use _hx as the distance condition is irrelevant
+    -- The goal is to prove x ∈ Set.univ
+    -- Any element x of type ℝ × ℝ is automatically in Set.univ by definition.
+    exact Set.mem_univ x
+
+}
+
+def IsBoundedR2 (s : Set (ℝ × ℝ)) : Prop :=
   ∃ C : ℝ, ∀ x ∈ s, euclideanNorm x ≤ C
+
+def IsCompactR2 (K : Set (ℝ × ℝ)) : Prop :=
+  ∀ (ι : Type) (U : ι → Set (ℝ × ℝ)), -- For every index type ι and indexed family of sets U...
+    (∀ i : ι, IsOpenR2 (U i)) →        -- ...such that every set U i is open...
+    (K ⊆ (⋃ i : ι, U i)) →            -- ...and the family covers K...(note purple parens unnecessary)
+    ∃ (s : Finset ι),                 -- ...there exists a finite set of indices s...
+      K ⊆ (⋃ i ∈ s, U i)               -- ...such that the corresponding finite subfamily covers K.
+
 
 #check Metric.ball
 
