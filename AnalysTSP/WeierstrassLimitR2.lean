@@ -51,10 +51,13 @@ lemma euclideanDist_nonneg (x y : ℝ × ℝ) : 0 ≤ euclideanDist x y := by {
 /-
 Our Epsilon-Delta definition, but using our manually defined Euclidean distance
 -/
-def Limit (f : ℝ × ℝ → ℝ) (a : ℝ × ℝ) (L : ℝ) : Prop :=
+def LimitR2toR (f : ℝ × ℝ → ℝ) (a : ℝ × ℝ) (L : ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
     0 < euclideanDist x a ∧ euclideanDist x a < δ → abs (f x - L) < ε
 
+def LimitR2toR2 (f : ℝ × ℝ → ℝ × ℝ) (a : ℝ × ℝ) (L : ℝ × ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
+    0 < euclideanDist x a ∧ euclideanDist x a < δ → euclideanDist (f x) L < ε
 /-!
 ### Example Check
 -/
@@ -66,7 +69,7 @@ def limit_val : ℝ := 2
 
 -- The statement still looks the same, but `Limit` now refers to
 -- ManualEuclideanR2.Limit which uses `euclideanDist`.
-def example_limit_statement : Prop := Limit proj₁ pt_a limit_val
+def example_limit_statement : Prop := LimitR2toR proj₁ pt_a limit_val
 
 lemma sq_order_preserve (a b : ℝ) : (0 ≤ a)∧(0 ≤ b)∧(a^2 ≤ b^2) → (a ≤ b) := by {
   intro h
@@ -100,7 +103,7 @@ lemma abs_fst_sub_fst_le_euclideanDist (x a : ℝ × ℝ) : abs (x.1 - a.1) ≤ 
 }
 
 -- Now we can prove the example using this lemma
-example : Limit proj₁ pt_a limit_val := by {
+example : LimitR2toR proj₁ pt_a limit_val := by {
   intro ε hε
   use ε -- Choose δ = ε
   constructor
@@ -154,6 +157,9 @@ def IsCompactR2 (K : Set (ℝ × ℝ)) : Prop :=
     ∃ (s : Finset ι),                 -- ...there exists a finite set of indices s...
       K ⊆ (⋃ i ∈ s, U i)               -- ...such that the corresponding finite subfamily covers K.
 
+def IsCompactR2SeqDef (S : Set ℝ × ℝ) : Prop :=
+  ∀ (u : ℕ → ℝ × ℝ), (∀ n, u n ∈ S) → ∃ (x : ℝ × ℝ) (φ : ℕ → ℕ),
+    (x ∈ S) ∧ (StrictMono φ) ∧ (LimitR2toR2  (u n) )
 
 #check Metric.ball
 
