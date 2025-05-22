@@ -58,6 +58,10 @@ def LimitR2toR (f : ℝ × ℝ → ℝ) (a : ℝ × ℝ) (L : ℝ) : Prop :=
 def LimitR2toR2 (f : ℝ × ℝ → ℝ × ℝ) (a : ℝ × ℝ) (L : ℝ × ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
     0 < euclideanDist x a ∧ euclideanDist x a < δ → euclideanDist (f x) L < ε
+
+def ConvergesR2 (seq : ℕ → ℝ × ℝ) (L : ℝ × ℝ): Prop :=
+  ∀ ε > 0, ∃ N : ℕ,
+    ∀ n ≥ N, euclideanDist L (seq n) < ε
 /-!
 ### Example Check
 -/
@@ -157,13 +161,13 @@ def IsCompactR2 (K : Set (ℝ × ℝ)) : Prop :=
     ∃ (s : Finset ι),                 -- ...there exists a finite set of indices s...
       K ⊆ (⋃ i ∈ s, U i)               -- ...such that the corresponding finite subfamily covers K.
 
-def IsCompactR2SeqDef (S : Set ℝ × ℝ) : Prop :=
-  ∀ (u : ℕ → ℝ × ℝ), (∀ n, u n ∈ S) → ∃ (x : ℝ × ℝ) (φ : ℕ → ℕ),
-    (x ∈ S) ∧ (StrictMono φ) ∧ (LimitR2toR2  (u n) )
+def IsCompactR2SeqDef (S : Set (ℝ × ℝ)) : Prop :=
+  ∀ (u : ℕ → ℝ × ℝ), (∀ n, u n ∈ S) → ∃ (L : ℝ × ℝ) (φ : ℕ → ℕ),
+    (L ∈ S) ∧ (StrictMono φ) ∧ (ConvergesR2 (u ∘ φ) L)
 
 #check Metric.ball
 
 end ManualEuclideanR2
 
 -- Check the definition using our manual distance
-#check ManualEuclideanR2.Limit
+#check ManualEuclideanR2.LimitR2toR2
