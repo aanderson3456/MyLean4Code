@@ -4,6 +4,7 @@ import Mathlib.Data.Real.Sqrt -- For Real.sqrt
 import Mathlib.Tactic.Linarith -- Useful for proving inequalities
 import Mathlib.Data.Set.Basic
 
+
 variable (x y: (ℝ × ℝ))
 
 #check (x-y)
@@ -154,16 +155,33 @@ lemma checkUniv (S : Set (ℝ × ℝ)) : S = Set.univ → IsOpenR2 S := by {
 def IsBoundedR2 (s : Set (ℝ × ℝ)) : Prop :=
   ∃ C : ℝ, ∀ x ∈ s, euclideanNorm x ≤ C
 
-def IsCompactR2 (K : Set (ℝ × ℝ)) : Prop :=
+def IsCompactR2Subcover (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (ι : Type) (U : ι → Set (ℝ × ℝ)), -- For every index type ι and indexed family of sets U...
     (∀ i : ι, IsOpenR2 (U i)) →        -- ...such that every set U i is open...
     (K ⊆ (⋃ i : ι, U i)) →            -- ...and the family covers K...(note purple parens unnecessary)
     ∃ (s : Finset ι),                 -- ...there exists a finite set of indices s...
       K ⊆ (⋃ i ∈ s, U i)               -- ...such that the corresponding finite subfamily covers K.
 
-def IsCompactR2SeqDef (S : Set (ℝ × ℝ)) : Prop :=
-  ∀ (u : ℕ → ℝ × ℝ), (∀ n, u n ∈ S) → ∃ (L : ℝ × ℝ) (φ : ℕ → ℕ),
-    (L ∈ S) ∧ (StrictMono φ) ∧ (ConvergesR2 (u ∘ φ) L)
+--citation: Royden, H.L., Real Analysis, 3rd Ed., Prentice Hall, NJ, 1988
+def FiniteIntersectionPropertyR2 (ι : Type) (U : ι → Set (ℝ × ℝ)) : Prop :=
+  ∀ (s : Finset ι), Set.Nonempty (⋂ i ∈ s, U i)
+
+def IsCompactR2SeqDef (K : Set (ℝ × ℝ)) : Prop :=
+  ∀ (u : ℕ → ℝ × ℝ), (∀ n, u n ∈ K) → ∃ (L : ℝ × ℝ) (φ : ℕ → ℕ),
+    (L ∈ K) ∧ (StrictMono φ) ∧ (ConvergesR2 (u ∘ φ) L)
+
+lemma IsCptFiniteIntersections
+
+theorem CptEquiv1 (S : Set (ℝ × ℝ)) : IsCompactR2Subcover S ↔ IsCompactR2SeqDef S := by {
+  constructor
+  intro h1
+  unfold IsCompactR2SeqDef
+  intro u
+  intro hn
+  unfold IsCompactR2Subcover at h1
+  sorry
+
+}
 
 #check Metric.ball
 
