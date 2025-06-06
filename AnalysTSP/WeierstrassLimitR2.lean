@@ -77,6 +77,8 @@ lemma sq_order_preserve (a b : ℝ) : (0 ≤ a)∧(0 ≤ b)∧(a^2 ≤ b^2) → 
   exact hab
 }
 
+(0 ≤ )
+
 -- To prove this, we would need lemmas relating `euclideanDist`
 -- to component differences, e.g., |x.1 - a.1| ≤ euclideanDist x a
 lemma abs_fst_sub_fst_le_euclideanDist (x a : ℝ × ℝ) : abs (x.1 - a.1) ≤ euclideanDist x a := by {
@@ -124,9 +126,6 @@ lemma checkUniv (S : Set (ℝ × ℝ)) : S = Set.univ → IsOpenR2 S := by {
   unfold IsOpenR2
   -- Substitute S with Set.univ in the goal IsOpenR2 S
   rw [h_S_eq_univ]
-  -- Now the goal is IsOpenR2 Set.univ
-  -- Unfold the definition of IsOpenR2
-  -- Goal: ∀ s ∈ Set.univ, ∃ δ > 0, ∀ x, dist s x < δ → x ∈ Set.univ
   -- Take an arbitrary point s. The condition s ∈ Set.univ is always true for s : ℝ × ℝ
   intro s _hs -- We use _hs as the fact s ∈ Set.univ is trivial and not needed further
   -- We need to provide a δ > 0. Let's choose δ = 1.
@@ -153,7 +152,6 @@ def IsCompactR2 (K : Set (ℝ × ℝ)) : Prop :=
     (K ⊆ (⋃ i : ι, U i)) →            -- ...and the family covers K...(note purple parens unnecessary)
     ∃ (s : Finset ι),                 -- ...there exists a finite set of indices s...
       K ⊆ (⋃ i ∈ s, U i)               -- ...such that the corresponding finite subfamily covers K.
-
 
 #check Metric.ball
 
