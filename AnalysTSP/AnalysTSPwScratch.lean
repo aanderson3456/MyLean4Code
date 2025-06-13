@@ -300,7 +300,7 @@ lemma baby_Gauss_cast_rat (n : ℕ) : (↑(∑ x ∈ Finset.range (n+1), x) : �
 }
 --below using lean3 Stackoverflow post from Kevin Buzzard
 lemma baby_Gauss' (n : ℕ) : 2 * (∑ i ∈ Finset.range (n + 1), i) = n * (n + 1) := by {
-
+  sorry
 }
 
 --def diag_fun (q : ℚ) : ℤ := q.sign*(q.num*q.num + (q.den-q.num))
