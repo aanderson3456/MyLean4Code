@@ -170,7 +170,13 @@ def IsCompactR2SeqDef (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (u : ℕ → ℝ × ℝ), (∀ n, u n ∈ K) → ∃ (L : ℝ × ℝ) (φ : ℕ → ℕ),
     (L ∈ K) ∧ (StrictMono φ) ∧ (ConvergesR2 (u ∘ φ) L)
 
-lemma IsCptFiniteIntersections
+lemma IsCptFiniteIntersections (K : Set (ℝ × ℝ)) :
+  ∀ (ι : Type), ∀ (U : ι → Set (ℝ × ℝ)),
+    (∀ i : ι, U i ⊆ K) → FiniteIntersectionPropertyR2 ι U → IsCompactR2Subcover K := by {
+  intro index
+
+
+}
 
 theorem CptEquiv1 (S : Set (ℝ × ℝ)) : IsCompactR2Subcover S ↔ IsCompactR2SeqDef S := by {
   constructor
