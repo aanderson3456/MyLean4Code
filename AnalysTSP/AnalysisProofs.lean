@@ -78,10 +78,21 @@ lemma lemmaP (a : ℝ) (P : (ℝ → Prop)) : ¬ (∀ a, P a) → ∃ a, (¬(P a
 }
 
 lemma lemmaLogic1 (p q : Prop) : (p → q) ∧ (¬ q) → ¬ p := by {
-  intro h
-  cases' h with hl hr
-  by_contra hp
-  exact hr (hl hp)
+  intro h --when proving R → S, intro h makes h : R (assumes R)
+  cases' h with hl hr --split ∧ into right and left
+  --goal: ¬ p, means p → False
+  --use hl : p → q, and hr : q → False. hr hl is fxn composition p → q → False
+  intro hp
+  --goal: False, have q → False, so apply q → False gives new goal of q
+  apply hr
+  --goal: q, so apply p → q get p
+  apply hl
+  exact hp
+}
+
+lemma lemmaLogic2 (p q r : Prop) : (p → q → r) ↔ ((p ∧ q) → r) := by {
+  constructor
+  sorry
 }
 
 lemma lemma2 : GreatestLowerBoundReal 0 reciprocalsOfNaturalNumbers := by {
