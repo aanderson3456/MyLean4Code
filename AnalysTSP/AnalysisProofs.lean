@@ -78,7 +78,10 @@ lemma lemmaP (a : ℝ) (P : (ℝ → Prop)) : ¬ (∀ a, P a) → ∃ a, (¬(P a
 }
 
 lemma lemmaLogic1 (p q : Prop) : (p → q) ∧ (¬ q) → ¬ p := by {
-  sorry
+  intro h
+  cases' h with hl hr
+  by_contra hp
+  exact hr (hl hp)
 }
 
 lemma lemma2 : GreatestLowerBoundReal 0 reciprocalsOfNaturalNumbers := by {
@@ -108,7 +111,7 @@ lemma lemma2 : GreatestLowerBoundReal 0 reciprocalsOfNaturalNumbers := by {
   have han : ((1 / ↑n) : ℝ) ∈ {r : ℝ | ∃ n : ℕ, n ≠ 0 ∧ r = ((1/↑n) : ℝ)} → 1 / ↑n ≥ s := by {
     apply ha ((1/↑n) : ℝ)
   }
-
+  exact lemmaLogic1 (1 / ↑n ∈ {r | ∃ n, n ≠ 0 ∧ r = 1 / ↑n}) (1 / ↑n ≥ s)
 
   --absurd hn (ha (1/↑n))
 
