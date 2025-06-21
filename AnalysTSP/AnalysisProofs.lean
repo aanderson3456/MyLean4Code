@@ -92,7 +92,11 @@ lemma lemmaLogic1 (p q : Prop) : (p → q) ∧ (¬ q) → ¬ p := by {
 
 lemma lemmaLogic2 (p q r : Prop) : (p → q → r) ↔ ((p ∧ q) → r) := by {
   constructor
-  sorry
+  intro h1 pq
+  cases pq with
+  |intro hp hq =>
+  exact h1 hp hq
+
 }
 
 lemma lemma2 : GreatestLowerBoundReal 0 reciprocalsOfNaturalNumbers := by {
