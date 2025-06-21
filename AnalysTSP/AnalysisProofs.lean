@@ -91,11 +91,11 @@ lemma lemmaLogic1 (p q : Prop) : (p → q) ∧ (¬ q) → ¬ p := by {
 }
 
 lemma lemmaLogic2 (p q r : Prop) : (p → q → r) ↔ ((p ∧ q) → r) := by {
-  constructor
-  intro h1 pq
-  cases pq with
-  |intro hp hq =>
-  exact h1 hp hq
+  constructor -- creates two new subgoals: one for fowards and one for backwards
+  intro h1 pq -- h1: p → q → r is the assumption, pq: p ∧ q is the input we must turn into r
+  cases pq with -- Think of this as opening the package
+  |intro hp hq => -- hp becomes name for proof of p, hq becomes name for proof of q
+  exact h1 hp hq --applying h1 to hp and hq gives a proof of r
 
 }
 
