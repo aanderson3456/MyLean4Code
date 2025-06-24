@@ -96,7 +96,12 @@ lemma lemmaLogic2 (p q r : Prop) : (p → q → r) ↔ ((p ∧ q) → r) := by {
   cases pq with -- Think of this as opening the package
   |intro hp hq => -- hp becomes name for proof of p, hq becomes name for proof of q
   exact h1 hp hq --applying h1 to hp and hq gives a proof of r
+  --intro h2 hp hq // After this line, h2 : (p ∧ q) → r is a function that given a proof of p and q produces a proof of r
+  --hp is a proof of p, hq is a proof of q//
 
+  --exact h2 ⟨hp, hq⟩ // ⟨hp, hq⟩ is how you build a proof of p ∧ q from those two peices. It's like "boxing up" hp and hq together.
+  --h2 ⟨hp, hq⟩ then feeds that box into h2, yielding a proof of r
+  -- the exact tactic says "that result is exactly the proof I need, and closes the goal."//
 }
 
 lemma lemma2 : GreatestLowerBoundReal 0 reciprocalsOfNaturalNumbers := by {
