@@ -126,10 +126,12 @@ lemma lemma2 : GreatestLowerBoundReal 0 reciprocalsOfNaturalNumbers := by {
   have han : ((1 / ↑n) : ℝ) ∈ {r : ℝ | ∃ n : ℕ, n ≠ 0 ∧ r = ((1/↑n) : ℝ)} → 1 / ↑n ≥ s := by {
     apply ha ((1/↑n) : ℝ)
   }
-  exact lemmaLogic1 (1 / ↑n ∈ {r | ∃ n, n ≠ 0 ∧ r = 1 / ↑n}) (1 / ↑n ≥ s)
-
-  --absurd hn (ha (1/↑n))
-
-
-
+  have hanpre : (1/↑n : ℝ) ∈ {r | ∃ (n : ℕ), n ≠ 0 ∧ r = (1/↑n : ℝ)} := by {
+    apply Set.mem_setOf.mpr
+    use n
+  }
+  apply han at hanpre
+  linarith
 }
+
+#print lemma2
