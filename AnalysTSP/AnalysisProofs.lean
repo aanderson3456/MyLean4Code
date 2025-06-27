@@ -104,6 +104,14 @@ lemma lemmaLogic2 (p q r : Prop) : (p → q → r) ↔ ((p ∧ q) → r) := by {
   -- the exact tactic says "that result is exactly the proof I need, and closes the goal."//
 }
 
+lemma lemmaLogic3 (p q : Prop) : (p → q) ↔ (¬ p ∨ q) := by {
+
+}
+
+lemma deMorgan1 (p q : Prop) : ¬ (p ∨ q) ↔ (¬ p ∧ ¬ q) := by {
+
+}
+
 lemma lemma2 : GreatestLowerBoundReal 0 reciprocalsOfNaturalNumbers := by {
   unfold GreatestLowerBoundReal
   constructor
