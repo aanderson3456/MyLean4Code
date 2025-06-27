@@ -93,16 +93,19 @@ lemma lemmaLogic1 (p q : Prop) : (p → q) ∧ (¬ q) → ¬ p := by {
 lemma lemmaLogic2 (p q r : Prop) : (p → q → r) ↔ ((p ∧ q) → r) := by {
   constructor -- creates two new subgoals: one for fowards and one for backwards
   intro h1 pq -- h1: p → q → r is the assumption, pq: p ∧ q is the input we must turn into r
-  cases pq with -- Think of this as opening the package
-  |intro hp hq => -- hp becomes name for proof of p, hq becomes name for proof of q
-  exact h1 hp hq --applying h1 to hp and hq gives a proof of r
-  --intro h2 hp hq // After this line, h2 : (p ∧ q) → r is a function that given a proof of p and q produces a proof of r
-  --hp is a proof of p, hq is a proof of q//
-
-  --exact h2 ⟨hp, hq⟩ // ⟨hp, hq⟩ is how you build a proof of p ∧ q from those two peices. It's like "boxing up" hp and hq together.
-  --h2 ⟨hp, hq⟩ then feeds that box into h2, yielding a proof of r
-  -- the exact tactic says "that result is exactly the proof I need, and closes the goal."//
-}
+  cases' pq with hp hq
+  apply h1
+  exact hp
+  exact hq
+  --halfway done.  done with → of ↔ . now have to do ←
+  intro h2
+  intro hp
+  intro hq
+  have hpq : p ∧ q := by
+    exact ⟨hp, hq⟩
+  apply h2
+  exact hpq
+  }
 
 lemma lemmaLogic3 (p q : Prop) : (p → q) ↔ (¬ p ∨ q) := by {
 
