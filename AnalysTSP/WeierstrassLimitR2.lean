@@ -172,9 +172,8 @@ def IsCompactR2SeqDef (K : Set (ℝ × ℝ)) : Prop :=
 
 lemma IsCptFiniteIntersections (K : Set (ℝ × ℝ)) :
   ∀ (ι : Type), ∀ (U : ι → Set (ℝ × ℝ)),
-    (∀ i : ι, U i ⊆ K) → FiniteIntersectionPropertyR2 ι U → IsCompactR2Subcover K := by {
+    FiniteIntersectionPropertyR2 ι (fun i => (U i ∩ K)) → IsCompactR2Subcover K := by {
   intro index
-
 
 }
 
