@@ -150,4 +150,23 @@ lemma lemma2 : GreatestLowerBoundReal 0 reciprocalsOfNaturalNumbers := by {
   linarith
 }
 
-#print lemma2
+def limOfFxnAtPtReal (f : ℝ → ℝ) (a : ℝ) (L : ℝ) :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ, (|x - a| < δ) → (|f x - L| < ε)
+
+#check limOfFxnAtPtReal
+
+def sqFxn (x : ℝ) := x*x
+
+def affFxn2 (x : ℝ) := 2*x
+
+#check affFxn2
+
+#check (affFxn2)
+
+#check limOfFxnAtPtReal
+
+#check (limOfFxnAtPtReal)
+
+theorem limThm2 : limOfFxnAtPtReal (affFxn2) 7 14 = True := by {
+
+}
