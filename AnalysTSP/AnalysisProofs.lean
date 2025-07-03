@@ -2,6 +2,7 @@ import Mathlib.Data.Nat.Defs
 import Mathlib.Tactic.Ring.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Archimedean
+import Mathlib.Data.Finset.Basic
 
 
 theorem ZeroPlusNisN (n : ℕ) : 0 + n = n := by {
@@ -170,3 +171,43 @@ def affFxn2 (x : ℝ) := 2*x
 theorem limThm2 : limOfFxnAtPtReal (affFxn2) 7 14 = True := by {
 
 }
+
+def practiceProperty (A : Set ℝ) : Prop :=
+  ∀ (l : Type) (U : l → Set ℝ), ∃ (s : Finset l),                 -- ...there exists a finite set of indices s...
+      A ⊆ (⋃ i ∈ s, U i)
+
+def pp2 (A : Set ℝ) : Prop :=
+  ∀ (l : Type) (U : l → Set ℝ), ∃ (s : Finset l),                 -- ...there exists a finite set of indices s...
+      Aᶜ ⊇ (⋂ i ∈ s, (U i)ᶜ )
+
+lemma practiceLem (A : Set ℝ) :
+  ∀ (l : Type) (U : l → Set ℝ), pp2 A →
+  practiceProperty A := by {
+    intro l U hpp2
+    intro la Ua
+  }
+
+
+lemma practiceLem2 (A : Set ℝ) :
+  pp2 A → practiceProperty A := by {
+    -- Assume `pp2 A` and introduce the variables `l` and `U` for the goal.
+    intro h_pp2 l U
+    -- Get the finite set `s` and the corresponding hypothesis `hs` from `h_pp2`.
+    cases' h_pp2 l U with s hs
+    -- We need to prove `∃ s, ...`, so we provide the `s` we just obtained.
+    use s
+    -- Goal: `A ⊆ ⋃ i ∈ s, U i`
+    -- Hypothesis `hs`: `Aᶜ ⊇ ⋂ i ∈ s, (U i)ᶜ`
+
+    -- Rewrite the goal using contraposition (`Y ⊆ X ↔ Xᶜ ⊆ Yᶜ`).
+    rw [←Set.compl_subset_compl]
+    -- Goal: `(⋃ i ∈ s, U i)ᶜ ⊆ Aᶜ`
+
+    -- Apply De Morgan's Law for a FINITE union. This is the key correction.
+    rw [Set.compl_biUnion]
+    -- Goal: `(⋂ i ∈ s, (U i)ᶜ) ⊆ Aᶜ`
+
+    -- This goal is exactly our hypothesis `hs`.
+    exact hs,
+  }
+  }
