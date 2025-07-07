@@ -160,6 +160,8 @@ def sqFxn (x : ℝ) := x*x
 
 def affFxn2 (x : ℝ) := 2*x
 
+#eval affFxn2 8
+
 #check affFxn2
 
 #check (affFxn2)
@@ -168,7 +170,12 @@ def affFxn2 (x : ℝ) := 2*x
 
 #check (limOfFxnAtPtReal)
 
+--thm below says lim(x → 7) (2x) = 14
 theorem limThm2 : limOfFxnAtPtReal (affFxn2) 7 14 = True := by {
+  unfold limOfFxnAtPtReal
+  refine eq_true ?h
+  intros ε he
+  use ε/2
 
 }
 
