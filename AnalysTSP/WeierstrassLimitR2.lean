@@ -162,6 +162,25 @@ def IsCompactR2Subcover (K : Set (ℝ × ℝ)) : Prop :=
     ∃ (s : Finset ι),                 -- ...there exists a finite set of indices s...
       K ⊆ (⋃ i ∈ s, U i)               -- ...such that the corresponding finite subfamily covers K.
 
+def IsCptR2SubcoverCompl (K : Set (ℝ × ℝ)) : Prop :=
+  ∀ (ι : Type) (F : ι → Set (ℝ × ℝ)),
+    (∀ i : ι, IsClosedR2 (F i)) →
+    ∅ = (⋂ i : ι, (F i ∩ K)) →  --careful with bigcap vs cap
+    ∃ (s : Finset ι),
+      ∅ = (⋂ i : s, (F i ∩ K))
+
+lemma ComplLemma (K : Set (ℝ × ℝ)) :
+  ∀ (ι : Type) (U : ι → Set (ℝ × ℝ)),
+    (K ⊆ (⋃ i : ι, U i)) ↔ ∅ = (⋂ i : ι, ((U i)ᶜ ∩ K)) := by {
+  intros ι U
+  constructor
+  intro hu
+  apply Eq.symm
+  rw [Set.iInter_eq_empty_iff]
+
+}
+
+
 --citation: Royden, H.L., Real Analysis, 3rd Ed., Prentice Hall, NJ, 1988
 def FiniteIntersectionPropertyR2 (ι : Type) (U : ι → Set (ℝ × ℝ)) : Prop :=
   ∀ (s : Finset ι), Set.Nonempty (⋂ i ∈ s, U i)
@@ -174,6 +193,7 @@ lemma IsCptFiniteIntersections (K : Set (ℝ × ℝ)) :
   ∀ (ι : Type), ∀ (U : ι → Set (ℝ × ℝ)),
     FiniteIntersectionPropertyR2 ι (fun i => (U i ∩ K)) → IsCompactR2Subcover K := by {
   intro index
+
 
 }
 
