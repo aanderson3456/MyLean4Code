@@ -1,4 +1,4 @@
-import Mathlib.Data.Real.Basic
+--import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.Normed.Group.Basic -- For abs
 import Mathlib.Data.Real.Sqrt -- For Real.sqrt
 import Mathlib.Tactic.Linarith -- Useful for proving inequalities
@@ -122,7 +122,8 @@ example : LimitR2toR proj₁ pt_a limit_val := by {
 end examples
 
 def IsOpenR2 (S : Set (ℝ × ℝ)) : Prop :=
-  ∀ s ∈ S, ∃ δ : ℝ, δ > 0 ∧ ∀ x : ℝ × ℝ, euclideanDist s x < δ → x ∈ S
+  ∀ s ∈ S, ∃ ε : ℝ, ε > 0 ∧ ∀ x : ℝ × ℝ, euclideanDist s x < ε → x ∈ S
+--euclideanDist s x = |x - s| (in plane)
 
 def IsClosedR2 (S : Set (ℝ × ℝ)) : Prop :=
   IsOpenR2 Sᶜ
