@@ -135,6 +135,11 @@ lemma lemmaLogic3 (p q : Prop) : (p → q) ↔ (¬ p ∨ q) := by {
   exact hr
 }
 
+lemma deMorganSet (A B : Set (ℝ × ℝ)) : A ∪ B = (Aᶜ ∩ Bᶜ )ᶜ := by {
+  --exact Set.union_eq_compl_compl_inter_compl A B
+
+}
+
 lemma deMorgan1 (p q : Prop) : ¬ (p ∨ q) ↔ (¬ p ∧ ¬ q) := by {
 
 }
