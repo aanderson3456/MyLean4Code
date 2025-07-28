@@ -109,7 +109,30 @@ lemma lemmaLogic2 (p q r : Prop) : (p → q → r) ↔ ((p ∧ q) → r) := by {
   }
 
 lemma lemmaLogic3 (p q : Prop) : (p → q) ↔ (¬ p ∨ q) := by {
-
+  constructor
+  intro hpq
+  have hpb : (¬ p) ∨ p := by
+    exact em' p
+  cases' hpb with hy hn
+  --exact not_or_of_imp hpq
+  left
+  exact hy
+  right
+  apply hpq
+  exact hn
+  intro hnpq
+  have hpb : (¬ p) ∨ p := by
+    exact em' p
+  cases' hpb with hy hn
+  intro hp
+  absurd hy
+  exact hp
+  --exact False.elim (hy hp)
+  cases' hnpq with hl hr
+  absurd hl
+  exact hn
+  intro hp2
+  exact hr
 }
 
 lemma deMorgan1 (p q : Prop) : ¬ (p ∨ q) ↔ (¬ p ∧ ¬ q) := by {
