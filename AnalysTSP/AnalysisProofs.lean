@@ -3,6 +3,7 @@ import Mathlib.Tactic.Ring.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Archimedean
 import Mathlib.Data.Finset.Basic
+import Mathlib.Data.Set.Basic
 
 
 theorem ZeroPlusNisN (n : ℕ) : 0 + n = n := by {
@@ -135,10 +136,25 @@ lemma lemmaLogic3 (p q : Prop) : (p → q) ↔ (¬ p ∨ q) := by {
   exact hr
 }
 
+open Set -- "Bring set into scope."" This means we can write ∪,∩,ᶜ, mem_union without having to prefix them with Set. every time.
+
 lemma deMorganSet (A B : Set (ℝ × ℝ)) : A ∪ B = (Aᶜ ∩ Bᶜ )ᶜ := by {
   --exact Set.union_eq_compl_compl_inter_compl A B
-
+  ext x -- "Reduce set equality to element equality." The ext tactic applies the principle that two sets are equal if they contain the same elements.
+  -- After ext x, our goal becomes  x ∈ A ∪ B ↔ x ∈ (Aᶜ ∩ Bᶜ)ᶜ
+  simp [or_iff_not_imp_left] -- This is doing two things at once:
+  -- 1. Simplify all the set-membership bits
+  --    It replaces x ∈ A ∪ B with x ∈ A ∨ x ∈ B
+  --    It replaces Aᶜ with ¬ (x ∈ A)
+  --    It replaces x ∈ Aᶜ ∩ Bᶜ with ¬(x ∈ A) ∧ ¬(x ∈ B)
+  -- 2. Apply the extra rewrite rule we gave it
+  --    We told simp to use the lemma or_iff_not_imp_left: p ∨ q ↔ ¬ p → q
+  --    so after unfolding everything it finds a spot where p ∨ q appears and rewrites that into ¬ p → q
+  --    Altogether, simp [or_iff_not_imp_left] turns something like
+  --        x ∈ A ∪ B ↔ ¬ (x ∈ Aᶜ ∧ x ∈ Bᶜ) into (x ∈ A ∨ x ∈ B) ↔ (¬ (x ∈ A) → x ∈ B)
+  --            which is exactly the shape we need, and it is reflexively true, so we are done
 }
+
 
 lemma deMorgan1 (p q : Prop) : ¬ (p ∨ q) ↔ (¬ p ∧ ¬ q) := by {
 
