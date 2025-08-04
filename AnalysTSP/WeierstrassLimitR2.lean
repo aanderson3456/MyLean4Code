@@ -170,14 +170,18 @@ def IsCptR2SubcoverCompl (K : Set (ℝ × ℝ)) : Prop :=
     ∃ (s : Finset ι),
       ∅ = (⋂ i : s, (F i ∩ K))
 
+variable {ι : Type*}
+variable [Nonempty ι]
+
 lemma ComplLemma (K : Set (ℝ × ℝ)) :
-  ∀ (ι : Type) (U : ι → Set (ℝ × ℝ)),
+  ∀ (U : ι → Set (ℝ × ℝ)),
     (K ⊆ (⋃ i : ι, U i)) ↔ ∅ = (⋂ i : ι, ((U i)ᶜ ∩ K)) := by {
-  intros ι U
+  intros U
   constructor
   intro hu
   apply Eq.symm
   rw [Set.iInter_eq_empty_iff]
+  rename_i inst
 
 }
 
