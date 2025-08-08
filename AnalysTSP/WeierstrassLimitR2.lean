@@ -3,6 +3,7 @@ import Mathlib.Analysis.Normed.Group.Basic -- For abs
 import Mathlib.Data.Real.Sqrt -- For Real.sqrt
 import Mathlib.Tactic.Linarith -- Useful for proving inequalities
 import Mathlib.Data.Set.Basic
+import Mathlib.Logic.Function.Defs
 
 
 variable (x y: (ℝ × ℝ))
@@ -59,6 +60,10 @@ def LimitR2toR (f : ℝ × ℝ → ℝ) (a : ℝ × ℝ) (L : ℝ) : Prop :=
 def LimitR2toR2 (f : ℝ × ℝ → ℝ × ℝ) (a : ℝ × ℝ) (L : ℝ × ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
     0 < euclideanDist x a ∧ euclideanDist x a < δ → euclideanDist (f x) L < ε
+
+def LimitRtoR2 (f : ℝ → ℝ × ℝ) (a : ℝ) (L : ℝ × ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ,
+    0 < abs (x - a) ∧ abs (x - a) < δ → euclideanDist (f x) L < ε
 
 def ConvergesR2 (seq : ℕ → ℝ × ℝ) (L : ℝ × ℝ): Prop :=
   ∀ ε > 0, ∃ N : ℕ,
@@ -215,7 +220,29 @@ theorem CptEquiv1 (S : Set (ℝ × ℝ)) : IsCompactR2Subcover S ↔ IsCompactR2
 
 #check Metric.ball
 
+def LimitSubsetsRtoR2' {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y) (a : X) (L : Y) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ (x : X), dist x a < δ ∧ x ≠ a → dist (f x) L < ε
+
+def IsCtsRtoR2 {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y) : Prop :=
+  ∀ (x : X), LimitSubsetsRtoR2' f x (f x)
+
+def UnitInterval : Set ℝ :=
+  { r : ℝ | 0 ≤ r ∧ r ≤ 1 }
+
+def IsPathInR2 (S : Set (ℝ × ℝ)) : Prop :=
+  ∃ φ : (UnitInterval → S), Function.Surjective φ ∧ IsCtsRtoR2 φ
+
+
 end ManualEuclideanR2
 
 -- Check the definition using our manual distance
 #check ManualEuclideanR2.LimitR2toR2
+
+--below fails bc euclideanDist not def on Y ?
+--def LimitSubsetsRtoR2 {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y) (a : X) (L : Y) : Prop :=
+--  ∀ ε > 0, ∃ δ > 0, ∀ x ∈ X,
+--    0 < abs (x - a) ∧ abs (x - a) < δ → euclideanDist (f x) L < ε
+
+--below fails bc x ∈ X means x : ℝ ?
+--def IsCtsRtoR2 {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y) : Prop :=
+--  ∀ x ∈ X, LimitSubsetsRtoR2' f x (f x)
