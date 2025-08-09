@@ -126,9 +126,11 @@ example : LimitR2toR proj₁ pt_a limit_val := by {
 
 end examples
 
+def IsOpenR (S : Set ℝ) : Prop :=
+  ∀ s ∈ S, ∃ ε : ℝ, ε > 0 ∧ ∀ x : ℝ, abs (s - x) < ε → x ∈ S
+
 def IsOpenR2 (S : Set (ℝ × ℝ)) : Prop :=
   ∀ s ∈ S, ∃ ε : ℝ, ε > 0 ∧ ∀ x : ℝ × ℝ, euclideanDist s x < ε → x ∈ S
---euclideanDist s x = |x - s| (in plane)
 
 def IsClosedR2 (S : Set (ℝ × ℝ)) : Prop :=
   IsOpenR2 Sᶜ
@@ -160,6 +162,13 @@ lemma checkUniv (S : Set (ℝ × ℝ)) : S = Set.univ → IsOpenR2 S := by {
 
 def IsBoundedR2 (s : Set (ℝ × ℝ)) : Prop :=
   ∃ C : ℝ, ∀ x ∈ s, euclideanNorm x ≤ C
+
+def IsCompactRSubcover (K : Set ℝ) : Prop :=
+  ∀ (ι : Type) (U : ι → Set ℝ), -- For every index type ι and indexed family of sets U...
+    (∀ i : ι, IsOpenR (U i)) →        -- ...such that every set U i is open...
+    (K ⊆ (⋃ i : ι, U i)) →            -- ...and the family covers K...(note purple parens unnecessary)
+    ∃ (s : Finset ι),                 -- ...there exists a finite set of indices s...
+      K ⊆ (⋃ i ∈ s, U i)
 
 def IsCompactR2Subcover (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (ι : Type) (U : ι → Set (ℝ × ℝ)), -- For every index type ι and indexed family of sets U...
@@ -232,6 +241,23 @@ def UnitInterval : Set ℝ :=
 def IsPathInR2 (S : Set (ℝ × ℝ)) : Prop :=
   ∃ φ : (UnitInterval → S), Function.Surjective φ ∧ IsCtsRtoR2 φ
 
+lemma CtsOpenInvImagesRtoR2 {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y)
+  : IsCtsRtoR2 f → IsOpenR X → IsOpenR2 Y := by {
+  intros hcts hopen
+  unfold IsOpenR2
+  unfold IsOpenR at hopen
+
+}
+
+lemma CtsImagesCptRtoR2 {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y)
+  : IsCtsRtoR2 f → IsCompactRSubcover X → IsCompactR2Subcover Y := by {
+    intros hcts hcpt
+    sorry
+  }
+
+theorem PathsCompact (S : Set (ℝ × ℝ)) : IsPathInR2 S → IsCompactR2Subcover S := by {
+  sorry
+}
 
 end ManualEuclideanR2
 
