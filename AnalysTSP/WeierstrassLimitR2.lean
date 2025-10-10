@@ -187,21 +187,41 @@ def IsCptR2SubcoverCompl (K : Set (ℝ × ℝ)) : Prop :=
 variable {ι : Type*}
 variable [Nonempty ι]
 
+lemma SetEmptyComplInter (A B : Set (ℝ × ℝ)) : ∅ = (Aᶜ ∩ B) → B ⊆ A := by {
+  intro hEmpty
+  have hElements : ∀ (x : ℝ × ℝ), x ∉ (Aᶜ ∩ B) := by {
+    exact fun x => of_eq_false (congrFun (id (Eq.symm hEmpty)) x)
+    --Lean is automatically applying an empty set definition here
+  }
+  have hElemToContain : (∀ (x : ℝ × ℝ), x ∈ B → x ∈ A) → B ⊆ A := by {
+    exact fun a => a
+  }
+  apply hElemToContain
+  intro xb
+  intro hxb
+  have hxbNotinAcomplOrB : (xb ∉ Aᶜ) ∨ (xb ∉ B) := by {
+    exact Classical.not_and_iff_or_not_not.mp (hElements xb)
+  }
+  cases' hxbNotinAcomplOrB with hxbNotinAcompl hxbNotinB
+  exact Set.not_mem_compl_iff.mp hxbNotinAcompl
+  exact False.elim (hxbNotinB hxb)
+}
+
 lemma ExistsIntroBcNonempty : ∃ i : ι, True := by {
   rename_i nonTrivialIndex
   exact (exists_const ι).mpr trivial
 }
 
-lemma InterLemma (A B : Set (ℝ × ℝ)) : ∀ (x : (ℝ × ℝ)), x ∉ A → x ∉ (A ∩ B) := by {
+lemma SetNegLeftProj (A B : Set (ℝ × ℝ)) : ∀ (x : (ℝ × ℝ)), x ∉ A → x ∉ (A ∩ B) := by {
   intros x hx
   rw [Set.inter_def]
   refine Set.nmem_setOf_iff.mpr ?_
   exact not_and.mpr fun a b => hx a
 }
 
-lemma InterLemma2 (A B : Set (ℝ × ℝ)) : ∀ (x : (ℝ × ℝ)), x ∉ B → x ∉ (A ∩ B) := by {
+lemma SetNegRightProj (A B : Set (ℝ × ℝ)) : ∀ (x : (ℝ × ℝ)), x ∉ B → x ∉ (A ∩ B) := by {
   rw [Set.inter_comm]
-  apply InterLemma
+  apply SetNegLeftProj
 }
 
 lemma ComplLemma (K : Set (ℝ × ℝ)) :
@@ -214,9 +234,6 @@ lemma ComplLemma (K : Set (ℝ × ℝ)) :
   apply Eq.symm
   rw [Set.iInter_eq_empty_iff]
   intro x
-  have h_inter_rewrite : (⋂ i, (U i)ᶜ ∩ K) = (⋂ i, (U i)ᶜ) ∩ K := by {
-    exact Eq.symm (Set.iInter_inter K fun i => (U i)ᶜ)
-  }
   have hxCases : x ∈ K ∨ x ∉ K := by {
     exact Classical.em (x ∈ K)
   }
@@ -232,24 +249,28 @@ lemma ComplLemma (K : Set (ℝ × ℝ)) :
   have hxnotinUjCompl : x ∉ (U j)ᶜ := by {
     exact fun a => a hxinUj
   }
-  apply InterLemma (U j)ᶜ K
+  apply SetNegLeftProj (U j)ᶜ K
   exact hxnotinUjCompl
   have hxnotinUjComplInterK : ∀ i, x ∉ (U i)ᶜ ∩ K := by {
     intro i
-    apply InterLemma2
+    apply SetNegRightProj
     exact xnotinK
   }
-  --have hNontrivial : (i : ι) → x ∉ (U i)ᶜ ∩ K := by
   have hι : ι → ∃ i, x ∉ (U i)ᶜ ∩ K := by {
-    apply Set.eq_empty_iff_forall_notMem
+    intro j
+    use j
+    exact hxnotinUjComplInterK j
   }
-  --apply Nonempty.elim nonTrivialIndex hxnotinUjComplInterK
-  --rw [ExistsIntroBcNonempty nonTrivialIndex]
-  --apply Exists.intro
-  --have hexists : ∃ j, x ∈ U j ∨ x ∉ U j := by {
-  --  apply Exists.intro
+  apply Nonempty.elim nonTrivialIndex
+  exact hι
+  intro hEmpty
+  have h_inter_rewrite : (⋂ i, (U i)ᶜ ∩ K) = (⋂ i, (U i)ᶜ) ∩ K := by {
+    exact Eq.symm (Set.iInter_inter K fun i => (U i)ᶜ)
   }
-
+  rw [h_inter_rewrite] at hEmpty
+  rw [← Set.compl_iUnion U] at hEmpty
+  apply SetEmptyComplInter at hEmpty
+  exact hEmpty
 }
 
 
