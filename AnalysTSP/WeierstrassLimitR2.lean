@@ -187,15 +187,68 @@ def IsCptR2SubcoverCompl (K : Set (ℝ × ℝ)) : Prop :=
 variable {ι : Type*}
 variable [Nonempty ι]
 
+lemma ExistsIntroBcNonempty : ∃ i : ι, True := by {
+  rename_i nonTrivialIndex
+  exact (exists_const ι).mpr trivial
+}
+
+lemma InterLemma (A B : Set (ℝ × ℝ)) : ∀ (x : (ℝ × ℝ)), x ∉ A → x ∉ (A ∩ B) := by {
+  intros x hx
+  rw [Set.inter_def]
+  refine Set.nmem_setOf_iff.mpr ?_
+  exact not_and.mpr fun a b => hx a
+}
+
+lemma InterLemma2 (A B : Set (ℝ × ℝ)) : ∀ (x : (ℝ × ℝ)), x ∉ B → x ∉ (A ∩ B) := by {
+  rw [Set.inter_comm]
+  apply InterLemma
+}
+
 lemma ComplLemma (K : Set (ℝ × ℝ)) :
   ∀ (U : ι → Set (ℝ × ℝ)),
     (K ⊆ (⋃ i : ι, U i)) ↔ ∅ = (⋂ i : ι, ((U i)ᶜ ∩ K)) := by {
+  rename_i nonTrivialIndex
   intros U
   constructor
   intro hu
   apply Eq.symm
   rw [Set.iInter_eq_empty_iff]
-  rename_i inst
+  intro x
+  have h_inter_rewrite : (⋂ i, (U i)ᶜ ∩ K) = (⋂ i, (U i)ᶜ) ∩ K := by {
+    exact Eq.symm (Set.iInter_inter K fun i => (U i)ᶜ)
+  }
+  have hxCases : x ∈ K ∨ x ∉ K := by {
+    exact Classical.em (x ∈ K)
+  }
+  cases' hxCases with xinK xnotinK
+  have hxinUnion : x ∈ (⋃ i, U i) := by {
+    exact hu xinK
+  }
+  have hxinSomeUi : ∃ i, x ∈ U i := by {
+    exact Set.mem_iUnion.mp (hu xinK)
+  }
+  cases' hxinSomeUi with j hxinUj
+  use j
+  have hxnotinUjCompl : x ∉ (U j)ᶜ := by {
+    exact fun a => a hxinUj
+  }
+  apply InterLemma (U j)ᶜ K
+  exact hxnotinUjCompl
+  have hxnotinUjComplInterK : ∀ i, x ∉ (U i)ᶜ ∩ K := by {
+    intro i
+    apply InterLemma2
+    exact xnotinK
+  }
+  --have hNontrivial : (i : ι) → x ∉ (U i)ᶜ ∩ K := by
+  have hι : ι → ∃ i, x ∉ (U i)ᶜ ∩ K := by {
+    apply Set.eq_empty_iff_forall_notMem
+  }
+  --apply Nonempty.elim nonTrivialIndex hxnotinUjComplInterK
+  --rw [ExistsIntroBcNonempty nonTrivialIndex]
+  --apply Exists.intro
+  --have hexists : ∃ j, x ∈ U j ∨ x ∉ U j := by {
+  --  apply Exists.intro
+  }
 
 }
 
