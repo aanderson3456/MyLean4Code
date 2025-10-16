@@ -90,8 +90,6 @@ lemma sq_order_preserve (a b : ℝ) : (0 ≤ a)∧(0 ≤ b)∧(a^2 ≤ b^2) → 
   exact hab
 }
 
-(0 ≤ )
-
 -- To prove this, we would need lemmas relating `euclideanDist`
 -- to component differences, e.g., |x.1 - a.1| ≤ euclideanDist x a
 lemma abs_fst_sub_fst_le_euclideanDist (x a : ℝ × ℝ) : abs (x.1 - a.1) ≤ euclideanDist x a := by {
@@ -156,25 +154,18 @@ lemma checkUniv (S : Set (ℝ × ℝ)) : S = Set.univ → IsOpenR2 S := by {
     -- The goal is to prove x ∈ Set.univ
     -- Any element x of type ℝ × ℝ is automatically in Set.univ by definition.
     exact Set.mem_univ x
-
 }
 
 def IsBoundedR2 (s : Set (ℝ × ℝ)) : Prop :=
   ∃ C : ℝ, ∀ x ∈ s, euclideanNorm x ≤ C
 
-def IsCompactRSubcover (K : Set ℝ) : Prop :=
-  ∀ (ι : Type) (U : ι → Set ℝ), -- For every index type ι and indexed family of sets U...
-    (∀ i : ι, IsOpenR (U i)) →        -- ...such that every set U i is open...
-    (K ⊆ (⋃ i : ι, U i)) →            -- ...and the family covers K...(note purple parens unnecessary)
-    ∃ (s : Finset ι),                 -- ...there exists a finite set of indices s...
-      K ⊆ (⋃ i ∈ s, U i)
+def IsOpenCoverR2 (ι : Type) (U : ι → Set (ℝ × ℝ)) (K : Set (ℝ × ℝ)) : Prop :=
+    (∀ i : ι, IsOpenR2 (U i)) ∧ (K ⊆ (⋃ i : ι, U i))
 
 def IsCompactR2Subcover (K : Set (ℝ × ℝ)) : Prop :=
-  ∀ (ι : Type) (U : ι → Set (ℝ × ℝ)), -- For every index type ι and indexed family of sets U...
-    (∀ i : ι, IsOpenR2 (U i)) →        -- ...such that every set U i is open...
-    (K ⊆ (⋃ i : ι, U i)) →            -- ...and the family covers K...(note purple parens unnecessary)
-    ∃ (s : Finset ι),                 -- ...there exists a finite set of indices s...
-      K ⊆ (⋃ i ∈ s, U i)               -- ...such that the corresponding finite subfamily covers K.
+  ∀ (ι : Type) (U : ι → Set (ℝ × ℝ)),
+    IsOpenCoverR2 ι U K →
+    ∃ (s : Finset ι), K ⊆ (⋃ i ∈ s, U i)
 
 def IsCptR2SubcoverCompl (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (ι : Type) (F : ι → Set (ℝ × ℝ)),
@@ -237,9 +228,6 @@ lemma ComplLemma (K : Set (ℝ × ℝ)) :
     exact Classical.em (x ∈ K)
   }
   cases' hxCases with xinK xnotinK
-  have hxinUnion : x ∈ (⋃ i, U i) := by {
-    exact hu xinK
-  }
   have hxinSomeUi : ∃ i, x ∈ U i := by {
     exact Set.mem_iUnion.mp (hu xinK)
   }
@@ -272,6 +260,13 @@ lemma ComplLemma (K : Set (ℝ × ℝ)) :
   exact hEmpty
 }
 
+lemma CptCompl (K : Set (ℝ × ℝ)) : IsCompactR2Subcover K ↔ IsCptR2SubcoverCompl K := by {
+  constructor
+  intro hA
+  unfold IsCompactR2Subcover at hA
+  unfold IsCptR2SubcoverCompl
+
+}
 
 --citation: Royden, H.L., Real Analysis, 3rd Ed., Prentice Hall, NJ, 1988
 def FiniteIntersectionPropertyR2 (ι : Type) (U : ι → Set (ℝ × ℝ)) : Prop :=
