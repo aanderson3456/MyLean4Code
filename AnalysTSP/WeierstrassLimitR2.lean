@@ -1,8 +1,10 @@
-import Mathlib.Data.Real.Basic
+--import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.Normed.Group.Basic -- For abs
 import Mathlib.Data.Real.Sqrt -- For Real.sqrt
 import Mathlib.Tactic.Linarith -- Useful for proving inequalities
 import Mathlib.Data.Set.Basic
+import Mathlib.Logic.Function.Defs
+
 
 variable (x y: (ℝ × ℝ))
 
@@ -51,10 +53,21 @@ lemma euclideanDist_nonneg (x y : ℝ × ℝ) : 0 ≤ euclideanDist x y := by {
 /-
 Our Epsilon-Delta definition, but using our manually defined Euclidean distance
 -/
-def Limit (f : ℝ × ℝ → ℝ) (a : ℝ × ℝ) (L : ℝ) : Prop :=
+def LimitR2toR (f : ℝ × ℝ → ℝ) (a : ℝ × ℝ) (L : ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
     0 < euclideanDist x a ∧ euclideanDist x a < δ → abs (f x - L) < ε
 
+def LimitR2toR2 (f : ℝ × ℝ → ℝ × ℝ) (a : ℝ × ℝ) (L : ℝ × ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
+    0 < euclideanDist x a ∧ euclideanDist x a < δ → euclideanDist (f x) L < ε
+
+def LimitRtoR2 (f : ℝ → ℝ × ℝ) (a : ℝ) (L : ℝ × ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ,
+    0 < abs (x - a) ∧ abs (x - a) < δ → euclideanDist (f x) L < ε
+
+def ConvergesR2 (seq : ℕ → ℝ × ℝ) (L : ℝ × ℝ): Prop :=
+  ∀ ε > 0, ∃ N : ℕ,
+    ∀ n ≥ N, euclideanDist L (seq n) < ε
 /-!
 ### Example Check
 -/
@@ -66,7 +79,7 @@ def limit_val : ℝ := 2
 
 -- The statement still looks the same, but `Limit` now refers to
 -- ManualEuclideanR2.Limit which uses `euclideanDist`.
-def example_limit_statement : Prop := Limit proj₁ pt_a limit_val
+def example_limit_statement : Prop := LimitR2toR proj₁ pt_a limit_val
 
 lemma sq_order_preserve (a b : ℝ) : (0 ≤ a)∧(0 ≤ b)∧(a^2 ≤ b^2) → (a ≤ b) := by {
   intro h
@@ -102,7 +115,7 @@ lemma abs_fst_sub_fst_le_euclideanDist (x a : ℝ × ℝ) : abs (x.1 - a.1) ≤ 
 }
 
 -- Now we can prove the example using this lemma
-example : Limit proj₁ pt_a limit_val := by {
+example : LimitR2toR proj₁ pt_a limit_val := by {
   intro ε hε
   use ε -- Choose δ = ε
   constructor
@@ -115,8 +128,11 @@ example : Limit proj₁ pt_a limit_val := by {
 
 end examples
 
+def IsOpenR (S : Set ℝ) : Prop :=
+  ∀ s ∈ S, ∃ ε : ℝ, ε > 0 ∧ ∀ x : ℝ, abs (s - x) < ε → x ∈ S
+
 def IsOpenR2 (S : Set (ℝ × ℝ)) : Prop :=
-  ∀ s ∈ S, ∃ δ : ℝ, δ > 0 ∧ ∀ x : ℝ × ℝ, euclideanDist s x < δ → x ∈ S
+  ∀ s ∈ S, ∃ ε : ℝ, ε > 0 ∧ ∀ x : ℝ × ℝ, euclideanDist s x < ε → x ∈ S
 
 def IsClosedR2 (S : Set (ℝ × ℝ)) : Prop :=
   IsOpenR2 Sᶜ
@@ -146,16 +162,186 @@ lemma checkUniv (S : Set (ℝ × ℝ)) : S = Set.univ → IsOpenR2 S := by {
 def IsBoundedR2 (s : Set (ℝ × ℝ)) : Prop :=
   ∃ C : ℝ, ∀ x ∈ s, euclideanNorm x ≤ C
 
-def IsCompactR2 (K : Set (ℝ × ℝ)) : Prop :=
+def IsCompactRSubcover (K : Set ℝ) : Prop :=
+  ∀ (ι : Type) (U : ι → Set ℝ), -- For every index type ι and indexed family of sets U...
+    (∀ i : ι, IsOpenR (U i)) →        -- ...such that every set U i is open...
+    (K ⊆ (⋃ i : ι, U i)) →            -- ...and the family covers K...(note purple parens unnecessary)
+    ∃ (s : Finset ι),                 -- ...there exists a finite set of indices s...
+      K ⊆ (⋃ i ∈ s, U i)
+
+def IsCompactR2Subcover (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (ι : Type) (U : ι → Set (ℝ × ℝ)), -- For every index type ι and indexed family of sets U...
     (∀ i : ι, IsOpenR2 (U i)) →        -- ...such that every set U i is open...
     (K ⊆ (⋃ i : ι, U i)) →            -- ...and the family covers K...(note purple parens unnecessary)
     ∃ (s : Finset ι),                 -- ...there exists a finite set of indices s...
       K ⊆ (⋃ i ∈ s, U i)               -- ...such that the corresponding finite subfamily covers K.
 
+def IsCptR2SubcoverCompl (K : Set (ℝ × ℝ)) : Prop :=
+  ∀ (ι : Type) (F : ι → Set (ℝ × ℝ)),
+    (∀ i : ι, IsClosedR2 (F i)) →
+    ∅ = (⋂ i : ι, (F i ∩ K)) →  --careful with bigcap vs cap
+    ∃ (s : Finset ι),
+      ∅ = (⋂ i : s, (F i ∩ K))
+
+variable {ι : Type*}
+variable [Nonempty ι]
+
+lemma SetEmptyComplInter (A B : Set (ℝ × ℝ)) : ∅ = (Aᶜ ∩ B) → B ⊆ A := by {
+  intro hEmpty
+  have hElements : ∀ (x : ℝ × ℝ), x ∉ (Aᶜ ∩ B) := by {
+    exact fun x => of_eq_false (congrFun (id (Eq.symm hEmpty)) x)
+    --Lean is automatically applying an empty set definition here
+  }
+  have hElemToContain : (∀ (x : ℝ × ℝ), x ∈ B → x ∈ A) → B ⊆ A := by {
+    exact fun a => a
+  }
+  apply hElemToContain
+  intro xb
+  intro hxb
+  have hxbNotinAcomplOrB : (xb ∉ Aᶜ) ∨ (xb ∉ B) := by {
+    exact Classical.not_and_iff_or_not_not.mp (hElements xb)
+  }
+  cases' hxbNotinAcomplOrB with hxbNotinAcompl hxbNotinB
+  exact Set.not_mem_compl_iff.mp hxbNotinAcompl
+  exact False.elim (hxbNotinB hxb)
+}
+
+lemma ExistsIntroBcNonempty : ∃ i : ι, True := by {
+  rename_i nonTrivialIndex
+  exact (exists_const ι).mpr trivial
+}
+
+lemma SetNegLeftProj (A B : Set (ℝ × ℝ)) : ∀ (x : (ℝ × ℝ)), x ∉ A → x ∉ (A ∩ B) := by {
+  intros x hx
+  rw [Set.inter_def]
+  refine Set.nmem_setOf_iff.mpr ?_
+  exact not_and.mpr fun a b => hx a
+}
+
+lemma SetNegRightProj (A B : Set (ℝ × ℝ)) : ∀ (x : (ℝ × ℝ)), x ∉ B → x ∉ (A ∩ B) := by {
+  rw [Set.inter_comm]
+  apply SetNegLeftProj
+}
+
+lemma ComplLemma (K : Set (ℝ × ℝ)) :
+  ∀ (U : ι → Set (ℝ × ℝ)),
+    (K ⊆ (⋃ i : ι, U i)) ↔ ∅ = (⋂ i : ι, ((U i)ᶜ ∩ K)) := by {
+  rename_i nonTrivialIndex
+  intros U
+  constructor
+  intro hu
+  apply Eq.symm
+  rw [Set.iInter_eq_empty_iff]
+  intro x
+  have hxCases : x ∈ K ∨ x ∉ K := by {
+    exact Classical.em (x ∈ K)
+  }
+  cases' hxCases with xinK xnotinK
+  have hxinUnion : x ∈ (⋃ i, U i) := by {
+    exact hu xinK
+  }
+  have hxinSomeUi : ∃ i, x ∈ U i := by {
+    exact Set.mem_iUnion.mp (hu xinK)
+  }
+  cases' hxinSomeUi with j hxinUj
+  use j
+  have hxnotinUjCompl : x ∉ (U j)ᶜ := by {
+    exact fun a => a hxinUj
+  }
+  apply SetNegLeftProj (U j)ᶜ K
+  exact hxnotinUjCompl
+  have hxnotinUjComplInterK : ∀ i, x ∉ (U i)ᶜ ∩ K := by {
+    intro i
+    apply SetNegRightProj
+    exact xnotinK
+  }
+  have hι : ι → ∃ i, x ∉ (U i)ᶜ ∩ K := by {
+    intro j
+    use j
+    exact hxnotinUjComplInterK j
+  }
+  apply Nonempty.elim nonTrivialIndex
+  exact hι
+  intro hEmpty
+  have h_inter_rewrite : (⋂ i, (U i)ᶜ ∩ K) = (⋂ i, (U i)ᶜ) ∩ K := by {
+    exact Eq.symm (Set.iInter_inter K fun i => (U i)ᶜ)
+  }
+  rw [h_inter_rewrite] at hEmpty
+  rw [← Set.compl_iUnion U] at hEmpty
+  apply SetEmptyComplInter at hEmpty
+  exact hEmpty
+}
+
+
+--citation: Royden, H.L., Real Analysis, 3rd Ed., Prentice Hall, NJ, 1988
+def FiniteIntersectionPropertyR2 (ι : Type) (U : ι → Set (ℝ × ℝ)) : Prop :=
+  ∀ (s : Finset ι), Set.Nonempty (⋂ i ∈ s, U i)
+
+def IsCompactR2SeqDef (K : Set (ℝ × ℝ)) : Prop :=
+  ∀ (u : ℕ → ℝ × ℝ), (∀ n, u n ∈ K) → ∃ (L : ℝ × ℝ) (φ : ℕ → ℕ),
+    (L ∈ K) ∧ (StrictMono φ) ∧ (ConvergesR2 (u ∘ φ) L)
+
+lemma IsCptFiniteIntersections (K : Set (ℝ × ℝ)) :
+  ∀ (ι : Type), ∀ (U : ι → Set (ℝ × ℝ)),
+    FiniteIntersectionPropertyR2 ι (fun i => (U i ∩ K)) → IsCompactR2Subcover K := by {
+  intro index
+
+
+}
+
+theorem CptEquiv1 (S : Set (ℝ × ℝ)) : IsCompactR2Subcover S ↔ IsCompactR2SeqDef S := by {
+  constructor
+  intro h1
+  unfold IsCompactR2SeqDef
+  intro u
+  intro hn
+  unfold IsCompactR2Subcover at h1
+  sorry
+
+}
+
 #check Metric.ball
+
+def LimitSubsetsRtoR2' {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y) (a : X) (L : Y) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ (x : X), dist x a < δ ∧ x ≠ a → dist (f x) L < ε
+
+def IsCtsRtoR2 {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y) : Prop :=
+  ∀ (x : X), LimitSubsetsRtoR2' f x (f x)
+
+def UnitInterval : Set ℝ :=
+  { r : ℝ | 0 ≤ r ∧ r ≤ 1 }
+
+def IsPathInR2 (S : Set (ℝ × ℝ)) : Prop :=
+  ∃ φ : (UnitInterval → S), Function.Surjective φ ∧ IsCtsRtoR2 φ
+
+lemma CtsOpenInvImagesRtoR2 {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y)
+  : IsCtsRtoR2 f → IsOpenR X → IsOpenR2 Y := by {
+  intros hcts hopen
+  unfold IsOpenR2
+  unfold IsOpenR at hopen
+
+}
+
+lemma CtsImagesCptRtoR2 {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y)
+  : IsCtsRtoR2 f → IsCompactRSubcover X → IsCompactR2Subcover Y := by {
+    intros hcts hcpt
+    sorry
+  }
+
+theorem PathsCompact (S : Set (ℝ × ℝ)) : IsPathInR2 S → IsCompactR2Subcover S := by {
+  sorry
+}
 
 end ManualEuclideanR2
 
 -- Check the definition using our manual distance
-#check ManualEuclideanR2.Limit
+#check ManualEuclideanR2.LimitR2toR2
+
+--below fails bc euclideanDist not def on Y ?
+--def LimitSubsetsRtoR2 {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y) (a : X) (L : Y) : Prop :=
+--  ∀ ε > 0, ∃ δ > 0, ∀ x ∈ X,
+--    0 < abs (x - a) ∧ abs (x - a) < δ → euclideanDist (f x) L < ε
+
+--below fails bc x ∈ X means x : ℝ ?
+--def IsCtsRtoR2 {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y) : Prop :=
+--  ∀ x ∈ X, LimitSubsetsRtoR2' f x (f x)
