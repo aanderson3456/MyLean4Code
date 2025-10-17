@@ -159,23 +159,35 @@ lemma checkUniv (S : Set (ℝ × ℝ)) : S = Set.univ → IsOpenR2 S := by {
 def IsBoundedR2 (s : Set (ℝ × ℝ)) : Prop :=
   ∃ C : ℝ, ∀ x ∈ s, euclideanNorm x ≤ C
 
-def IsOpenCoverR2 (ι : Type) (U : ι → Set (ℝ × ℝ)) (K : Set (ℝ × ℝ)) : Prop :=
+variable {ι : Type*} --arbitrary index set
+variable [Nonempty ι]  --exclude trivial case for easier thm statements
+
+def IsOpenCoverR2 (U : ι → Set (ℝ × ℝ)) (K : Set (ℝ × ℝ)) : Prop :=
     (∀ i : ι, IsOpenR2 (U i)) ∧ (K ⊆ (⋃ i : ι, U i))
 
 def IsCompactR2Subcover (K : Set (ℝ × ℝ)) : Prop :=
-  ∀ (ι : Type) (U : ι → Set (ℝ × ℝ)),
-    IsOpenCoverR2 ι U K →
+  ∀ (U : ι → Set (ℝ × ℝ)),
+    IsOpenCoverR2 U K →
     ∃ (s : Finset ι), K ⊆ (⋃ i ∈ s, U i)
 
 def IsCptR2SubcoverCompl (K : Set (ℝ × ℝ)) : Prop :=
-  ∀ (ι : Type) (F : ι → Set (ℝ × ℝ)),
+  ∀ (F : ι → Set (ℝ × ℝ)),
     (∀ i : ι, IsClosedR2 (F i)) →
     ∅ = (⋂ i : ι, (F i ∩ K)) →  --careful with bigcap vs cap
     ∃ (s : Finset ι),
       ∅ = (⋂ i : s, (F i ∩ K))
 
-variable {ι : Type*}
-variable [Nonempty ι]
+#check ι
+#check IsCptR2SubcoverCompl
+#check @IsCptR2SubcoverCompl
+set_option pp.all true in
+#print IsCptR2SubcoverCompl
+
+lemma eqDefs (K : Set (ℝ × ℝ)) : IsCompactR2Subcover K ↔ IsCptR2SubcoverCompl K := by {
+
+}
+
+
 
 lemma SetEmptyComplInter (A B : Set (ℝ × ℝ)) : ∅ = (Aᶜ ∩ B) → B ⊆ A := by {
   intro hEmpty
@@ -260,11 +272,7 @@ lemma ComplLemma (K : Set (ℝ × ℝ)) :
   exact hEmpty
 }
 
-lemma CptCompl (K : Set (ℝ × ℝ)) : IsCompactR2Subcover K ↔ IsCptR2SubcoverCompl K := by {
-  constructor
-  intro hA
-  unfold IsCompactR2Subcover at hA
-  unfold IsCptR2SubcoverCompl
+lemma CptCompl : IsCompactR2Subcover ↔ IsCptR2SubcoverCompl := by {
 
 }
 
