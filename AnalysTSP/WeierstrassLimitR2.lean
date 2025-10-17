@@ -159,18 +159,25 @@ lemma checkUniv (S : Set (ℝ × ℝ)) : S = Set.univ → IsOpenR2 S := by {
 def IsBoundedR2 (s : Set (ℝ × ℝ)) : Prop :=
   ∃ C : ℝ, ∀ x ∈ s, euclideanNorm x ≤ C
 
-variable {ι : Type*} --arbitrary index set
+universe u
+variable (ι : Type u) --arbitrary index set
 variable [Nonempty ι]  --exclude trivial case for easier thm statements
 
-def IsOpenCoverR2 (U : ι → Set (ℝ × ℝ)) (K : Set (ℝ × ℝ)) : Prop :=
+--@IsOpenCoverR2 {u} {ι}
+def IsOpenCoverR2 {ι : Type u} (U : ι → Set (ℝ × ℝ)) (K : Set (ℝ × ℝ)) : Prop :=
     (∀ i : ι, IsOpenR2 (U i)) ∧ (K ⊆ (⋃ i : ι, U i))
 
-def IsCompactR2Subcover (K : Set (ℝ × ℝ)) : Prop :=
+#check IsOpenCoverR2
+#check List.cons
+#check @List.cons
+
+--@IsCompactR2Subcover {u} {ι}
+def IsCompactR2Subcover {ι : Type u} (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (U : ι → Set (ℝ × ℝ)),
     IsOpenCoverR2 U K →
     ∃ (s : Finset ι), K ⊆ (⋃ i ∈ s, U i)
 
-def IsCptR2SubcoverCompl (K : Set (ℝ × ℝ)) : Prop :=
+def IsCptR2SubcoverCompl {ι : Type u} (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (F : ι → Set (ℝ × ℝ)),
     (∀ i : ι, IsClosedR2 (F i)) →
     ∅ = (⋂ i : ι, (F i ∩ K)) →  --careful with bigcap vs cap
@@ -183,11 +190,12 @@ def IsCptR2SubcoverCompl (K : Set (ℝ × ℝ)) : Prop :=
 set_option pp.all true in
 #print IsCptR2SubcoverCompl
 
-lemma eqDefs (K : Set (ℝ × ℝ)) : IsCompactR2Subcover K ↔ IsCptR2SubcoverCompl K := by {
 
+--when we omit the @ below, Lean creates new universe and gives infer error
+lemma eqDefs {ι : Type u} (K : Set (ℝ × ℝ)) : ∀ (U : ι → Set (ℝ × ℝ)), @IsCompactR2Subcover ι (K : Set (ℝ × ℝ)) ↔ @IsCptR2SubcoverCompl ι K := by {
+  intro index
+  constructor
 }
-
-
 
 lemma SetEmptyComplInter (A B : Set (ℝ × ℝ)) : ∅ = (Aᶜ ∩ B) → B ⊆ A := by {
   intro hEmpty
