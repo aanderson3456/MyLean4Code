@@ -156,6 +156,11 @@ lemma checkUniv (S : Set (ℝ × ℝ)) : S = Set.univ → IsOpenR2 S := by {
     exact Set.mem_univ x
 }
 
+lemma setContra (x : ℝ × ℝ) (s : Set (ℝ × ℝ)) : x ∈ s ∧ x ∈ sᶜ → False := by
+{
+  exact fun a => (fun a => (and_not_self_iff a).mp) (x ∈ s) a
+}
+
 def IsBoundedR2 (s : Set (ℝ × ℝ)) : Prop :=
   ∃ C : ℝ, ∀ x ∈ s, euclideanNorm x ≤ C
 
@@ -191,11 +196,7 @@ set_option pp.all true in
 #print IsCptR2SubcoverCompl
 
 
---when we omit the @ below, Lean creates new universe and gives infer error
-lemma eqDefs {ι : Type u} (K : Set (ℝ × ℝ)) : ∀ (U : ι → Set (ℝ × ℝ)), @IsCompactR2Subcover ι (K : Set (ℝ × ℝ)) ↔ @IsCptR2SubcoverCompl ι K := by {
-  intro index
-  constructor
-}
+
 
 lemma SetEmptyComplInter (A B : Set (ℝ × ℝ)) : ∅ = (Aᶜ ∩ B) → B ⊆ A := by {
   intro hEmpty
@@ -280,10 +281,62 @@ lemma ComplLemma (K : Set (ℝ × ℝ)) :
   exact hEmpty
 }
 
-lemma CptCompl : IsCompactR2Subcover ↔ IsCptR2SubcoverCompl := by {
+lemma ComplLemmaFinset (s : Finset ι) (K : Set (ℝ × ℝ)) :
+  ∀ (U : ι → Set (ℝ × ℝ)),
+    K ⊆ (⋃ i ∈ s, U i) ↔ ∅ = (⋂ i : s, (U i)ᶜ ∩ K) := by
+{
+  rename_i nonTrivialIndex
+  intro U
+  constructor
+  intro hSubset
+  apply Eq.symm
+  rw [Set.eq_empty_iff_forall_not_mem]
+  intro x hx_in_intersection
+  have hx_in_all : ∀ (i : s), x ∈ (U i)ᶜ ∩ K := by {
+    intro i
+    exact Set.mem_iInter.mp hx_in_intersection i
+  }
+  by_cases hs : s.Nonempty
+  obtain ⟨i, hi⟩ := hs
+  have hx_in_K : x ∈ K := (hx_in_all ⟨i, hi⟩).2
+  have hx_in_union : x ∈ ⋃ i ∈ s, U i := hSubset hx_in_K
+  rw [Set.mem_iUnion] at hx_in_union
+  obtain ⟨j, hx_in_Uj_union⟩ := hx_in_union
+  rw [Set.mem_iUnion] at hx_in_Uj_union
+  obtain ⟨hj_in_s, hx_in_Uj⟩ := hx_in_Uj_union
+  have hx_in_Uj_compl : x ∈ (U j)ᶜ := (hx_in_all ⟨j, hj_in_s⟩).1
+  apply setContra x (U j) ⟨hx_in_Uj, hx_in_Uj_compl⟩ --finish nonempty
 
 }
 
+
+#check ComplLemma ι
+
+--when we omit the @ below, Lean creates new universe and gives infer error
+lemma eqDefs (K : Set (ℝ × ℝ)) : ∀ (U : ι → Set (ℝ × ℝ)), @IsCompactR2Subcover ι (K : Set (ℝ × ℝ)) ↔ @IsCptR2SubcoverCompl ι K := by {
+  rename_i nonTrivialIndex
+  intro index
+  constructor
+  intro h1
+  unfold IsCompactR2Subcover at h1
+  unfold IsCptR2SubcoverCompl
+  intro F
+  intro hClosed
+  intro hEmpty
+  let U : (ι → Set (ℝ × ℝ)) := (fun (i : ι) => (F i)ᶜ )
+  have hComplUF : ∀ i, (U i)ᶜ = F i := by {
+    exact fun i => compl_compl (F i)
+  }
+  have hEmptyU : ∅ = (⋂ i : ι, ((U i)ᶜ ∩ K)) := by {
+    simp_rw [hComplUF]
+    exact hEmpty
+  }
+  unfold IsOpenCoverR2 at h1
+
+
+  --apply (ComplLemma ι K U).mp at hEmpty
+  --cases' h1 index
+}
 --citation: Royden, H.L., Real Analysis, 3rd Ed., Prentice Hall, NJ, 1988
 def FiniteIntersectionPropertyR2 (ι : Type) (U : ι → Set (ℝ × ℝ)) : Prop :=
   ∀ (s : Finset ι), Set.Nonempty (⋂ i ∈ s, U i)
@@ -297,17 +350,6 @@ lemma IsCptFiniteIntersections (K : Set (ℝ × ℝ)) :
     FiniteIntersectionPropertyR2 ι (fun i => (U i ∩ K)) → IsCompactR2Subcover K := by {
   intro index
 
-
-}
-
-theorem CptEquiv1 (S : Set (ℝ × ℝ)) : IsCompactR2Subcover S ↔ IsCompactR2SeqDef S := by {
-  constructor
-  intro h1
-  unfold IsCompactR2SeqDef
-  intro u
-  intro hn
-  unfold IsCompactR2Subcover at h1
-  sorry
 
 }
 
