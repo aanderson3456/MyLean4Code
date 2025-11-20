@@ -181,6 +181,7 @@ def IsCompactR2Subcover {ι : Type u} (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (U : ι → Set (ℝ × ℝ)),
     IsOpenCoverR2 U K →
     ∃ (s : Finset ι), (s.Nonempty) ∧ K ⊆ (⋃ i ∈ s, U i)
+    --s.Nonempty apparently needed for Set.iInter_inter
 
 def IsCptR2SubcoverCompl {ι : Type u} (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (F : ι → Set (ℝ × ℝ)),
@@ -195,13 +196,9 @@ def IsCptR2SubcoverCompl {ι : Type u} (K : Set (ℝ × ℝ)) : Prop :=
 set_option pp.all true in
 #print IsCptR2SubcoverCompl
 
-
 lemma TypeEqSetInterLemma (s : Finset ι) (F : ι → Set (ℝ × ℝ)) : (⋂ i ∈ s, F i) = (⋂ i : s, (F i)) := by {
   exact Eq.symm (Set.iInter_subtype (Membership.mem s) fun x => F ↑x)
 }
-
-
-
 
 lemma test3 (s : Finset ι) (h : s.Nonempty) (F : ι → Set (ℝ × ℝ)) (K : Set (ℝ × ℝ))
   : (⋂ i : s, F ↑i ∩ K) = (⋂ i : s, F ↑i) ∩ K := by {
@@ -210,9 +207,6 @@ lemma test3 (s : Finset ι) (h : s.Nonempty) (F : ι → Set (ℝ × ℝ)) (K : 
   }
   exact Eq.symm (Set.iInter_inter K fun (i : s) => F ↑i)
 }
-
-
-
 
 lemma SetEmptyComplInter (A B : Set (ℝ × ℝ)) : ∅ = (Aᶜ ∩ B) → B ⊆ A := by {
   intro hEmpty
@@ -393,16 +387,26 @@ lemma eqDefs (K : Set (ℝ × ℝ)) :
 
     -- Translate finite subcover back to finite intersection
     use s
-    apply (ComplLemmaFinset ι s K U).mp at hFiniteSubcover
-    simp_rw [U] at hFiniteSubcover
-    simp_rw [compl_compl] at hFiniteSubcover
+    constructor
+    -- 1. Prove s is Nonempty (trivial from hypothesis)
+    · exact hFiniteSubcover.1
 
-  -- 1. Convert "Bounded Intersection" (i ∈ s) to "Subtype Intersection" (i : s)
-    rw [TypeEqSetInterLemma] at hFiniteSubcover
+    -- 2. Prove the intersection is empty
+    · have hSubset := hFiniteSubcover.2
+      -- Apply our lemma: Subset -> Empty Intersection
+      apply (@ComplLemmaFinset ι _ s K U).mp at hSubset
+      -- Simplify U to F in the hypothesis
+      simp_rw [U] at hSubset
+      simp_rw [compl_compl] at hSubset
 
-  -- 2. Move K inside the intersection: (⋂ F i) ∩ K  ->  ⋂ (F i ∩ K)
-    rw [Set.iInter_inter] at hFiniteSubcover
-    exact hFiniteSubcover
+      -- Fix Type Mismatch: Convert "Bounded" (i ∈ s) to "Subtype" (i : s)
+      rw [Set.biInter_eq_iInter] at hSubset
+
+      -- Move K inside the intersection: (⋂ F) ∩ K -> ⋂ (F ∩ K)
+      rw [Set.iInter_inter] at hSubset
+
+      -- Now hypothesis matches the goal ∅ = ⋂ i : s, F i ∩ K
+      exact hSubset
 
   -- Direction 2: Closed Intersection Definition → Open Cover Definition
   · intro hCptCompl
@@ -414,28 +418,40 @@ lemma eqDefs (K : Set (ℝ × ℝ)) :
 
     have hClosedF : ∀ i, IsClosedR2 (F i) := by
       intro i
-      -- 1. Reveal what "Closed" means (complement is open)
       unfold IsClosedR2
-      -- 2. Reveal what F is (complement of U)
-      dsimp [F]
-      -- 3. Now we have IsOpenR2 ((U i)ᶜ)ᶜ. Cancel the double complement.
+      dsimp [F] -- Use dsimp to unfold local 'let'
       rw [compl_compl]
-      -- 4. Now the goal matches your hypothesis exactly.
       exact hOpenCover.1 i
 
     have hTotalInterEmpty : ∅ = ⋂ i, (F i ∩ K) := by
       -- Use ComplLemma on the Open Cover
       have h_subset := hOpenCover.2
       apply (ComplLemma ι K U).mp at h_subset
+      simp_rw [F]
       exact h_subset
 
     -- Apply the Closed Intersection hypothesis
     obtain ⟨s, hFiniteInter⟩ := hCptCompl F hClosedF hTotalInterEmpty
 
-    -- Translate back to subcover
     use s
-    apply (ComplLemmaFinset ι s K U).mpr
-    exact hFiniteInter
+    constructor
+    -- 1. Prove s is Nonempty
+    · exact hFiniteInter.1
+
+    -- 2. Prove Finite Subcover
+    · have hEmpty := hFiniteInter.2
+      apply (ComplLemmaFinset s K U).mpr
+      simp_rw [F] at hEmpty
+
+      -- We need to match hEmpty (Subtype) to ComplLemmaFinset (Bounded)
+      -- 1. Pull K outside: ⋂ (F ∩ K) -> (⋂ F) ∩ K
+      rw [←Set.iInter_inter] at hEmpty
+
+      -- 2. Convert Subtype (i : s) to Bounded (i ∈ s)
+      rw [←Set.biInter_eq_iInter] at hEmpty
+
+      exact hEmpty
+}
 }
 
 --when we omit the @ below, Lean creates new universe and gives infer error
