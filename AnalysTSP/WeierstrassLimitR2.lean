@@ -180,20 +180,36 @@ def IsOpenCoverR2 {ι : Type u} (U : ι → Set (ℝ × ℝ)) (K : Set (ℝ × �
 def IsCompactR2Subcover {ι : Type u} (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (U : ι → Set (ℝ × ℝ)),
     IsOpenCoverR2 U K →
-    ∃ (s : Finset ι), K ⊆ (⋃ i ∈ s, U i)
+    ∃ (s : Finset ι), (s.Nonempty) ∧ K ⊆ (⋃ i ∈ s, U i)
 
 def IsCptR2SubcoverCompl {ι : Type u} (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (F : ι → Set (ℝ × ℝ)),
     (∀ i : ι, IsClosedR2 (F i)) →
     ∅ = (⋂ i : ι, (F i ∩ K)) →  --careful with bigcap vs cap
     ∃ (s : Finset ι),
-      ∅ = (⋂ i : s, (F i ∩ K))
+      (s.Nonempty) ∧ ∅ = (⋂ i : s, (F i ∩ K))
 
 #check ι
 #check IsCptR2SubcoverCompl
 #check @IsCptR2SubcoverCompl
 set_option pp.all true in
 #print IsCptR2SubcoverCompl
+
+
+lemma TypeEqSetInterLemma (s : Finset ι) (F : ι → Set (ℝ × ℝ)) : (⋂ i ∈ s, F i) = (⋂ i : s, (F i)) := by {
+  exact Eq.symm (Set.iInter_subtype (Membership.mem s) fun x => F ↑x)
+}
+
+
+
+
+lemma test3 (s : Finset ι) (h : s.Nonempty) (F : ι → Set (ℝ × ℝ)) (K : Set (ℝ × ℝ))
+  : (⋂ i : s, F ↑i ∩ K) = (⋂ i : s, F ↑i) ∩ K := by {
+  have : Nonempty { x // x ∈ s } := by {
+    exact Finset.Nonempty.to_subtype h
+  }
+  exact Eq.symm (Set.iInter_inter K fun (i : s) => F ↑i)
+}
 
 
 
@@ -283,34 +299,144 @@ lemma ComplLemma (K : Set (ℝ × ℝ)) :
 
 lemma ComplLemmaFinset (s : Finset ι) (K : Set (ℝ × ℝ)) :
   ∀ (U : ι → Set (ℝ × ℝ)),
-    K ⊆ (⋃ i ∈ s, U i) ↔ ∅ = (⋂ i : s, (U i)ᶜ ∩ K) := by
+    K ⊆ (⋃ i ∈ s, U i) ↔ ∅ = (⋂ i ∈ s, (U i)ᶜ) ∩ K := by
 {
-  rename_i nonTrivialIndex
   intro U
   constructor
-  intro hSubset
-  apply Eq.symm
-  rw [Set.eq_empty_iff_forall_not_mem]
-  intro x hx_in_intersection
-  have hx_in_all : ∀ (i : s), x ∈ (U i)ᶜ ∩ K := by {
-    intro i
-    exact Set.mem_iInter.mp hx_in_intersection i
-  }
-  by_cases hs : s.Nonempty
-  obtain ⟨i, hi⟩ := hs
-  have hx_in_K : x ∈ K := (hx_in_all ⟨i, hi⟩).2
-  have hx_in_union : x ∈ ⋃ i ∈ s, U i := hSubset hx_in_K
-  rw [Set.mem_iUnion] at hx_in_union
-  obtain ⟨j, hx_in_Uj_union⟩ := hx_in_union
-  rw [Set.mem_iUnion] at hx_in_Uj_union
-  obtain ⟨hj_in_s, hx_in_Uj⟩ := hx_in_Uj_union
-  have hx_in_Uj_compl : x ∈ (U j)ᶜ := (hx_in_all ⟨j, hj_in_s⟩).1
-  apply setContra x (U j) ⟨hx_in_Uj, hx_in_Uj_compl⟩ --finish nonempty
+  -- Direction 1: Subset → Empty Intersection
+  · intro hSubset
+    apply Eq.symm
+    rw [Set.eq_empty_iff_forall_not_mem]
+    intro x hx
+    -- Deconstruct the hypothesis: x is in K AND x is in the intersection of complements
+    let hxK := hx.2
+    let hxInter := hx.1
 
+    -- Since x ∈ K, by our subset hypothesis, x must be in the Union
+    have hxUnion : x ∈ ⋃ i ∈ s, U i := hSubset hxK
+
+    -- Unpack the union: there exists some index j in s such that x ∈ U j
+    rw [Set.mem_iUnion] at hxUnion
+    obtain ⟨j, h_nested⟩ := hxUnion
+    rw [Set.mem_iUnion] at h_nested
+    obtain ⟨hj_in_s, hx_in_Uj⟩ := h_nested
+
+    -- Now look at the intersection hypothesis: x is in (U i)ᶜ for ALL i in s
+    rw [Set.mem_iInter] at hxInter
+    have h_inter_j := hxInter j
+    rw [Set.mem_iInter] at h_inter_j
+    have hx_in_Uj_compl : x ∈ (U j)ᶜ := h_inter_j hj_in_s
+
+    -- Contradiction: x ∈ U j and x ∈ (U j)ᶜ
+    exact setContra x (U j) ⟨hx_in_Uj, hx_in_Uj_compl⟩
+
+  -- Direction 2: Empty Intersection → Subset
+  · intro hEmpty
+    intro x hxK
+    -- We prove by contradiction. Assume x is NOT in the union.
+    by_contra h_not_in_union
+
+    -- If x is not in the union, it is in the complement of U i for all i ∈ s
+    have h_in_inter : x ∈ ⋂ i ∈ s, (U i)ᶜ := by {
+      rw [Set.mem_iInter]
+      intro i
+      rw [Set.mem_iInter]
+      intro hi_s
+      -- If x were in U i, it would be in the Union.
+      intro hx_Ui
+      apply h_not_in_union
+      rw [Set.mem_iUnion]
+      use i
+      rw [Set.mem_iUnion]
+      exact ⟨hi_s, hx_Ui⟩
+    }
+
+    -- Now we have x ∈ Intersection AND x ∈ K
+    have h_in_total : x ∈ (⋂ i ∈ s, (U i)ᶜ) ∩ K := ⟨h_in_inter, hxK⟩
+
+    -- But the premise states this intersection is empty
+    rw [←hEmpty] at h_in_total
+    exact Set.not_mem_empty x h_in_total
 }
 
+lemma eqDefs (K : Set (ℝ × ℝ)) :
+  ∀ (U : ι → Set (ℝ × ℝ)), @IsCompactR2Subcover ι K ↔ @IsCptR2SubcoverCompl ι K := by {
+  rename_i nonTrivialIndex
+  intro _ -- (We don't actually need U here for the iff)
+  constructor
 
-#check ComplLemma ι
+  -- Direction 1: Open Cover Definition → Closed Intersection Definition
+  · intro hCompact
+    unfold IsCptR2SubcoverCompl
+    intro F hClosed hTotalEmpty
+
+    -- Define the Open Cover U as the complement of Closed sets F
+    let U : (ι → Set (ℝ × ℝ)) := (fun (i : ι) => (F i)ᶜ )
+
+    have hOpenU : ∀ i, IsOpenR2 (U i) := by
+      intro i
+      -- Definition of IsClosedR2 is IsOpenR2 (F i)ᶜ
+      exact hClosed i
+
+    have hCover : K ⊆ ⋃ i, U i := by
+      -- Use our previous ComplLemma
+      apply (ComplLemma ι K U).mpr
+      -- We need to show ∅ = ⋂ i, (U i)ᶜ ∩ K
+      -- But (U i)ᶜ = (F iᶜ)ᶜ = F i
+      simp_rw [U]           -- Exposes that U i is (F i)ᶜ
+      simp_rw [compl_compl] -- Now reduces ((F i)ᶜ)ᶜ to F i      exact hTotalEmpty
+      exact hTotalEmpty
+
+    -- Apply the compactness hypothesis
+    have hCoverProp : IsOpenCoverR2 U K := ⟨hOpenU, hCover⟩
+    obtain ⟨s, hFiniteSubcover⟩ := hCompact U hCoverProp
+
+    -- Translate finite subcover back to finite intersection
+    use s
+    apply (ComplLemmaFinset ι s K U).mp at hFiniteSubcover
+    simp_rw [U] at hFiniteSubcover
+    simp_rw [compl_compl] at hFiniteSubcover
+
+  -- 1. Convert "Bounded Intersection" (i ∈ s) to "Subtype Intersection" (i : s)
+    rw [TypeEqSetInterLemma] at hFiniteSubcover
+
+  -- 2. Move K inside the intersection: (⋂ F i) ∩ K  ->  ⋂ (F i ∩ K)
+    rw [Set.iInter_inter] at hFiniteSubcover
+    exact hFiniteSubcover
+
+  -- Direction 2: Closed Intersection Definition → Open Cover Definition
+  · intro hCptCompl
+    unfold IsCompactR2Subcover
+    intro U hOpenCover
+
+    -- Define Closed sets F as complement of Open sets U
+    let F : (ι → Set (ℝ × ℝ)) := (fun (i : ι) => (U i)ᶜ )
+
+    have hClosedF : ∀ i, IsClosedR2 (F i) := by
+      intro i
+      -- 1. Reveal what "Closed" means (complement is open)
+      unfold IsClosedR2
+      -- 2. Reveal what F is (complement of U)
+      dsimp [F]
+      -- 3. Now we have IsOpenR2 ((U i)ᶜ)ᶜ. Cancel the double complement.
+      rw [compl_compl]
+      -- 4. Now the goal matches your hypothesis exactly.
+      exact hOpenCover.1 i
+
+    have hTotalInterEmpty : ∅ = ⋂ i, (F i ∩ K) := by
+      -- Use ComplLemma on the Open Cover
+      have h_subset := hOpenCover.2
+      apply (ComplLemma ι K U).mp at h_subset
+      exact h_subset
+
+    -- Apply the Closed Intersection hypothesis
+    obtain ⟨s, hFiniteInter⟩ := hCptCompl F hClosedF hTotalInterEmpty
+
+    -- Translate back to subcover
+    use s
+    apply (ComplLemmaFinset ι s K U).mpr
+    exact hFiniteInter
+}
 
 --when we omit the @ below, Lean creates new universe and gives infer error
 lemma eqDefs (K : Set (ℝ × ℝ)) : ∀ (U : ι → Set (ℝ × ℝ)), @IsCompactR2Subcover ι (K : Set (ℝ × ℝ)) ↔ @IsCptR2SubcoverCompl ι K := by {
