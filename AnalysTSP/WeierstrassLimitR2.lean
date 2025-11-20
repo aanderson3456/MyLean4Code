@@ -398,15 +398,10 @@ lemma eqDefs (K : Set (ℝ × ℝ)) :
       -- Simplify U to F in the hypothesis
       simp_rw [U] at hSubset
       simp_rw [compl_compl] at hSubset
-
-      -- Fix Type Mismatch: Convert "Bounded" (i ∈ s) to "Subtype" (i : s)
-      rw [Set.biInter_eq_iInter] at hSubset
-
-      -- Move K inside the intersection: (⋂ F) ∩ K -> ⋂ (F ∩ K)
-      rw [Set.iInter_inter] at hSubset
-
-      -- Now hypothesis matches the goal ∅ = ⋂ i : s, F i ∩ K
+      rw [test3]
+      rw [← TypeEqSetInterLemma]
       exact hSubset
+      exact hFiniteSubcover.1
 
   -- Direction 2: Closed Intersection Definition → Open Cover Definition
   · intro hCptCompl
@@ -439,46 +434,15 @@ lemma eqDefs (K : Set (ℝ × ℝ)) :
     · exact hFiniteInter.1
 
     -- 2. Prove Finite Subcover
-    · have hEmpty := hFiniteInter.2
-      apply (ComplLemmaFinset s K U).mpr
-      simp_rw [F] at hEmpty
-
-      -- We need to match hEmpty (Subtype) to ComplLemmaFinset (Bounded)
-      -- 1. Pull K outside: ⋂ (F ∩ K) -> (⋂ F) ∩ K
-      rw [←Set.iInter_inter] at hEmpty
-
-      -- 2. Convert Subtype (i : s) to Bounded (i ∈ s)
-      rw [←Set.biInter_eq_iInter] at hEmpty
-
-      exact hEmpty
-}
-}
-
---when we omit the @ below, Lean creates new universe and gives infer error
-lemma eqDefs (K : Set (ℝ × ℝ)) : ∀ (U : ι → Set (ℝ × ℝ)), @IsCompactR2Subcover ι (K : Set (ℝ × ℝ)) ↔ @IsCptR2SubcoverCompl ι K := by {
-  rename_i nonTrivialIndex
-  intro index
-  constructor
-  intro h1
-  unfold IsCompactR2Subcover at h1
-  unfold IsCptR2SubcoverCompl
-  intro F
-  intro hClosed
-  intro hEmpty
-  let U : (ι → Set (ℝ × ℝ)) := (fun (i : ι) => (F i)ᶜ )
-  have hComplUF : ∀ i, (U i)ᶜ = F i := by {
-    exact fun i => compl_compl (F i)
-  }
-  have hEmptyU : ∅ = (⋂ i : ι, ((U i)ᶜ ∩ K)) := by {
-    simp_rw [hComplUF]
+    rw [@ComplLemmaFinset ι _ s K U]
+    have hEmpty := hFiniteInter.2
+    simp_rw [F] at hEmpty
+    rw [TypeEqSetInterLemma]
+    rw [@test3 ι nonTrivialIndex s hFiniteInter.1 (fun i => (U i)ᶜ) K] at hEmpty
     exact hEmpty
-  }
-  unfold IsOpenCoverR2 at h1
-
-
-  --apply (ComplLemma ι K U).mp at hEmpty
-  --cases' h1 index
 }
+
+
 --citation: Royden, H.L., Real Analysis, 3rd Ed., Prentice Hall, NJ, 1988
 def FiniteIntersectionPropertyR2 (ι : Type) (U : ι → Set (ℝ × ℝ)) : Prop :=
   ∀ (s : Finset ι), Set.Nonempty (⋂ i ∈ s, U i)
