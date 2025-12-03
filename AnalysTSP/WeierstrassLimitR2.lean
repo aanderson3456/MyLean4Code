@@ -354,9 +354,8 @@ lemma ComplLemmaFinset (s : Finset ι) (K : Set (ℝ × ℝ)) :
 }
 
 lemma eqDefs (K : Set (ℝ × ℝ)) :
-  ∀ (U : ι → Set (ℝ × ℝ)), @IsCompactR2Subcover ι K ↔ @IsCptR2SubcoverCompl ι K := by {
+  @IsCompactR2Subcover ι K ↔ @IsCptR2SubcoverCompl ι K := by {
   rename_i nonTrivialIndex
-  intro _ -- (We don't actually need U here for the iff)
   constructor
 
   -- Direction 1: Open Cover Definition → Closed Intersection Definition
@@ -447,15 +446,11 @@ lemma eqDefs (K : Set (ℝ × ℝ)) :
 def FiniteIntersectionPropertyR2 (ι : Type) (U : ι → Set (ℝ × ℝ)) : Prop :=
   ∀ (s : Finset ι), Set.Nonempty (⋂ i ∈ s, U i)
 
-def IsCompactR2SeqDef (K : Set (ℝ × ℝ)) : Prop :=
+def IsCompactR2Seq (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (u : ℕ → ℝ × ℝ), (∀ n, u n ∈ K) → ∃ (L : ℝ × ℝ) (φ : ℕ → ℕ),
     (L ∈ K) ∧ (StrictMono φ) ∧ (ConvergesR2 (u ∘ φ) L)
 
-lemma IsCptFiniteIntersections (K : Set (ℝ × ℝ)) :
-  ∀ (ι : Type), ∀ (U : ι → Set (ℝ × ℝ)),
-    FiniteIntersectionPropertyR2 ι (fun i => (U i ∩ K)) → IsCompactR2Subcover K := by {
-  intro index
-
+theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) : @IsCompactR2Subcover ι K ↔ IsCompactR2Seq K := by {
 
 }
 
