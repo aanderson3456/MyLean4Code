@@ -164,6 +164,8 @@ lemma setContra (x : ℝ × ℝ) (s : Set (ℝ × ℝ)) : x ∈ s ∧ x ∈ sᶜ
 def IsBoundedR2 (s : Set (ℝ × ℝ)) : Prop :=
   ∃ C : ℝ, ∀ x ∈ s, euclideanNorm x ≤ C
 
+section ArbitraryIndex
+
 universe u
 variable (ι : Type u) --arbitrary index set
 variable [Nonempty ι]  --exclude trivial case for easier thm statements
@@ -200,7 +202,7 @@ lemma TypeEqSetInterLemma (s : Finset ι) (F : ι → Set (ℝ × ℝ)) : (⋂ i
   exact Eq.symm (Set.iInter_subtype (Membership.mem s) fun x => F ↑x)
 }
 
-lemma test3 (s : Finset ι) (h : s.Nonempty) (F : ι → Set (ℝ × ℝ)) (K : Set (ℝ × ℝ))
+lemma iInterInterCase (s : Finset ι) (h : s.Nonempty) (F : ι → Set (ℝ × ℝ)) (K : Set (ℝ × ℝ))
   : (⋂ i : s, F ↑i ∩ K) = (⋂ i : s, F ↑i) ∩ K := by {
   have : Nonempty { x // x ∈ s } := by {
     exact Finset.Nonempty.to_subtype h
@@ -353,7 +355,7 @@ lemma ComplLemmaFinset (s : Finset ι) (K : Set (ℝ × ℝ)) :
     exact Set.not_mem_empty x h_in_total
 }
 
-lemma eqDefs (K : Set (ℝ × ℝ)) :
+lemma eqSubcoverComplDefs (K : Set (ℝ × ℝ)) :
   @IsCompactR2Subcover ι K ↔ @IsCptR2SubcoverCompl ι K := by {
   rename_i nonTrivialIndex
   constructor
@@ -397,7 +399,7 @@ lemma eqDefs (K : Set (ℝ × ℝ)) :
       -- Simplify U to F in the hypothesis
       simp_rw [U] at hSubset
       simp_rw [compl_compl] at hSubset
-      rw [test3]
+      rw [iInterInterCase]
       rw [← TypeEqSetInterLemma]
       exact hSubset
       exact hFiniteSubcover.1
@@ -437,21 +439,37 @@ lemma eqDefs (K : Set (ℝ × ℝ)) :
     have hEmpty := hFiniteInter.2
     simp_rw [F] at hEmpty
     rw [TypeEqSetInterLemma]
-    rw [@test3 ι nonTrivialIndex s hFiniteInter.1 (fun i => (U i)ᶜ) K] at hEmpty
+    rw [@iInterInterCase ι nonTrivialIndex s hFiniteInter.1 (fun i => (U i)ᶜ) K] at hEmpty
     exact hEmpty
 }
-
 
 --citation: Royden, H.L., Real Analysis, 3rd Ed., Prentice Hall, NJ, 1988
 def FiniteIntersectionPropertyR2 (ι : Type) (U : ι → Set (ℝ × ℝ)) : Prop :=
   ∀ (s : Finset ι), Set.Nonempty (⋂ i ∈ s, U i)
 
+end ArbitraryIndex
+
+#check @IsCompactR2Subcover
+
 def IsCompactR2Seq (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (u : ℕ → ℝ × ℝ), (∀ n, u n ∈ K) → ∃ (L : ℝ × ℝ) (φ : ℕ → ℕ),
     (L ∈ K) ∧ (StrictMono φ) ∧ (ConvergesR2 (u ∘ φ) L)
 
-theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) : @IsCompactR2Subcover ι K ↔ IsCompactR2Seq K := by {
+theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
+  (∀ {ι : Type*} [Nonempty ι], @IsCompactR2Subcover ι K) ↔ IsCompactR2Seq K := by {
+    constructor
+    · -- Direction: Open Cover Compactness → Sequential Compactness
+      intro h_cover_compact
+      intro u h_u_in_K
+      sorry
 
+    · -- Direction: Sequential Compactness → Open Cover Compactness
+      intro h_seq_compact
+      -- We need to prove it for an arbitrary ι
+      intro ι _nonempty_ι U h_open_cover
+      -- Here you use the fact that K is sequentially compact to find a finite subcover
+      -- for the specific cover U indexed by ι.
+      sorry
 }
 
 #check Metric.ball
