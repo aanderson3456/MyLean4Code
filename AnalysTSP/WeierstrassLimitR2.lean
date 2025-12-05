@@ -5,6 +5,7 @@ import Mathlib.Tactic.Linarith -- Useful for proving inequalities
 import Mathlib.Data.Set.Basic
 import Mathlib.Logic.Function.Defs
 
+open Classical
 
 variable (x y: (ℝ × ℝ))
 
@@ -68,6 +69,15 @@ def LimitRtoR2 (f : ℝ → ℝ × ℝ) (a : ℝ) (L : ℝ × ℝ) : Prop :=
 def ConvergesR2 (seq : ℕ → ℝ × ℝ) (L : ℝ × ℝ): Prop :=
   ∀ ε > 0, ∃ N : ℕ,
     ∀ n ≥ N, euclideanDist L (seq n) < ε
+
+lemma sub_sq_eq_sq_sub (x y : ℝ) : (x - y)^2 = (y - x)^2 := by {
+  refine (sq_eq_sq_iff_abs_eq_abs (x - y) (y - x)).mpr ?inl.a
+  exact abs_sub_comm x y
+}
+
+lemma euclideanDist_comm (x y : ℝ × ℝ) : euclideanDist x y = euclideanDist y x := by
+  unfold euclideanDist sqDist
+  rw [sub_sq_eq_sq_sub x.1 y.1, sub_sq_eq_sq_sub x.2 y.2]
 /-!
 ### Example Check
 -/
@@ -454,6 +464,67 @@ end ArbitraryIndex
 def IsCompactR2Seq (K : Set (ℝ × ℝ)) : Prop :=
   ∀ (u : ℕ → ℝ × ℝ), (∀ n, u n ∈ K) → ∃ (L : ℝ × ℝ) (φ : ℕ → ℕ),
     (L ∈ K) ∧ (StrictMono φ) ∧ (ConvergesR2 (u ∘ φ) L)
+
+#check Dist.dist
+#check abs
+
+open Classical
+--below is standalone lemma from Gemini 3.0
+lemma exists_seq_of_infinite_mem {x : ℝ × ℝ} {u : ℕ → ℝ × ℝ}
+  (h : ∀ ε > 0, {n | euclideanDist (u n) x < ε}.Infinite) :
+  ∃ φ : ℕ → ℕ, StrictMono φ ∧ ConvergesR2 (u ∘ φ) x := by {
+
+  let S := fun (k : ℕ) => {n | euclideanDist (u n) x < (1 / (k + 1 : ℝ))}
+  have hS_inf : ∀ k, (S k).Infinite := fun k => h _ (one_div_pos.mpr (Nat.cast_add_one_pos k))
+  -- We construct φ recursively using Nat.find to pick the smallest index
+  -- that is larger than the previous one.
+  -- We define φ using Nat.rec to avoid 'let rec' compilation issues with noncomputable reals.
+  -- Base case (0): Find the first index in S 0.
+  -- Step case (k+1): Find the first index in S (k+1) that is strictly greater than φ k.
+  let φ : ℕ → ℕ := Nat.rec
+    (Nat.find (hS_inf 0).nonempty)
+    (fun k prev => Nat.find ((hS_inf (k + 1)).exists_gt prev))
+
+  exists φ
+  constructor
+  · -- Prove StrictMono
+    intro a b hab
+    induction b with
+    | zero => contradiction
+    | succ b ih =>
+      rw [Nat.lt_succ_iff] at hab
+      rcases Nat.lt_or_eq_of_le hab with h_lt | h_eq
+      · -- Case a < b
+        apply lt_trans (ih  h_lt)
+        dsimp [φ]
+        -- Nat.find_spec returns (x ∈ S ∧ x > prev). We want .2
+        exact (Nat.find_spec ((hS_inf (b + 1)).exists_gt (φ b))).2
+      · -- Case a = b
+        rw [h_eq]
+        dsimp [φ]
+        exact (Nat.find_spec ((hS_inf (b + 1)).exists_gt (φ b))).2
+
+  · -- Prove Convergence
+    intro ε hε
+    -- Find K such that 1/(K+1) < ε
+    have h_arch : ∃ k : ℕ, 1 / ((k : ℝ) + 1) < ε := by
+      refine exists_nat_gt (1/ε) |>.imp fun k hk => ?_
+      rw [one_div, inv_lt hε (Nat.cast_add_one_pos k)]
+      exact hk
+    obtain ⟨K, hK⟩ := h_arch
+    use K
+    intro n hn
+    -- We know dist < 1/(n+1) by construction of φ
+    have h_dist : Dist.dist (u (φ n)) x < 1 / ((n : ℝ) + 1) := by
+      cases n <;> dsimp [φ]
+      · exact Nat.find_spec (hS_inf 0).nonempty
+      · exact Nat.find_spec ((hS_inf _).exists_gt _)
+
+    apply lt_trans h_dist
+    apply lt_trans _ hK
+    gcongr
+    exact hn
+}
 
 theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
   (∀ {ι : Type*} [Nonempty ι], @IsCompactR2Subcover ι K) ↔ IsCompactR2Seq K := by {
