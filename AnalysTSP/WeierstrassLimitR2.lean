@@ -1,11 +1,13 @@
---import Mathlib.Data.Real.Basic
+import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.Normed.Group.Basic -- For abs
 import Mathlib.Data.Real.Sqrt -- For Real.sqrt
 import Mathlib.Tactic.Linarith -- Useful for proving inequalities
 import Mathlib.Data.Set.Basic
 import Mathlib.Logic.Function.Defs
+import Mathlib.Tactic.Cases
+import Mathlib.Data.Finite.Defs -- Add this import at the top!
 
-open Classical
+open Classical --trying to resolve issues with Nat.find
 
 variable (x y: (ℝ × ℝ))
 
@@ -96,8 +98,7 @@ lemma sq_order_preserve (a b : ℝ) : (0 ≤ a)∧(0 ≤ b)∧(a^2 ≤ b^2) → 
   rcases h with ⟨ha, hb, hab⟩
   have h2 : 2 ≠ 0 := by
     exact Ne.symm (Nat.zero_ne_add_one 1)
-  apply (pow_le_pow_iff_left ha hb h2).mp
-  exact hab
+  exact (sq_le_sq₀ ha hb).mp hab
 }
 
 -- To prove this, we would need lemmas relating `euclideanDist`
@@ -233,10 +234,10 @@ lemma SetEmptyComplInter (A B : Set (ℝ × ℝ)) : ∅ = (Aᶜ ∩ B) → B ⊆
   intro xb
   intro hxb
   have hxbNotinAcomplOrB : (xb ∉ Aᶜ) ∨ (xb ∉ B) := by {
-    exact Classical.not_and_iff_or_not_not.mp (hElements xb)
+    exact Decidable.not_and_iff_or_not.mp (hElements xb)
   }
   cases' hxbNotinAcomplOrB with hxbNotinAcompl hxbNotinB
-  exact Set.not_mem_compl_iff.mp hxbNotinAcompl
+  exact Set.notMem_compl_iff.mp hxbNotinAcompl
   exact False.elim (hxbNotinB hxb)
 }
 
@@ -248,7 +249,7 @@ lemma ExistsIntroBcNonempty : ∃ i : ι, True := by {
 lemma SetNegLeftProj (A B : Set (ℝ × ℝ)) : ∀ (x : (ℝ × ℝ)), x ∉ A → x ∉ (A ∩ B) := by {
   intros x hx
   rw [Set.inter_def]
-  refine Set.nmem_setOf_iff.mpr ?_
+  refine Set.notMem_setOf_iff.mpr ?_
   exact not_and.mpr fun a b => hx a
 }
 
@@ -312,7 +313,7 @@ lemma ComplLemmaFinset (s : Finset ι) (K : Set (ℝ × ℝ)) :
   -- Direction 1: Subset → Empty Intersection
   · intro hSubset
     apply Eq.symm
-    rw [Set.eq_empty_iff_forall_not_mem]
+    rw [Set.eq_empty_iff_forall_notMem]
     intro x hx
     -- Deconstruct the hypothesis: x is in K AND x is in the intersection of complements
     let hxK := hx.2
@@ -337,8 +338,7 @@ lemma ComplLemmaFinset (s : Finset ι) (K : Set (ℝ × ℝ)) :
     exact setContra x (U j) ⟨hx_in_Uj, hx_in_Uj_compl⟩
 
   -- Direction 2: Empty Intersection → Subset
-  · intro hEmpty
-    intro x hxK
+  · intro hEmpty x hxK
     -- We prove by contradiction. Assume x is NOT in the union.
     by_contra h_not_in_union
 
@@ -362,7 +362,7 @@ lemma ComplLemmaFinset (s : Finset ι) (K : Set (ℝ × ℝ)) :
 
     -- But the premise states this intersection is empty
     rw [←hEmpty] at h_in_total
-    exact Set.not_mem_empty x h_in_total
+    exact Set.notMem_empty x h_in_total
 }
 
 lemma eqSubcoverComplDefs (K : Set (ℝ × ℝ)) :
@@ -468,7 +468,6 @@ def IsCompactR2Seq (K : Set (ℝ × ℝ)) : Prop :=
 #check Dist.dist
 #check abs
 
-open Classical
 --below is standalone lemma from Gemini 3.0
 lemma exists_seq_of_infinite_mem {x : ℝ × ℝ} {u : ℕ → ℝ × ℝ}
   (h : ∀ ε > 0, {n | euclideanDist (u n) x < ε}.Infinite) :
@@ -476,14 +475,12 @@ lemma exists_seq_of_infinite_mem {x : ℝ × ℝ} {u : ℕ → ℝ × ℝ}
 
   let S := fun (k : ℕ) => {n | euclideanDist (u n) x < (1 / (k + 1 : ℝ))}
   have hS_inf : ∀ k, (S k).Infinite := fun k => h _ (one_div_pos.mpr (Nat.cast_add_one_pos k))
-  -- We construct φ recursively using Nat.find to pick the smallest index
-  -- that is larger than the previous one.
-  -- We define φ using Nat.rec to avoid 'let rec' compilation issues with noncomputable reals.
-  -- Base case (0): Find the first index in S 0.
-  -- Step case (k+1): Find the first index in S (k+1) that is strictly greater than φ k.
+
+  -- Use Classical.choose to pick the indices.
+  -- This avoids the "DecidablePred" error because we aren't asking Lean to compute it.
   let φ : ℕ → ℕ := Nat.rec
-    (Nat.find (hS_inf 0).nonempty)
-    (fun k prev => Nat.find ((hS_inf (k + 1)).exists_gt prev))
+    (Classical.choose (hS_inf 0).nonempty)
+    (fun k prev => Classical.choose ((hS_inf (k + 1)).exists_gt prev))
 
   exists φ
   constructor
@@ -495,35 +492,48 @@ lemma exists_seq_of_infinite_mem {x : ℝ × ℝ} {u : ℕ → ℝ × ℝ}
       rw [Nat.lt_succ_iff] at hab
       rcases Nat.lt_or_eq_of_le hab with h_lt | h_eq
       · -- Case a < b
-        apply lt_trans (ih  h_lt)
+        apply lt_trans (ih h_lt)
         dsimp [φ]
-        -- Nat.find_spec returns (x ∈ S ∧ x > prev). We want .2
-        exact (Nat.find_spec ((hS_inf (b + 1)).exists_gt (φ b))).2
+        -- The chosen index is strictly greater than the previous one
+        exact (Classical.choose_spec ((hS_inf (b + 1)).exists_gt (φ b))).2
       · -- Case a = b
         rw [h_eq]
         dsimp [φ]
-        exact (Nat.find_spec ((hS_inf (b + 1)).exists_gt (φ b))).2
+        exact (Classical.choose_spec ((hS_inf (b + 1)).exists_gt (φ b))).2
 
   · -- Prove Convergence
     intro ε hε
-    -- Find K such that 1/(K+1) < ε
+    -- Archimedean property to find k such that 1/(k+1) < ε
     have h_arch : ∃ k : ℕ, 1 / ((k : ℝ) + 1) < ε := by
       refine exists_nat_gt (1/ε) |>.imp fun k hk => ?_
-      rw [one_div, inv_lt hε (Nat.cast_add_one_pos k)]
-      exact hk
-    obtain ⟨K, hK⟩ := h_arch
-    use K
+      -- Use one_div_lt_iff to swap the sides.
+      -- It transforms (1 / a < b) into (1 / b < a).
+      rw [one_div_lt (Nat.cast_add_one_pos k) hε]
+      -- Now the goal is 1/ε < k + 1. We already know 1/ε < k from hk.
+      apply lt_trans hk
+      -- We just need to show k < k + 1, which simp handles.
+      simp
+    obtain ⟨K_idx, hK⟩ := h_arch
+    use K_idx
     intro n hn
-    -- We know dist < 1/(n+1) by construction of φ
-    have h_dist : Dist.dist (u (φ n)) x < 1 / ((n : ℝ) + 1) := by
-      cases n <;> dsimp [φ]
-      · exact Nat.find_spec (hS_inf 0).nonempty
-      · exact Nat.find_spec ((hS_inf _).exists_gt _)
-
+    -- By construction, φ n is in S n, so dist < 1/(n+1)
+    have h_dist : euclideanDist (u (φ n)) x < 1 / ((n : ℝ) + 1) := by
+      induction n with
+      | zero =>
+        dsimp [φ]
+        exact Classical.choose_spec (hS_inf 0).nonempty
+      | succ n _ =>
+        dsimp [φ]
+        exact (Classical.choose_spec ((hS_inf (n + 1)).exists_gt (φ n))).1
+    simp
+    rw [euclideanDist_comm]
     apply lt_trans h_dist
-    apply lt_trans _ hK
-    gcongr
-    exact hn
+    have hKn : (1 / ((↑n:ℝ) + 1)) ≤ (1 / ((↑K_idx:ℝ) + 1)) := by
+      refine one_div_le_one_div_of_le ?_ ?_
+      exact Nat.cast_add_one_pos K_idx
+      refine add_le_add ?_ ?_
+      exact Nat.cast_le.mpr hn
+    exact lt_of_le_of_lt (hKn) hK
 }
 
 theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
@@ -532,15 +542,87 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
     · -- Direction: Open Cover Compactness → Sequential Compactness
       intro h_cover_compact
       intro u h_u_in_K
-      sorry
 
-    · -- Direction: Sequential Compactness → Open Cover Compactness
-      intro h_seq_compact
-      -- We need to prove it for an arbitrary ι
-      intro ι _nonempty_ι U h_open_cover
-      -- Here you use the fact that K is sequentially compact to find a finite subcover
-      -- for the specific cover U indexed by ι.
-      sorry
+      by_contra h_not_seq_cpt
+      push_neg at h_not_seq_cpt
+
+      -- Step 1: For every x ∈ K, there is a small ball containing u_n only finitely often.
+      have h_local_finite : ∀ x ∈ K, ∃ ε > 0, {n | euclideanDist (u n) x < ε}.Finite := by
+        intro x hx
+        by_contra h_inf_nbhd
+        push_neg at h_inf_nbhd
+        obtain ⟨φ, hφ_mono, hφ_conv⟩ := exists_seq_of_infinite_mem h_inf_nbhd
+        exact h_not_seq_cpt x φ hx hφ_mono hφ_conv
+
+      -- Step 2: Construct an open cover using these balls.
+      choose ε hε_pos hε_finite using h_local_finite
+
+      let U := fun (p : K) => {y : ℝ × ℝ | euclideanDist p y < ε p p.2}
+
+      have h_open_cover : IsOpenCoverR2 U K := by
+        constructor
+        · intro p
+          rw [IsOpenR2]
+          intro y hy
+          let delta := ε p p.2 - euclideanDist p y
+          use delta
+          constructor
+          · exact sub_pos.mpr hy
+          · intro z hz
+            apply lt_of_le_of_lt (euclideanDist_triangle p y z)
+            rw [euclideanDist_comm y z] at hz
+            dsimp [delta] at hz
+            linarith
+        · intro x hx
+          rw [Set.mem_iUnion]
+          use ⟨x, hx⟩
+          simp [U]
+          rw [euclideanDist_comm]
+          rw [← sqDist_eq_zero] at hε_pos
+          rw [sqDist]
+          simp
+          exact hε_pos x hx
+
+      -- Step 3: Use compactness to get a finite subcover.
+      cases K.eq_empty_or_nonempty with
+      | inl hK_empty =>
+        have : u 0 ∈ ∅ := by rw [←hK_empty]; exact h_u_in_K 0
+        contradiction
+      | inr hK_nonempty =>
+        haveI : Nonempty K := hK_nonempty.to_subtype
+        obtain ⟨s, _, h_subcover⟩ := h_cover_compact U h_open_cover
+
+        -- Step 4: Derive contradiction.
+        have h_univ_subset : (Set.univ : Set ℕ) ⊆ ⋃ p ∈ s, {n | euclideanDist (u n) p < ε p p.2} := by
+          intro n
+          have : u n ∈ K := h_u_in_K n
+          have : u n ∈ ⋃ p ∈ s, U p := h_subcover this
+          rw [Set.mem_biUnion] at this
+          obtain ⟨p, hp_s, hp_mem⟩ := this
+          rw [Set.mem_biUnion]
+          use p, hp_s
+          simp [U] at hp_mem
+          rw [euclideanDist_comm]
+          exact hp_mem
+
+        have h_finite_univ : (Set.univ : Set ℕ).Finite := by
+          apply Set.Finite.subset _ h_univ_subset
+          apply Set.Finite.biUnion (Finset.finite_toSet s)
+          intro p _
+          rw [euclideanDist_comm]
+          exact hε_finite p p.2
+
+        exact Set.infinite_univ h_finite_univ
+
+
+
+      · -- Direction: Sequential Compactness → Open Cover Compactness
+        intro h_seq_compact
+        -- We need to prove it for an arbitrary ι
+        intro ι _nonempty_ι U h_open_cover
+        -- Here you use the fact that K is sequentially compact to find a finite subcover
+        -- for the specific cover U indexed by ι.
+        sorry
 }
 
 #check Metric.ball
