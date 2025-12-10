@@ -6,6 +6,9 @@ import Mathlib.Data.Set.Basic
 import Mathlib.Logic.Function.Defs
 import Mathlib.Tactic.Cases
 import Mathlib.Data.Finite.Defs -- Add this import at the top!
+import Mathlib.Data.Complex.Basic
+import Mathlib.Analysis.Complex.Basic -- Required for shortcut in euclideanDist_triangle
+import Mathlib.Analysis.Complex.Norm
 
 open Classical --trying to resolve issues with Nat.find
 
@@ -23,14 +26,17 @@ namespace ManualEuclideanR2
 
 noncomputable def sqNorm (x : ℝ × ℝ) : ℝ := x.1^2 + x.2^2
 
+
 noncomputable def sqDist (x y : ℝ × ℝ) : ℝ :=
   (x.1 - y.1)^2 + (x.2 - y.2)^2
 
 example : sqDist x y = sqNorm (x-y) := by {
   rfl
 }
+
 noncomputable def euclideanNorm (x : ℝ × ℝ) : ℝ :=
   Real.sqrt (sqNorm x)
+
 
 -- Define the Euclidean distance using square root
 noncomputable def euclideanDist (x y : ℝ × ℝ) : ℝ :=
@@ -49,10 +55,32 @@ lemma euclideanDist_nonneg (x y : ℝ × ℝ) : 0 ≤ euclideanDist x y := by {
   exact Real.sqrt_nonneg (sqDist x y)
 }
 
--- Other axioms (dist_self, eq_of_dist_eq_zero, dist_comm, dist_triangle)
--- would be needed to formally declare a MetricSpace instance, but we
--- can write the limit definition using `euclideanDist` directly.
+lemma euclideanDist_triangle (x y z : ℝ × ℝ) :
+    euclideanDist x z ≤ euclideanDist x y + euclideanDist y z := by
+  -- Define a mapping from R^2 to Complex numbers
+  let c : ℝ × ℝ → ℂ := fun p => ⟨p.1, p.2⟩
 
+  -- Helper: Show our euclideanDist is equivalent to the Complex norm of the difference
+  have h_eq : ∀ a b, euclideanDist a b = ‖c a - c b‖ := by
+    intro a b
+    unfold euclideanDist sqDist
+    dsimp [c]
+    -- Rewrite ‖z‖ as sqrt(‖z‖^2) so we can use the normSq relation
+    rw [← Real.sqrt_sq (norm_nonneg (c a - c b))]
+    congr 1
+    -- Use the property that normSq z = ‖z‖^2
+    rw [← Complex.normSq_eq_norm_sq]
+    -- Expand normSq definition: re^2 + im^2
+    rw [Complex.normSq_apply]
+    have ha1 : a.1 = (c a).re := by
+      exact rfl
+  -- Rewrite the goal using the Complex norm equivalence
+  rw [h_eq x z, h_eq x y, h_eq y z]
+
+  -- Use the standard triangle inequality for norms: ‖a + b‖ ≤ ‖a‖ + ‖b‖
+  have split : c x - c z = (c x - c y) + (c y - c z) := by ring
+  rw [split]
+  exact norm_add_le (c x - c y) (c y - c z)
 /-
 Our Epsilon-Delta definition, but using our manually defined Euclidean distance
 -/
@@ -99,6 +127,22 @@ lemma sq_order_preserve (a b : ℝ) : (0 ≤ a)∧(0 ≤ b)∧(a^2 ≤ b^2) → 
   have h2 : 2 ≠ 0 := by
     exact Ne.symm (Nat.zero_ne_add_one 1)
   exact (sq_le_sq₀ ha hb).mp hab
+}
+
+lemma sqBothSides (x y : ℝ × ℝ) :
+  (euclideanNorm x ≤ euclideanNorm y) ↔ sqNorm x ≤ sqNorm y := by {
+    unfold euclideanNorm
+    unfold sqNorm
+    constructor
+    ·
+}
+
+
+theorem euclideanNormTriangle (x y : ℝ × ℝ) :
+  euclideanNorm (x + y) ≤ euclideanNorm x + euclideanNorm y := by {
+    unfold euclideanNorm
+    unfold sqNorm
+    simp
 }
 
 -- To prove this, we would need lemmas relating `euclideanDist`
@@ -533,6 +577,7 @@ lemma exists_seq_of_infinite_mem {x : ℝ × ℝ} {u : ℕ → ℝ × ℝ}
       exact Nat.cast_add_one_pos K_idx
       refine add_le_add ?_ ?_
       exact Nat.cast_le.mpr hn
+      exact Std.IsPreorder.le_refl 1
     exact lt_of_le_of_lt (hKn) hK
 }
 
