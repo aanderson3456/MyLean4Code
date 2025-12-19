@@ -4,13 +4,13 @@ import Mathlib.Data.Rat.Init
 import Mathlib.Data.Rat.Cast.CharZero
 import Mathlib.Data.Finset.Basic
 import Mathlib.Logic.Function.Basic
-import Mathlib.Algebra.BigOperators.Group.Finset
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Init.Data.Int
 import Init.Prelude
 import Lean.Meta.Tactic.LibrarySearch
 import Mathlib.Tactic.Linarith.Frontend
 import Mathlib.Tactic.Ring.Basic
-import Mathlib.Algebra.CharZero.Lemmas
+import Mathlib.Algebra.CharZero.Defs
 import Mathlib.Algebra.Ring.Parity
 import Mathlib.Algebra.Group.Even
 import Mathlib.Algebra.Group.Basic
