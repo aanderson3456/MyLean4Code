@@ -26,7 +26,6 @@ namespace ManualEuclideanR2
 
 noncomputable def sqNorm (x : ℝ × ℝ) : ℝ := x.1^2 + x.2^2
 
-
 noncomputable def sqDist (x y : ℝ × ℝ) : ℝ :=
   (x.1 - y.1)^2 + (x.2 - y.2)^2
 
@@ -36,7 +35,6 @@ example : sqDist x y = sqNorm (x-y) := by {
 
 noncomputable def euclideanNorm (x : ℝ × ℝ) : ℝ :=
   Real.sqrt (sqNorm x)
-
 
 -- Define the Euclidean distance using square root
 noncomputable def euclideanDist (x y : ℝ × ℝ) : ℝ :=
@@ -54,7 +52,7 @@ lemma sqDist_nonneg (x y : ℝ × ℝ) : 0 ≤ sqDist x y := by {
 lemma euclideanDist_nonneg (x y : ℝ × ℝ) : 0 ≤ euclideanDist x y := by {
   exact Real.sqrt_nonneg (sqDist x y)
 }
-
+/-
 lemma euclideanDist_triangle (x y z : ℝ × ℝ) :
     euclideanDist x z ≤ euclideanDist x y + euclideanDist y z := by
   -- Define a mapping from R^2 to Complex numbers
@@ -74,6 +72,7 @@ lemma euclideanDist_triangle (x y z : ℝ × ℝ) :
     rw [Complex.normSq_apply]
     have ha1 : a.1 = (c a).re := by
       exact rfl
+
   -- Rewrite the goal using the Complex norm equivalence
   rw [h_eq x z, h_eq x y, h_eq y z]
 
@@ -81,6 +80,7 @@ lemma euclideanDist_triangle (x y z : ℝ × ℝ) :
   have split : c x - c z = (c x - c y) + (c y - c z) := by ring
   rw [split]
   exact norm_add_le (c x - c y) (c y - c z)
+-/
 /-
 Our Epsilon-Delta definition, but using our manually defined Euclidean distance
 -/
@@ -129,20 +129,90 @@ lemma sq_order_preserve (a b : ℝ) : (0 ≤ a)∧(0 ≤ b)∧(a^2 ≤ b^2) → 
   exact (sq_le_sq₀ ha hb).mp hab
 }
 
-lemma sqBothSides (x y : ℝ × ℝ) :
-  (euclideanNorm x ≤ euclideanNorm y) ↔ sqNorm x ≤ sqNorm y := by {
-    unfold euclideanNorm
-    unfold sqNorm
-    constructor
-    ·
+lemma sqNormNonnegR2 (x : ℝ × ℝ) : sqNorm x ≥ 0 := by {
+  unfold sqNorm
+  have hx1Nonneg : x.1^2 ≥ 0 := by
+    exact sq_nonneg x.1
+  have hx2Nonneg : x.2^2 ≥ 0 := by
+    exact sq_nonneg x.2
+  exact Left.add_nonneg hx1Nonneg hx2Nonneg
 }
 
+lemma sqNormEqEucNormSq (x : ℝ × ℝ) : sqNorm x = (euclideanNorm x)^2 := by {
+  unfold euclideanNorm
+  refine Eq.symm (Real.sq_sqrt ?_)
+  exact sqNormNonnegR2 x
+}
+
+--following lemma true by definition, but emphasizes avoiding controversy
+--Real.sqrt from Mathlib outputs 0 for negative inputs
+lemma sqrtNonneg (a : ℝ) : a ≥ 0 → √a ≥ 0 := by {
+  intro h
+  exact Real.sqrt_nonneg a
+}
+
+lemma eucNormNonNegR2 (x : ℝ × ℝ) : euclideanNorm x ≥ 0 := by {
+  apply sqrtNonneg
+  exact sqNormNonnegR2 x
+}
+
+lemma sqBothSidesR2Norm (x y : ℝ × ℝ) :
+  (euclideanNorm x ≤ euclideanNorm y) ↔ sqNorm x ≤ sqNorm y := by {
+    have hxNormNonneg : euclideanNorm x ≥ 0 := by
+      exact eucNormNonNegR2 x
+    have hyNormNonneg : euclideanNorm y ≥ 0 := by
+      exact eucNormNonNegR2 y
+    rw [sqNormEqEucNormSq]
+    rw [sqNormEqEucNormSq]
+    rw [iff_comm]
+    exact (sq_le_sq₀ hxNormNonneg hyNormNonneg)
+}
+
+lemma addSqsNonnegR (a b : ℝ) : 0 ≤ a^2 + b^2 := by {
+  exact Left.add_nonneg (sq_nonneg a) (sq_nonneg b)
+}
+
+lemma sqSqrtEqn (a b c d : ℝ) :
+  (√(a ^ 2 + b ^ 2) + √(c ^ 2 + d ^ 2))^2
+  = a^2 + b^2 + c^2 + d^2 + 2*√(a^2+b^2)*√(c^2+d^2) := by {
+    rw [add_sq']
+    rw [Real.sq_sqrt]
+    rw [Real.sq_sqrt]
+    simp
+    exact Eq.symm (add_assoc (a ^ 2 + b ^ 2) (c ^ 2) (d ^ 2))
+    exact addSqsNonnegR c d
+    exact addSqsNonnegR a b
+}
+
+#check sq_le_sq₀
+
+lemma algIneq1R (a b c d : ℝ) :
+  2*a*c + 2*b*d ≤ 2*√((a^2+b^2)*(c^2+d^2)) := by {
+    apply?
+}
 
 theorem euclideanNormTriangle (x y : ℝ × ℝ) :
   euclideanNorm (x + y) ≤ euclideanNorm x + euclideanNorm y := by {
     unfold euclideanNorm
     unfold sqNorm
     simp
+    have hlpos : 0 ≤ √((x.1 + y.1) ^ 2 + (x.2 + y.2) ^ 2) := by
+      apply sqrtNonneg
+      exact addSqsNonnegR (x.1+y.1) (x.2+y.2)
+    have hrxpos : 0 ≤ √(x.1 ^ 2 + x.2 ^ 2) := by
+      apply sqrtNonneg
+      exact addSqsNonnegR x.1 x.2
+    have hrypos : 0 ≤ √(y.1 ^ 2 + y.2 ^ 2) := by
+      apply sqrtNonneg
+      exact addSqsNonnegR y.1 y.2
+    have hrpos : 0 ≤ √(x.1 ^ 2 + x.2 ^ 2) + √(y.1 ^ 2 + y.2 ^ 2) := by
+      exact Left.add_nonneg hrxpos hrypos
+    apply (sq_le_sq₀ hlpos hrpos).mp
+    rw [sqSqrtEqn]
+    rw [Real.sq_sqrt]
+    rw [add_sq']
+    rw [add_sq']
+
 }
 
 -- To prove this, we would need lemmas relating `euclideanDist`

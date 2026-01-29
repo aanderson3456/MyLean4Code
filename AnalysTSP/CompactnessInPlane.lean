@@ -1,6 +1,6 @@
 import Mathlib.Topology.Basic -- Basic topological definitions, including IsCompact
-import Mathlib.Topology.Instances.Real -- Defines topology on ℝ and product topology on ℝ × ℝ
-import Mathlib.Topology.Separation
+import Mathlib.Topology.Instances.Real.Lemmas -- Defines topology on ℝ and product topology on ℝ × ℝ
+import Mathlib.Topology.Separation.Basic
 --import Mathlib.Topology.Compactness.HeineBorel -- Provides the isCompact_iff_isClosed_isBounded theorem
 --import Mathlib.Analysis.NormedSpace.FiniteDimension -- Context for finite dimensional spaces
 
