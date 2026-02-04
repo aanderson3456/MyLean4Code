@@ -186,9 +186,28 @@ lemma sqSqrtEqn (a b c d : ℝ) :
 
 #check sq_le_sq₀
 
+lemma algIneq1Rlemma (a b : ℝ) : (b ≥ 0) → 2*a ≤ 2*b → a ≤ b := by {
+  intros hb hyp
+  apply?
+}
+
 lemma algIneq1R (a b c d : ℝ) :
   2*a*c + 2*b*d ≤ 2*√((a^2+b^2)*(c^2+d^2)) := by {
-    apply?
+  --mul_add has trouble without assoc
+  have h2ac : 2*a*c = 2*(a*c) := by
+    exact mul_assoc 2 a c
+  rw [h2ac]
+  --now do it for 2bd
+  rw [mul_assoc]
+      -- Factor out the 2 on the left side
+  rw [← mul_add 2 (a*c) (b*d)]
+  -- Divide both sides by 2 (since 2 > 0, the inequality direction stays the same)
+  rw [mul_le_mul_iff_left (by norm_num : 0 < (2 : ℝ))]
+    -- Use the property that x ≤ √y is implied by x² ≤ y (regardless of sign of x)
+  apply Real.le_sqrt_of_sq_le
+  -- The remaining inequality (ac + bd)² ≤ (a² + b²)(c² + d²) is the Cauchy-Schwarz inequality.
+  -- nlinarith can solve this automatically by expanding and cancelling terms.
+  nlinarith
 }
 
 theorem euclideanNormTriangle (x y : ℝ × ℝ) :
