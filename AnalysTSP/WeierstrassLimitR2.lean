@@ -186,10 +186,20 @@ lemma sqSqrtEqn (a b c d : ℝ) :
 
 #check sq_le_sq₀
 
-lemma algIneq1Rlemma (a b : ℝ) : (b ≥ 0) → 2*a ≤ 2*b → a ≤ b := by {
-  intros hb hyp
-  apply?
+lemma algIneq1Rlemma (a b : ℝ) : a ≤ b → 2*a ≤ 2*b := by {
+  intro hyp
+  linarith
 }
+
+lemma babyCauchySchwarzR (a b c d : ℝ) : (a*c + b*d)^2 ≤ (a^2 + b^2)*(c^2 + d^2) := by {
+  have h : (a^2 + b^2) * (c^2 + d^2) - (a*c + b*d)^2 = (a*d - b*c)^2 := by ring
+  -- Since the right side is a square, it is ≥ 0
+  have h_nonneg : 0 ≤ (a*d - b*c)^2 := pow_two_nonneg (a*d - b*c)
+  -- Therefore, RHS - LHS ≥ 0 implies LHS ≤ RHS
+  linarith
+}
+
+#print algIneq1Rlemma
 
 lemma algIneq1R (a b c d : ℝ) :
   2*a*c + 2*b*d ≤ 2*√((a^2+b^2)*(c^2+d^2)) := by {
@@ -202,12 +212,17 @@ lemma algIneq1R (a b c d : ℝ) :
       -- Factor out the 2 on the left side
   rw [← mul_add 2 (a*c) (b*d)]
   -- Divide both sides by 2 (since 2 > 0, the inequality direction stays the same)
-  rw [mul_le_mul_iff_left (by norm_num : 0 < (2 : ℝ))]
+  apply algIneq1Rlemma
     -- Use the property that x ≤ √y is implied by x² ≤ y (regardless of sign of x)
   apply Real.le_sqrt_of_sq_le
   -- The remaining inequality (ac + bd)² ≤ (a² + b²)(c² + d²) is the Cauchy-Schwarz inequality.
   -- nlinarith can solve this automatically by expanding and cancelling terms.
-  nlinarith
+  exact babyCauchySchwarzR a b c d
+}
+
+lemma addIneqBothSidesR (a b c : ℝ) : a ≤ b → c + a ≤ c + b := by {
+  intro h
+  exact (add_le_add_iff_left c).mpr h
 }
 
 theorem euclideanNormTriangle (x y : ℝ × ℝ) :
@@ -231,7 +246,7 @@ theorem euclideanNormTriangle (x y : ℝ × ℝ) :
     rw [Real.sq_sqrt]
     rw [add_sq']
     rw [add_sq']
-
+    apply addIneqBothSidesR (y.1 ^ 2 + 2 * x.1 * y.1 + (x.2 ^ 2 + y.2 ^ 2 + 2 * x.2 * y.2)) (x.2 ^ 2 + y.1 ^ 2 + y.2 ^ 2 + 2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2)) (x.1^2)
 }
 
 -- To prove this, we would need lemmas relating `euclideanDist`
