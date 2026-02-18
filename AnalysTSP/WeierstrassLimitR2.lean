@@ -225,6 +225,16 @@ lemma addIneqBothSidesR (a b c : ℝ) : a ≤ b → c + a ≤ c + b := by {
   exact (add_le_add_iff_left c).mpr h
 }
 
+lemma hassoc (x y : ℝ × ℝ) :  x.1 ^ 2 + y.1 ^ 2 + 2 * x.1 * y.1 + (x.2 ^ 2 + y.2 ^ 2 + 2 * x.2 * y.2) =
+      x.1 ^ 2 + (y.1 ^ 2 + 2 * x.1 * y.1 + (x.2 ^ 2 + y.2 ^ 2 + 2 * x.2 * y.2)) := by {
+  ring
+}
+
+lemma hassoc2 (x y : ℝ × ℝ) : x.1 ^ 2 + x.2 ^ 2 + y.1 ^ 2 + y.2 ^ 2 + 2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2) =
+  x.1 ^ 2 + (x.2 ^ 2 + y.1 ^ 2 + y.2 ^ 2 + 2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2)) := by {
+    ring
+}
+
 theorem euclideanNormTriangle (x y : ℝ × ℝ) :
   euclideanNorm (x + y) ≤ euclideanNorm x + euclideanNorm y := by {
     unfold euclideanNorm
@@ -242,12 +252,49 @@ theorem euclideanNormTriangle (x y : ℝ × ℝ) :
     have hrpos : 0 ≤ √(x.1 ^ 2 + x.2 ^ 2) + √(y.1 ^ 2 + y.2 ^ 2) := by
       exact Left.add_nonneg hrxpos hrypos
     apply (sq_le_sq₀ hlpos hrpos).mp
+    --nlinarith and ring are not working at each stage of the following
     rw [sqSqrtEqn]
     rw [Real.sq_sqrt]
     rw [add_sq']
     rw [add_sq']
-    apply addIneqBothSidesR (y.1 ^ 2 + 2 * x.1 * y.1 + (x.2 ^ 2 + y.2 ^ 2 + 2 * x.2 * y.2)) (x.2 ^ 2 + y.1 ^ 2 + y.2 ^ 2 + 2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2)) (x.1^2)
+    rw [hassoc]
+    rw [hassoc2]
+    apply addIneqBothSidesR (y.1 ^ 2 + 2 * x.1 * y.1 + (x.2 ^ 2 + y.2 ^ 2 + 2 * x.2 * y.2))
+      (x.2 ^ 2 + y.1 ^ 2 + y.2 ^ 2 + 2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2)) (x.1 ^ 2)
+    have hassoc3 : y.1 ^ 2 + 2 * x.1 * y.1 + (x.2 ^ 2 + y.2 ^ 2 + 2 * x.2 * y.2) =
+      y.1 ^ 2 + (2 * x.1 * y.1 + (x.2 ^ 2 + y.2 ^ 2 + 2 * x.2 * y.2)) := by
+        ring
+    rw [hassoc3]
+    have hassocComm : x.2 ^ 2 + y.1 ^ 2 + y.2 ^ 2 + 2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2) =
+      y.1 ^ 2 + (x.2 ^ 2 + y.2 ^ 2 + 2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2)) := by
+        ring
+    rw [hassocComm]
+    apply addIneqBothSidesR --finally finds pattern itself
+    have hassocComm2 : 2 * x.1 * y.1 + (x.2 ^ 2 + y.2 ^ 2 + 2 * x.2 * y.2) =
+      (x.2 ^2 + y.2 ^2) + (2 * x.1 * y.1 + 2 * x.2 * y.2) := by
+        ring
+    rw [hassocComm2]
+    --apply addIneqBothSidesR _ _ (x.2 ^2 + y.2 ^ 2)
+    have hassoc4 : x.2 ^ 2 + y.2 ^ 2 + 2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2) =
+      (x.2 ^ 2 + y.2 ^ 2) + (2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2)) := by
+        ring
+    rw [hassoc4]
+    apply addIneqBothSidesR (2 * x.1 * y.1 + 2 * x.2 * y.2)
+      (2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2)) (x.2 ^2 + y.2 ^2)
+    have hsqrtMult : √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2) =
+      √((x.1 ^ 2 + x.2 ^ 2) * (y.1 ^ 2 + y.2 ^ 2)) := by
+        refine Eq.symm (Real.sqrt_mul' (x.1 ^ 2 + x.2 ^ 2) ?_)
+        exact addSqsNonnegR y.1 y.2
+    have hassoc5 : 2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2) =
+      2 * (√(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2)) := by
+        exact mul_assoc 2 √(x.1 ^ 2 + x.2 ^ 2) √(y.1 ^ 2 + y.2 ^ 2)
+    rw [hassoc5]
+    --annoying how goal display seems to be missing parsing
+    rw [hsqrtMult]
+    apply algIneq1R x.1 x.2 y.1 y.2
+    exact addSqsNonnegR (x.1 + y.1) (x.2 + y.2)
 }
+
 
 -- To prove this, we would need lemmas relating `euclideanDist`
 -- to component differences, e.g., |x.1 - a.1| ≤ euclideanDist x a
