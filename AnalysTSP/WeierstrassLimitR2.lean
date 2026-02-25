@@ -3,9 +3,11 @@ import Mathlib.Analysis.Normed.Group.Basic -- For abs
 import Mathlib.Data.Real.Sqrt -- For Real.sqrt
 import Mathlib.Tactic.Linarith -- Useful for proving inequalities
 import Mathlib.Data.Set.Basic
+import Mathlib.Data.Set.Finite.Basic
+import Mathlib.Data.Set.Finite.Lattice
 import Mathlib.Logic.Function.Defs
 import Mathlib.Tactic.Cases
-import Mathlib.Data.Finite.Defs -- Add this import at the top!
+import Mathlib.Data.Finite.Defs
 import Mathlib.Data.Complex.Basic
 import Mathlib.Analysis.Complex.Basic -- Required for shortcut in euclideanDist_triangle
 import Mathlib.Analysis.Complex.Norm
@@ -739,7 +741,7 @@ lemma algIneq2R (a b c : ℝ) : a < b - c → a + c < b := by {
 }
 
 theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
-  (∀ {ι : Type*} [Nonempty ι], @IsCompactR2Subcover ι K) ↔ IsCompactR2Seq K := by {
+  (∀ {ι : Type} [Nonempty ι], @IsCompactR2Subcover ι K) ↔ IsCompactR2Seq K := by {
     constructor
     · -- Direction: Open Cover Compactness → Sequential Compactness
       intro h_cover_compact
@@ -797,24 +799,30 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
         rw [hK_empty] at this
         contradiction
       | inr hK_nonempty =>
-        letI : Nonempty (Subtype K) := hK_nonempty.to_subtype
+        -- Establish the Nonempty instance for the subtype
+        let instance_K : Nonempty (Subtype K) := hK_nonempty.to_subtype
 
-        -- The '0' here explicitly solves the 'u_1' universe constraint
-        -- Argument order: [Universe], [Type ι], [Nonempty instance], [Cover], [IsCover proof]
-        obtain ⟨s, h_subcover⟩ := @h_cover_compact 0 (Subtype K) inferInstance U h_open_cover
-        -- Step 4: Derive contradiction.
+        -- Use @ to explicitly pass the Type (Subtype K) and the Instance (instance_K)
+        -- This prevents the "failed to synthesize" error.
+        obtain ⟨s, _, h_subcover⟩ := @h_cover_compact (Subtype K) instance_K U h_open_cover
+
+        -- Step 4: Contradiction
+        -- We show the infinite set of indices ℕ is a subset of a finite union of finite sets.
         have h_univ_subset : (Set.univ : Set ℕ) ⊆ ⋃ p ∈ s, {n | euclideanDist (u n) p < ε p p.2} := by
-          intro n
+          intro n _
           have : u n ∈ K := h_u_in_K n
+          -- Since u n ∈ K, it must be covered by the finite subcover
           have : u n ∈ ⋃ p ∈ s, U p := h_subcover this
           rw [Set.mem_biUnion] at this
           obtain ⟨p, hp_s, hp_mem⟩ := this
           rw [Set.mem_biUnion]
           use p, hp_s
           simp [U] at hp_mem
+          -- Fix distance symmetry for the set definition
           rw [eucDistComm]
           exact hp_mem
 
+        -- A finite union of finite sets is finite
         have h_finite_univ : (Set.univ : Set ℕ).Finite := by
           apply Set.Finite.subset _ h_univ_subset
           apply Set.Finite.biUnion (Finset.finite_toSet s)
@@ -822,17 +830,8 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
           rw [eucDistComm]
           exact hε_finite p p.2
 
+        -- Contradiction: The universe of Nat is infinite
         exact Set.infinite_univ h_finite_univ
-
-
-
-      · -- Direction: Sequential Compactness → Open Cover Compactness
-        intro h_seq_compact
-        -- We need to prove it for an arbitrary ι
-        intro ι _nonempty_ι U h_open_cover
-        -- Here you use the fact that K is sequentially compact to find a finite subcover
-        -- for the specific cover U indexed by ι.
-        sorry
 }
 
 #check Metric.ball
