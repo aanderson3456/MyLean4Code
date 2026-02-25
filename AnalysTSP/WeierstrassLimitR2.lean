@@ -29,7 +29,18 @@ noncomputable def sqNorm (x : ℝ × ℝ) : ℝ := x.1^2 + x.2^2
 noncomputable def sqDist (x y : ℝ × ℝ) : ℝ :=
   (x.1 - y.1)^2 + (x.2 - y.2)^2
 
-example : sqDist x y = sqNorm (x-y) := by {
+lemma addInverseR (x : ℝ) : x - x = 0 := by {
+  exact sub_self x
+}
+
+lemma sqDistZero (x : ℝ × ℝ) : sqDist x x = 0 := by {
+  unfold sqDist
+  rw [addInverseR x.1]
+  rw [addInverseR x.2]
+  simp
+}
+
+lemma eucDistIsNormDiff : sqDist x y = sqNorm (x-y) := by {
   rfl
 }
 
@@ -52,38 +63,11 @@ lemma sqDist_nonneg (x y : ℝ × ℝ) : 0 ≤ sqDist x y := by {
 lemma euclideanDist_nonneg (x y : ℝ × ℝ) : 0 ≤ euclideanDist x y := by {
   exact Real.sqrt_nonneg (sqDist x y)
 }
-/-
-lemma euclideanDist_triangle (x y z : ℝ × ℝ) :
-    euclideanDist x z ≤ euclideanDist x y + euclideanDist y z := by
-  -- Define a mapping from R^2 to Complex numbers
-  let c : ℝ × ℝ → ℂ := fun p => ⟨p.1, p.2⟩
 
-  -- Helper: Show our euclideanDist is equivalent to the Complex norm of the difference
-  have h_eq : ∀ a b, euclideanDist a b = ‖c a - c b‖ := by
-    intro a b
-    unfold euclideanDist sqDist
-    dsimp [c]
-    -- Rewrite ‖z‖ as sqrt(‖z‖^2) so we can use the normSq relation
-    rw [← Real.sqrt_sq (norm_nonneg (c a - c b))]
-    congr 1
-    -- Use the property that normSq z = ‖z‖^2
-    rw [← Complex.normSq_eq_norm_sq]
-    -- Expand normSq definition: re^2 + im^2
-    rw [Complex.normSq_apply]
-    have ha1 : a.1 = (c a).re := by
-      exact rfl
+lemma eucDistZero (x : ℝ × ℝ) : euclideanDist x x = 0 := by {
+  apply?
+}
 
-  -- Rewrite the goal using the Complex norm equivalence
-  rw [h_eq x z, h_eq x y, h_eq y z]
-
-  -- Use the standard triangle inequality for norms: ‖a + b‖ ≤ ‖a‖ + ‖b‖
-  have split : c x - c z = (c x - c y) + (c y - c z) := by ring
-  rw [split]
-  exact norm_add_le (c x - c y) (c y - c z)
--/
-/-
-Our Epsilon-Delta definition, but using our manually defined Euclidean distance
--/
 def LimitR2toR (f : ℝ × ℝ → ℝ) (a : ℝ × ℝ) (L : ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
     0 < euclideanDist x a ∧ euclideanDist x a < δ → abs (f x - L) < ε
@@ -105,7 +89,7 @@ lemma sub_sq_eq_sq_sub (x y : ℝ) : (x - y)^2 = (y - x)^2 := by {
   exact abs_sub_comm x y
 }
 
-lemma euclideanDist_comm (x y : ℝ × ℝ) : euclideanDist x y = euclideanDist y x := by
+lemma eucDistComm (x y : ℝ × ℝ) : euclideanDist x y = euclideanDist y x := by
   unfold euclideanDist sqDist
   rw [sub_sq_eq_sq_sub x.1 y.1, sub_sq_eq_sq_sub x.2 y.2]
 /-!
@@ -295,6 +279,23 @@ theorem euclideanNormTriangle (x y : ℝ × ℝ) :
     exact addSqsNonnegR (x.1 + y.1) (x.2 + y.2)
 }
 
+lemma euclideanDistTriangle (x y z : ℝ × ℝ) :
+    euclideanDist x z ≤ euclideanDist x y + euclideanDist y z := by {
+  -- 1. Unfold the definition of distance to work with norms
+  -- Note: This assumes sqDist x z is defined as sqNorm (x - z)
+  rw [euclideanDist, euclideanDist, euclideanDist]
+
+  -- 2. Use the fact that x - z = (x - y) + (y - z)
+  -- This is the "add-zero" trick: x - z = x - y + y - z
+  have h : x - z = (x - y) + (y - z) := by simp
+
+  -- 3. Rewrite the target using this identity
+  rw [eucDistIsNormDiff]
+  rw [h]
+
+  -- 4. Apply your previously proven theorem
+  apply euclideanNormTriangle (x - y) (y - z)
+}
 
 -- To prove this, we would need lemmas relating `euclideanDist`
 -- to component differences, e.g., |x.1 - a.1| ≤ euclideanDist x a
@@ -721,7 +722,7 @@ lemma exists_seq_of_infinite_mem {x : ℝ × ℝ} {u : ℕ → ℝ × ℝ}
         dsimp [φ]
         exact (Classical.choose_spec ((hS_inf (n + 1)).exists_gt (φ n))).1
     simp
-    rw [euclideanDist_comm]
+    rw [eucDistComm]
     apply lt_trans h_dist
     have hKn : (1 / ((↑n:ℝ) + 1)) ≤ (1 / ((↑K_idx:ℝ) + 1)) := by
       refine one_div_le_one_div_of_le ?_ ?_
@@ -730,6 +731,11 @@ lemma exists_seq_of_infinite_mem {x : ℝ × ℝ} {u : ℕ → ℝ × ℝ}
       exact Nat.cast_le.mpr hn
       exact Std.IsPreorder.le_refl 1
     exact lt_of_le_of_lt (hKn) hK
+}
+
+lemma algIneq2R (a b c : ℝ) : a < b - c → a + c < b := by {
+  intro h
+  exact lt_tsub_iff_right.mp h
 }
 
 theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
@@ -765,29 +771,37 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
           constructor
           · exact sub_pos.mpr hy
           · intro z hz
-            apply lt_of_le_of_lt (euclideanDist_triangle p y z)
-            rw [euclideanDist_comm y z] at hz
+            apply lt_of_le_of_lt (euclideanDistTriangle p y z)
+            rw [eucDistComm y z] at hz
             dsimp [delta] at hz
-            linarith
+            apply algIneq2R at hz
+            rw [add_comm]
+            rw [eucDistComm]
+            exact hz
         · intro x hx
           rw [Set.mem_iUnion]
           use ⟨x, hx⟩
           simp [U]
-          rw [euclideanDist_comm]
-          rw [← sqDist_eq_zero] at hε_pos
-          rw [sqDist]
+          rw [eucDistComm]
+          unfold euclideanDist
+          rw [sqDistZero]
           simp
           exact hε_pos x hx
 
       -- Step 3: Use compactness to get a finite subcover.
       cases K.eq_empty_or_nonempty with
       | inl hK_empty =>
-        have : u 0 ∈ ∅ := by rw [←hK_empty]; exact h_u_in_K 0
+        have : (u 0) ∈ K := by {
+          exact h_u_in_K 0
+        }
+        rw [hK_empty] at this
         contradiction
       | inr hK_nonempty =>
-        haveI : Nonempty K := hK_nonempty.to_subtype
-        obtain ⟨s, _, h_subcover⟩ := h_cover_compact U h_open_cover
+        letI : Nonempty (Subtype K) := hK_nonempty.to_subtype
 
+        -- The '0' here explicitly solves the 'u_1' universe constraint
+        -- Argument order: [Universe], [Type ι], [Nonempty instance], [Cover], [IsCover proof]
+        obtain ⟨s, h_subcover⟩ := @h_cover_compact 0 (Subtype K) inferInstance U h_open_cover
         -- Step 4: Derive contradiction.
         have h_univ_subset : (Set.univ : Set ℕ) ⊆ ⋃ p ∈ s, {n | euclideanDist (u n) p < ε p p.2} := by
           intro n
@@ -798,14 +812,14 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
           rw [Set.mem_biUnion]
           use p, hp_s
           simp [U] at hp_mem
-          rw [euclideanDist_comm]
+          rw [eucDistComm]
           exact hp_mem
 
         have h_finite_univ : (Set.univ : Set ℕ).Finite := by
           apply Set.Finite.subset _ h_univ_subset
           apply Set.Finite.biUnion (Finset.finite_toSet s)
           intro p _
-          rw [euclideanDist_comm]
+          rw [eucDistComm]
           exact hε_finite p p.2
 
         exact Set.infinite_univ h_finite_univ
