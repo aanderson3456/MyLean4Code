@@ -874,7 +874,10 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
           obtain ⟨L, φ, hL_in_K, hφ_mono, hφ_conv⟩ := h_seq_compact u hu_in_K
 
           -- L is in K, so L is in some open set U i_0
-          obtain ⟨i_0, hL_in_Ui0⟩ := h_open_cover.2 hL_in_K
+          have hL_in_union : L ∈ ⋃ i : ι, U i := h_open_cover.2 hL_in_K
+          -- Explicitly convert the union membership into an existential quantifier
+          rw [Set.mem_iUnion] at hL_in_union
+          obtain ⟨i_0, hL_in_Ui0⟩ := hL_in_union
           obtain ⟨ε, hε_pos, h_ball_subset⟩ := h_open_cover.1 i_0 L hL_in_Ui0
 
           -- For large enough n (via subsequence), u (φ n) is close to L
@@ -895,14 +898,51 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
                 norm_cast
                 apply lt_of_le_of_lt (le_max_right N k)
                 exact Nat.lt_succ_self m
+              -- Combine to get 2/ε < m + 1
               have h3 : 2/ε < m + 1 := lt_trans h1 h2
-              rw [div_lt_iff hε_pos] at h3
-              rw [one_div, inv_lt (by linarith) (by linarith)]
-              apply lt_trans _ h3
-              apply one_div_le_one_div_of_le (by linarith)
-              norm_cast
-              apply add_le_add_right
-              exact hφ_mono.id_le m
+
+              -- Establish inequality for φ m
+              -- FIX: Explicitly extract the inequality to normalize `id m` to `m`
+              have h_mono : m ≤ φ m := hφ_mono.id_le m
+              -- Now linarith easily sees (m + 1 ≤ φ m + 1) without strict lemma typing
+              have h4 : (m : ℝ) + 1 ≤ (φ m : ℝ) + 1 := by
+                norm_cast
+                linarith
+
+              have h5 : 2/ε < (φ m : ℝ) + 1 := lt_of_lt_of_le h3 h4
+
+              -- Now we convert (2 / ε < φ m + 1) into (1 / (φ m + 1) < ε / 2)
+              -- We do this using basic multiplication to avoid "Unknown identifier" lemma errors.
+              have h_eps_ne : ε ≠ 0 := ne_of_gt hε_pos
+
+              -- Step A: Multiply both sides by ε
+              have h6 : 2 < ((φ m : ℝ) + 1) * ε := by
+                have h_lt : (2 / ε) * ε < ((φ m : ℝ) + 1) * ε := mul_lt_mul_of_pos_right h5 hε_pos
+                have heq : (2 / ε) * ε = 2 := by field_simp
+                rw [heq] at h_lt
+                exact h_lt
+
+              -- Step B: Divide by 2 (by multiplying by 1/2)
+              have h7 : 1 < (ε / 2) * ((φ m : ℝ) + 1) := by
+                calc 1 = 2 / 2 := by norm_num
+                  _ < (((φ m : ℝ) + 1) * ε) / 2 := by linarith
+                  _ = (ε / 2) * ((φ m : ℝ) + 1) := by ring
+
+              have h_phi_pos : 0 < (φ m : ℝ) + 1 := by
+                norm_cast
+                linarith
+
+              -- Step C: Multiply by 1 / (φ m + 1)
+              have h8 : 1 * (1 / ((φ m : ℝ) + 1)) < ((ε / 2) * ((φ m : ℝ) + 1)) * (1 / ((φ m : ℝ) + 1)) := by
+                exact mul_lt_mul_of_pos_right h7 (one_div_pos.mpr h_phi_pos)
+
+              -- Step D: Clean up the algebraic fractions
+              have h9 : ((ε / 2) * ((φ m : ℝ) + 1)) * (1 / ((φ m : ℝ) + 1)) = ε / 2 := by
+                have h_phi_ne : (φ m : ℝ) + 1 ≠ 0 := ne_of_gt h_phi_pos
+                field_simp
+
+              rw [h9, one_mul] at h8
+              exact h8
 
           obtain ⟨n, hn_ge_N, hn_rad⟩ := h_large_n
 
@@ -912,10 +952,21 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
           let r_n := 1 / ((φ n : ℝ) + 1)
           have h_subset : {y | euclideanDist x_n y < r_n} ⊆ U i_0 := by
             intro y hy
+
+            -- Apply the property that B(L, ε) ⊆ U i_0
+            -- This changes the goal to: euclideanDist L y < ε
             apply h_ball_subset
-            apply lt_of_le_of_lt (euclideanDistTriangle L x_n y)
-            rw [eucDistComm L x_n]
-            have h_dist_xn_L : euclideanDist x_n L < ε / 2 := hN n hn_ge_N
+
+            -- 1. Triangle inequality: dist(L, y) ≤ dist(L, x_n) + dist(x_n, y)
+            have h_tri := euclideanDistTriangle L x_n y
+
+            -- 2. First part: dist(L, x_n) < ε / 2 (Directly from convergence hN!)
+            have h_dist1 : euclideanDist L x_n < ε / 2 := hN n hn_ge_N
+
+            -- 3. Second part: dist(x_n, y) < ε / 2 (Because y is in B(x_n, r_n) and r_n < ε/2)
+            have h_dist2 : euclideanDist x_n y < ε / 2 := lt_trans hy hn_rad
+
+            -- 4. Math handles the rest: (ε/2) + (ε/2) = ε
             linarith
 
           exact hu_bad (φ n) i_0 h_subset
@@ -969,13 +1020,24 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
               rw [Set.subset_def] at h_not_covered
               push_neg at h_not_covered
               obtain ⟨x, hxK, hx_not_in_union⟩ := h_not_covered
+
               use x, hxK
               intro y hy
-              simp at hx_not_in_union
-              -- x not in B(y, δ) means dist y x ≥ δ
-              have h_ball := hx_not_in_union y hy
-              le_of_not_lt h_ball
 
+              -- Goal is: euclideanDist y x ≥ δ.
+              -- We prove this by contradiction: assume dist < δ, show x is in the union.
+              -- 'le_of_not_lt' states: ¬(a < b) → b ≤ a
+              apply le_of_not_lt
+              intro h_lt
+
+              -- h_lt : euclideanDist y x < δ
+              -- This implies x IS in the union, contradicting hx_not_in_union
+              apply hx_not_in_union
+              rw[Set.mem_iUnion]
+              use y
+              rw [Set.mem_iUnion]
+              use hy
+              exact h_lt
             -- We define u recursively
             let u := Nat.rec
               (Classical.choose (h_always_extends ∅ (by simp)))
