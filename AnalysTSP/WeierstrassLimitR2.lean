@@ -892,6 +892,7 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
             · exact le_max_left N k
             · have h1 : 2/ε < k := hk
               have h2 : (k : ℝ) < m + 1 := by
+                norm_cast
                 apply lt_of_le_of_lt (le_max_right N k)
                 exact Nat.lt_succ_self m
               have h3 : 2/ε < m + 1 := lt_trans h1 h2
