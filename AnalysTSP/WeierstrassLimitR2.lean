@@ -1063,6 +1063,31 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
             -- 4. Define the sequence and supply it to the goal
             let u (n : ℕ) : ℝ × ℝ := next_pt (S n)
             use u
+            constructor
+            · have hS : ∀ n, ∀ y ∈ S n, y ∈ K := by
+  intro n
+  induction' n with n ih
+  · intro y hy
+    -- Base case: S 0 is empty
+    change y ∈ ∅ at hy
+    exact False.elim (Finset.not_mem_empty y hy)
+  · intro y hy
+    -- Inductive step: S (n+1) is S n ∪ {next_pt (S n)}
+    change y ∈ insert (next_pt (S n)) (S n) at hy
+    rw [Finset.mem_insert] at hy
+    rcases hy with rfl | hySn
+    · -- Case 1: y is the newly generated point
+      dsimp [next_pt]
+      rw [dif_pos ih]
+      exact (Classical.choose_spec (h_always_extends (S n) ih)).1
+    · -- Case 2: y is an older point from S n
+      exact ih y hySn
+
+-- Now, tackle your actual goal using the helper lemma
+intro n
+dsimp [u, next_pt]
+rw [dif_pos (hS n)]
+exact (Classical.choose_spec (h_always_extends (S n) (hS n))).1
           obtain ⟨u, huK, hu_sep⟩ := h_choice
 
           -- Now we have a separated sequence in a sequentially compact set.
@@ -1114,37 +1139,37 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
              simp at this
              rcases this with ⟨c, hc, _⟩
              rename_i hthis
-             sorry --almost!
-
+             exact ⟨(c, hc), hthis.1⟩
           rcases this with ⟨c, hc⟩
           use pick_index c hc
           simp [s]
-          use c, hc
+          use c.1, c.2
           simp
+          constructor
+          · exact hc
+          · exact dif_pos hc
 
         · -- Show s covers K
           intro x hxK
           -- x is covered by some ball B(c, δ)
           have hx_in_ball : x ∈ ⋃ c ∈ t, {z | euclideanDist c z < δ} := ht_cover hxK
           simp at hx_in_ball
-          rcases hx_in_ball with ⟨c, hc, h_dist⟩
+          rcases hx_in_ball with ⟨c1,c2, h_dist⟩
 
           -- That ball is subset of U (pick_index c)
-          let i := pick_index c hc
-          have h_ball_sub : {z | euclideanDist c z < δ} ⊆ U i :=
-            Classical.choose_spec (h_lebesgue c (ht_in_K c hc))
+          let i := pick_index (c1,c2)
+          have h_ball_sub : {z | euclideanDist (c1,c2) z < δ} ⊆ U (i h_dist.1):=
+            Classical.choose_spec (h_lebesgue (c1,c2) (ht_in_K (c1,c2) h_dist.1))
 
           -- So x is in U i
-          have hxUi : x ∈ U i := h_ball_sub h_dist
+          have hxUi : x ∈ U (i h_dist.1) := h_ball_sub h_dist.2
 
           -- And i is in s
           rw [Set.mem_iUnion]
-          use i
-          constructor
-          · simp [s]
-            use c, hc
-            simp
-          · exact hxUi
+          use (i h_dist.1)
+          refine Set.mem_iUnion_of_mem ?_ hxUi
+          exact Finset.mem_image.2 ⟨(c1, c2), h_dist.1, dif_pos h_dist.1⟩
+
 }
 
 
