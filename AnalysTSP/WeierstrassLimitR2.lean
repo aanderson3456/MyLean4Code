@@ -370,6 +370,11 @@ lemma setContra (x : ℝ × ℝ) (s : Set (ℝ × ℝ)) : x ∈ s ∧ x ∈ sᶜ
   exact fun a => (fun a => (and_not_self_iff a).mp) (x ∈ s) a
 }
 
+lemma le_of_not_ltR (a b : ℝ) : ¬(a < b) → b ≤ a := by {
+  intro h
+  exact Std.not_lt.mp h
+}
+
 def IsBoundedR2 (s : Set (ℝ × ℝ)) : Prop :=
   ∃ C : ℝ, ∀ x ∈ s, euclideanNorm x ≤ C
 
@@ -740,6 +745,7 @@ lemma algIneq2R (a b c : ℝ) : a < b - c → a + c < b := by {
   exact lt_tsub_iff_right.mp h
 }
 
+--below Type(0) is used to help Lean match with sequences
 theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
   (∀ {ι : Type} [Nonempty ι], @IsCompactR2Subcover ι K) ↔ IsCompactR2Seq K := by {
     constructor
@@ -985,14 +991,14 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
           -- x_0 ∈ K
           -- x_{n+1} ∈ K \ ⋃_{i≤n} B(x_i, δ)
 
-          let next_point (s : Finset (ℝ × ℝ)) : ℝ × ℝ :=
-            if h : ∃ x ∈ K, x ∉ ⋃ c ∈ s, {z | euclideanDist c z < δ}
-            then Classical.choose h
-            else (0,0) -- arbitrary/garbage value, won't happen in our logic
+         -- let next_point (s : Finset (ℝ × ℝ)) : ℝ × ℝ :=
+         --   if h : ∃ x ∈ K, x ∉ ⋃ c ∈ s, {z | euclideanDist c z < δ}
+         --   then Classical.choose h
+         --   else (0,0) -- arbitrary/garbage value, won't happen in our logic
 
-          let u : ℕ → ℝ × ℝ := Nat.rec
-            (next_point ∅)
-            (fun n prev => next_point (Finset.image (fun i => Nat.rec (next_point ∅) (fun k p => next_point (Finset.image (fun j => Nat.rec (next_point ∅) (fun _ _ => (0,0)) j) (Finset.range k))) i) (Finset.range (n+1))))
+         -- let u : ℕ → ℝ × ℝ := Nat.rec
+         --   (next_point ∅)
+         --   (fun n prev => next_point (Finset.image (fun i => Nat.rec (next_point ∅) (fun k p => next_point (Finset.image (fun j => Nat.rec (next_point ∅) (fun _ _ => (0,0)) j) (Finset.range k))) i) (Finset.range (n+1))))
             -- The recursion above is messy to write inline.
             -- A simpler logic: standard choice sequence.
 
@@ -1027,28 +1033,36 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
               -- Goal is: euclideanDist y x ≥ δ.
               -- We prove this by contradiction: assume dist < δ, show x is in the union.
               -- 'le_of_not_lt' states: ¬(a < b) → b ≤ a
-              apply le_of_not_lt
+              apply le_of_not_ltR
               intro h_lt
 
               -- h_lt : euclideanDist y x < δ
               -- This implies x IS in the union, contradicting hx_not_in_union
               apply hx_not_in_union
-              rw[Set.mem_iUnion]
+              rw [Set.mem_iUnion]
               use y
               rw [Set.mem_iUnion]
               use hy
               exact h_lt
+            -- Grant Lean noncomputable/classical equality checking for ℝ × ℝ
+            haveI : DecidableEq (ℝ × ℝ) := Classical.decEq _
             -- We define u recursively
-            let u := Nat.rec
-              (Classical.choose (h_always_extends ∅ (by simp)))
-              (fun n prev => Classical.choose (h_always_extends
-                (Finset.image (fun i => Nat.rec (Classical.choose (h_always_extends ∅ (by simp))) (fun k p => Classical.choose (h_always_extends (Finset.image (fun j => Nat.rec (Classical.choose (h_always_extends ∅ (by simp))) (fun _ _ => (0,0)) j) (Finset.range k)) ?_)) i) (Finset.range (n+1))) ?_))
-            -- The proof of the side conditions for recursion is tedious inline.
-            -- Let's rely on the resulting property:
-            -- Because u exists, apply compact hypothesis.
-            sorry -- Using sorry for the sequence construction boilerplate to focus on the logic flow which is correct.
-            -- In a full library proof, this step calls `Metric.seq_of_not_totallyBounded`.
+            let next_pt (s : Finset (ℝ × ℝ)) : ℝ × ℝ :=
+              if hs : (∀ y ∈ s, y ∈ K) then
+                Classical.choose (h_always_extends s hs)
+              else
+                hK_nonempty.some
+            let rec S : ℕ → Finset (ℝ × ℝ)
+            | 0 => ∅
+            | n + 1 => S n ∪ {next_pt (S n)}
 
+            -- 3. Define the accumulator S using Nat.recOn to bypass the IR compiler.
+            -- `insert x Sn` is the preferred Finset way to do `Sn ∪ {x}`
+            let S : ℕ → Finset (ℝ × ℝ) := fun n =>
+              Nat.recOn n ∅ (fun _ Sn => insert (next_pt Sn) Sn)
+            -- 4. Define the sequence and supply it to the goal
+            let u (n : ℕ) : ℝ × ℝ := next_pt (S n)
+            use u
           obtain ⟨u, huK, hu_sep⟩ := h_choice
 
           -- Now we have a separated sequence in a sequentially compact set.
@@ -1061,14 +1075,16 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
           let n1 := N
           let n2 := N + 1
 
-          have h_close1 : euclideanDist (u (φ n1)) L < δ / 2 := hN n1 (le_refl N)
-          have h_close2 : euclideanDist (u (φ n2)) L < δ / 2 := hN n2 (Nat.le_succ N)
+          have h_close1 : euclideanDist L (u (φ n1)) < δ / 2 := hN n1 (le_refl N)
+          have h_close2 : euclideanDist L (u (φ n2)) < δ / 2 := hN n2 (Nat.le_succ N)
 
           -- Triangle inequality
           have h_contra : euclideanDist (u (φ n1)) (u (φ n2)) < δ := by
              apply lt_of_le_of_lt (euclideanDistTriangle (u (φ n1)) L (u (φ n2)))
-             rw [eucDistComm L]
+             rw [eucDistComm (u (φ n1))]
              linarith
+
+          rename_i hLinK hφ_mono
 
           -- But they are separated
           have h_far : euclideanDist (u (φ n1)) (u (φ n2)) ≥ δ :=
@@ -1097,7 +1113,8 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
              have : k ∈ ⋃ c ∈ t, {z | euclideanDist c z < δ} := ht_cover hk
              simp at this
              rcases this with ⟨c, hc, _⟩
-             use c, hc
+             rename_i hthis
+             sorry --almost!
 
           rcases this with ⟨c, hc⟩
           use pick_index c hc
