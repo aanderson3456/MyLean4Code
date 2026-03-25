@@ -1064,58 +1064,60 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
             let u (n : ℕ) : ℝ × ℝ := next_pt (S n)
             use u
             constructor
-            · have hS : ∀ n, ∀ y ∈ S n, y ∈ K := by
-  intro n
-  induction' n with n ih
-  · intro y hy
-    -- Base case: S 0 is empty
-    change y ∈ ∅ at hy
-    exact False.elim (Finset.not_mem_empty y hy)
-  · intro y hy
-    -- Inductive step: S (n+1) is S n ∪ {next_pt (S n)}
-    change y ∈ insert (next_pt (S n)) (S n) at hy
-    rw [Finset.mem_insert] at hy
-    rcases hy with rfl | hySn
-    · -- Case 1: y is the newly generated point
-      dsimp [next_pt]
-      rw [dif_pos ih]
-      exact (Classical.choose_spec (h_always_extends (S n) ih)).1
-    · -- Case 2: y is an older point from S n
-      exact ih y hySn
+            have hS : ∀ n, ∀ y ∈ S n, y ∈ K := by
+              intro n
+              induction' n with n ih
+              · intro y hy
+                -- Base case: S 0 is empty
+                change y ∈ ∅ at hy
+                simp at hy
+                --exact False.elim (Finset.not_mem_empty y hy)
+              · intro y hy
+                -- Inductive step: S (n+1) is S n ∪ {next_pt (S n)}
+                change y ∈ insert (next_pt (S n)) (S n) at hy
+                rw [Finset.mem_insert] at hy
+                rcases hy with rfl | hySn
+                · -- Case 1: y is the newly generated point
+                  dsimp [next_pt]
+                  rw [dif_pos ih]
+                  exact (Classical.choose_spec (h_always_extends (S n) ih)).1
+                · -- Case 2: y is an older point from S n
+                  exact ih y hySn
 
--- Now, tackle your actual goal using the helper lemma
-intro n
-dsimp [u, next_pt]
-rw [dif_pos (hS n)]
-exact (Classical.choose_spec (h_always_extends (S n) (hS n))).1
-          obtain ⟨u, huK, hu_sep⟩ := h_choice
+            -- Now, tackle your actual goal using the helper lemma
+            intro n
+            dsimp [u, next_pt]
+            rw [dif_pos (hS n)]
+            exact (Classical.choose_spec (h_always_extends (S n) (hS n))).1
 
-          -- Now we have a separated sequence in a sequentially compact set.
-          obtain ⟨L, φ, _, _, hφ_conv⟩ := h_seq_compact u huK
+            obtain ⟨u, huK, hu_sep⟩ := h_choice
 
-          -- It must converge. So terms get close.
-          obtain ⟨N, hN⟩ := hφ_conv (δ / 2) (by linarith)
+            -- Now we have a separated sequence in a sequentially compact set.
+            obtain ⟨L, φ, _, _, hφ_conv⟩ := h_seq_compact u huK
 
-          -- Take two distinct indices in subsequence
-          let n1 := N
-          let n2 := N + 1
+            -- It must converge. So terms get close.
+            obtain ⟨N, hN⟩ := hφ_conv (δ / 2) (by linarith)
 
-          have h_close1 : euclideanDist L (u (φ n1)) < δ / 2 := hN n1 (le_refl N)
-          have h_close2 : euclideanDist L (u (φ n2)) < δ / 2 := hN n2 (Nat.le_succ N)
+            -- Take two distinct indices in subsequence
+            let n1 := N
+            let n2 := N + 1
 
-          -- Triangle inequality
-          have h_contra : euclideanDist (u (φ n1)) (u (φ n2)) < δ := by
-             apply lt_of_le_of_lt (euclideanDistTriangle (u (φ n1)) L (u (φ n2)))
-             rw [eucDistComm (u (φ n1))]
-             linarith
+            have h_close1 : euclideanDist L (u (φ n1)) < δ / 2 := hN n1 (le_refl N)
+            have h_close2 : euclideanDist L (u (φ n2)) < δ / 2 := hN n2 (Nat.le_succ N)
 
-          rename_i hLinK hφ_mono
+            -- Triangle inequality
+            have h_contra : euclideanDist (u (φ n1)) (u (φ n2)) < δ := by
+              apply lt_of_le_of_lt (euclideanDistTriangle (u (φ n1)) L (u (φ n2)))
+              rw [eucDistComm (u (φ n1))]
+              linarith
 
-          -- But they are separated
-          have h_far : euclideanDist (u (φ n1)) (u (φ n2)) ≥ δ :=
-            hu_sep (φ n1) (φ n2) (ne_of_lt (hφ_mono (Nat.lt_succ_self n1)))
+            rename_i hLinK hφ_mono
 
-          linarith
+            -- But they are separated
+            have h_far : euclideanDist (u (φ n1)) (u (φ n2)) ≥ δ :=
+              hu_sep (φ n1) (φ n2) (ne_of_lt (hφ_mono (Nat.lt_succ_self n1)))
+
+            linarith
 
         -- PART 3: EXTRACT SUBCOVER
         obtain ⟨t, ht_in_K, ht_cover⟩ := h_finite_cover
