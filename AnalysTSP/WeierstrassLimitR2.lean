@@ -986,30 +986,6 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
         have h_finite_cover : ∃ t : Finset (ℝ × ℝ), (∀ x ∈ t, x ∈ K) ∧ K ⊆ ⋃ c ∈ t, {z | euclideanDist c z < δ} := by
           by_contra h_not_covered
           push_neg at h_not_covered
-
-          -- Construct a sequence x_n where each x_n is far from previous ones
-          -- x_0 ∈ K
-          -- x_{n+1} ∈ K \ ⋃_{i≤n} B(x_i, δ)
-
-         -- let next_point (s : Finset (ℝ × ℝ)) : ℝ × ℝ :=
-         --   if h : ∃ x ∈ K, x ∉ ⋃ c ∈ s, {z | euclideanDist c z < δ}
-         --   then Classical.choose h
-         --   else (0,0) -- arbitrary/garbage value, won't happen in our logic
-
-         -- let u : ℕ → ℝ × ℝ := Nat.rec
-         --   (next_point ∅)
-         --   (fun n prev => next_point (Finset.image (fun i => Nat.rec (next_point ∅) (fun k p => next_point (Finset.image (fun j => Nat.rec (next_point ∅) (fun _ _ => (0,0)) j) (Finset.range k))) i) (Finset.range (n+1))))
-            -- The recursion above is messy to write inline.
-            -- A simpler logic: standard choice sequence.
-
-          -- Let's just define the property of the sequence we extract.
-          -- Since we can't easily do recursive let in tactic block without definitions,
-          -- we assume the sequence exists or derive contradiction from "infinite set with no accumulation point".
-
-          -- Alternative Total Boundedness proof:
-          -- If not totally bounded, there exists an infinite sequence sequence separated by δ.
-          -- Let's use the choice axiom to extract that sequence directly.
-
           have h_choice : ∃ u : ℕ → ℝ × ℝ, (∀ n, u n ∈ K) ∧ (∀ n m, n ≠ m → euclideanDist (u n) (u m) ≥ δ) := by
             -- This is the "greedy sequence" construction.
             -- We skip the formal recursive definition and assume the standard result that
@@ -1063,7 +1039,6 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
             -- 4. Define the sequence and supply it to the goal
             let u (n : ℕ) : ℝ × ℝ := next_pt (S n)
             use u
-            constructor
             have hS : ∀ n, ∀ y ∈ S n, y ∈ K := by
               intro n
               induction' n with n ih
@@ -1083,17 +1058,50 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
                   exact (Classical.choose_spec (h_always_extends (S n) ih)).1
                 · -- Case 2: y is an older point from S n
                   exact ih y hySn
-
+            constructor
             -- Now, tackle your actual goal using the helper lemma
             intro n
             dsimp [u, next_pt]
             rw [dif_pos (hS n)]
             exact (Classical.choose_spec (h_always_extends (S n) (hS n))).1
+            --second goal, elements are separated by at least δ
+            intro n m h_neq
+            --helper: If k < l, then u k was added to accumulator S l
+            have h_u_in_S : ∀ {k l}, k < l → u k ∈ S l := by
+              intro k l hkl
+              induction' l with l ih
+              · omega
+              · have h_or : (k = l) ∨ (k < l) := by
+                  omega
+                rcases h_or with rfl | h_lt
+                · exact Finset.mem_insert_self (u k) (S k)
+                · exact Finset.mem_insert_of_mem (ih h_lt)
+            --branch on whether n < m or m < n (since n ≠ m)
+            have h_cases: n < m ∨ m < n := by omega
+            rcases h_cases with h_lt | h_gt
+            · -- Case 1: n < m
+              have h_mem : u n ∈ S m := h_u_in_S h_lt
+              have h_dist := (Classical.choose_spec (h_always_extends (S m) (hS m))).2 (u n) h_mem
+              have h_um : u m = Classical.choose (h_always_extends (S m) (hS m)) := by
+                dsimp [u, next_pt]
+                rw [dif_pos (hS m)]
+              rw [← h_um] at h_dist
+              exact h_dist
+            · -- Case 2: m < n
+              have h_mem : u m ∈ S n := h_u_in_S h_gt
+              have h_dist := (Classical.choose_spec (h_always_extends (S n) (hS n))).2 (u m) h_mem
+              have h_un : u n = Classical.choose (h_always_extends (S n) (hS n)) := by
+                dsimp [u, next_pt]
+                rw [dif_pos (hS n)]
+              rw [← h_un] at h_dist
+              rw [eucDistComm]
+              exact h_dist
+              --end constructor
 
-            obtain ⟨u, huK, hu_sep⟩ := h_choice
+          rcases h_choice with ⟨u, huK, hu_dist⟩
 
             -- Now we have a separated sequence in a sequentially compact set.
-            obtain ⟨L, φ, _, _, hφ_conv⟩ := h_seq_compact u huK
+          obtain ⟨L, φ, _, _, hφ_conv⟩ := h_seq_compact u huK
 
             -- It must converge. So terms get close.
             obtain ⟨N, hN⟩ := hφ_conv (δ / 2) (by linarith)
