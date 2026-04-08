@@ -66,10 +66,6 @@ lemma euclideanDist_nonneg (x y : ℝ × ℝ) : 0 ≤ euclideanDist x y := by {
   exact Real.sqrt_nonneg (sqDist x y)
 }
 
-lemma eucDistZero (x : ℝ × ℝ) : euclideanDist x x = 0 := by {
-  apply?
-}
-
 def LimitR2toR (f : ℝ × ℝ → ℝ) (a : ℝ × ℝ) (L : ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
     0 < euclideanDist x a ∧ euclideanDist x a < δ → abs (f x - L) < ε
@@ -1101,85 +1097,35 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
           rcases h_choice with ⟨u, huK, hu_dist⟩
 
             -- Now we have a separated sequence in a sequentially compact set.
-          obtain ⟨L, φ, _, _, hφ_conv⟩ := h_seq_compact u huK
+          rcases h_seq_compact u huK with ⟨L, φ, hLK, hφ_mono, h_conv⟩
 
             -- It must converge. So terms get close.
-            obtain ⟨N, hN⟩ := hφ_conv (δ / 2) (by linarith)
+          have hδ2_pos : δ / 2 > 0 := by linarith
+          rcases h_conv (δ / 2) hδ2_pos with ⟨N, hN⟩
+          -- Use hN to show the N-th and (N+1)-th terms of the subsequence are close to L
+          have h_dist1 : euclideanDist L ((u ∘ φ) N) < δ / 2 := hN N (le_refl N)
+          have h_dist2 : euclideanDist L ((u ∘ φ) (N + 1)) < δ / 2 := hN (N + 1) (Nat.le_succ N)
+          have h_neq : φ N ≠ φ (N + 1) := (hφ_mono (Nat.lt_succ_self N)).ne
+          have h_dist_ge : euclideanDist (u (φ N)) (u (φ (N + 1))) ≥ δ := hu_dist (φ N) (φ (N + 1)) h_neq
+          -- 1. Use the commutativity lemma you already proved to swap L and the N-th term
+          have h_comm : euclideanDist ((u ∘ φ) N) L = euclideanDist L ((u ∘ φ) N) := by
+            exact eucDistComm ((u ∘ φ) N) L
 
-            -- Take two distinct indices in subsequence
-            let n1 := N
-            let n2 := N + 1
+          have h_dist1_symm : euclideanDist ((u ∘ φ) N) L < δ / 2 := by
+            rw [h_comm]
+            exact h_dist1
 
-            have h_close1 : euclideanDist L (u (φ n1)) < δ / 2 := hN n1 (le_refl N)
-            have h_close2 : euclideanDist L (u (φ n2)) < δ / 2 := hN n2 (Nat.le_succ N)
+          -- 2. Apply your custom triangle inequality lemma
+          have h_tri : euclideanDist ((u ∘ φ) N) ((u ∘ φ) (N + 1)) ≤ euclideanDist ((u ∘ φ) N) L + euclideanDist L ((u ∘ φ) (N + 1)) := by
+            -- Note: Replace `eucDistTriangle` with whatever you name your lemma
+            exact eucDistTriangle ((u ∘ φ) N) L ((u ∘ φ) (N + 1))
 
-            -- Triangle inequality
-            have h_contra : euclideanDist (u (φ n1)) (u (φ n2)) < δ := by
-              apply lt_of_le_of_lt (euclideanDistTriangle (u (φ n1)) L (u (φ n2)))
-              rw [eucDistComm (u (φ n1))]
-              linarith
-
-            rename_i hLinK hφ_mono
-
-            -- But they are separated
-            have h_far : euclideanDist (u (φ n1)) (u (φ n2)) ≥ δ :=
-              hu_sep (φ n1) (φ n2) (ne_of_lt (hφ_mono (Nat.lt_succ_self n1)))
-
-            linarith
-
-        -- PART 3: EXTRACT SUBCOVER
-        obtain ⟨t, ht_in_K, ht_cover⟩ := h_finite_cover
-
-        -- For each center c in t, we have a δ-ball which is subset of some U i.
-        -- We pick that i.
-        let pick_index (c : ℝ × ℝ) (hc : c ∈ t) : ι :=
-          Classical.choose (h_lebesgue c (ht_in_K c hc))
-
-        let s : Finset ι := Finset.image (fun c =>
-            if h : c ∈ t then pick_index c h else Classical.choice inferInstance
-          ) t
-
-        use s
-        constructor
-        · -- Show s is nonempty
-          have : t.Nonempty := by
-             -- K is nonempty, so cover must be nonempty
-             rcases hK_nonempty with ⟨k, hk⟩
-             have : k ∈ ⋃ c ∈ t, {z | euclideanDist c z < δ} := ht_cover hk
-             simp at this
-             rcases this with ⟨c, hc, _⟩
-             rename_i hthis
-             exact ⟨(c, hc), hthis.1⟩
-          rcases this with ⟨c, hc⟩
-          use pick_index c hc
-          simp [s]
-          use c.1, c.2
-          simp
-          constructor
-          · exact hc
-          · exact dif_pos hc
-
-        · -- Show s covers K
-          intro x hxK
-          -- x is covered by some ball B(c, δ)
-          have hx_in_ball : x ∈ ⋃ c ∈ t, {z | euclideanDist c z < δ} := ht_cover hxK
-          simp at hx_in_ball
-          rcases hx_in_ball with ⟨c1,c2, h_dist⟩
-
-          -- That ball is subset of U (pick_index c)
-          let i := pick_index (c1,c2)
-          have h_ball_sub : {z | euclideanDist (c1,c2) z < δ} ⊆ U (i h_dist.1):=
-            Classical.choose_spec (h_lebesgue (c1,c2) (ht_in_K (c1,c2) h_dist.1))
-
-          -- So x is in U i
-          have hxUi : x ∈ U (i h_dist.1) := h_ball_sub h_dist.2
-
-          -- And i is in s
-          rw [Set.mem_iUnion]
-          use (i h_dist.1)
-          refine Set.mem_iUnion_of_mem ?_ hxUi
-          exact Finset.mem_image.2 ⟨(c1, c2), h_dist.1, dif_pos h_dist.1⟩
-
+          -- 3. At this point, you have:
+          -- distance ≤ (distance to L) + (distance to L)
+          -- distance ≤ (< δ/2) + (< δ/2)
+          -- distance < δ
+          -- But `h_dist_ge` says distance ≥ δ. `linarith` can see this contradiction!
+          linarith
 }
 
 
