@@ -1118,18 +1118,33 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
           -- 2. Apply your custom triangle inequality lemma
           have h_tri : euclideanDist ((u ∘ φ) N) ((u ∘ φ) (N + 1)) ≤ euclideanDist ((u ∘ φ) N) L + euclideanDist L ((u ∘ φ) (N + 1)) := by
             -- Note: Replace `eucDistTriangle` with whatever you name your lemma
-            exact eucDistTriangle ((u ∘ φ) N) L ((u ∘ φ) (N + 1))
+            exact euclideanDistTriangle ((u ∘ φ) N) L ((u ∘ φ) (N + 1))
 
           -- 3. At this point, you have:
           -- distance ≤ (distance to L) + (distance to L)
           -- distance ≤ (< δ/2) + (< δ/2)
           -- distance < δ
           -- But `h_dist_ge` says distance ≥ δ. `linarith` can see this contradiction!
+          dsimp [Function.comp] at *
           linarith
-}
-
-
-
+        rcases h_finite_cover with ⟨t, htK, ht_cover⟩
+        let f (c : ℝ × ℝ) : ι := if hc : c ∈ K then Classical.choose (h_lebesgue c hc) else Classical.choice _nonempty_ι
+        use t.image f
+        constructor
+        · apply Finset.Nonempty.image
+          rcases hK_nonempty with ⟨x, hx⟩
+          have hcov := ht_cover hx
+          simp_rw [Set.mem_iUnion] at hcov
+          rcases hcov with ⟨c, hc, _⟩; exact ⟨c, hc⟩
+        · intro x hx
+          have hx_cov := ht_cover hx
+          simp_rw [Set.mem_iUnion] at hx_cov ⊢
+          rcases hx_cov with ⟨c, hc_t, h_dist⟩
+          use f c, Finset.mem_image_of_mem f hc_t
+          have hc_K : c ∈ K := htK c hc_t
+          dsimp [f]
+          rw[dif_pos hc_K]
+          exact Classical.choose_spec (h_lebesgue c hc_K) h_dist
 }
 
 #check Metric.ball
@@ -1146,19 +1161,16 @@ def UnitInterval : Set ℝ :=
 def IsPathInR2 (S : Set (ℝ × ℝ)) : Prop :=
   ∃ φ : (UnitInterval → S), Function.Surjective φ ∧ IsCtsRtoR2 φ
 
-lemma CtsOpenInvImagesRtoR2 {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y)
-  : IsCtsRtoR2 f → IsOpenR X → IsOpenR2 Y := by {
-  intros hcts hopen
-  unfold IsOpenR2
-  unfold IsOpenR at hopen
+def IsOpenCoverR {ι : Type} (U : ι → Set ℝ) (K : Set ℝ) : Prop :=
+  (∀ i, IsOpenR (U i)) ∧ (K ⊆ ⋃ i, U i)
+def IsCompactRSubcover {ι : Type} (K : Set ℝ) : Prop :=
+  ∀ U : ι → Set ℝ, IsOpenCoverR U K → ∃ s : Finset ι, s.Nonempty ∧ K ⊆ ⋃ i ∈ s, U i
+
+lemma CtsImagesCptRtoR2 {ι : Type} {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y)
+  (hcts : IsCtsRtoR2 f) (hsurj : Function.Surjective f)
+  (hcpt : @IsCompactRSubcover ι X) : @IsCompactR2Subcover ι Y := by {
 
 }
-
-lemma CtsImagesCptRtoR2 {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y)
-  : IsCtsRtoR2 f → IsCompactRSubcover X → IsCompactR2Subcover Y := by {
-    intros hcts hcpt
-    sorry
-  }
 
 theorem PathsCompact (S : Set (ℝ × ℝ)) : IsPathInR2 S → IsCompactR2Subcover S := by {
   sorry
