@@ -1169,6 +1169,22 @@ def IsCompactRSubcover {ι : Type} (K : Set ℝ) : Prop :=
 lemma CtsImagesCptRtoR2 {ι : Type} {X : Set ℝ} {Y : Set (ℝ × ℝ)} (f : X → Y)
   (hcts : IsCtsRtoR2 f) (hsurj : Function.Surjective f)
   (hcpt : @IsCompactRSubcover ι X) : @IsCompactR2Subcover ι Y := by {
+    intro U h_cover
+    have h_fx_in_U : ∀ x : X, ∃ i : ι, (f x).val ∈ U i := by
+      intro x
+      have h_union := h_cover.right (f x).property
+      exact Set.mem_iUnion.mp h_union
+    -- For each x : X, use Classical.choose to extract a concrete covering index
+    let idx : X → ι := fun x => Classical.choose (h_fx_in_U x)
+    -- The index idx x satisfies: (f x).val ∈ U (idx x), by choose_spec
+    have h_idx_spec : ∀ x : X, (f x).val ∈ U (idx x) :=
+      fun x => Classical.choose_spec (h_fx_in_U x)
+    -- Pull the cover U back to X: V i is the preimage of U i under f, intersected with X
+    let V : ι → Set ℝ := fun i => {r : ℝ | ∃ x : X, x.val = r ∧ (f x).val ∈ U i}
+    -- Every point of X is in V (idx x) because (f x).val ∈ U (idx x) by h_idx_spec
+    have h_V_covers : ∀ x : X, x.val ∈ V (idx x) :=
+      fun x => ⟨x, rfl, h_idx_spec x⟩
+
 
 }
 
