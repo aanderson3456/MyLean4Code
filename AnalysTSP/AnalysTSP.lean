@@ -55,84 +55,84 @@ def neg_fit (z : ℤ) : ℕ :=
 #eval neg_fit (-12)
 
 lemma neg_fit_eq_zero_or_one (z : ℤ) : (neg_fit z = 0) ∨ (neg_fit z = 1) := by {
-  cases' z with n
-  have h : (Int.sign (Int.ofNat n) = 0) ∨ (Int.sign (Int.ofNat n) = 1) := by
-    cases' n with n
+  cases z with
+  | ofNat n =>
+    have h : (Int.sign (Int.ofNat n) = 0) ∨ (Int.sign (Int.ofNat n) = 1) := by
+      cases n with
+      | zero => simp
+      | succ n => simp
+    cases h with
+    | inl ha =>
+      apply Or.inl
+      unfold neg_fit
+      rw [ha]
+      exact rfl
+    | inr h =>
+      apply Or.inl
+      unfold neg_fit
+      rw [h]
+      exact rfl
+  | negSucc a =>
+    apply Or.inr
+    unfold neg_fit
     simp
-    simp
-  cases' h with ha
-  apply Or.inl
-  unfold neg_fit
-  rw [ha]
-  rfl
-  rename_i h
-  apply Or.inl
-  unfold neg_fit
-  rw [h]
-  rfl
-  rename_i a
-  apply Or.inr
-  unfold neg_fit
-  simp
-  rfl
+    rfl
 }
 
 
 lemma sign_nonneg_iff_natAbs_eq (z : ℤ) :
 (z.natAbs = z) ↔ ((z.sign = 0) ∨ (z.sign = 1)) := by {
   apply Iff.intro
-  intro h
-  cases' z with x
-  cases' x with y
-  simp
-  simp
-  simp
-  rename_i a
-  rw [Int.natAbs_negSucc a] at h
-  have h2 : Int.negSucc a < 0 := by
-    · apply Int.negSucc_lt_zero a
-  rw [← h] at h2
-  exact (Int.negSucc_not_nonneg (a + 1)).mp h2
-  intro h
-  cases' h with h1 h2
-  apply (Int.sign_eq_zero_iff_zero z).mp at h1
-  rw [h1]
-  simp
-  apply (Int.sign_eq_one_iff_pos z).mp at h2
-  have h3 : 0 ≤ z := by exact Int.le_of_lt h2
-  apply (Int.natAbs_of_nonneg h3)
+  · intro h
+    cases z with
+    | ofNat x =>
+      cases x with
+      | zero => simp
+      | succ y => simp
+    | negSucc a =>
+      rw [Int.natAbs_negSucc a] at h
+      have h2 : Int.negSucc a < 0 := by
+        apply Int.negSucc_lt_zero a
+      rw [← h] at h2
+      contradiction
+  · intro h
+    cases h with
+    | inl h1 =>
+      rw [Int.sign_eq_zero_iff_zero] at h1
+      rw [h1]
+      simp
+    | inr h2 =>
+      rw [Int.sign_eq_one_iff_pos] at h2
+      have h3 : 0 ≤ z := by exact Int.le_of_lt h2
+      apply (Int.natAbs_of_nonneg h3)
 }
 
 --#print sign_nonneg_iff_natAbs_eq
 
 lemma neg_fit_iff_pos (z : ℤ) : (z.natAbs = z) ↔ ((neg_fit z) = 0) := by {
   apply Iff.intro
-  cases hna : z.natAbs
-  intro h0
-  rw [← h0]
-  rfl
-  intro ha
-  rw [← ha]
-  rfl
-  intro hpa
-  cases hna : z.natAbs
-  rw [Int.natAbs_eq_zero] at hna
-  simp
-  rw [hna]
-  rename_i n
-  unfold neg_fit at hpa
-  unfold neg_fit_part at hpa
-  have hs : (z.sign = 0) ∨ (z.sign = 1) := by
-    cases' z with a
-    cases' a with b
-    simp
-    simp
-    rename_i a
-    simp at hpa
-  have hs2 : (z.natAbs = z) := by
-    exact (sign_nonneg_iff_natAbs_eq z).mpr hs
-  rw [← hs2]
-  rw [hna]
+  · cases hna : z.natAbs
+    · intro h0; rw [← h0]; rfl
+    · intro ha; rw [← ha]; rfl
+  · intro hpa
+    cases hna : z.natAbs with
+    | zero =>
+      simp [Int.natAbs_eq_zero.mp hna]
+    | succ n =>
+      unfold neg_fit at hpa
+      unfold neg_fit_part at hpa
+      have hs : (z.sign = 0) ∨ (z.sign = 1) := by
+        cases z with
+        | ofNat a =>
+          cases a with
+          | zero => simp
+          | succ b => simp
+        | negSucc a =>
+          simp at hpa
+      have hs2 : (z.natAbs = z) := by
+        exact (sign_nonneg_iff_natAbs_eq z).mpr hs
+      rw [← hs2]
+      rw [hna]
 }
 
 --#eval ((-4).sign)
@@ -149,10 +149,10 @@ theorem spread_fun_inj : spread_fun.Injective := by {
   cases h1: neg_fit a1
   cases h2: neg_fit a2
   have h1b : a1.natAbs = a1 := by
-    apply (neg_fit_iff_pos a1).mpr at h1
+    rw [← neg_fit_iff_pos] at h1
     exact h1
   have h2b : a2.natAbs = a2 := by
-    apply (neg_fit_iff_pos a2).mpr at h2
+    rw [← neg_fit_iff_pos] at h2
     exact h2
   rw [h1] at h
   rw [h2] at h
@@ -164,109 +164,92 @@ theorem spread_fun_inj : spread_fun.Injective := by {
   exfalso  --wish for WLOG symmetric argument
   have hzo : (neg_fit a2 = 0) ∨ (neg_fit a2 = 1) := by
     exact neg_fit_eq_zero_or_one a2
-  cases' hzo with hzo
-  rw [h2] at hzo
-  absurd hzo
-  simp
-  rename_i ho
-  rw [h1] at h
-  rw [ho] at h
-  simp at h
-  have hodd : (Odd (2*a2.natAbs + 1)) := by
+  rcases hzo with hzo | ho
+  · rw [h2] at hzo
+    absurd hzo
     simp
-  rw [← h] at hodd
-  absurd hodd
-  simp
+  · rw [h1] at h
+    rw [ho] at h
+    simp at h
+    have hodd : (Odd (2*a2.natAbs + 1)) := by
+      simp
+    rw [← h] at hodd
+    exact absurd hodd (by simp)
   rename_i n1
-  cases h2: neg_fit a2 --start symmetric argument
-  have hzo2 : (neg_fit a1 = 0) ∨ (neg_fit a1 = 1) := by
-    exact neg_fit_eq_zero_or_one a1
-  cases' hzo2 with hzo2
-  rw [h1] at hzo2
-  absurd hzo2
-  simp
-  rename_i ho2
-  rw [h2] at h
-  rw [ho2] at h
-  simp at h
-  have hodd2 : (Odd (2*a1.natAbs + 1)) := by
-    simp
-  rw [h] at hodd2
-  absurd hodd2
-  simp
-  rename_i n  --below for ha1 copied later
-  have ha1 : (a1 = a1.natAbs) ∨ (a1 = -↑(a1.natAbs)) := by
-    apply Int.natAbs_eq a1
-  have hn1 : neg_fit a1 = 1 := by
-    have h01 : (neg_fit a1 = 0) ∨ (neg_fit a1 = 1) := by
-      exact neg_fit_eq_zero_or_one a1
-    cases' h01 with h01
-    rw [h1] at h01
-    simp at h01
-    rename_i h01a
-    exact h01a
-  have hn2 : neg_fit a2 = 1 := by
-    have h02 : (neg_fit a2 = 0) ∨ (neg_fit a2 = 1) := by
-      exact neg_fit_eq_zero_or_one a2
-    cases' h02 with h02
-    rw [h2] at h02
-    simp at h02
-    rename_i h02a
-    exact h02a
-  have ha1not0 : ¬(neg_fit a1 = 0) := by
-    rw [hn1]
-    simp
-  have ha1notl : ¬(a1 = a1.natAbs) := by
-    contrapose ha1not0
-    simp
-    simp at ha1not0
-    apply (neg_fit_iff_pos a1).mp
-    simp
-    rw [ha1not0]
-    simp
-  have ha1r : a1 = -↑a1.natAbs := by
-    cases' ha1 with ha1
-    rw [← ha1] at ha1notl
-    absurd ha1notl
-    rfl
-    rename_i ha1
-    exact ha1
-  clear h1 h2 --copy part of above for ha2r
-  have ha2 : (a2 = a2.natAbs) ∨ (a2 = -↑(a2.natAbs)) := by
-    apply Int.natAbs_eq a2
-  have ha2not0 : ¬(neg_fit a2 = 0) := by
-    rw [hn2]
-    simp
-  have ha2notl : ¬(a2 = a2.natAbs) := by
-    contrapose ha2not0
-    simp
-    simp at ha2not0
-    apply (neg_fit_iff_pos a2).mp
-    simp
-    #check ha2not0
-    rw [ha2not0]
-    simp
-  have ha2r : a2 = -↑a2.natAbs := by
-    cases' ha2 with ha2
-    rw [← ha2] at ha2notl
-    absurd ha2notl
-    rfl
-    rename_i ha2
-    exact ha2
-  clear ha1 ha2 ha1notl ha2notl
-  rw [hn1, hn2] at h
-  have ha1rb : a1.natAbs = -a1 := by
-    rw [flip_neg a1.natAbs a1]
-    rw [← ha1r]
-  have ha2rb : a2.natAbs = -a2 := by
-    rw [flip_neg a2.natAbs a2]
-    rw [← ha2r]
-  simp at h
-  apply nat_to_int_eq at h
-  rw [ha1rb] at h
-  rw [ha2rb] at h
-  simp at h
-  exact h
+  · cases h2 : neg_fit a2
+    · have hzo2 : (neg_fit a1 = 0) ∨ (neg_fit a1 = 1) := by
+        exact neg_fit_eq_zero_or_one a1
+      rcases hzo2 with hzo2 | ho2
+      · rw [h1] at hzo2
+        absurd hzo2
+        simp
+      · rw [h2] at h
+        rw [ho2] at h
+        simp at h
+        have hodd2 : (Odd (2*a1.natAbs + 1)) := by
+          simp
+        rw [h] at hodd2
+        exact absurd hodd2 (by simp)
+    · rename_i n2 -- branch succ n2
+      have ha1 : (a1 = a1.natAbs) ∨ (a1 = -↑(a1.natAbs)) := by
+        apply Int.natAbs_eq a1
+      have hn1 : neg_fit a1 = 1 := by
+        have h01 := neg_fit_eq_zero_or_one a1
+        rcases h01 with h01 | h01
+        · rw [h1] at h01; simp at h01
+        · exact h01
+      have hn2 : neg_fit a2 = 1 := by
+        have h02 := neg_fit_eq_zero_or_one a2
+        rcases h02 with h02 | h02
+        · rw [h2] at h02; simp at h02
+        · exact h02
+      have ha1not0 : ¬(neg_fit a1 = 0) := by
+        rw [hn1]
+        simp
+      have ha1notl : ¬(a1 = a1.natAbs) := by
+        intro h
+        have h0 : neg_fit a1 = 0 := by
+          rw [← neg_fit_iff_pos, ← h]
+        rw [hn1] at h0
+        contradiction
+      have ha1r : a1 = -↑a1.natAbs := by
+        rcases ha1 with ha1 | ha1
+        · rw [← ha1] at ha1notl
+          absurd ha1notl
+          rfl
+        · exact ha1
+      clear h1 h2 --copy part of above for ha2r
+      have ha2 : (a2 = a2.natAbs) ∨ (a2 = -↑(a2.natAbs)) := by
+        apply Int.natAbs_eq a2
+      have ha2not0 : ¬(neg_fit a2 = 0) := by
+        rw [hn2]
+        simp
+      have ha2notl : ¬(a2 = a2.natAbs) := by
+        intro h
+        have h0 : neg_fit a2 = 0 := by
+          rw [← neg_fit_iff_pos, ← h]
+        rw [hn2] at h0
+        contradiction
+      have ha2r : a2 = -↑a2.natAbs := by
+        rcases ha2 with ha2 | ha2
+        · rw [← ha2] at ha2notl
+          absurd ha2notl
+          rfl
+        · exact ha2
+      clear ha1 ha2 ha1notl ha2notl
+      rw [hn1, hn2] at h
+      have ha1rb : a1.natAbs = -a1 := by
+        rw [flip_neg a1.natAbs a1]
+        rw [← ha1r]
+      have ha2rb : a2.natAbs = -a2 := by
+        rw [flip_neg a2.natAbs a2]
+        rw [← ha2r]
+      simp at h
+      apply nat_to_int_eq at h
+      rw [ha1rb] at h
+      rw [ha2rb] at h
+      simp at h
+      exact h
 }
 
 lemma spread_fun_inj_explicit (a b : ℤ) : (spread_fun a = spread_fun b) → (a = b) := by {
@@ -290,25 +273,13 @@ theorem int_countable : Set.Countable B := by {
 
 --We'll use triangular numbers for the diagonal function.
 lemma infant_Gauss (n : ℕ) : 2*(∑ x ∈ Finset.range (n+1), x)  = n*(n+1) := by {
-  induction' n with n hn
-  simp
-  rw [Finset.sum_range_succ]
-  simp [add_comm]
-  have h2 : 2*(n + 1 + ∑ x ∈ Finset.range (n+1), x)
-    = 2*(n+1) + 2*∑ x ∈ Finset.range (n+1),x := by
-      exact Nat.mul_add 2 (n+1) (∑ x ∈ Finset.range (n+1), x)
-  rw [h2]
-  rw [hn]
-  --wish ring tactic was working
-  simp [mul_comm]
-  have h3 : 1 + (n+1) = 2 + n := by
-    exact Eq.symm (Nat.succ_add_eq_add_succ 1 n)
-  rw [h3]
-  have h4 : (n+1)*(2+n) = (n+1)*2 + (n+1)*n := by
-    exact Nat.mul_add (n+1) 2 n
-  rw [h4]
-  simp
-  exact Nat.mul_comm n (n + 1)
+  induction n with
+  | zero => simp
+  | succ n hn =>
+    rw [Finset.sum_range_succ]
+    simp [add_comm]
+    rw [Nat.mul_add, hn]
+    ring
 }
 
 def diag_fun (a : ℕ×ℕ) : ℕ := ((∑ x ∈ Finset.range (a.1+a.2+1), x) + a.2)
@@ -357,35 +328,18 @@ lemma range_lem (b c : ℕ) : (c*(c+1) < b*(b+1) + 2*c) → (c ≤ b) := by {
   intro h
   have h0 : (c = 0) ∨ (c > 0) := by
     exact Nat.eq_zero_or_pos c
-  cases' h0 with h0 hn0
-  rw [h0]
-  simp
-  apply pred_legit c at hn0
-  rcases hn0 with ⟨a, ha⟩
-  contrapose h
-  simp at h
-  have hba : b ≤ a := by
-    rw [ha] at h
-    exact Nat.le_of_lt_succ h
-  have h2ba : b*(b+1) ≤ a*(a+1) := by
-    rw [n_sq_add_n_monotone b a] at hba
-    exact hba
-  rw [ha]
-  contrapose hba
-  simp at hba
-  rw [← infant_Gauss, ← infant_Gauss] at hba
-  rw [← infant_Gauss, ← infant_Gauss] at h2ba
-  have h3 : 2 * ∑ x ∈ Finset.range (b + 1), x + 2 * (a + 1)
-    ≤ 2 * ∑ x ∈ Finset.range (a + 1), x + 2 * (a + 1) := by
-      exact (Nat.add_le_add_right h2ba (2*(a+1)))
-  have h4 : 2 * ∑ x ∈ Finset.range (a + 1), x + 2 * (a + 1)
-    = 2 * (∑ x ∈ Finset.range (a + 1), x + (a + 1)) := by
-      exact Eq.symm (Nat.mul_add 2 (∑ x ∈ Finset.range (a + 1), x) (a + 1))
-  rw [h4] at h3
-  rw [← Finset.sum_range_succ _ (a+1)] at h3
-  absurd h3
-  simp
-  exact hba
+  rcases h0 with rfl | hn0
+  · simp
+  · apply pred_legit c at hn0
+    rcases hn0 with ⟨a, rfl⟩
+    have hba : (a + 1) * (a + 1 + 1) < b * (b + 1) + 2 * (a + 1) := h
+    contrapose! hba
+    have h_le : a + 1 > b := hba
+    have h_le2 : a ≥ b := Nat.le_of_lt_succ h_le
+    have h_mono : a * (a + 1) ≥ b * (b + 1) := (n_sq_add_n_monotone b a).mp h_le2
+    calc b * (b + 1) + 2 * (a + 1)
+      ≤ a * (a + 1) + 2 * (a + 1) := by linarith
+      _ = (a + 1) * (a + 2) := by ring
 }
 
 lemma sum_range (a c : ℕ): (a*(a+1) ≤ 2*(∑ x ∈ Finset.range (c+1), x) ∧
@@ -405,7 +359,7 @@ lemma sum_range (a c : ℕ): (a*(a+1) ≤ 2*(∑ x ∈ Finset.range (c+1), x) �
 
 lemma sum_range_simp (a c : ℕ): (a ≤ c) ∧ (c*(c+1) < a*(a+1)+2*c) → a=c := by {
   intro h
-  cases' h with h1 h2
+  rcases h with ⟨h1, h2⟩
   rw [n_sq_add_n_monotone] at h1
   rw [← infant_Gauss c] at h1
   rw [← infant_Gauss] at h2
@@ -430,7 +384,7 @@ lemma lemma1 (a b c d : ℕ) : (a + b = c + d) ∧ (a ≤ c) → (b ≥ d) := by
 lemma lemma2 (a b c d : ℕ) : (a + b = c + d) ∧ (a ≥ c) → (b ≤ d) := by {
   intro h
   apply lemma1 c d a b
-  cases' h with h1 h2
+  rcases h with ⟨h1, h2⟩
   rw [h1]
   simp
   exact h2
@@ -462,8 +416,8 @@ theorem diag_fun_inj : diag_fun.Injective := by {
   rw [Nat.mul_add 2 (∑ x ∈ Finset.range (b.1 + b.2 + 1), x) b.2, infant_Gauss (b.1+b.2)] at h
   --wish for WLOG
   have hab : ((a.1+a.2) ≥ (b.1+b.2) ∨ ((b.1+b.2) > (a.1+a.2))) := by
-    exact le_or_lt (b.1 + b.2) (a.1 + a.2)
-  cases' hab with ha hb
+    exact le_or_gt (b.1 + b.2) (a.1 + a.2)
+  rcases hab with ha | hb
   have ha2 :(a.1+a.2)*(a.1+a.2+1) ≥ (b.1+b.2)*(b.1+b.2+1) := by
     apply (n_sq_add_n_monotone (b.1+b.2) (a.1+a.2)).mp
     exact ha
@@ -473,51 +427,51 @@ theorem diag_fun_inj : diag_fun.Injective := by {
   have hstar : 2*b.2 < 2*a.2 + 2*(a.1+a.2) ∨ a.1 = 0 := by
     have hbcases : b.1 = 0 ∨ b.1 > 0 := by
       exact Nat.eq_zero_or_pos b.1
-    cases' hbcases with h0b hnb
-    have hacases : a.2 = 0 ∨ a.2 > 0 := by
-      exact Nat.eq_zero_or_pos a.2
-    cases' hacases with h0a hna
-    rw [h0a,h0b] at h
-    simp at h
-    rw [h0a]
-    simp
-    have hc : a.1 > 0 ∨ a.1 = 0 := by
-      exact Or.symm (Nat.eq_zero_or_pos a.1)
-    cases' hc with hcn hc0
-    have hf2 : b.2*(b.2+1) < a.1*(a.1+1) ∨ b.2 = 0 := by
-      rw [h]
-      simp
-      exact Or.symm (Nat.eq_zero_or_pos b.2)
-    cases' hf2 with hf3 hf4
-    rw [← n_sq_add_n_monotone_strict b.2 a.1] at hf3
-    exact Or.inl hf3
-    apply Or.inl --learned "left" from LLMStep later
-    rw [hf4]
-    exact hcn
-    apply Or.inr
-    exact hc0
-    rw [h0b] at ha
-    simp at ha
-    left
-    have h5 : 2*b.2 ≤ 2*(a.1 + a.2) := by
-      exact Nat.mul_le_mul_left 2 ha
-    --LLMStep has only one suggestion here: linarith. but fails
-    have h6 : 2*a.2 > 0 := by
-      exact Nat.succ_mul_pos 1 hna
-    exact lt_add_of_pos_of_le h6 h5
-    have h8 : b.2 < a.1 + a.2 := by
-      have h9 : b.2 < b.2 + b.1 := by
-        exact Nat.lt_add_of_pos_right hnb
-      simp at ha
-      --rw [add_comm] (not at h9) from LLMStep, apply? not helpful
-      rw [add_comm] at h9
-      exact Nat.lt_of_lt_of_le h9 ha
-    have h10 : 2*b.2 < 2*(a.1 + a.2) := by
-      refine Nat.mul_lt_mul_of_pos_left h8 ?hk
-      simp
-    left
-    exact Nat.lt_add_left (2 * a.2) h10
-  cases' hstar with han ha0
+    rcases hbcases with h0b | hnb
+    · have hacases : a.2 = 0 ∨ a.2 > 0 := by
+        exact Nat.eq_zero_or_pos a.2
+      rcases hacases with h0a | hna
+      · rw [h0a,h0b] at h
+        simp at h
+        rw [h0a]
+        simp
+        have hc : a.1 > 0 ∨ a.1 = 0 := by
+          exact Or.symm (Nat.eq_zero_or_pos a.1)
+        rcases hc with hcn | hc0
+        · have hf2 : b.2*(b.2+1) < a.1*(a.1+1) ∨ b.2 = 0 := by
+            rw [h]
+            simp
+            exact Or.symm (Nat.eq_zero_or_pos b.2)
+          rcases hf2 with hf3 | hf4
+          · rw [← n_sq_add_n_monotone_strict b.2 a.1] at hf3
+            exact Or.inl hf3
+          · apply Or.inl --learned "left" from LLMStep later
+            rw [hf4]
+            exact hcn
+        · apply Or.inr
+          exact hc0
+      · rw [h0b] at ha
+        simp at ha
+        left
+        have h5 : 2*b.2 ≤ 2*(a.1 + a.2) := by
+          exact Nat.mul_le_mul_left 2 ha
+        --LLMStep has only one suggestion here: linarith. but fails
+        have h6 : 2*a.2 > 0 := by
+          exact Nat.succ_mul_pos 1 hna
+        exact lt_add_of_pos_of_le h6 h5
+    · have h8 : b.2 < a.1 + a.2 := by
+        have h9 : b.2 < b.2 + b.1 := by
+          exact Nat.lt_add_of_pos_right hnb
+        simp at ha
+        --rw [add_comm] (not at h9) from LLMStep, apply? not helpful
+        rw [add_comm] at h9
+        exact Nat.lt_of_lt_of_le h9 ha
+      have h10 : 2*b.2 < 2*(a.1 + a.2) := by
+        refine Nat.mul_lt_mul_of_pos_left h8 ?hk
+        simp
+      left
+      exact Nat.lt_add_left (2 * a.2) h10
+  rcases hstar with han | ha0
   have hs2 : (b.1 + b.2) * ((b.1 + b.2) + 1) + 2 * b.2 < (b.1 + b.2) * ((b.1 + b.2) + 1) + (2 * a.2 + 2 * (a.1 + a.2)) := by
     exact Nat.add_lt_add_left han ((b.1 + b.2) * ((b.1 + b.2) + 1))
   rw [← h] at hs2
@@ -549,7 +503,7 @@ theorem diag_fun_inj : diag_fun.Injective := by {
   simp at h
   have hb0 : b.1 = 0 := by
     rw [h] at hab
-    exact Nat.self_eq_add_left.mp hab
+    exact Nat.add_eq_right.mp (Eq.symm hab)
   have hab0 : a.1 = b.1 := by
     rw [ha0]
     rw [hb0]
