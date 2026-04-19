@@ -457,6 +457,9 @@ lemma vanEckState_isBounded (n B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
 def stateEval (L : List ℕ) (B : ℕ) : ℕ :=
   L.foldr (fun x acc => x + B * acc) 0
 
+#eval stateEval [0, 1, 2] 10 -- Outputs 210 in InfoView (2*100 + 1*10 + 0*1)
+#eval stateEval [5, 2, 8] 10 -- Outputs 825 in InfoView (8*100 + 2*10 + 5*1)
+
 -- Phase 2: Finite Geometric Bounding
 -- By explicitly ensuring elements are bounded natively, we algorithmically guarantee
 -- limits restricting exactly below B^L.length mathematically over matrix operations.
@@ -485,6 +488,40 @@ lemma stateEval_lt_pow (L : List ℕ) (B : ℕ) (hB : B > 1) (h_bound : IsBounde
       a + B * stateEval as B < B + B * stateEval as B := Nat.add_lt_add_right ha _
       _ ≤ B * B ^ as.length := h_mul
       _ = B ^ (as.length + 1) := h_pow_comm
+
+-- Phase 3: Matrix Injectivity
+-- By establishing that overlapping Base-B integer conversions natively map exclusively
+-- to identical mathematical sequence arrays, we topologically assert vector uniqueness.
+lemma stateEval_inj (L1 L2 : List ℕ) (B : ℕ) (hB : B > 1)
+    (hlen : L1.length = L2.length) (h_bound1 : IsBoundedState L1 B)
+    (h_bound2 : IsBoundedState L2 B) (h_eq : stateEval L1 B = stateEval L2 B) :
+    L1 = L2 := by
+  revert L2
+  induction L1 with
+  | nil =>
+    intro L2 hlen hb2 heq
+    cases L2 with | nil => rfl | cons _ _ => contradiction
+  | cons h1 t1 ih =>
+    intro L2 hlen hb2 heq
+    cases L2 with | nil => contradiction | cons h2 t2 =>
+      have hlen_t : t1.length = t2.length := Nat.succ.inj hlen
+      have hb1_h : h1 < B := h_bound1 h1 (List.Mem.head _)
+      have hb2_h : h2 < B := hb2 h2 (List.Mem.head _)
+      have heq_mod : (h1 + B * stateEval t1 B) % B = (h2 + B * stateEval t2 B) % B := by 
+        change h1 + B * stateEval t1 B = h2 + B * stateEval t2 B at heq
+        rw [heq]
+      rw [Nat.add_mul_mod_self_left, Nat.add_mul_mod_self_left] at heq_mod
+      rw [Nat.mod_eq_of_lt hb1_h, Nat.mod_eq_of_lt hb2_h] at heq_mod
+      have hd : h1 = h2 := heq_mod
+      change h1 + B * stateEval t1 B = h2 + B * stateEval t2 B at heq
+      rw [hd] at heq
+      have hB_pos : B > 0 := Nat.zero_lt_of_lt (Nat.lt_of_succ_lt hB)
+      have ht_eval : stateEval t1 B = stateEval t2 B := 
+        Nat.eq_of_mul_eq_mul_left hB_pos (Nat.add_left_cancel heq)
+      have hb_t1 : IsBoundedState t1 B := fun y hy => h_bound1 y (List.Mem.tail _ hy)
+      have hb_t2 : IsBoundedState t2 B := fun y hy => hb2 y (List.Mem.tail _ hy)
+      have ht := ih t2 hlen_t hb_t2 ht_eval
+      rw [hd, ht]
 
 -- Since the unique mathematical Lists of length `B` bounded by `B` is exactly B^B, 
 -- sequence evaluations across bounds natively enforce a structural Pigeonhole duplication.
