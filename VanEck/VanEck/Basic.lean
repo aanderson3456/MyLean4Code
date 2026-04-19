@@ -372,11 +372,11 @@ lemma listNth_drop (d i : ℕ) : ∀ L : List ℕ, listNth (L.drop d) i = listNt
       have h1 : (x :: xs).drop (d + 1) = xs.drop d := rfl
       rw [h1]
       have h2 : listNth (x :: xs) (d + 1 + i) = listNth xs (d + i) := by
-      have hd1i : d + 1 + i = d + i + 1 := Nat.add_right_comm d 1 i
-      rw [hd1i]
-      rfl
-    rw [h2]
-    exact hd xs
+        have hd1i : d + 1 + i = d + i + 1 := Nat.add_right_comm d 1 i
+        rw [hd1i]
+        rfl
+      rw [h2]
+      exact hd xs
 
 lemma matchSearch_eq_dist (L : List ℕ) (start d : ℕ)
     (h_match : listNth L (L.length - 1) = listNth L start)
