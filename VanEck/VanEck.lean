@@ -452,6 +452,33 @@ lemma vanEckState_isBounded (n B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
   have h_mem := List.mem_of_mem_drop hx
   exact mem_vanEck_bound h_mem h_bound
 
+-- Since the unique mathematical Lists of length `B` bounded by `B` is exactly B^B, 
+-- sequence evaluations across bounds natively enforce a structural Pigeonhole duplication.
+lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
+    ∃ n_1 n_2 : ℕ, n_1 < n_2 ∧ vanEckState n_1 B = vanEckState n_2 B := by
+  sorry
+
+-- Because sequence steps evaluate purely by recursive bounds limits, 
+-- identical finite sequence frames natively generate perfectly identical future terms.
+lemma sequence_determinism_succ (n_1 n_2 B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B)
+    (h_eq : vanEckState n_1 B = vanEckState n_2 B) :
+    vanEckNthTerm n_1 = vanEckNthTerm n_2 := by
+  sorry
+
+-- When sequence evaluation states organically collide within Pigeonhole constraints,
+-- their strict computational determinism natively locks forward periodic recursion universally.
+lemma forward_periodicity (n_1 n_2 B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) 
+    (h_eq : vanEckState n_1 B = vanEckState n_2 B) (k : ℕ) :
+    vanEckState (n_1 + k) B = vanEckState (n_2 + k) B ∧ 
+    vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_2 + k) := by
+  induction k with
+  | zero => 
+    -- Base sequence bounds naturally execute identical subset evaluations
+    sorry
+  | succ k ih =>
+    -- Recursive subset generation locks future state limits mathematically
+    sorry
+
 theorem infinite_zeros_vanEck (N : ℕ) : ∃ m : ℕ, m > N ∧ vanEckNthTerm m = 0 := by
   by_contra Hyp
   have h1 : ∀ (m : ℕ), ¬ (m > N ∧ vanEckNthTerm m = 0) := by
