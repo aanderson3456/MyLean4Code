@@ -531,9 +531,8 @@ lemma stateEval_inj (B : ℕ) (hB : B > 1) (L1 L2 : List ℕ)
 -- Since the unique mathematical Lists of length `B` bounded by `B` is exactly B^B,
 -- sequence evaluations across bounds natively enforce a structural Pigeonhole duplication.
 lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
-    ∃ n_1 n_2 : ℕ, n_1 < n_2 ∧ vanEckState n_1 B = vanEckState n_2 B := by
-  have hb2 : vanEckNthTerm 2 = 1 := rfl
-  have hB_gt : B > 1 := by have h2 := h_bound 2; rw [hb2] at h2; exact h2
+    ∃ n_1 n_2 : ℕ, B ≤ n_1 ∧ n_1 < n_2 ∧ vanEckState n_1 B = vanEckState n_2 B := by
+  have hB_gt : B > 1 := by have h2 := h_bound 2; rw [rfl : vanEckNthTerm 2 = 1] at h2; exact h2
   let M := B ^ B
   let f : ℕ → ℕ := fun n => stateEval (vanEckState (n + B) B) B
   have h_lim : ∀ n, f n < M := fun n => by
@@ -557,21 +556,24 @@ lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B
     · exact vanEckState_isBounded (y.val + B) B h_bound
     · exact heq_val
   by_cases h_lt : x.val < y.val
-  · exact ⟨x.val + B, y.val + B, Nat.add_lt_add_right h_lt B, h_state_eq⟩
+  · exact ⟨x.val + B, y.val + B, hx, Nat.add_lt_add_right h_lt B, h_state_eq⟩
   · have h_gt : y.val < x.val := Nat.lt_of_le_of_ne (Nat.le_of_not_lt h_lt) (fun h => hne (Fin.eq_of_val_eq h.symm))
-    exact ⟨y.val + B, x.val + B, Nat.add_lt_add_right h_gt B, h_state_eq.symm⟩
+    exact ⟨y.val + B, x.val + B, hy, Nat.add_lt_add_right h_gt B, h_state_eq.symm⟩
 
 -- Because sequence steps evaluate purely by recursive bounds limits,
 -- identical finite sequence frames natively generate perfectly identical future terms.
 lemma sequence_determinism_succ (n_1 n_2 B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B)
-    (h_eq : vanEckState n_1 B = vanEckState n_2 B) :
+    (h_eq : vanEckState n_1 B = vanEckState n_2 B)
+    (hn1 : B ≤ n_1) (hn2 : B ≤ n_2) (hb0 : B > 0) :
     vanEckNthTerm n_1 = vanEckNthTerm n_2 := by
+  -- Using matchSearch_eq_dist geometrically cleanly testing deterministic frames identically.
   sorry
 
 -- When sequence evaluation states organically collide within Pigeonhole constraints,
 -- their strict computational determinism natively locks forward periodic recursion universally.
 lemma forward_periodicity (n_1 n_2 B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B)
-    (h_eq : vanEckState n_1 B = vanEckState n_2 B) (k : ℕ) :
+    (h_eq : vanEckState n_1 B = vanEckState n_2 B)
+    (hn1 : B ≤ n_1) (hn2 : B ≤ n_2) (hb0 : B > 0) (k : ℕ) :
     vanEckState (n_1 + k) B = vanEckState (n_2 + k) B ∧
     vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_2 + k) := by
   induction k with
