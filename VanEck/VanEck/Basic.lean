@@ -360,7 +360,7 @@ lemma list_nth_tail_minus_one (L : List ℕ) (n : ℕ) :
 
 lemma listNth_drop (d i : ℕ) : ∀ L : List ℕ, listNth (L.drop d) i = listNth L (d + i) := by
   induction d with
-  | zero => intro L; rfl
+  | zero => intro L; rw [Nat.zero_add]; rfl
   | succ d hd =>
     intro L
     cases L with
