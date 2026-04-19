@@ -358,6 +358,26 @@ lemma list_nth_tail_minus_one (L : List ℕ) (n : ℕ) :
   | nil => rfl
   | cons _ L' => rfl
 
+lemma listNth_drop (d i : ℕ) : ∀ L : List ℕ, listNth (L.drop d) i = listNth L (d + i) := by
+  induction d with
+  | zero => intro L; rfl
+  | succ d hd =>
+    intro L
+    cases L with
+    | nil =>
+      have h1 : ([] : List ℕ).drop (d + 1) = [] := rfl
+      rw [h1]
+      rfl
+    | cons x xs =>
+      have h1 : (x :: xs).drop (d + 1) = xs.drop d := rfl
+      rw [h1]
+      have h2 : listNth (x :: xs) (d + 1 + i) = listNth xs (d + i) := by
+        have hd1i : d + 1 + i = d + i + 1 := Nat.add_right_comm d 1 i
+        rw [hd1i]
+        rfl
+      rw [h2]
+      exact hd xs
+
 /--
 Provides the next term of the VanEck sequence given the previously existing list of terms.
 -/
