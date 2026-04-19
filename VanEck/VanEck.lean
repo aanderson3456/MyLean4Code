@@ -452,6 +452,40 @@ lemma vanEckState_isBounded (n B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
   have h_mem := List.mem_of_mem_drop hx
   exact mem_vanEck_bound h_mem h_bound
 
+-- Phase 1: Base-B dimension limits
+-- We collapse state lists natively into scalar parameters by defining polynomial execution recursively.
+def stateEval (L : List ℕ) (B : ℕ) : ℕ :=
+  L.foldr (fun x acc => x + B * acc) 0
+
+-- Phase 2: Finite Geometric Bounding
+-- By explicitly ensuring elements are bounded natively, we algorithmically guarantee
+-- limits restricting exactly below B^L.length mathematically over matrix operations.
+lemma stateEval_lt_pow (L : List ℕ) (B : ℕ) (hB : B > 1) (h_bound : IsBoundedState L B) :
+    stateEval L B < B ^ L.length := by
+  induction L with
+  | nil =>
+    unfold stateEval
+    have hb_pos : B > 0 := Nat.lt_trans (Nat.zero_lt_succ 0) hB
+    exact Nat.pow_pos hb_pos
+  | cons a as ih =>
+    unfold stateEval
+    have ha : a < B := h_bound a (List.Mem.head _)
+    have h_bound_as : IsBoundedState as B := fun y hy => h_bound y (List.Mem.tail _ hy)
+    have ih_as := ih h_bound_as
+    have h_mul : B + B * stateEval as B ≤ B * B ^ as.length := by
+      have h_comm : B + B * stateEval as B = B * stateEval as B + B := Nat.add_comm B _
+      rw [h_comm, ← Nat.mul_succ]
+      exact Nat.mul_le_mul_left B ih_as
+    have h_pow_comm : B * B ^ as.length = B ^ (as.length + 1) := by
+      have h_pow := Nat.pow_succ B as.length
+      have h_mul_comm := Nat.mul_comm B (B ^ as.length)
+      rw [h_mul_comm]
+      exact h_pow.symm
+    calc
+      a + B * stateEval as B < B + B * stateEval as B := Nat.add_lt_add_right ha _
+      _ ≤ B * B ^ as.length := h_mul
+      _ = B ^ (as.length + 1) := h_pow_comm
+
 -- Since the unique mathematical Lists of length `B` bounded by `B` is exactly B^B, 
 -- sequence evaluations across bounds natively enforce a structural Pigeonhole duplication.
 lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
@@ -494,17 +528,15 @@ lemma reverse_periodicity_step (n P B : ℕ) (hn : n > 0)
 -- Phase 5: Reversibility to Index 0 Contradiction Capstone
 -- By natively looping the reverse step limit backward to index 0, we organically collide 
 -- the mathematical sequence generation (0) identically against the zero-free boundary limits.
-lemma zero_collision_contradiction (P B : ℕ) (hP : P > 0)
+lemma zero_collision_contradiction (P : ℕ) (hP : P > 0)
     (h_nozero : ∀ k, vanEckNthTerm k ≠ 0)
-    (h_period : ∀ k, vanEckState k B = vanEckState (P + k) B) :
+    (h_period : ∀ k, vanEckNthTerm k = vanEckNthTerm (P + k)) :
     False := by
-  have h_zero_eq : vanEckNthTerm 0 = vanEckNthTerm P := by
-    -- Natively recursive state loops identically overlap the origin symmetrically
-    sorry
-  have h_val_zero : vanEckNthTerm 0 = 0 := rfl
-  have h_val_P : vanEckNthTerm P ≠ 0 := h_nozero P
-  rw [h_val_zero] at h_zero_eq
-  exact h_val_P h_zero_eq.symm
+  have h_zero : vanEckNthTerm 0 = 0 := rfl
+  have h_P_eq : vanEckNthTerm 0 = vanEckNthTerm P := h_period 0
+  have h_P_nozero : vanEckNthTerm P ≠ 0 := h_nozero P
+  rw [h_zero] at h_P_eq
+  exact h_P_nozero h_P_eq.symm
 
 theorem infinite_zeros_vanEck (N : ℕ) : ∃ m : ℕ, m > N ∧ vanEckNthTerm m = 0 := by
   by_contra Hyp
