@@ -73,8 +73,7 @@ lemma logic4 (h : ∀ x, p x) : ¬ ∃ x, ¬ p x := by
 lemma logic5 (h : ¬ (∀ x, ¬ (p x))) : ∃ x, p x := by
   by_contra h_not
   apply h
-  intro x
-  intro hx
+  intro x hx
   apply h_not
   exact ⟨x, hx⟩
 
@@ -453,7 +452,8 @@ lemma vanEckState_isBounded (n B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
   exact mem_vanEck_bound h_mem h_bound
 
 -- Phase 1: Base-B dimension limits
--- We collapse state lists natively into scalar parameters by defining polynomial execution recursively.
+-- We collapse state lists natively into scalar parameters by defining polynomial
+--execution recursively.
 def stateEval (L : List ℕ) (B : ℕ) : ℕ :=
   L.foldr (fun x acc => x + B * acc) 0
 
@@ -507,7 +507,7 @@ lemma stateEval_inj (B : ℕ) (hB : B > 1) (L1 L2 : List ℕ)
       have hlen_t : t1.length = t2.length := Nat.succ.inj hlen
       have hb1_h : h1 < B := h_bound1 h1 (List.Mem.head _)
       have hb2_h : h2 < B := hb2 h2 (List.Mem.head _)
-      have heq_mod : (h1 + B * stateEval t1 B) % B = (h2 + B * stateEval t2 B) % B := by 
+      have heq_mod : (h1 + B * stateEval t1 B) % B = (h2 + B * stateEval t2 B) % B := by
         change h1 + B * stateEval t1 B = h2 + B * stateEval t2 B at heq
         rw [heq]
       rw [Nat.add_mul_mod_self_left, Nat.add_mul_mod_self_left] at heq_mod
@@ -516,11 +516,11 @@ lemma stateEval_inj (B : ℕ) (hB : B > 1) (L1 L2 : List ℕ)
       change h1 + B * stateEval t1 B = h2 + B * stateEval t2 B at heq
       rw [hd] at heq
       have hB_pos : B > 0 := Nat.zero_lt_of_lt (Nat.lt_of_succ_lt hB)
-      have ht_eval : stateEval t1 B = stateEval t2 B := 
+      have ht_eval : stateEval t1 B = stateEval t2 B :=
         Nat.eq_of_mul_eq_mul_left hB_pos (Nat.add_left_cancel heq)
       have hb_t1 : IsBoundedState t1 B := fun y hy => h_bound1 y (List.Mem.tail _ hy)
       have hb_t2 : IsBoundedState t2 B := fun y hy => hb2 y (List.Mem.tail _ hy)
-      have ht : t1 = t2 := by 
+      have ht : t1 = t2 := by
         apply ih
         · exact hb_t1
         · exact hlen_t
@@ -528,7 +528,7 @@ lemma stateEval_inj (B : ℕ) (hB : B > 1) (L1 L2 : List ℕ)
         · exact ht_eval
       rw [hd, ht]
 
--- Since the unique mathematical Lists of length `B` bounded by `B` is exactly B^B, 
+-- Since the unique mathematical Lists of length `B` bounded by `B` is exactly B^B,
 -- sequence evaluations across bounds natively enforce a structural Pigeonhole duplication.
 lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
     ∃ n_1 n_2 : ℕ, n_1 < n_2 ∧ vanEckState n_1 B = vanEckState n_2 B := by
@@ -540,7 +540,7 @@ lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B
     have hn : n + B ≥ B := Nat.le_add_left B n
     have hb0 : B > 0 := Nat.lt_trans (Nat.zero_lt_succ 0) hB_gt
     have hlen : (vanEckState (n + B) B).length = B := vanEckState_length (n + B) B hn hb0
-    have hl := stateEval_lt_pow B hB_gt (vanEckState (n + B) B) (vanEckState_isBounded (n + B) B h_bound)
+    have hl := stateEval_lt_pow (vanEckState (n + B) B) B hB_gt (vanEckState_isBounded (n + B) B h_bound)
     rw [hlen] at hl; exact hl
   let f_fin : Fin (M + 1) → Fin M := fun x => ⟨f x.val, h_lim x.val⟩
   have h_card : Fintype.card (Fin M) < Fintype.card (Fin (M + 1)) := by simp
@@ -561,7 +561,7 @@ lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B
   · have h_gt : y.val < x.val := Nat.lt_of_le_of_ne (Nat.le_of_not_lt h_lt) (fun h => hne (Fin.eq_of_val_eq h.symm))
     exact ⟨y.val + B, x.val + B, Nat.add_lt_add_right h_gt B, h_state_eq.symm⟩
 
--- Because sequence steps evaluate purely by recursive bounds limits, 
+-- Because sequence steps evaluate purely by recursive bounds limits,
 -- identical finite sequence frames natively generate perfectly identical future terms.
 lemma sequence_determinism_succ (n_1 n_2 B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B)
     (h_eq : vanEckState n_1 B = vanEckState n_2 B) :
@@ -570,12 +570,12 @@ lemma sequence_determinism_succ (n_1 n_2 B : ℕ) (h_bound : ∀ k, vanEckNthTer
 
 -- When sequence evaluation states organically collide within Pigeonhole constraints,
 -- their strict computational determinism natively locks forward periodic recursion universally.
-lemma forward_periodicity (n_1 n_2 B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) 
+lemma forward_periodicity (n_1 n_2 B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B)
     (h_eq : vanEckState n_1 B = vanEckState n_2 B) (k : ℕ) :
-    vanEckState (n_1 + k) B = vanEckState (n_2 + k) B ∧ 
+    vanEckState (n_1 + k) B = vanEckState (n_2 + k) B ∧
     vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_2 + k) := by
   induction k with
-  | zero => 
+  | zero =>
     -- Base sequence bounds naturally execute identical subset evaluations
     sorry
   | succ k ih =>
@@ -588,14 +588,14 @@ lemma forward_periodicity (n_1 n_2 B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < 
 lemma reverse_periodicity_step (n P B : ℕ) (hn : n > 0)
     (h_bound : ∀ k, vanEckNthTerm k < B) (h_nozero : ∀ k, k ≥ n - 1 → vanEckNthTerm k ≠ 0)
     (h_period : ∀ k, vanEckState (n + k) B = vanEckState (n + P + k) B) :
-    vanEckState (n - 1) B = vanEckState (n + P - 1) B ∧ 
+    vanEckState (n - 1) B = vanEckState (n + P - 1) B ∧
     vanEckNthTerm (n - 1) = vanEckNthTerm (n + P - 1) := by
   -- Because `vanEckState` evaluates identically forward and identically backward devoid of zeros,
   -- pulling limits back mathematically collapses identically symmetrically natively.
   sorry
 
 -- Phase 5: Reversibility to Index 0 Contradiction Capstone
--- By natively looping the reverse step limit backward to index 0, we organically collide 
+-- By natively looping the reverse step limit backward to index 0, we organically collide
 -- the mathematical sequence generation (0) identically against the zero-free boundary limits.
 lemma zero_collision_contradiction (P : ℕ) (hP : P > 0)
     (h_nozero : ∀ k, vanEckNthTerm k ≠ 0)
