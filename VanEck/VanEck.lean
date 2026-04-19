@@ -88,6 +88,16 @@ lemma silly1 (m : ℕ) : m + 1 - m = 0 → False := by
   rw [h1] at h
   contradiction
 
+lemma not_forall_imp {α : Type*} {p q : α → Prop} :
+    (¬ ∀ x, p x → q x) → ∃ x, p x ∧ ¬ q x := by
+  intro h
+  by_contra h_not
+  apply h
+  intro x hx
+  by_contra hq
+  apply h_not
+  exact ⟨x, hx, hq⟩
+
 lemma splitting_le (c d : ℕ) : (c ≤ d) ↔ c < d ∨ c = d := by
   apply Iff.intro
   · intro h
@@ -233,7 +243,7 @@ lemma vanEck_mth_term_eq_zero_iff_prev_term_new (m : ℕ) :
     have h1 : listNth (vanEck n) n = listNth (vanEck (m + 1)) n := by
       have hle : m + 1 ≥ n := Nat.le_of_lt hn
       exact (VanEck_deterministic (m+1) n hle).symm
-    
+
     have h0 : matchSearch (vanEck (m + 1)) (n + 1) ≥ 1 := by
       have H_if : listNth (vanEck (m+1)) ((vanEck (m+1)).length - 1) = listNth (vanEck (m+1)) n := by
         rw [vanEckLength (m+1)]
@@ -266,14 +276,14 @@ lemma vanEck_mth_term_eq_zero_iff_prev_term_new (m : ℕ) :
         have h_sub : m + 2 - 1 = m + 1 := rfl
         rw [h_sub]
         exact obv20 m n h2
-      
+
       have h_trigger : matchSearch (vanEck (m+1)) ((vanEck (m+1)).length - 1 - (m - n)) ≠ 0 := by
         rw [h_index]
         exact h00
-      
+
       have h_res : matchSearch (vanEck (m+1)) ((vanEck (m+1)).length - 1) ≠ 0 :=
         match_search_nonzero_after_match_before_end (m - n) (vanEck (m+1)) h_trigger
-      
+
       have h_len_eval : (vanEck (m+1)).length - 1 = m + 1 := by
         rw [vanEckLength]
         rfl
@@ -310,13 +320,85 @@ lemma vanEck_mth_term_eq_zero_iff_prev_term_new (m : ℕ) :
         exact IH
     exact hnomatch (m + 1) (Nat.le_refl _)
 
+lemma nonzero_implies_recurrence (N m : ℕ) :
+    (∀ k > N, vanEckNthTerm k ≠ 0) → (m ≥ N) → ∃ n < m + 1, vanEckNthTerm n = vanEckNthTerm (m + 1) := by
+  intro h_nonzero h_m
+  have h_m2 : m + 2 > N := by
+    calc
+      m + 2 > m := Nat.lt_add_of_pos_right (by decide)
+      _ ≥ N := h_m
+  have h_not_zero : vanEckNthTerm (m + 2) ≠ 0 := h_nonzero (m + 2) h_m2
+  have h_iff := vanEck_mth_term_eq_zero_iff_prev_term_new m
+  have h_contra := mt h_iff.mpr h_not_zero
+  have h_ex := not_forall_imp h_contra
+  rcases h_ex with ⟨n, hn, hneq⟩
+  have heq : vanEckNthTerm n = vanEckNthTerm (m + 1) := by
+    by_contra hc
+    exact hneq hc
+  exact ⟨n, hn, heq⟩
+
+def listMax : List ℕ → ℕ
+  | [] => 0
+  | x :: xs => max x (listMax xs)
+
+lemma le_listMax_of_mem {a : ℕ} {L : List ℕ} (h : a ∈ L) : a ≤ listMax L := by
+  induction L with
+  | nil => cases h
+  | cons x xs ih =>
+    cases h with
+    | head _ => exact Nat.le_max_left _ _
+    | tail _ h_tail => exact Nat.le_trans (ih h_tail) (Nat.le_max_right _ _)
+
+lemma listNth_mem {n : ℕ} {L : List ℕ} (hn : n < L.length) : listNth L n ∈ L := by
+  induction L generalizing n with
+  | nil => exfalso; exact Nat.not_lt_zero n hn
+  | cons x xs ih =>
+    cases n with
+    | zero => exact List.Mem.head _
+    | succ n => exact List.Mem.tail _ (ih (Nat.lt_of_succ_lt_succ hn))
+
+def vanEckPrefixMax (N : ℕ) : ℕ :=
+  listMax (vanEck N)
+
+lemma vanEckNthTerm_le_prefixMax (N n : ℕ) (hn : n ≤ N) :
+    vanEckNthTerm n ≤ vanEckPrefixMax N := by
+  unfold vanEckPrefixMax
+  have heq : vanEckNthTerm n = listNth (vanEck N) n := (VanEck_deterministic N n hn).symm
+  rw [heq]
+  have h_len : (vanEck N).length = N + 1 := vanEckLength N
+  have h_lt : n < (vanEck N).length := by
+    rw [h_len]
+    exact Nat.lt_succ_of_le hn
+  exact le_listMax_of_mem (listNth_mem h_lt)
+
+lemma prefix_contains_all_terms (N k : ℕ) (h_nonzero : ∀ k > N, vanEckNthTerm k ≠ 0) :
+    vanEckNthTerm k ≤ vanEckPrefixMax N := by
+  induction k using Nat.strong_induction_on
+  next m ih =>
+    by_cases h_le : m ≤ N
+    · exact vanEckNthTerm_le_prefixMax N m h_le
+    · have h_gt : m > N := Nat.lt_of_not_ge h_le
+      have hm_pos : m > 0 := Nat.lt_of_le_of_lt (Nat.zero_le N) h_gt
+      have h_m_sub : m - 1 ≥ N := Nat.le_sub_one_of_lt h_gt
+      have h_ex := nonzero_implies_recurrence N (m - 1) h_nonzero h_m_sub
+      rcases h_ex with ⟨n, hn, heq⟩
+      have hm_eq : m - 1 + 1 = m := Nat.sub_add_cancel hm_pos
+      rw [hm_eq] at heq
+      rw [hm_eq] at hn
+      have ih_res := ih n hn
+      rw [← heq]
+      exact ih_res
+
+
 --Suppose there are not infinitely many zeros.
---Then from a certain point on, no new terms appear, 
+--Then from a certain point on, no new terms appear,
 --so the sequence is bounded and nonzero.
-lemma bounded_if_tail_eq_nonzero (N : ℕ) : 
+lemma bounded_if_tail_eq_nonzero (N : ℕ) :
     (∀ m > N, vanEckNthTerm m ≠ 0) → (∃ B : ℕ, ∀ n : ℕ, vanEckNthTerm n < B) := by
   intro h
-  sorry
+  use (vanEckPrefixMax N + 1)
+  intro n
+  exact Nat.lt_succ_of_le (prefix_contains_all_terms N n h)
 
 theorem infinite_zeros_vanEck (N : ℕ) : ∃ m : ℕ, m > N ∧ vanEckNthTerm m = 0 := by
   by_contra Hyp
