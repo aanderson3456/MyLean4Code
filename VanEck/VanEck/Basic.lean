@@ -159,13 +159,13 @@ lemma weird (L : List ℕ) (h : L.length ≥ 2) : L.length - 2 + 1 = L.length - 
   exact obv2 L.length h
 
 /--
-Function to extract the nth term of a list. 
+Function to extract the nth term of a list.
 Note that the position count starts from 0 exactly.
 -/
-def listNth : List ℕ → ℕ → ℕ 
-  | [], _ => 0 
-  | x::_, 0 => x 
-  | _::xs, n+1 => listNth xs n 
+def listNth : List ℕ → ℕ → ℕ
+  | [], _ => 0
+  | x::_, 0 => x
+  | _::xs, n+1 => listNth xs n
 
 -- Here's a brief check: extracting the term at position 3 (0-based) from [1,2,3,4,5] gives 4.
 example : listNth [1, 2, 3, 4, 5] 3 = 4 := by rfl
@@ -174,14 +174,14 @@ example : listNth [1, 2, 3, 4, 5] 3 = 4 := by rfl
 This takes a list L and searches back from position n for a match to its final term.
 It outputs the distance from the end; if no match is found, it safely outputs 0.
 -/
-def matchSearch : List ℕ → ℕ → ℕ 
+def matchSearch : List ℕ → ℕ → ℕ
   | _, 0 => 0
-  | L, n+1 => if listNth L (L.length - 1) = listNth L n 
+  | L, n+1 => if listNth L (L.length - 1) = listNth L n
               then (L.length - 1) - n
               else matchSearch L n
 
 /--
-If the last term matches the term at position n, 
+If the last term matches the term at position n,
 then matchSearch at n+1 correctly returns the distance.
 -/
 lemma matchSearch_ite_tt (L : List ℕ) (n : ℕ) :
@@ -195,8 +195,8 @@ lemma matchSearch_ite_tt (L : List ℕ) (n : ℕ) :
 If the last term does not match the term at position n,
 then matchSearch at n+1 continues the search recursively at n.
 -/
-lemma matchSearch_ite_ff (L : List ℕ) (n : ℕ) : 
-    listNth L (L.length - 1) ≠ listNth L n → 
+lemma matchSearch_ite_ff (L : List ℕ) (n : ℕ) :
+    listNth L (L.length - 1) ≠ listNth L n →
     matchSearch L (n + 1) = matchSearch L n := by
   intro H
   conv => lhs; unfold matchSearch
@@ -206,10 +206,10 @@ lemma matchSearch_ite_ff (L : List ℕ) (n : ℕ) :
 The matchSearch function result is never greater than the length of the list.
 This bounded sequence simplifies two separate Lean 3 lemmas into one clean unified induction.
 -/
-lemma matchSearch_le_length (L : List ℕ) (n : ℕ) : 
+lemma matchSearch_le_length (L : List ℕ) (n : ℕ) :
     matchSearch L n ≤ L.length := by
   induction n with
-  | zero => 
+  | zero =>
     unfold matchSearch
     exact Nat.zero_le _
   | succ n IH =>
@@ -218,6 +218,98 @@ lemma matchSearch_le_length (L : List ℕ) (n : ℕ) :
       exact Nat.le_trans (Nat.sub_le _ _) (Nat.sub_le _ _)
     · rw [matchSearch_ite_ff L n H]
       exact IH
+
+lemma match_search_nonzero_after_match_before_end_base_case (n : ℕ) :
+  ∀ L : List ℕ, (matchSearch L 0 ≠ 0) → (matchSearch L (L.length - 1) ≠ 0) := by
+  intro L h
+  exfalso
+  exact h rfl
+
+lemma match_search_nonzero_after_match_before_end (n : ℕ) :
+  ∀ L : List ℕ, (matchSearch L (L.length - 1 - n) ≠ 0)
+    → (matchSearch L (L.length - 1) ≠ 0) := by
+  induction n with
+  | zero =>
+    intro L h
+    exact h
+  | succ n hn =>
+    intro L h
+    by_cases c1 : n + 1 ≤ L.length - 1
+    · have h1 : L.length - 1 - (n + 1) + 1 = L.length - 1 - n := obv3 _ _ c1
+      apply hn L
+      rw [← h1]
+      by_cases hpos : listNth L (L.length - 1) = listNth L (L.length - 1 - (n + 1))
+      · rw [matchSearch_ite_tt L (L.length - 1 - (n + 1)) hpos]
+        have h2 : L.length - 1 - (L.length - 1 - (n + 1)) ≠ 0 ∨ L.length - 1 = 0 := obv6 L.length n
+        cases h2 with
+        | inl h2n => exact h2n
+        | inr h2e =>
+          have h2e1 : L.length - 1 - (n + 1) = 0 := by rw [h2e, Nat.zero_sub]
+          rw [h2e1] at h
+          exfalso
+          exact h rfl
+      · rw [matchSearch_ite_ff L (L.length - 1 - (n + 1)) hpos]
+        exact h
+    · have c2 : L.length - 1 ≤ n := Nat.le_of_lt_succ (Nat.lt_of_not_ge c1)
+      have hfalse : L.length - 1 - (n + 1) = 0 := obv4 _ _ (Nat.le_trans c2 (Nat.le_succ n))
+      rw [hfalse] at h
+      exfalso
+      exact h rfl
+
+lemma if_match_then_match_search_at_end_ge_1 (n : ℕ) (L : List ℕ) (hlen : L.length ≥ 2)
+    (hn : n < L.length - 1) : (listNth L (L.length - 2 - n) = listNth L (L.length - 1))
+    → matchSearch L (L.length - 1) ≥ 1 := by
+  intro hyp
+  induction n with
+  | zero =>
+    -- Base case n = 0.
+    have hsucc : L.length - 1 = L.length - 2 + 1 := (weird L hlen).symm
+    have heq : listNth L (L.length - 1) = listNth L (L.length - 2) := hyp.symm
+    -- We evaluate matchSearch at L.length - 1 changed to L.length - 2 + 1 to find the match.
+    have h_eval : matchSearch L (L.length - 2 + 1) = (L.length - 1) - (L.length - 2) := by
+      exact matchSearch_ite_tt L (L.length - 2) heq
+    rw [hsucc]
+    rw [h_eval]
+    have h_sub : L.length - 1 - (L.length - 2) = 1 := by
+      rw [hsucc]
+      exact Nat.add_sub_cancel_left (L.length - 2) 1
+    exact Nat.le_of_eq h_sub.symm
+  | succ n _ =>
+    -- First, we establish that the target spot L.length - 2 - n is just one index
+    -- ahead of L.length - 2 - (n + 1) using obv10.
+    have hil0 : L.length - 2 - n = L.length - 2 - (n + 1) + 1 := by
+      have h_lt : n + 1 < L.length - 1 := hn
+      have h_pos : 0 < L.length - 1 - (n + 1) := Nat.sub_pos_of_lt h_lt
+      have h_sub_eq : L.length - 1 - (n + 1) = L.length - (n + 1) - 1 := by rw [Nat.sub_right_comm (L.length) 1 (n + 1)]
+      rw [h_sub_eq] at h_pos
+      have h_sub2 : L.length - (n + 1) - 1 = L.length - n - 2 := by rw [Nat.sub_sub]; rfl
+      rw [h_sub2] at h_pos
+      have obv10_res := (obv10 L n).mp h_pos
+      rw [Nat.sub_right_comm L.length n 2] at obv10_res
+      rw [Nat.sub_right_comm L.length (n + 1) 2] at obv10_res
+      exact obv10_res
+
+    -- Now that we have `L.length - 2 - n = X + 1`, we can naturally construct the matchSearch if-statement natively without unfolding heavily.
+    have hmatch : matchSearch L (L.length - 2 - n) = L.length - 1 - (L.length - 2 - (n + 1)) := by
+      rw [hil0]
+      have heq : listNth L (L.length - 1) = listNth L (L.length - 2 - (n + 1)) := hyp.symm
+      exact matchSearch_ite_tt L (L.length - 2 - (n + 1)) heq
+
+    -- Output distance is guaranteed non-zero by obv13 bounds testing.
+    have hneq0 : L.length - 1 - (L.length - 2 - (n + 1)) ≠ 0 := by
+      apply obv13 L n hlen hn
+
+    -- Using the match location, we apply our previous backwards depth search hook verification
+    have hmatch2 : matchSearch L (L.length - 1) ≠ 0 := by
+      have hm3 : matchSearch L (L.length - 2 - n) ≠ 0 := by
+        rw [hmatch]
+        exact hneq0
+      have h4 : L.length - 2 - n = L.length - 1 - (n + 1) := obv14 L n
+      rw [h4] at hm3
+      exact match_search_nonzero_after_match_before_end (n+1) L hm3
+
+    -- Having proven matchSearch is not 0 natively, it must be at least 1 trivially.
+    exact obv15 _ hmatch2
 
 def listNthTail : List ℕ → ℕ → List ℕ
   | [], _ => []
