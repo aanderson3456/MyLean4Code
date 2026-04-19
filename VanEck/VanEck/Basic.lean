@@ -378,6 +378,19 @@ lemma listNth_drop (d i : ℕ) : ∀ L : List ℕ, listNth (L.drop d) i = listNt
       rw [h2]
       exact hd xs
 
+lemma drop_eq_listNth (L1 L2 : List ℕ) (B : ℕ)
+    (hl1 : L1.length ≥ B) (hl2 : L2.length ≥ B)
+    (h_eq : L1.drop (L1.length - B) = L2.drop (L2.length - B))
+    (d : ℕ) (hd : d < B) :
+    listNth L1 (L1.length - 1 - d) = listNth L2 (L2.length - 1 - d) := by
+  have hidx1 : L1.length - B + (B - 1 - d) = L1.length - 1 - d := by omega
+  have hidx2 : L2.length - B + (B - 1 - d) = L2.length - 1 - d := by omega
+  have h1 := listNth_drop (L1.length - B) (B - 1 - d) L1
+  have h2 := listNth_drop (L2.length - B) (B - 1 - d) L2
+  rw [hidx1] at h1
+  rw [hidx2] at h2
+  rw [← h1, ← h2, h_eq]
+
 lemma matchSearch_eq_dist (L : List ℕ) (start d : ℕ)
     (h_match : listNth L (L.length - 1) = listNth L start)
     (h_fail : ∀ k, 1 ≤ k → k ≤ d → listNth L (L.length - 1) ≠ listNth L (start + k)) :
