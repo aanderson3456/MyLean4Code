@@ -537,7 +537,7 @@ lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B
   let M := B ^ B
   let f : ℕ → ℕ := fun n => stateEval (vanEckState n B) B
   have h_lim : ∀ n, f n < M := fun n => by
-    have hl := stateEval_lt_pow B hB_gt (vanEckState n B) (vanEckState_bounded n B h_bound)
+    have hl := stateEval_lt_pow B hB_gt (vanEckState n B) (vanEckState_isBounded n B h_bound)
     rw [vanEckState_length] at hl; exact hl
   let f_fin : Fin (M + 1) → Fin M := fun x => ⟨f x.val, h_lim x.val⟩
   have h_card : Fintype.card (Fin M) < Fintype.card (Fin (M + 1)) := by simp
@@ -546,9 +546,9 @@ lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B
   have heq_val : f x.val = f y.val := congr_arg Fin.val heq
   have h_state_eq : vanEckState x.val B = vanEckState y.val B := by
     apply stateEval_inj B hB_gt
-    · exact vanEckState_bounded x.val B h_bound
+    · exact vanEckState_isBounded x.val B h_bound
     · rw [vanEckState_length, vanEckState_length]
-    · exact vanEckState_bounded y.val B h_bound
+    · exact vanEckState_isBounded y.val B h_bound
     · exact heq_val
   by_cases h_lt : x.val < y.val
   · exact ⟨x.val, y.val, h_lt, h_state_eq⟩
