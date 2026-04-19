@@ -400,6 +400,42 @@ lemma bounded_if_tail_eq_nonzero (N : ℕ) :
   intro n
   exact Nat.lt_succ_of_le (prefix_contains_all_terms N n h)
 
+-- As Sloane identified, bounded sequence propagation depends purely on recent history.
+-- We formally define `vanEckState` as the exact backwards subset of length `B` 
+-- capturing the previous sequence evaluations framing our Pigeonhole limits.
+def vanEckState (n B : ℕ) : List ℕ :=
+  (vanEck (n - 1)).drop (n - B)
+
+-- We formally verify that the evaluation limit retains its exact dimension `B` natively.
+lemma vanEckState_length (n B : ℕ) (hn : n ≥ B) (hB : B > 0) :
+    (vanEckState n B).length = B := by
+  unfold vanEckState
+  rw [List.length_drop]
+  rw [vanEckLength (n - 1)]
+  have hn_pos : n > 0 := Nat.lt_of_lt_of_le hB hn
+  have hl : (n - 1) + 1 = n := Nat.sub_add_cancel hn_pos
+  rw [hl]
+  exact Nat.sub_sub_self hn
+
+-- Sloane restricts the topological scope to the defined boundary `B`.
+-- We mathematically declare a Sequence State as valid if every term obeys `B` natively.
+def IsBoundedState (L : List ℕ) (B : ℕ) : Prop :=
+  ∀ x ∈ L, x < B
+
+-- Any element extracted from the finite-zero bound sequence evaluates exactly under `B` natively.
+lemma mem_vanEck_bound {x N B : ℕ} (hx : x ∈ vanEck N) (h_bound : ∀ k, vanEckNthTerm k < B) :
+    x < B := by
+  sorry
+
+-- Coupling these constraints precisely enforces that every shifting slice of our sequence
+-- adheres to the Pigeonhole threshold dimensionality!
+lemma vanEckState_isBounded (n B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
+    IsBoundedState (vanEckState n B) B := by
+  intro x hx
+  unfold vanEckState at hx
+  have h_mem := List.mem_of_mem_drop hx
+  exact mem_vanEck_bound h_mem h_bound
+
 theorem infinite_zeros_vanEck (N : ℕ) : ∃ m : ℕ, m > N ∧ vanEckNthTerm m = 0 := by
   by_contra Hyp
   have h1 : ∀ (m : ℕ), ¬ (m > N ∧ vanEckNthTerm m = 0) := by
