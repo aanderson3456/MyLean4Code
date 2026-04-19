@@ -492,7 +492,7 @@ lemma stateEval_lt_pow (L : List ℕ) (B : ℕ) (hB : B > 1) (h_bound : IsBounde
 -- Phase 3: Matrix Injectivity
 -- By establishing that overlapping Base-B integer conversions natively map exclusively
 -- to identical mathematical sequence arrays, we topologically assert vector uniqueness.
-lemma stateEval_inj (L1 L2 : List ℕ) (B : ℕ) (hB : B > 1)
+lemma stateEval_inj (B : ℕ) (hB : B > 1) (L1 L2 : List ℕ)
     (hlen : L1.length = L2.length) (h_bound1 : IsBoundedState L1 B)
     (h_bound2 : IsBoundedState L2 B) (h_eq : stateEval L1 B = stateEval L2 B) :
     L1 = L2 := by
