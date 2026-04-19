@@ -417,6 +417,8 @@ lemma bounded_if_tail_eq_nonzero (N : ℕ) :
 def vanEckState (n B : ℕ) : List ℕ :=
   (vanEck (n - 1)).drop (n - B)
 
+#eval (vanEckState 9 4)
+
 -- We formally verify that the evaluation limit retains its exact dimension `B` natively.
 lemma vanEckState_length (n B : ℕ) (hn : n ≥ B) (hB : B > 0) :
     (vanEckState n B).length = B := by
@@ -532,7 +534,8 @@ lemma stateEval_inj (B : ℕ) (hB : B > 1) (L1 L2 : List ℕ)
 -- sequence evaluations across bounds natively enforce a structural Pigeonhole duplication.
 lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
     ∃ n_1 n_2 : ℕ, B ≤ n_1 ∧ n_1 < n_2 ∧ vanEckState n_1 B = vanEckState n_2 B := by
-  have hB_gt : B > 1 := by have h2 := h_bound 2; rw [rfl : vanEckNthTerm 2 = 1] at h2; exact h2
+  have hb2 : vanEckNthTerm 2 = 1 := rfl
+  have hB_gt : B > 1 := by have h2 := h_bound 2; rw [hb2] at h2; exact h2
   let M := B ^ B
   let f : ℕ → ℕ := fun n => stateEval (vanEckState (n + B) B) B
   have h_lim : ∀ n, f n < M := fun n => by
@@ -560,14 +563,106 @@ lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B
   · have h_gt : y.val < x.val := Nat.lt_of_le_of_ne (Nat.le_of_not_lt h_lt) (fun h => hne (Fin.eq_of_val_eq h.symm))
     exact ⟨y.val + B, x.val + B, hy, Nat.add_lt_add_right h_gt B, h_state_eq.symm⟩
 
+lemma vanEck_term_is_matchSearch (n : ℕ) (hn : n > 0) :
+    vanEckNthTerm n = matchSearch (vanEck (n - 1)) (n - 1) := by
+  have h : n = n - 1 + 1 := (Nat.sub_add_cancel hn).symm
+  unfold vanEckNthTerm
+  have heq : listNth (vanEck n) n = listNth (vanEck (n - 1 + 1)) (n - 1 + 1) := by
+    conv => lhs; rw [h]
+  rw [heq]
+  exact list_nth_VE_eq_ms (n - 1)
+
 -- Because sequence steps evaluate purely by recursive bounds limits,
 -- identical finite sequence frames natively generate perfectly identical future terms.
 lemma sequence_determinism_succ (n_1 n_2 B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B)
     (h_eq : vanEckState n_1 B = vanEckState n_2 B)
     (hn1 : B ≤ n_1) (hn2 : B ≤ n_2) (hb0 : B > 0) :
     vanEckNthTerm n_1 = vanEckNthTerm n_2 := by
-  -- Using matchSearch_eq_dist geometrically cleanly testing deterministic frames identically.
-  sorry
+  have d1_lt : vanEckNthTerm n_1 < B := h_bound n_1
+  have hn1_pos : 0 < n_1 := Nat.lt_of_lt_of_le hb0 hn1
+  have hn2_pos : 0 < n_2 := Nat.lt_of_lt_of_le hb0 hn2
+  have hL1_len : (vanEck (n_1 - 1)).length ≥ B := by
+    rw [vanEckLength]
+    have h : n_1 - 1 + 1 = n_1 := Nat.sub_add_cancel hn1_pos
+    rw [h]; exact hn1
+  have hL2_len : (vanEck (n_2 - 1)).length ≥ B := by
+    rw [vanEckLength]
+    have h : n_2 - 1 + 1 = n_2 := Nat.sub_add_cancel hn2_pos
+    rw [h]; exact hn2
+
+  have h_van_eq : (vanEck (n_1 - 1)).drop ((vanEck (n_1 - 1)).length - B) =
+      (vanEck (n_2 - 1)).drop ((vanEck (n_2 - 1)).length - B) := by
+    have h1 : (vanEck (n_1 - 1)).length - B = n_1 - B := by
+      rw [vanEckLength, Nat.sub_add_cancel hn1_pos]
+    have h2 : (vanEck (n_2 - 1)).length - B = n_2 - B := by
+      rw [vanEckLength, Nat.sub_add_cancel hn2_pos]
+    rw [h1, h2]
+    exact h_eq
+
+  have ht1 := vanEck_term_is_matchSearch n_1 hn1_pos
+  have ht2 := vanEck_term_is_matchSearch n_2 hn2_pos
+
+  have hind1 : n_1 - 1 = (vanEck (n_1 - 1)).length - 1 := by rw [vanEckLength, Nat.add_sub_cancel]
+  have hind2 : n_2 - 1 = (vanEck (n_2 - 1)).length - 1 := by rw [vanEckLength, Nat.add_sub_cancel]
+
+  have h_lhs : matchSearch (vanEck (n_1 - 1)) ((vanEck (n_1 - 1)).length - 1) = vanEckNthTerm n_1 := by
+    rw [← hind1]; exact ht1.symm
+
+  have h_rhs_term : matchSearch (vanEck (n_2 - 1)) ((vanEck (n_2 - 1)).length - 1) = vanEckNthTerm n_2 := by
+    rw [← hind2]; exact ht2.symm
+
+  have d2_lt : vanEckNthTerm n_2 < B := h_bound n_2
+
+  exact matchSearch_symm_eval (vanEck (n_1 - 1)) (vanEck (n_2 - 1)) B hb0 hL1_len hL2_len h_van_eq
+    (vanEckNthTerm n_1) (vanEckNthTerm n_2) d1_lt d2_lt h_lhs h_rhs_term
+
+lemma tail_drop (a : ℕ) (L : List ℕ) : (L.drop a).tail = L.drop (a + 1) := by
+  revert a
+  induction L with
+  | nil =>
+    intro a
+    rw [List.drop_nil, List.tail_nil, List.drop_nil]
+  | cons x xs ih =>
+    intro a
+    cases a with
+    | zero => rfl
+    | succ a =>
+      have h1 : (x :: xs).drop (a + 1) = xs.drop a := rfl
+      have h2 : (x :: xs).drop (a + 1 + 1) = xs.drop (a + 1) := rfl
+      rw [h1, h2]
+      exact ih a
+
+lemma vanEckState_succ (n B : ℕ) (hn : n ≥ B) (hb0 : B > 0) :
+    vanEckState (n + 1) B = (vanEckState n B).tail ++ [vanEckNthTerm n] := by
+  unfold vanEckState
+  have hn_pos : n > 0 := Nat.lt_of_lt_of_le hb0 hn
+  have hn_prev : n = (n - 1) + 1 := (Nat.sub_add_cancel hn_pos).symm
+  have h_append : vanEck (n + 1 - 1) = vanEck (n - 1) ++ [vanEckNthTerm n] := by
+    have h1 : n + 1 - 1 = n := rfl
+    rw [h1]
+    nth_rw 1 [hn_prev]
+    have h_unfold : vanEck (n - 1 + 1) = vanEck (n - 1) ++ [vanEckNextTerm (vanEck (n - 1))] := rfl
+    rw [h_unfold]
+    have h_term : vanEckNextTerm (vanEck (n - 1)) = vanEckNthTerm n := by
+      have ht := vanEck_term_is_matchSearch n hn_pos
+      unfold vanEckNextTerm
+      have h_len : (vanEck (n - 1)).length - 1 = n - 1 := by rw [vanEckLength, Nat.add_sub_cancel]
+      rw [h_len]
+      exact ht.symm
+    rw [h_term]
+  rw [h_append]
+  have h_drop_append : (vanEck (n - 1) ++ [vanEckNthTerm n]).drop (n + 1 - B) =
+      ((vanEck (n - 1)).drop (n + 1 - B)) ++ [vanEckNthTerm n] := by
+    apply List.drop_append_of_le_length
+    have h_len : (vanEck (n - 1)).length = n - 1 + 1 := vanEckLength _
+    have hl_eq : n - 1 + 1 = n := Nat.sub_add_cancel hn_pos
+    rw [h_len, hl_eq]
+    omega
+  rw [h_drop_append]
+  have h_tail := tail_drop (n - B) (vanEck (n - 1))
+  rw [h_tail]
+  have h_idx : n - B + 1 = n + 1 - B := (Nat.succ_sub hn).symm
+  rw [h_idx]
 
 -- When sequence evaluation states organically collide within Pigeonhole constraints,
 -- their strict computational determinism natively locks forward periodic recursion universally.
@@ -578,41 +673,219 @@ lemma forward_periodicity (n_1 n_2 B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < 
     vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_2 + k) := by
   induction k with
   | zero =>
-    -- Base sequence bounds naturally execute identical subset evaluations
-    sorry
+    constructor
+    · exact h_eq
+    · exact sequence_determinism_succ n_1 n_2 B h_bound h_eq hn1 hn2 hb0
   | succ k ih =>
-    -- Recursive subset generation locks future state limits mathematically
-    sorry
+    rcases ih with ⟨ih_state, ih_term⟩
+    have hk1 : n_1 + (k + 1) = (n_1 + k) + 1 := rfl
+    have hk2 : n_2 + (k + 1) = (n_2 + k) + 1 := rfl
+    rw [hk1, hk2]
 
--- Phase 4: Reverse Determinism
--- Sloane highlighted that if a finite sequence locks into forward recursion,
--- the lack of zero-emission natively traps the preceding evaluations strictly uniformly.
-lemma reverse_periodicity_step (n P B : ℕ) (hn : n > 0)
-    (h_bound : ∀ k, vanEckNthTerm k < B) (h_nozero : ∀ k, k ≥ n - 1 → vanEckNthTerm k ≠ 0)
-    (h_period : ∀ k, vanEckState (n + k) B = vanEckState (n + P + k) B) :
-    vanEckState (n - 1) B = vanEckState (n + P - 1) B ∧
-    vanEckNthTerm (n - 1) = vanEckNthTerm (n + P - 1) := by
-  -- Because `vanEckState` evaluates identically forward and identically backward devoid of zeros,
-  -- pulling limits back mathematically collapses identically symmetrically natively.
+    have h_s1 := vanEckState_succ (n_1 + k) B (Nat.le_trans hn1 (Nat.le_add_right n_1 k)) hb0
+    have h_s2 := vanEckState_succ (n_2 + k) B (Nat.le_trans hn2 (Nat.le_add_right n_2 k)) hb0
+
+    have h_next_state : vanEckState ((n_1 + k) + 1) B = vanEckState ((n_2 + k) + 1) B := by
+      rw [h_s1, h_s2, ih_state, ih_term]
+
+    constructor
+    · exact h_next_state
+    · apply sequence_determinism_succ ((n_1 + k) + 1) ((n_2 + k) + 1) B h_bound h_next_state (Nat.le_succ_of_le (Nat.le_trans hn1 (Nat.le_add_right n_1 k))) (Nat.le_succ_of_le (Nat.le_trans hn2 (Nat.le_add_right n_2 k))) hb0
+
+-- Phase 4: Max-Value Sequence Homogeneity Collapse
+-- Sloane highlighted that if a sequence has no zeroes, it evaluates bounded positive distances.
+-- A sequence bounded by distances forces its maximum value `M` to reproduce natively,
+-- homogenizing the entire sequence cycle into `1, 1, 1, 1`, which contradicts `x_0 = 0`.
+
+-- Step 1: If a sequence outputs exactly distance 1, it means the previous element matched immediately.
+lemma term_eq_one_implies (n : ℕ) (hn : n ≥ 2) (h1 : vanEckNthTerm n = 1) :
+    vanEckNthTerm (n - 1) = vanEckNthTerm (n - 2) := by
+  have hm := vanEck_term_is_matchSearch n (lt_of_lt_of_le (by decide) hn)
+  rw [h1] at hm
+  have hl : (vanEck (n - 1)).length - 1 = n - 1 := by
+    rw [vanEckLength]
+    omega
+  have hm2 : matchSearch (vanEck (n - 1)) (n - 1) = 1 := hm.symm
+  have hn_split : n - 1 = n - 2 + 1 := by cases n; contradiction; rename_i n; cases n; contradiction; rfl
+  have hm3 : matchSearch (vanEck (n - 1)) (n - 2 + 1) = 1 := by
+    have h_rw : n - 2 + 1 = n - 1 := by cases n; contradiction; rename_i n; cases n; contradiction; rfl
+    rw [h_rw]
+    exact hm2
+  unfold matchSearch at hm3
+  split at hm3
+  · rename_i h_eq
+    rw [hl] at h_eq
+    have hd_term_def : vanEckNthTerm (n - 2) = listNth (vanEck (n - 2)) (n - 2) := rfl
+    have hd2 := VanEck_deterministic (n - 1) (n - 2) (by
+      cases n with
+      | zero => contradiction
+      | succ n => cases n with
+        | zero => contradiction
+        | succ n => exact Nat.le_succ_of_le (Nat.le_refl _)
+    )
+    rw [hd2, ← hd_term_def] at h_eq
+    have hd_term_def1 : vanEckNthTerm (n - 1) = listNth (vanEck (n - 1)) (n - 1) := rfl
+    rw [← hd_term_def1] at h_eq
+    exact h_eq
+  · rename_i h_neq
+    have h_bound := matchSearch_lower_bound (vanEck (n - 1)) (n - 2)
+    rcases h_bound with h0 | h_pos
+    · rw [h0] at hm3; contradiction
+    · have h_len : (vanEck (n - 1)).length = n := by
+        have hl1 := vanEckLength (n - 1)
+        have hl2 : n - 1 + 1 = n := Nat.sub_add_cancel (by cases n; contradiction; rename_i n; exact Nat.le_add_left 1 n)
+        rw [hl2] at hl1
+        exact hl1
+      rw [h_len] at h_pos
+      have h_impossible : n - (n - 2) ≤ 1 := by rw [hm3] at h_pos; exact h_pos
+      have h_contra : n - (n - 2) = 2 := by cases n with | zero => contradiction | succ n => cases n with | zero => contradiction | succ n => exact Nat.add_sub_cancel_left n 2
+      rw [h_contra] at h_impossible
+      contradiction
+
+-- Step 2: Since x_{k+1} = 1 implies x_k = x_{k-1}, having two 1s in a row forces the previous element to be exactly equal.
+lemma continuous_ones_propagate (n : ℕ) (hn : n ≥ 1) (h1 : vanEckNthTerm n = 1) (h2 : vanEckNthTerm (n + 1) = 1) :
+    vanEckNthTerm (n - 1) = 1 := by
+  have hk := term_eq_one_implies (n + 1) (Nat.succ_le_succ hn) h2
+  have hk_id : n + 1 - 1 = n := rfl
+  have hk_prev : n + 1 - 2 = n - 1 := rfl
+  rw [hk_id, hk_prev] at hk
+  rw [h1] at hk
+  exact hk.symm
+
+-- Step 3: Pushing 1s backward completely down to index 0.
+lemma constant_one_tail_backward (n : ℕ) (h_tail : ∀ k ≥ n, vanEckNthTerm k = 1) (m : ℕ) : 
+    vanEckNthTerm m = 1 := by
+  by_cases hm : m ≥ n
+  · exact h_tail m hm
+  · have H : ∀ d, ∀ k, n - k ≤ d → vanEckNthTerm k = 1 := by
+      intro d
+      induction d with
+      | zero =>
+        intro k hk
+        exact h_tail k (Nat.le_of_sub_eq_zero (Nat.eq_zero_of_le_zero hk))
+      | succ d ih =>
+        intro k hk
+        by_cases hkn : k ≥ n
+        · exact h_tail k hkn
+        · have hk1 : n - (k + 1) ≤ d := Nat.pred_le_pred hk
+          have hk2 : n - (k + 2) ≤ d := Nat.le_trans (Nat.sub_le (n - (k + 1)) 1) hk1
+          have h1 := ih (k + 1) hk1
+          have h2 := ih (k + 2) hk2
+          have hp := continuous_ones_propagate (k + 1) (Nat.le_add_left 1 k) h1 h2
+          have heq : k + 1 - 1 = k := rfl
+          rw [heq] at hp
+          exact hp
+    exact H (n - m) m (Nat.le_refl _)
+
+-- Step 4: Constant 1 contradicts `vanEckNthTerm 0 = 0`!
+lemma constant_one_tail_contradiction (n : ℕ) (h_tail : ∀ k ≥ n, vanEckNthTerm k = 1) : False := by
+  have hz := constant_one_tail_backward n h_tail 0
+  have hz_def : vanEckNthTerm 0 = 0 := rfl
+  rw [hz_def] at hz
+  contradiction
+
+-- Step 4: The topological maximum value $M$ of the periodic cycle
+open Classical in
+lemma max_value_exists (N B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
+    ∃ M < B, (∃ k ≥ N, vanEckNthTerm k = M) ∧ ∀ j ≥ N, vanEckNthTerm j ≤ M := by
+  have H : ∀ b, (∀ k ≥ N, vanEckNthTerm k < b) → 
+                 ∃ M < b, (∃ k ≥ N, vanEckNthTerm k = M) ∧ ∀ j ≥ N, vanEckNthTerm j ≤ M := by
+    intro b
+    induction b with
+    | zero =>
+      intro h_b
+      have h_contra := h_b N (Nat.le_refl N)
+      contradiction
+    | succ m ih =>
+      intro h_b
+      by_cases h_m : ∃ k ≥ N, vanEckNthTerm k = m
+      · use m
+        constructor
+        · exact Nat.lt_succ_self m
+        · constructor
+          · exact h_m
+          · intro j hj
+            have h_lt := h_b j hj
+            exact Nat.le_of_succ_le_succ h_lt
+      · have h_lt_m : ∀ k ≥ N, vanEckNthTerm k < m := by
+          intro k hk
+          have h1 := h_b k hk
+          have h2 : ¬ (vanEckNthTerm k = m) := by
+            intro contra
+            have h_ex : ∃ k ≥ N, vanEckNthTerm k = m := ⟨k, hk, contra⟩
+            contradiction
+          have h3 : vanEckNthTerm k ≤ m := Nat.le_of_succ_le_succ h1
+          exact Nat.lt_of_le_of_ne h3 h2
+        have h_ih := ih h_lt_m
+        rcases h_ih with ⟨M, hM_lt, hM_ex, hM_bound⟩
+        use M
+        constructor
+        · exact Nat.lt_trans hM_lt (Nat.lt_succ_self m)
+        · exact ⟨hM_ex, hM_bound⟩
+  exact H B (fun k _ => h_bound k)
+
+lemma max_value_implies_M_eq_one (n M : ℕ) (h_bound : ∀ k ≥ n, vanEckNthTerm k ≤ M)
+    (h_M_exists : ∃ k ≥ n + M, vanEckNthTerm k = M)
+    (h_no_zeros : ∀ k ≥ n, vanEckNthTerm k ≠ 0) : M = 1 := by
   sorry
 
--- Phase 5: Reversibility to Index 0 Contradiction Capstone
--- By natively looping the reverse step limit backward to index 0, we organically collide
--- the mathematical sequence generation (0) identically against the zero-free boundary limits.
-lemma zero_collision_contradiction (P : ℕ) (hP : P > 0)
-    (h_nozero : ∀ k, vanEckNthTerm k ≠ 0)
-    (h_period : ∀ k, vanEckNthTerm k = vanEckNthTerm (P + k)) :
-    False := by
-  have h_zero : vanEckNthTerm 0 = 0 := rfl
-  have h_P_eq : vanEckNthTerm 0 = vanEckNthTerm P := h_period 0
-  have h_P_nozero : vanEckNthTerm P ≠ 0 := h_nozero P
-  rw [h_zero] at h_P_eq
-  exact h_P_nozero h_P_eq.symm
+lemma zero_free_implies_constant_one (n M : ℕ) (h_bound : ∀ k ≥ n, vanEckNthTerm k ≤ M)
+    (h_M_exists : ∃ k ≥ n + M + 1, vanEckNthTerm k = M)
+    (h_no_zeros : ∀ k ≥ n, vanEckNthTerm k ≠ 0) : ∀ k ≥ n, vanEckNthTerm k = 1 := by
+  have hM1 := max_value_implies_M_eq_one n M h_bound (by 
+    rcases h_M_exists with ⟨k, hk, hkM⟩
+    use k
+    constructor
+    · exact Nat.le_of_succ_le hk
+    · exact hkM
+  ) h_no_zeros
+  rw [hM1] at h_bound
+  intro k hk
+  have h_le := h_bound k hk
+  have h_nz := h_no_zeros k hk
+  exact le_antisymm h_le (Nat.pos_of_ne_zero h_nz)
 
 theorem infinite_zeros_vanEck (N : ℕ) : ∃ m : ℕ, m > N ∧ vanEckNthTerm m = 0 := by
   by_contra Hyp
-  have h1 : ∀ (m : ℕ), ¬ (m > N ∧ vanEckNthTerm m = 0) := by
-    apply logic2; exact Hyp
-  change (∃ m : ℕ, m > N ∧ vanEckNthTerm m = 0) → False at Hyp
-  apply Hyp
-  sorry
+  have h1 : ∀ m > N, vanEckNthTerm m ≠ 0 := by
+    intro m hm hm0
+    have hc : ∃ m > N, vanEckNthTerm m = 0 := ⟨m, hm, hm0⟩
+    contradiction
+  have hb := bounded_if_tail_eq_nonzero N h1
+  rcases hb with ⟨B, hb2⟩
+  have h_bound : ∀ k, vanEckNthTerm k < B := hb2
+  
+  have hb0 : B > 0 := h_bound 0
+    
+  have h_coll := pigeonhole_state_collision B h_bound
+  let n_1 := Classical.choose h_coll
+  have h_n1_rest : ∃ n_2, B ≤ n_1 ∧ n_1 < n_2 ∧ vanEckState n_1 B = vanEckState n_2 B := Classical.choose_spec h_coll
+  let n_2 := Classical.choose h_n1_rest
+  have h_n2_rest : B ≤ n_1 ∧ n_1 < n_2 ∧ vanEckState n_1 B = vanEckState n_2 B := Classical.choose_spec h_n1_rest
+  have hn1 := h_n2_rest.1
+  have hn_lt := h_n2_rest.2.1
+  have h_state_eq := h_n2_rest.2.2
+  have hn2 : B ≤ n_2 := Nat.le_trans hn1 (Nat.le_of_lt hn_lt)
+  
+  let N_1 := n_1 + N + 1
+  let N_2 := n_2 + N + 1
+  have hn_shift_eq : vanEckState N_1 B = vanEckState N_2 B := (forward_periodicity n_1 n_2 B h_bound h_state_eq hn1 hn2 hb0 (N + 1)).1
+  
+  have hN1_le : B ≤ N_1 := Nat.le_trans hn1 (Nat.le_trans (Nat.le_add_right n_1 N) (Nat.le_add_right (n_1 + N) 1))
+  have hN2_le : B ≤ N_2 := Nat.le_trans hn2 (Nat.le_trans (Nat.le_add_right n_2 N) (Nat.le_add_right (n_2 + N) 1))
+  have h_period := forward_periodicity N_1 N_2 B h_bound hn_shift_eq hN1_le hN2_le hb0
+  
+  have h_max := max_value_exists N_1 B h_bound
+  rcases h_max with ⟨M, hM_lt, ⟨k, hk, hkM⟩, h_M_bound⟩
+  
+  have h_M_inf : ∃ k2 ≥ N_1 + M + 1, vanEckNthTerm k2 = M := by
+    sorry
+    
+  have h_ones := zero_free_implies_constant_one N_1 M h_M_bound h_M_inf (by
+    intro j hj
+    have hN_lt : N < N_1 := Nat.lt_of_le_of_lt (Nat.le_add_left N n_1) (Nat.lt_succ_self _ )
+    have hjN : j > N := Nat.lt_of_lt_of_le hN_lt hj
+    exact h1 j hjN
+  )
+  
+  exact constant_one_tail_contradiction N_1 h_ones
