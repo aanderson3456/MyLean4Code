@@ -532,7 +532,28 @@ lemma stateEval_inj (B : ℕ) (hB : B > 1) (L1 L2 : List ℕ)
 -- sequence evaluations across bounds natively enforce a structural Pigeonhole duplication.
 lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
     ∃ n_1 n_2 : ℕ, n_1 < n_2 ∧ vanEckState n_1 B = vanEckState n_2 B := by
-  sorry
+  have hb2 : vanEckNthTerm 2 = 1 := rfl
+  have hB_gt : B > 1 := by have h2 := h_bound 2; rw [hb2] at h2; exact h2
+  let M := B ^ B
+  let f : ℕ → ℕ := fun n => stateEval (vanEckState n B) B
+  have h_lim : ∀ n, f n < M := fun n => by
+    have hl := stateEval_lt_pow B hB_gt (vanEckState n B) (vanEckState_bounded n B h_bound)
+    rw [vanEckState_length] at hl; exact hl
+  let f_fin : Fin (M + 1) → Fin M := fun x => ⟨f x.val, h_lim x.val⟩
+  have h_card : Fintype.card (Fin M) < Fintype.card (Fin (M + 1)) := by simp
+  have h_exists := Fintype.exists_ne_map_eq_of_card_lt f_fin h_card
+  rcases h_exists with ⟨x, y, hne, heq⟩
+  have heq_val : f x.val = f y.val := congr_arg Fin.val heq
+  have h_state_eq : vanEckState x.val B = vanEckState y.val B := by
+    apply stateEval_inj B hB_gt
+    · exact vanEckState_bounded x.val B h_bound
+    · rw [vanEckState_length, vanEckState_length]
+    · exact vanEckState_bounded y.val B h_bound
+    · exact heq_val
+  by_cases h_lt : x.val < y.val
+  · exact ⟨x.val, y.val, h_lt, h_state_eq⟩
+  · have h_gt : y.val < x.val := Nat.lt_of_le_of_ne (Nat.le_of_not_lt h_lt) (fun h => hne (Fin.eq_of_val_eq h.symm))
+    exact ⟨y.val, x.val, h_gt, h_state_eq.symm⟩
 
 -- Because sequence steps evaluate purely by recursive bounds limits, 
 -- identical finite sequence frames natively generate perfectly identical future terms.
