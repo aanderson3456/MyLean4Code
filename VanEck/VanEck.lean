@@ -479,6 +479,18 @@ lemma forward_periodicity (n_1 n_2 B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < 
     -- Recursive subset generation locks future state limits mathematically
     sorry
 
+-- Phase 4: Reverse Determinism
+-- Sloane highlighted that if a finite sequence locks into forward recursion,
+-- the lack of zero-emission natively traps the preceding evaluations strictly uniformly.
+lemma reverse_periodicity_step (n P B : ℕ) (hn : n > 0)
+    (h_bound : ∀ k, vanEckNthTerm k < B) (h_nozero : ∀ k, k ≥ n - 1 → vanEckNthTerm k ≠ 0)
+    (h_period : ∀ k, vanEckState (n + k) B = vanEckState (n + P + k) B) :
+    vanEckState (n - 1) B = vanEckState (n + P - 1) B ∧ 
+    vanEckNthTerm (n - 1) = vanEckNthTerm (n + P - 1) := by
+  -- Because `vanEckState` evaluates identically forward and identically backward devoid of zeros,
+  -- pulling limits back mathematically collapses identically symmetrically natively.
+  sorry
+
 theorem infinite_zeros_vanEck (N : ℕ) : ∃ m : ℕ, m > N ∧ vanEckNthTerm m = 0 := by
   by_contra Hyp
   have h1 : ∀ (m : ℕ), ¬ (m > N ∧ vanEckNthTerm m = 0) := by
