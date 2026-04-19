@@ -219,36 +219,96 @@ lemma list_nth_VanEck_one_eq_zero (n : ℕ) :
   rw [VanEck_deterministic n 1 h]
   exact hb
 
---After starting, the nth term is zero iff a new number is found.
-lemma vanEck_nth_term_eq_zero_iff_vanEck_new (m : ℕ) (H : m > 2) :
-    vanEckNthTerm m = 0 ↔ (∀ n < m - 1, vanEckNthTerm n ≠ vanEckNthTerm (m - 1)) := by
+-- After starting, the nth term is zero iff a new number is found.
+lemma vanEck_mth_term_eq_zero_iff_prev_term_new (m : ℕ) :
+    vanEckNthTerm (m + 2) = 0 ↔ (∀ n < m + 1, vanEckNthTerm n ≠ vanEckNthTerm (m + 1)) := by
   apply Iff.intro
-  · intro VEmis0
-    intro n nless
-    induction m with
-    | zero =>
+  · intro h
+    unfold vanEckNthTerm at h
+    have h_ms : listNth (vanEck (m + 2)) (m + 2) = matchSearch (vanEck (m + 1)) (m + 1) := list_nth_VE_eq_ms (m + 1)
+    rw [h_ms] at h
+    intro n hn
+    by_contra hc
+    unfold vanEckNthTerm at hc
+    have h1 : listNth (vanEck n) n = listNth (vanEck (m + 1)) n := by
+      have hle : m + 1 ≥ n := Nat.le_of_lt hn
+      exact (VanEck_deterministic (m+1) n hle).symm
+    
+    have h0 : matchSearch (vanEck (m + 1)) (n + 1) ≥ 1 := by
+      have H_if : listNth (vanEck (m+1)) ((vanEck (m+1)).length - 1) = listNth (vanEck (m+1)) n := by
+        rw [vanEckLength (m+1)]
+        have h_len_sub : m + 2 - 1 = m + 1 := rfl
+        rw [h_len_sub]
+        rw [← h1]
+        exact hc.symm
+      have h_eval : matchSearch (vanEck (m+1)) (n+1) = (vanEck (m+1)).length - 1 - n := matchSearch_ite_tt (vanEck (m+1)) n H_if
+      rw [h_eval]
+      rw [vanEckLength]
+      have h_sub : m + 2 - 1 = m + 1 := rfl
+      rw [h_sub]
+      exact obv17 m n hn
+
+    by_cases he : n = m
+    · rw [he] at h0
+      rw [h] at h0
       exfalso
-      linarith
-    | succ d hd =>
-      have H0 : d > 1 := Nat.lt_of_succ_lt_succ H
-      clear H
-      have nlessd : n < d := nless
-      clear nless
-      unfold vanEckNthTerm
-      have dge2 : d ≥ 2 := by linarith
-      have led : 2 ≤ d := by linarith
-      clear dge2
-      rw [splitting_le] at led
-      cases led with
-      | inl a =>
-        clear H0
-        have hda := hd a
-        clear hd
-        -- by_contradiction conthyp
-        -- have VE_tt : matchSearch (vanEck d) (d+1) = (vanEck d).length - 1 - n
-        sorry
-      | inr b => sorry
-  · sorry
+      exact Nat.not_lt_zero 0 h0
+    · have h2 : n < m := by
+        have hle : n ≤ m := Nat.le_of_lt_succ hn
+        have hor : n < m ∨ n = m := (splitting_le n m).mp hle
+        cases hor with
+        | inl hlt => exact hlt
+        | inr heq => exfalso; exact he heq
+
+      have h00 : matchSearch (vanEck (m+1)) (n+1) ≠ 0 := obv16 _ h0
+      have h_index : (vanEck (m+1)).length - 1 - (m - n) = n + 1 := by
+        rw [vanEckLength]
+        have h_sub : m + 2 - 1 = m + 1 := rfl
+        rw [h_sub]
+        exact obv20 m n h2
+      
+      have h_trigger : matchSearch (vanEck (m+1)) ((vanEck (m+1)).length - 1 - (m - n)) ≠ 0 := by
+        rw [h_index]
+        exact h00
+      
+      have h_res : matchSearch (vanEck (m+1)) ((vanEck (m+1)).length - 1) ≠ 0 :=
+        match_search_nonzero_after_match_before_end (m - n) (vanEck (m+1)) h_trigger
+      
+      have h_len_eval : (vanEck (m+1)).length - 1 = m + 1 := by
+        rw [vanEckLength]
+        rfl
+      rw [h_len_eval] at h_res
+      exact h_res h
+
+  · unfold vanEckNthTerm
+    intro hn
+    have h_ms : listNth (vanEck (m + 2)) (m + 2) = matchSearch (vanEck (m + 1)) (m + 1) := list_nth_VE_eq_ms (m + 1)
+    rw [h_ms]
+    have hnomatch : ∀ x ≤ m + 1, matchSearch (vanEck (m + 1)) x = 0 := by
+      intro x
+      induction x with
+      | zero =>
+        intro _
+        exact ms_zero _
+      | succ x hni =>
+        intro hsuc
+        have h_le : x ≤ m + 1 := Nat.le_of_succ_le hsuc
+        have IH := hni h_le
+        have Hneg : listNth (vanEck (m+1)) ((vanEck (m+1)).length - 1) ≠ listNth (vanEck (m+1)) x := by
+          rw [vanEckLength]
+          have h_sub : m + 2 - 1 = m + 1 := rfl
+          rw [h_sub]
+          have hsuc2 : x < m + 1 := Nat.lt_of_succ_le hsuc
+          have hd : listNth (vanEck x) x = listNth (vanEck (m+1)) x := by
+            have hle2 : m + 1 ≥ x := Nat.le_of_lt hsuc2
+            exact (VanEck_deterministic (m+1) x hle2).symm
+          rw [← hd]
+          have hn_eval := hn x hsuc2
+          unfold vanEckNthTerm at hn_eval
+          exact Ne.symm hn_eval
+        rw [matchSearch_ite_ff _ _ Hneg]
+        exact IH
+    exact hnomatch (m + 1) (Nat.le_refl _)
 
 --Suppose there are not infinitely many zeros.
 --Then from a certain point on, no new terms appear, 
@@ -260,6 +320,8 @@ lemma bounded_if_tail_eq_nonzero (N : ℕ) :
 
 theorem infinite_zeros_vanEck (N : ℕ) : ∃ m : ℕ, m > N ∧ vanEckNthTerm m = 0 := by
   by_contra Hyp
+  have h1 : ∀ (m : ℕ), ¬ (m > N ∧ vanEckNthTerm m = 0) := by
+    apply logic2; exact Hyp
   change (∃ m : ℕ, m > N ∧ vanEckNthTerm m = 0) → False at Hyp
   apply Hyp
   sorry
