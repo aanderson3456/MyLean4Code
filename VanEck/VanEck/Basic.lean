@@ -372,11 +372,33 @@ lemma listNth_drop (d i : ℕ) : ∀ L : List ℕ, listNth (L.drop d) i = listNt
       have h1 : (x :: xs).drop (d + 1) = xs.drop d := rfl
       rw [h1]
       have h2 : listNth (x :: xs) (d + 1 + i) = listNth xs (d + i) := by
-        have hd1i : d + 1 + i = d + i + 1 := Nat.add_right_comm d 1 i
-        rw [hd1i]
-        rfl
-      rw [h2]
-      exact hd xs
+      have hd1i : d + 1 + i = d + i + 1 := Nat.add_right_comm d 1 i
+      rw [hd1i]
+      rfl
+    rw [h2]
+    exact hd xs
+
+lemma matchSearch_eq_dist (L : List ℕ) (start d : ℕ)
+    (h_match : listNth L (L.length - 1) = listNth L start)
+    (h_fail : ∀ k, 1 ≤ k → k ≤ d → listNth L (L.length - 1) ≠ listNth L (start + k)) :
+    matchSearch L (start + d + 1) = L.length - 1 - start := by
+  induction d with
+  | zero =>
+    have h1 : start + 0 + 1 = start + 1 := rfl
+    rw [h1, matchSearch_ite_tt L start h_match]
+  | succ d ih =>
+    have h1 : start + (d + 1) + 1 = start + d + 1 + 1 := by omega
+    rw [h1]
+    have h_fail_succ := h_fail (d + 1) (by omega) (by omega)
+    have heq : start + d + 1 = start + (d + 1) := by omega
+    have h_neq : listNth L (L.length - 1) ≠ listNth L (start + d + 1) := by
+      rw [heq]
+      exact h_fail_succ
+    rw [matchSearch_ite_ff L (start + d + 1) h_neq]
+    apply ih
+    intro k hk1 hkd
+    have h_le : k ≤ d + 1 := by omega
+    exact h_fail k hk1 h_le
 
 /--
 Provides the next term of the VanEck sequence given the previously existing list of terms.
