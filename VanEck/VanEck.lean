@@ -518,9 +518,14 @@ lemma stateEval_inj (B : ℕ) (hB : B > 1) (L1 L2 : List ℕ)
       have hB_pos : B > 0 := Nat.zero_lt_of_lt (Nat.lt_of_succ_lt hB)
       have ht_eval : stateEval t1 B = stateEval t2 B := 
         Nat.eq_of_mul_eq_mul_left hB_pos (Nat.add_left_cancel heq)
-      have hb_t1 : IsBoundedState t1 B := fun y hy => h_bound1 y (List.Mem.tail _ hy)
+      have hb_t1 : IsBoundedState t1 B := fun y hy => hb1 y (List.Mem.tail _ hy)
       have hb_t2 : IsBoundedState t2 B := fun y hy => hb2 y (List.Mem.tail _ hy)
-      have ht := ih t2 hlen_t hb_t2 ht_eval
+      have ht : t1 = t2 := by 
+        apply ih
+        · exact hlen_t
+        · exact hb_t1
+        · exact hb_t2
+        · exact ht_eval
       rw [hd, ht]
 
 -- Since the unique mathematical Lists of length `B` bounded by `B` is exactly B^B, 
