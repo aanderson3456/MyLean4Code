@@ -148,11 +148,12 @@ lemma vanEck_head_eq_zero (n : ℕ) : listNth (vanEck n) 0 = 0 :=
   list_nth_VanEck_zero_eq_zero n
 
 -- Deterministic Determinism Lemmas (Block 5)
-lemma list_nth_match_prepend (b n : ℕ) (L : List ℕ) : n ≥ 1 → listNth (b::L) n = listNth L (n - 1) := by
-  intro h
-  cases n with
-  | zero => exfalso; exact Nat.not_lt_zero 0 h
-  | succ m => rfl
+lemma list_nth_match_prepend (b n : ℕ) (L : List ℕ) : n ≥ 1 →
+  listNth (b::L) n = listNth L (n - 1) := by
+    intro h
+    cases n with
+    | zero => exfalso; exact Nat.not_lt_zero 0 h
+    | succ m => rfl
 
 lemma list_nth_eq_of_append_past_n (a n : ℕ) :
     ∀ L : List ℕ, L.length ≥ n + 1 → listNth (L ++ [a]) n = listNth L n := by
@@ -185,7 +186,8 @@ lemma list_nth_VE_eq_VE_next (n : ℕ) :
     listNth (vanEck (n + 1)) (n + 1) = vanEckNextTerm (vanEck n) := by
   have h_unfold : vanEck (n + 1) = vanEck n ++ [vanEckNextTerm (vanEck n)] := rfl
   rw [h_unfold]
-  have h1 : listNth (vanEck n ++ [vanEckNextTerm (vanEck n)]) (vanEck n).length = vanEckNextTerm (vanEck n) := listNth_last _ _
+  have h1 : listNth (vanEck n ++ [vanEckNextTerm (vanEck n)]) (vanEck n).length
+    = vanEckNextTerm (vanEck n) := listNth_last _ _
   rw [vanEckLength] at h1
   exact h1
 
@@ -209,7 +211,8 @@ lemma VanEck_deterministic_step (d m : ℕ) :
     have h3 : (vanEck (d + m)).length ≥ d + 1 := by
       rw [h2]
       exact Nat.add_le_add_right (Nat.le_add_right d m) 1
-    have h4 : listNth (vanEck (d + m) ++ [vanEckNextTerm (vanEck (d + m))]) d = listNth (vanEck (d + m)) d :=
+    have h4 : listNth (vanEck (d + m) ++ [vanEckNextTerm (vanEck (d + m))]) d
+      = listNth (vanEck (d + m)) d :=
       list_nth_eq_of_append_past_n (vanEckNextTerm (vanEck (d + m))) d _ h3
     rw [h4]
     exact hm
@@ -235,7 +238,8 @@ lemma vanEck_mth_term_eq_zero_iff_prev_term_new (m : ℕ) :
   apply Iff.intro
   · intro h
     unfold vanEckNthTerm at h
-    have h_ms : listNth (vanEck (m + 2)) (m + 2) = matchSearch (vanEck (m + 1)) (m + 1) := list_nth_VE_eq_ms (m + 1)
+    have h_ms : listNth (vanEck (m + 2)) (m + 2)
+      = matchSearch (vanEck (m + 1)) (m + 1) := list_nth_VE_eq_ms (m + 1)
     rw [h_ms] at h
     intro n hn
     by_contra hc
@@ -243,21 +247,21 @@ lemma vanEck_mth_term_eq_zero_iff_prev_term_new (m : ℕ) :
     have h1 : listNth (vanEck n) n = listNth (vanEck (m + 1)) n := by
       have hle : m + 1 ≥ n := Nat.le_of_lt hn
       exact (VanEck_deterministic (m+1) n hle).symm
-
     have h0 : matchSearch (vanEck (m + 1)) (n + 1) ≥ 1 := by
-      have H_if : listNth (vanEck (m+1)) ((vanEck (m+1)).length - 1) = listNth (vanEck (m+1)) n := by
-        rw [vanEckLength (m+1)]
-        have h_len_sub : m + 2 - 1 = m + 1 := rfl
-        rw [h_len_sub]
-        rw [← h1]
-        exact hc.symm
-      have h_eval : matchSearch (vanEck (m+1)) (n+1) = (vanEck (m+1)).length - 1 - n := matchSearch_ite_tt (vanEck (m+1)) n H_if
+      have H_if : listNth (vanEck (m+1)) ((vanEck (m+1)).length - 1)
+        = listNth (vanEck (m+1)) n := by
+          rw [vanEckLength (m+1)]
+          have h_len_sub : m + 2 - 1 = m + 1 := rfl
+          rw [h_len_sub]
+          rw [← h1]
+          exact hc.symm
+      have h_eval : matchSearch (vanEck (m+1)) (n+1)
+        = (vanEck (m+1)).length - 1 - n := matchSearch_ite_tt (vanEck (m+1)) n H_if
       rw [h_eval]
       rw [vanEckLength]
       have h_sub : m + 2 - 1 = m + 1 := rfl
       rw [h_sub]
       exact obv17 m n hn
-
     by_cases he : n = m
     · rw [he] at h0
       rw [h] at h0
@@ -269,30 +273,26 @@ lemma vanEck_mth_term_eq_zero_iff_prev_term_new (m : ℕ) :
         cases hor with
         | inl hlt => exact hlt
         | inr heq => exfalso; exact he heq
-
       have h00 : matchSearch (vanEck (m+1)) (n+1) ≠ 0 := obv16 _ h0
       have h_index : (vanEck (m+1)).length - 1 - (m - n) = n + 1 := by
         rw [vanEckLength]
         have h_sub : m + 2 - 1 = m + 1 := rfl
         rw [h_sub]
         exact obv20 m n h2
-
       have h_trigger : matchSearch (vanEck (m+1)) ((vanEck (m+1)).length - 1 - (m - n)) ≠ 0 := by
         rw [h_index]
         exact h00
-
       have h_res : matchSearch (vanEck (m+1)) ((vanEck (m+1)).length - 1) ≠ 0 :=
         match_search_nonzero_after_match_before_end (m - n) (vanEck (m+1)) h_trigger
-
       have h_len_eval : (vanEck (m+1)).length - 1 = m + 1 := by
         rw [vanEckLength]
         rfl
       rw [h_len_eval] at h_res
       exact h_res h
-
   · unfold vanEckNthTerm
     intro hn
-    have h_ms : listNth (vanEck (m + 2)) (m + 2) = matchSearch (vanEck (m + 1)) (m + 1) := list_nth_VE_eq_ms (m + 1)
+    have h_ms : listNth (vanEck (m + 2)) (m + 2)
+      = matchSearch (vanEck (m + 1)) (m + 1) := list_nth_VE_eq_ms (m + 1)
     rw [h_ms]
     have hnomatch : ∀ x ≤ m + 1, matchSearch (vanEck (m + 1)) x = 0 := by
       intro x
@@ -304,7 +304,8 @@ lemma vanEck_mth_term_eq_zero_iff_prev_term_new (m : ℕ) :
         intro hsuc
         have h_le : x ≤ m + 1 := Nat.le_of_succ_le hsuc
         have IH := hni h_le
-        have Hneg : listNth (vanEck (m+1)) ((vanEck (m+1)).length - 1) ≠ listNth (vanEck (m+1)) x := by
+        have Hneg : listNth (vanEck (m+1)) ((vanEck (m+1)).length - 1)
+          ≠ listNth (vanEck (m+1)) x := by
           rw [vanEckLength]
           have h_sub : m + 2 - 1 = m + 1 := rfl
           rw [h_sub]
@@ -321,7 +322,8 @@ lemma vanEck_mth_term_eq_zero_iff_prev_term_new (m : ℕ) :
     exact hnomatch (m + 1) (Nat.le_refl _)
 
 lemma nonzero_implies_recurrence (N m : ℕ) :
-    (∀ k > N, vanEckNthTerm k ≠ 0) → (m ≥ N) → ∃ n < m + 1, vanEckNthTerm n = vanEckNthTerm (m + 1) := by
+    (∀ k > N, vanEckNthTerm k ≠ 0) → (m ≥ N) → ∃ n < m + 1, vanEckNthTerm n
+      = vanEckNthTerm (m + 1) := by
   intro h_nonzero h_m
   have h_m2 : m + 2 > N := by
     calc
@@ -356,6 +358,16 @@ lemma listNth_mem {n : ℕ} {L : List ℕ} (hn : n < L.length) : listNth L n ∈
     cases n with
     | zero => exact List.Mem.head _
     | succ n => exact List.Mem.tail _ (ih (Nat.lt_of_succ_lt_succ hn))
+
+lemma mem_listNth {x : ℕ} {L : List ℕ} (hx : x ∈ L) : ∃ k < L.length, x = listNth L k := by
+  induction L with
+  | nil => cases hx
+  | cons a as ih =>
+    cases hx with
+    | head _ => exact ⟨0, Nat.zero_lt_succ _, rfl⟩
+    | tail _ h_tail =>
+      rcases ih h_tail with ⟨k, hk, heq⟩
+      exact ⟨k + 1, Nat.succ_lt_succ hk, heq⟩
 
 def vanEckPrefixMax (N : ℕ) : ℕ :=
   listMax (vanEck N)
@@ -401,7 +413,7 @@ lemma bounded_if_tail_eq_nonzero (N : ℕ) :
   exact Nat.lt_succ_of_le (prefix_contains_all_terms N n h)
 
 -- As Sloane identified, bounded sequence propagation depends purely on recent history.
--- We formally define `vanEckState` as the exact backwards subset of length `B` 
+-- We formally define `vanEckState` as the exact backwards subset of length `B`
 -- capturing the previous sequence evaluations framing our Pigeonhole limits.
 def vanEckState (n B : ℕ) : List ℕ :=
   (vanEck (n - 1)).drop (n - B)
@@ -425,7 +437,11 @@ def IsBoundedState (L : List ℕ) (B : ℕ) : Prop :=
 -- Any element extracted from the finite-zero bound sequence evaluates exactly under `B` natively.
 lemma mem_vanEck_bound {x N B : ℕ} (hx : x ∈ vanEck N) (h_bound : ∀ k, vanEckNthTerm k < B) :
     x < B := by
-  sorry
+  rcases mem_listNth hx with ⟨k, hk, heq⟩
+  have h_le : k ≤ N := Nat.le_of_lt_succ (by rw [vanEckLength N] at hk; exact hk)
+  have hent : vanEckNthTerm k = listNth (vanEck N) k := (VanEck_deterministic N k h_le).symm
+  rw [heq, ← hent]
+  exact h_bound k
 
 -- Coupling these constraints precisely enforces that every shifting slice of our sequence
 -- adheres to the Pigeonhole threshold dimensionality!
