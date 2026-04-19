@@ -522,8 +522,8 @@ lemma stateEval_inj (B : ℕ) (hB : B > 1) (L1 L2 : List ℕ)
       have hb_t2 : IsBoundedState t2 B := fun y hy => hb2 y (List.Mem.tail _ hy)
       have ht : t1 = t2 := by 
         apply ih
-        · exact hlen_t
         · exact hb_t1
+        · exact hlen_t
         · exact hb_t2
         · exact ht_eval
       rw [hd, ht]
