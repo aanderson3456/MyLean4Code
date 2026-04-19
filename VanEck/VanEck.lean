@@ -535,25 +535,31 @@ lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B
   have hb2 : vanEckNthTerm 2 = 1 := rfl
   have hB_gt : B > 1 := by have h2 := h_bound 2; rw [hb2] at h2; exact h2
   let M := B ^ B
-  let f : ℕ → ℕ := fun n => stateEval (vanEckState n B) B
+  let f : ℕ → ℕ := fun n => stateEval (vanEckState (n + B) B) B
   have h_lim : ∀ n, f n < M := fun n => by
-    have hl := stateEval_lt_pow B hB_gt (vanEckState n B) (vanEckState_isBounded n B h_bound)
-    rw [vanEckState_length] at hl; exact hl
+    have hn : n + B ≥ B := Nat.le_add_left B n
+    have hb0 : B > 0 := Nat.lt_trans (Nat.zero_lt_succ 0) hB_gt
+    have hlen : (vanEckState (n + B) B).length = B := vanEckState_length (n + B) B hn hb0
+    have hl := stateEval_lt_pow B hB_gt (vanEckState (n + B) B) (vanEckState_isBounded (n + B) B h_bound)
+    rw [hlen] at hl; exact hl
   let f_fin : Fin (M + 1) → Fin M := fun x => ⟨f x.val, h_lim x.val⟩
   have h_card : Fintype.card (Fin M) < Fintype.card (Fin (M + 1)) := by simp
   have h_exists := Fintype.exists_ne_map_eq_of_card_lt f_fin h_card
   rcases h_exists with ⟨x, y, hne, heq⟩
   have heq_val : f x.val = f y.val := congr_arg Fin.val heq
-  have h_state_eq : vanEckState x.val B = vanEckState y.val B := by
+  have hb0 : B > 0 := Nat.lt_trans (Nat.zero_lt_succ 0) hB_gt
+  have hx : x.val + B ≥ B := Nat.le_add_left B x.val
+  have hy : y.val + B ≥ B := Nat.le_add_left B y.val
+  have h_state_eq : vanEckState (x.val + B) B = vanEckState (y.val + B) B := by
     apply stateEval_inj B hB_gt
-    · rw [vanEckState_length, vanEckState_length]
-    · exact vanEckState_isBounded x.val B h_bound
-    · exact vanEckState_isBounded y.val B h_bound
+    · rw [vanEckState_length (x.val + B) B hx hb0, vanEckState_length (y.val + B) B hy hb0]
+    · exact vanEckState_isBounded (x.val + B) B h_bound
+    · exact vanEckState_isBounded (y.val + B) B h_bound
     · exact heq_val
   by_cases h_lt : x.val < y.val
-  · exact ⟨x.val, y.val, h_lt, h_state_eq⟩
+  · exact ⟨x.val + B, y.val + B, Nat.add_lt_add_right h_lt B, h_state_eq⟩
   · have h_gt : y.val < x.val := Nat.lt_of_le_of_ne (Nat.le_of_not_lt h_lt) (fun h => hne (Fin.eq_of_val_eq h.symm))
-    exact ⟨y.val, x.val, h_gt, h_state_eq.symm⟩
+    exact ⟨y.val + B, x.val + B, Nat.add_lt_add_right h_gt B, h_state_eq.symm⟩
 
 -- Because sequence steps evaluate purely by recursive bounds limits, 
 -- identical finite sequence frames natively generate perfectly identical future terms.
