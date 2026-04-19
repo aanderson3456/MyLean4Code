@@ -546,8 +546,8 @@ lemma pigeonhole_state_collision (B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B
   have heq_val : f x.val = f y.val := congr_arg Fin.val heq
   have h_state_eq : vanEckState x.val B = vanEckState y.val B := by
     apply stateEval_inj B hB_gt
-    · exact vanEckState_isBounded x.val B h_bound
     · rw [vanEckState_length, vanEckState_length]
+    · exact vanEckState_isBounded x.val B h_bound
     · exact vanEckState_isBounded y.val B h_bound
     · exact heq_val
   by_cases h_lt : x.val < y.val
