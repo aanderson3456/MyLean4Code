@@ -2,7 +2,8 @@ import Mathlib.Data.Vector.Basic
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Fintype.Basic
 import VTlean.Lemma
-
+import Mathlib.Data.Fintype.EquivFin
+open scoped Classical
 namespace Vector
 
 variable {α : Type} [DecidableEq α]
@@ -19,14 +20,18 @@ open Finset
 variable [Fintype α]
 
 /-- Deletion sphere -/
-def dS {n : Nat} (X : Vector α (n + 1)) : Finset (Vector α n) :=
+def dS {n : Nat} (X : Vector α n) : Finset (Vector α (n - 1)) :=
   sorry
+
+/-- Union of deletion spheres -/
+def union_dS {n : Nat} (C : Finset (Vector α n)) : Finset (Vector α (n - 1)) :=
+  Finset.biUnion C dS
 
 /-- Insertion sphere -/
 def IS {n : Nat} (X : Vector α n) : Finset (Vector α (n + 1)) :=
   sorry
 
-lemma mem_dS {n : Nat} {X : Vector α (n + 1)} {Y : Vector α n} :
+lemma mem_dS {n : Nat} {X : Vector α n} {Y : Vector α (n - 1)} :
   Y ∈ dS X ↔ ∃ i ≤ n, Y = sDel X i :=
   sorry
 
