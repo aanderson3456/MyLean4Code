@@ -1,3 +1,4 @@
+/- Copyright Manabu Hagiwara 2022, 2026 -/
 import Mathlib
 import Mathlib.Data.Finset.Basic
 
@@ -108,5 +109,135 @@ lemma flip_flip (X : List.Vector B n) : flip (flip X) = X := by
   exact List.flip_flip_list X.val
 
 end Vector
+
+namespace Finset
+
+variable {n : Nat}
+
+open B.Vector
+
+lemma flip_injective : Function.Injective (@B.Vector.flip n) :=
+by {
+  intro X Y h
+  have h2 := congrArg B.Vector.flip h
+  rw [B.Vector.flip_flip, B.Vector.flip_flip] at h2
+  exact h2
+}
+
+def flipCode (C : Finset (List.Vector B n)) : Finset (List.Vector B n) :=
+  C.image B.Vector.flip
+
+lemma mem_flipCode (C : Finset (List.Vector B n)) (x : List.Vector B n):
+  x ∈ flipCode C ↔ ∃ y ∈ C, B.Vector.flip y = x :=
+by {
+  unfold flipCode
+  rw [Finset.mem_image]
+}
+
+lemma flipCode_mem (C : Finset (List.Vector B n)) (x : List.Vector B n):
+  B.Vector.flip x ∈ C ↔ x ∈ flipCode C :=
+by {
+  apply Iff.intro
+  · intro h
+    rw [mem_flipCode]
+    use B.Vector.flip x
+    exact ⟨h, B.Vector.flip_flip x⟩
+  · intro h
+    rw [mem_flipCode] at h
+    rcases h with ⟨y, hy, hxy⟩
+    rw [← hxy, B.Vector.flip_flip y]
+    exact hy
+}
+
+lemma flipCode_empty :
+  flipCode (∅ : Finset (List.Vector B n)) = ∅ :=
+by {
+  unfold flipCode
+  rw [Finset.image_empty]
+}
+
+lemma flipCode_univ :
+  flipCode (Finset.univ : Finset (List.Vector B n)) = Finset.univ :=
+by {
+  apply Finset.Subset.antisymm
+  · exact Finset.subset_univ _
+  · intro x _
+    rw [mem_flipCode]
+    use B.Vector.flip x
+    exact ⟨Finset.mem_univ _, B.Vector.flip_flip x⟩
+}
+
+lemma flipCode_flipCode (C : Finset (List.Vector B n)) :
+  flipCode (flipCode C) = C :=
+by {
+  apply Finset.Subset.antisymm
+  · intro X hX
+    rw [mem_flipCode] at hX
+    rcases hX with ⟨Y, hY, hYX⟩
+    rw [mem_flipCode] at hY
+    rcases hY with ⟨Z, hZ, hZY⟩
+    rw [← hYX, ← hZY, B.Vector.flip_flip]
+    exact hZ
+  · intro X hX
+    rw [mem_flipCode]
+    use B.Vector.flip X
+    have h1 : B.Vector.flip (B.Vector.flip X) = X := B.Vector.flip_flip X
+    have h2 : B.Vector.flip (B.Vector.flip X) ∈ C := by rwa [h1]
+    have h3 : B.Vector.flip X ∈ flipCode C := (flipCode_mem C (B.Vector.flip X)).mp h2
+    exact ⟨h3, h1⟩
+}
+
+lemma flipCode_subset (C C' : Finset (List.Vector B n)) (H : C ⊆ C') :
+  flipCode C ⊆ flipCode C' :=
+by {
+  intro X hX
+  rw [mem_flipCode] at hX ⊢
+  rcases hX with ⟨Y, hY, hYX⟩
+  exact ⟨Y, H hY, hYX⟩
+}
+
+lemma flipCode_union (C C' : Finset (List.Vector B n)) :
+  flipCode (C ∪ C') = flipCode C ∪ flipCode C' :=
+by {
+  unfold flipCode
+  rw [Finset.image_union]
+}
+
+lemma flipCode_inter (C C' : Finset (List.Vector B n)) :
+  flipCode (C ∩ C') = flipCode C ∩ flipCode C' :=
+by {
+  unfold flipCode
+  exact Finset.image_inter C C' flip_injective
+}
+
+lemma flipCode_insert (C : Finset (List.Vector B n)) (X : List.Vector B n) :
+  flipCode (insert X C) = insert (B.Vector.flip X) (flipCode C) :=
+by {
+  unfold flipCode
+  exact Finset.image_insert B.Vector.flip X C
+}
+
+lemma flipCode_erase (C : Finset (List.Vector B n)) (X : List.Vector B n) :
+  flipCode (Finset.erase C X) = Finset.erase (flipCode C) (B.Vector.flip X) :=
+by {
+  unfold flipCode
+  exact Finset.image_erase flip_injective C X
+}
+
+lemma flipCode_sdiff (C₁ C₂ : Finset (List.Vector B n)) :
+  flipCode (C₁ \ C₂) = flipCode C₁ \ flipCode C₂ :=
+by {
+  unfold flipCode
+  exact Finset.image_sdiff C₁ C₂ flip_injective
+}
+
+lemma card_flipCode (C : Finset (List.Vector B n)) :
+  (flipCode C).card = C.card :=
+by {
+  unfold flipCode
+  exact Finset.card_image_of_injective C flip_injective
+}
+
+end Finset
 
 end B

@@ -1,3 +1,4 @@
+/- Copyright Manabu Hagiwara 2022, 2026 -/
 import Mathlib.Data.Vector.Basic
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Fintype.Basic
@@ -824,6 +825,155 @@ def dS {n : Nat} (X : List.Vector α n) : Finset (List.Vector α (n - 1)) :=
 def IS {n : Nat} (X : List.Vector B n) : Finset (List.Vector B (n + 1)) :=
   List.toFinset (IS_list X)
 
+lemma mem_IS_le (x : List.Vector B n) (k : Nat) (y : List.Vector B (n + 1)) :
+  y ∈ IS_le x k ↔ ∃ i : Nat, ∃ b : B, i ≤ k ∧ y = sIns x i b :=
+by {
+  induction k with
+  | zero =>
+    apply Iff.intro
+    · intro hy
+      unfold IS_le at hy
+      cases hy with
+      | head _ => 
+        use 0, B.O
+      | tail _ hy =>
+        cases hy with
+        | head _ => 
+          use 0, B.I
+        | tail _ hy => contradiction
+    · intro hy
+      rcases hy with ⟨i, b, hi, rfl⟩
+      have hi0 : i = 0 := Nat.eq_zero_of_le_zero hi
+      rw [hi0]
+      cases b
+      · exact List.Mem.head _
+      · apply List.Mem.tail; exact List.Mem.head _
+  | succ k ih =>
+    apply Iff.intro
+    · intro hy
+      unfold IS_le at hy
+      cases hy with
+      | head _ => 
+        use k + 1, B.O
+      | tail _ hy =>
+        cases hy with
+        | head _ => 
+          use k + 1, B.I
+        | tail _ hy =>
+          have hy' := ih.mp hy
+          rcases hy' with ⟨i, b, hi, hyib⟩
+          use i, b
+          exact ⟨Nat.le_trans hi (Nat.le_succ _), hyib⟩
+    · intro hy
+      rcases hy with ⟨i, b, hi, hyib⟩
+      unfold IS_le
+      cases Classical.em (i = k + 1) with
+      | inl heq =>
+        cases b
+        · rw [hyib, heq]; exact List.Mem.head _
+        · rw [hyib, heq]; apply List.Mem.tail; exact List.Mem.head _
+      | inr hneq =>
+        apply List.Mem.tail; apply List.Mem.tail
+        apply ih.mpr
+        use i, b
+        exact ⟨Nat.le_of_lt_succ (Nat.lt_of_le_of_ne hi hneq), hyib⟩
+}
+
+lemma mem_IS_list (x : List.Vector B n) (y : List.Vector B (n + 1)) :
+  y ∈ IS_list x ↔ ∃ i : Nat, ∃ b : B, y = sIns x i b :=
+by {
+  unfold IS_list
+  have H := mem_IS_le x n y
+  cases n with
+  | zero =>
+    apply Iff.intro
+    · intro hy
+      have hy' := H.mp hy
+      rcases hy' with ⟨i, b, hi, rfl⟩
+      use i, b
+    · rintro ⟨i, b, rfl⟩
+      apply H.mpr
+      have h_len : x.val.length = 0 := x.property
+      have h1 : x.val.length ≤ i := Nat.le_trans (Nat.le_of_eq h_len) (Nat.zero_le i)
+      have h2 : x.val.length ≤ 0 := Nat.le_of_eq h_len
+      have heq : sIns x i b = sIns x 0 b := by {
+        apply Subtype.ext
+        change List.sIns x.val i b = List.sIns x.val 0 b
+        rw [List.sIns_of_ovrlen _ _ _ h1, List.sIns_of_ovrlen _ _ _ h2]
+      }
+      exact ⟨0, b, Nat.le_refl 0, heq⟩
+  | succ m =>
+    apply Iff.intro
+    · intro hy
+      have hy' := H.mp hy
+      rcases hy' with ⟨i, b, hi, rfl⟩
+      use i, b
+    · rintro ⟨i, b, rfl⟩
+      apply H.mpr
+      cases Classical.em (i < Nat.succ (Nat.succ m)) with
+      | inl hlt =>
+        use i, b
+        exact ⟨Nat.le_of_lt_succ hlt, rfl⟩
+      | inr hnlt =>
+        have h_len : x.val.length = Nat.succ m := x.property
+        have h1 : x.val.length ≤ i := by {
+          rw [h_len]
+          exact Nat.le_trans (Nat.le_succ _) (Nat.le_of_not_lt hnlt)
+        }
+        have h2 : x.val.length ≤ Nat.succ m := Nat.le_of_eq h_len
+        have h_eq : sIns x i b = sIns x (Nat.succ m) b := by {
+          apply Subtype.ext
+          change List.sIns x.val i b = List.sIns x.val (Nat.succ m) b
+          rw [List.sIns_of_ovrlen _ _ _ h1, List.sIns_of_ovrlen _ _ _ h2]
+        }
+        exact ⟨Nat.succ m, b, Nat.le_refl _, h_eq⟩
+}
+
+lemma mem_IS (x : List.Vector B n) (y : List.Vector B (n + 1)) :
+  y ∈ IS x ↔ ∃ i : Nat, ∃ b : B, y = sIns x i b :=
+by {
+  unfold IS
+  rw [List.mem_toFinset]
+  exact mem_IS_list x y
+}
+
+lemma mem_IS_of_mem_dS 
+  (X : List.Vector B (n + 1)) (Y : List.Vector B n) (HXY : Y ∈ dS X) :
+  X ∈ IS Y := sorry
+
+lemma mem_dS_of_mem_IS 
+  (X : List.Vector B n) (Y : List.Vector B (n + 1)) (HXY : Y ∈ IS X) :
+  X ∈ dS Y := sorry
+
+lemma dS_inter_empty_of_IS_inter 
+  {X Y : List.Vector B n} (HXY : IS X ∩ IS Y = ∅) : 
+  dS X ∩ dS Y = ∅ := sorry
+
+lemma IS_inter_empty_of_dS_inter
+  {X Y : List.Vector B n} (HXY : dS X ∩ dS Y = ∅) : 
+  IS X ∩ IS Y = ∅ := sorry
+
+lemma IS_inter_empty_iff (X Y : List.Vector B n) :
+  IS X ∩ IS Y = ∅ ↔ dS X ∩ dS Y = ∅ :=
+by {
+  apply Iff.intro
+  · exact dS_inter_empty_of_IS_inter
+  · exact IS_inter_empty_of_dS_inter
+}
+
+lemma IS_inter_ne_empty_iff (X Y : List.Vector B n) :
+  IS X ∩ IS Y ≠ ∅ ↔ dS X ∩ dS Y ≠ ∅ :=
+by {
+  apply Iff.intro
+  · intro h h'
+    rw [← IS_inter_empty_iff] at h'
+    contradiction
+  · intro h h'
+    rw [IS_inter_empty_iff] at h'
+    contradiction
+}
+
+
 lemma mem_dS :
   Y ∈ dS X ↔ ∃ i : Nat, i ≤ n - 1 ∧ Y = sDel X i :=
 by {
@@ -831,6 +981,56 @@ by {
   rw [List.mem_toFinset]
   unfold dS_list
   rw [mem_dS_le]
+}
+
+lemma _root_.List.sDel_flip (X : List B) (i : Nat) :
+  List.sDel (B.List.flip X) i = B.List.flip (List.sDel X i) :=
+by {
+  induction i generalizing X with
+  | zero =>
+    cases X with
+    | nil => rfl
+    | cons x1 X1 =>
+      cases X1 with
+      | nil => rfl
+      | cons x2 X2 => rfl
+  | succ k ih =>
+    cases X with
+    | nil => rfl
+    | cons x1 X1 =>
+      cases X1 with
+      | nil => rfl
+      | cons x2 X2 =>
+        change B.flip x1 :: List.sDel (B.List.flip (x2 :: X2)) k = B.flip x1 :: B.List.flip (List.sDel (x2 :: X2) k)
+        rw [ih (x2 :: X2)]
+}
+
+lemma sDel_flip (X : List.Vector B n) (i : Nat) :
+  List.Vector.sDel (B.Vector.flip X) i = B.Vector.flip (List.Vector.sDel X i) :=
+by {
+  apply Subtype.ext
+  exact List.sDel_flip X.val i
+}
+
+lemma dS_flip (x : List.Vector B n) :
+  dS (B.Vector.flip x) = B.Finset.flipCode (dS x) :=
+by {
+  apply Finset.Subset.antisymm
+  · intro y hy
+    rw [mem_dS] at hy
+    rcases hy with ⟨i, hi, hyi⟩
+    rw [B.Finset.mem_flipCode]
+    use List.Vector.sDel x i
+    rw [mem_dS]
+    exact ⟨⟨i, hi, rfl⟩, by { rw [hyi, ← sDel_flip] }⟩
+  · intro y hy
+    rw [B.Finset.mem_flipCode] at hy
+    rcases hy with ⟨z, hz, hzy⟩
+    rw [mem_dS] at hz
+    rcases hz with ⟨i, hi, hzi⟩
+    rw [mem_dS]
+    use i
+    exact ⟨hi, by { rw [← hzy, hzi, ← sDel_flip] }⟩
 }
 
 def union_dS {n : Nat} (C : Finset (List.Vector α n)) : Finset (List.Vector α (n - 1)) :=
@@ -845,6 +1045,21 @@ lemma union_dS_insert (C : Finset (List.Vector α n)) (Hx : X ∉ C) :
 by {
   unfold union_dS
   rw [Finset.biUnion_insert]
+}
+
+lemma card_union_dS_insert (C : Finset (List.Vector α n)) (H : X ∉ C):
+  (union_dS (insert X C)).card = (dS X).card + (union_dS C).card - (dS X ∩ union_dS C).card :=
+by {
+  rw [union_dS_insert X C H]
+  have h := Finset.card_union_add_card_inter (dS X) (union_dS C)
+  exact Eq.symm (Nat.sub_eq_of_eq_add h.symm)
+}
+
+lemma union_dS_union (C C' : Finset (List.Vector α n)) :
+  union_dS (C ∪ C') = union_dS C ∪ union_dS C' :=
+by {
+  unfold union_dS
+  exact Finset.union_biUnion
 }
 
 lemma mem_union_dS (C : Finset (List.Vector α n)) :
@@ -895,6 +1110,30 @@ by {
         exact hint
   · intro hy
     contradiction
+}
+
+lemma forall_dS_inter_dS
+  (C : Finset (List.Vector α n)) (HX : dS X ∩ union_dS C = ∅)  :
+  ∀ c ∈ C, dS X ∩ dS c = ∅ :=
+by {
+  intro c hc
+  apply Finset.Subset.antisymm
+  · intro x hx
+    have h1 : x ∈ dS X ∩ union_dS C := by {
+      rw [Finset.mem_inter] at hx ⊢
+      exact ⟨hx.1, dS_subset_union_dS C c hc hx.2⟩
+    }
+    rw [HX] at h1
+    exact h1
+  · exact Finset.empty_subset _
+}
+
+lemma forall_dS_inter_dS_iff (C : Finset (List.Vector α n)):
+  (∀ c ∈ C, dS X ∩ dS c = ∅) ↔ dS X ∩ union_dS C = ∅ :=
+by {
+  apply Iff.intro
+  · exact dS_inter_union_dS X C
+  · exact forall_dS_inter_dS X C
 }
 
 end List.Vector

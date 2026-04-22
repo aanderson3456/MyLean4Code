@@ -1,3 +1,4 @@
+/- Copyright Manabu Hagiwara 2022, 2026 -/
 import data.fintype .InsDel .B .NumOsNumIs
 
 variables {α : Type} [decidable_eq α] 

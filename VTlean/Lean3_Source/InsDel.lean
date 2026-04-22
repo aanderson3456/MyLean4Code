@@ -1,3 +1,4 @@
+/- Copyright Manabu Hagiwara 2022, 2026 -/
 import data.vector .Lemma .B
 
 variables {α : Type} [decidable_eq α]

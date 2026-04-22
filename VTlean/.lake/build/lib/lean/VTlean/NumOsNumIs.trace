@@ -1,8 +1,8 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["7822d880370d444f.olean"],
-  "i": "71040791df3ec320.ilean",
+ {"o": ["87a92d6ba6481f9e.olean"],
+  "i": "375276f1affca89d.ilean",
   "c": "118e0001ba2d4369.c"},
  "log":
  [{"message":
@@ -14,7 +14,7 @@
      [["VTlean/VTlean:extraDep", [["@VTlean:extraDep", "00000000000006bb"]]],
       ["imports",
        [["VTlean.B transitive imports (legacy)", "416edac6ab7889ca"],
-        ["VTlean.B:importAllArts", "999889b01e139f73"]]]]],
+        ["VTlean.B:importAllArts", "bd6c4bf3da3497dc"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -23,7 +23,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/NumOsNumIs.lean",
-   "55c45785d89e188c"],
+   "0c1e77ba41d1201b"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -33,4 +33,4 @@
   ["Module.name: VTlean.NumOsNumIs", "e08513977db7f014"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "9d8ad593284a652f"}
+ "depHash": "acbbac2af53427c4"}

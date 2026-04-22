@@ -1,3 +1,4 @@
+/- Copyright Manabu Hagiwara 2022, 2026 -/
 import Mathlib.Data.List.Basic
 import Mathlib.Data.Vector.Basic
 import Mathlib.Data.Finset.Basic
