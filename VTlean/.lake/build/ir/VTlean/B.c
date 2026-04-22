@@ -1,6 +1,6 @@
 // Lean compiler output
 // Module: VTlean.B
-// Imports: public import Init public import Mathlib
+// Imports: public import Init public import Mathlib public import Mathlib.Data.Finset.Basic
 #include <lean/lean.h>
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -72,8 +72,6 @@ lean_object* lean_nat_mul(lean_object*, lean_object*);
 lean_object* lean_nat_add(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_List_toNat___boxed(lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_List_flip(lean_object*);
-lean_object* lean_array_to_list(lean_object*);
-lean_object* lean_array_mk(lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_Vector_flip___redArg(lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_Vector_flip(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_Vector_flip___boxed(lean_object*, lean_object*);
@@ -571,18 +569,16 @@ return x_15;
 LEAN_EXPORT lean_object* lp_VTlean_B_Vector_flip___redArg(lean_object* x_1) {
 _start:
 {
-lean_object* x_2; lean_object* x_3; lean_object* x_4; 
-x_2 = lean_array_to_list(x_1);
-x_3 = lp_VTlean_B_List_flip(x_2);
-x_4 = lean_array_mk(x_3);
-return x_4;
+lean_object* x_2; 
+x_2 = lp_VTlean_B_List_flip(x_1);
+return x_2;
 }
 }
 LEAN_EXPORT lean_object* lp_VTlean_B_Vector_flip(lean_object* x_1, lean_object* x_2) {
 _start:
 {
 lean_object* x_3; 
-x_3 = lp_VTlean_B_Vector_flip___redArg(x_2);
+x_3 = lp_VTlean_B_List_flip(x_2);
 return x_3;
 }
 }
@@ -597,6 +593,7 @@ return x_3;
 }
 lean_object* initialize_Init(uint8_t builtin);
 lean_object* initialize_mathlib_Mathlib(uint8_t builtin);
+lean_object* initialize_mathlib_Mathlib_Data_Finset_Basic(uint8_t builtin);
 static bool _G_initialized = false;
 LEAN_EXPORT lean_object* initialize_VTlean_VTlean_B(uint8_t builtin) {
 lean_object * res;
@@ -606,6 +603,9 @@ res = initialize_Init(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_mathlib_Mathlib(builtin);
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_mathlib_Mathlib_Data_Finset_Basic(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 lp_VTlean_instInhabitedB_default = _init_lp_VTlean_instInhabitedB_default();

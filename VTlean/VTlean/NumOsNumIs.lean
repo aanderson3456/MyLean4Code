@@ -23,6 +23,54 @@ lemma num_Os_add_num_Is_eq_length (X : List B) : num_Os X + num_Is X = X.length 
     · change num_Os X' + (num_Is X' + 1) = X'.length + 1
       rw [← Nat.add_assoc, ih]
 
+lemma num_Is_append (X Y : List B) : num_Is (X ++ Y) = num_Is X + num_Is Y := by
+  induction X with
+  | nil => exact (Nat.zero_add _).symm
+  | cons x X' ih =>
+    cases x
+    · change num_Is (X' ++ Y) = num_Is X' + num_Is Y
+      exact ih
+    · change num_Is (X' ++ Y) + 1 = (num_Is X' + 1) + num_Is Y
+      rw [ih, Nat.add_right_comm]
+
+lemma num_Os_append (X Y : List B) : num_Os (X ++ Y) = num_Os X + num_Os Y := by
+  induction X with
+  | nil => exact (Nat.zero_add _).symm
+  | cons x X' ih =>
+    cases x
+    · change num_Os (X' ++ Y) + 1 = (num_Os X' + 1) + num_Os Y
+      rw [ih, Nat.add_right_comm]
+    · change num_Os (X' ++ Y) = num_Os X' + num_Os Y
+      exact ih
+
+lemma num_Is_replicate_O (n : Nat) : num_Is (replicate n B.O) = 0 := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    change num_Is (replicate n B.O) = 0
+    exact ih
+
+lemma num_Is_replicate_I (n : Nat) : num_Is (replicate n B.I) = n := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    change num_Is (replicate n B.I) + 1 = n + 1
+    rw [ih]
+
+lemma num_Os_replicate_O (n : Nat) : num_Os (replicate n B.O) = n := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    change num_Os (replicate n B.O) + 1 = n + 1
+    rw [ih]
+
+lemma num_Os_replicate_I (n : Nat) : num_Os (replicate n B.I) = 0 := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    change num_Os (replicate n B.I) = 0
+    exact ih
+
 end List
 
 namespace Vector

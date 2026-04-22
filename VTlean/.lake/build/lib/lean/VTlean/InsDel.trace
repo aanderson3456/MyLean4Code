@@ -1,36 +1,195 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["06a97975f1754583.olean"],
-  "i": "f2d092a1d2205a8d.ilean",
-  "c": "37bcfee85c9a0071.c"},
+ {"o": ["2ac12d0ff4edfdf8.olean"],
+  "i": "aa7f9c229d61e8d1.ilean",
+  "c": "c5f21ea00d85e04f.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/InsDel.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/InsDel.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/InsDel.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/InsDel.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/InsDel.setup.json --json",
    "level": "trace"},
-  {"message": "VTlean/InsDel.lean:11:4: declaration uses `sorry`",
-   "level": "warning"},
-  {"message": "VTlean/InsDel.lean:15:4: declaration uses `sorry`",
-   "level": "warning"},
-  {"message": "VTlean/InsDel.lean:22:4: declaration uses `sorry`",
-   "level": "warning"},
-  {"message": "VTlean/InsDel.lean:26:4: declaration uses `sorry`",
-   "level": "warning"},
-  {"message": "VTlean/InsDel.lean:29:6: declaration uses `sorry`",
+  {"message":
+   "VTlean/InsDel.lean:8:12: please avoid 'open (scoped) Classical' statements: this can hide theorem statements which would be better stated with explicit decidability statements.\nInstead, use `open Classical in` for definitions or instances, the `classical` tactic for proofs.\nFor theorem statements, either add missing decidability assumptions or use `open Classical in`.\n\nNote: This linter can be disabled with `set_option linter.style.openClassical false`",
    "level": "warning"},
   {"message":
-   "VTlean/InsDel.lean:29:0: `mem_dS` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "VTlean/InsDel.lean:22:0: automatically included section variable(s) unused in theorem `List.sDel_nil`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
    "level": "warning"},
   {"message":
-   "VTlean/InsDel.lean:29:0: `mem_dS` does not use the following hypothesis in its type:\n  • [Fintype α] (#3)\n\nConsider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.\n\nNote: Add `import Mathlib.Data.Fintype.EquivFin` to make `Fintype.ofFinite` available.\n\nNote: This linter can be disabled with `set_option linter.unusedFintypeInType false`",
-   "level": "warning"},
-  {"message": "VTlean/InsDel.lean:33:6: declaration uses `sorry`",
+   "VTlean/InsDel.lean:22:0: `sDel_nil` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
    "level": "warning"},
   {"message":
-   "VTlean/InsDel.lean:33:0: `mem_IS` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "VTlean/InsDel.lean:26:0: automatically included section variable(s) unused in theorem `List.sDel_singleton`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
    "level": "warning"},
   {"message":
-   "VTlean/InsDel.lean:33:0: `mem_IS` does not use the following hypothesis in its type:\n  • [Fintype α] (#3)\n\nConsider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.\n\nNote: Add `import Mathlib.Data.Fintype.EquivFin` to make `Fintype.ofFinite` available.\n\nNote: This linter can be disabled with `set_option linter.unusedFintypeInType false`",
+   "VTlean/InsDel.lean:26:0: `sDel_singleton` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:29:0: automatically included section variable(s) unused in theorem `List.sDel_zero`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:29:0: `sDel_zero` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:36:0: automatically included section variable(s) unused in theorem `List.sDel_cons`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:36:0: `sDel_cons` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:44:0: automatically included section variable(s) unused in theorem `List.length_sDel`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:44:0: `length_sDel` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:63:0: `sDel_of_ovrlen` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:63:43: missing space in the source\n\nThis part of the code\n  'i):\n  sDel'\nshould be written as\n  'i) : sDel'\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:87:0: `exists_sDel_le` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:95:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:98:0: `sDel_append_of_lt` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:130:0: automatically included section variable(s) unused in theorem `List.sDel_append_of_ge`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:167:10: 'change\n  sDel (x :: x' :: X'' ++ y :: Y') (i' + 1) =\n    (x :: x' :: X'') ++ sDel (y :: Y') (i' + 1 - length (x :: x' :: X''))' tactic does nothing\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:130:0: `sDel_append_of_ge` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:167:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:168:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:170:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:173:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:130:56: missing space in the source\n\nThis part of the code\n  '[]):\n  sDel'\nshould be written as\n  '[]) : sDel'\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:178:0: automatically included section variable(s) unused in theorem `List.sDel_replicate`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:178:0: `sDel_replicate` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:207:0: `exists_sDel_sDel` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:243:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:244:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:252:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:253:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:279:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:280:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:281:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:282:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:293:0: automatically included section variable(s) unused in theorem `List.sIns_nil`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:293:0: `sIns_nil` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:297:0: automatically included section variable(s) unused in theorem `List.sIns_zero`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:297:0: `sIns_zero` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:304:0: automatically included section variable(s) unused in theorem `List.sIns_cons`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:304:0: `sIns_cons` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:308:0: automatically included section variable(s) unused in theorem `List.length_sIns`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:308:0: `length_sIns` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:326:0: `sIns_ne_nil` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:335:0: automatically included section variable(s) unused in theorem `List.sIns_of_ovrlen`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:335:0: `sIns_of_ovrlen` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:335:39: missing space in the source\n\nThis part of the code\n  'i):\n  sIns'\nshould be written as\n  'i) : sIns'\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:355:0: `exists_sIns_le` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:368:0: automatically included section variable(s) unused in theorem `List.exists_sIns_sIns_eq`:\n  [DecidableEq α]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [DecidableEq α] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:368:0: `exists_sIns_sIns_eq` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:397:0: `sIns_sDel_id` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:397:38: extra space in the source\n\nThis part of the code\n  'X)  :\n '\nshould be written as\n  'X) : ∃ (b'\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:431:0: `sDel_sIns_id` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:445:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:450:0: `sIns_of_sDel` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:458:0: `sDel_of_sIns` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:465:0: `exists_sIns_eq_of_sDel` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:492:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:493:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:500:0: `exists_sDel_eq_of_sIns` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:843:54: unused variable `Hx`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
    "level": "warning"}],
  "inputs":
  [["VTlean.InsDel:deps",
@@ -47,7 +206,12 @@
          "17394689cf05e8d9"],
         ["Mathlib.Data.Fintype.Basic:importAllArts", "523c32c867a8165c"],
         ["VTlean.Lemma transitive imports (legacy)", "84e9a473599909aa"],
-        ["VTlean.Lemma:importAllArts", "3eb279a46a3276f3"]]]]],
+        ["VTlean.Lemma:importAllArts", "3eb279a46a3276f3"],
+        ["VTlean.B transitive imports (legacy)", "416edac6ab7889ca"],
+        ["VTlean.B:importAllArts", "999889b01e139f73"],
+        ["Mathlib.Data.Fintype.EquivFin transitive imports (legacy)",
+         "5936ae7a7c6931be"],
+        ["Mathlib.Data.Fintype.EquivFin:importAllArts", "53fa4353e88b6ab9"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -56,7 +220,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/InsDel.lean",
-   "fc7c4143fa60bf47"],
+   "ca1ed0c7006c3e4e"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -66,4 +230,4 @@
   ["Module.name: VTlean.InsDel", "1858484b967c1c72"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "159846639606b800"}
+ "depHash": "e4230406ab55fcce"}

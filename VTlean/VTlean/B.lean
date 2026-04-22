@@ -1,4 +1,7 @@
 import Mathlib
+import Mathlib.Data.Finset.Basic
+
+open scoped Classical
 
 inductive B : Type
 | O : B
@@ -92,14 +95,17 @@ end List
 namespace Vector
 variable {n : Nat}
 
--- We wrap the definitions exactly as Vector.
-def flip (X : Vector B n) : Vector B n :=
-  ⟨(List.flip X.toList).toArray, by simp [List.length_flip]⟩
+def flip (X : List.Vector B n) : List.Vector B n :=
+  ⟨List.flip X.val, by {
+    have h_len : X.val.length = n := X.2
+    rw [List.length_flip]
+    exact h_len
+  }⟩
 
-lemma flip_flip (X : Vector B n) : flip (flip X) = X := by
-  rw [← Vector.toList_inj]
-  change (List.flip ((List.flip X.toList).toArray.toList)).toArray.toList = X.toList
-  simp [List.flip_flip_list]
+lemma flip_flip (X : List.Vector B n) : flip (flip X) = X := by
+  apply Subtype.ext
+  change List.flip (List.flip X.val) = X.val
+  exact List.flip_flip_list X.val
 
 end Vector
 
