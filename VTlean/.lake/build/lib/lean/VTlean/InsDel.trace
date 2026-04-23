@@ -1,9 +1,9 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["fa9715b57bcda237.olean"],
-  "i": "d5d4330126d5cd79.ilean",
-  "c": "c5f21ea00d85e04f.c"},
+ {"o": ["71cd6370b9a06f9a.olean"],
+  "i": "04a58839be8c4b80.ilean",
+  "c": "8a9cc0190ec2fb1c.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/InsDel.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/InsDel.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/InsDel.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/InsDel.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/InsDel.setup.json --json",
@@ -188,8 +188,37 @@
   {"message":
    "VTlean/InsDel.lean:501:0: `exists_sDel_eq_of_sIns` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
    "level": "warning"},
+  {"message": "VTlean/InsDel.lean:940:6: declaration uses `sorry`",
+   "level": "warning"},
   {"message":
-   "VTlean/InsDel.lean:844:54: unused variable `Hx`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "VTlean/InsDel.lean:940:23: remove line break in the source\n\nThis part of the code\n  'mem_IS_of_mem_dS \n  (X'\nshould be written as\n  'mem_IS_of_mem_dS (X :'\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
+   "level": "warning"},
+  {"message": "VTlean/InsDel.lean:944:6: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:944:23: remove line break in the source\n\nThis part of the code\n  'mem_dS_of_mem_IS \n  (X'\nshould be written as\n  'mem_dS_of_mem_IS (X :'\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
+   "level": "warning"},
+  {"message": "VTlean/InsDel.lean:948:6: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:948:33: remove line break in the source\n\nThis part of the code\n  'dS_inter_empty_of_IS_inter \n  {X'\nshould be written as\n  'dS_inter_empty_of_IS_inter {X Y'\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
+   "level": "warning"},
+  {"message": "VTlean/InsDel.lean:952:6: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:1004:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:1043:54: unused variable `Hx`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:1050:69: missing space in the source\n\nThis part of the code\n  'C):\n  (union_dS'\nshould be written as\n  'C) :\n '\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:1116:62: extra space in the source\n\nThis part of the code\n  '∅)  :\n '\nshould be written as\n  '∅) : ∀ c'\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/InsDel.lean:1131:59: missing space in the source\n\nThis part of the code\n  'n)):\n  (∀'\nshould be written as\n  'n)) : (∀'\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
    "level": "warning"}],
  "inputs":
  [["VTlean.InsDel:deps",
@@ -208,7 +237,7 @@
         ["VTlean.Lemma transitive imports (legacy)", "84e9a473599909aa"],
         ["VTlean.Lemma:importAllArts", "c36a5ca69b62754f"],
         ["VTlean.B transitive imports (legacy)", "416edac6ab7889ca"],
-        ["VTlean.B:importAllArts", "bd6c4bf3da3497dc"],
+        ["VTlean.B:importAllArts", "31504c077e29bbbf"],
         ["Mathlib.Data.Fintype.EquivFin transitive imports (legacy)",
          "5936ae7a7c6931be"],
         ["Mathlib.Data.Fintype.EquivFin:importAllArts", "53fa4353e88b6ab9"]]]]],
@@ -220,7 +249,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/InsDel.lean",
-   "c729adf1901ccb64"],
+   "d26f86276819b3ab"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -230,4 +259,4 @@
   ["Module.name: VTlean.InsDel", "1858484b967c1c72"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "b070b007b063f9c0"}
+ "depHash": "c3043ae785136ac1"}
