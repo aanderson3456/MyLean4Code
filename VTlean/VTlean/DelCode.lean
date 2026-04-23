@@ -5,6 +5,7 @@ import VTlean.InsDel
 import VTlean.B
 import VTlean.NumOsNumIs
 import Mathlib.Data.Fintype.EquivFin
+import Mathlib.Data.Nat.Basic
 
 
 
@@ -208,22 +209,88 @@ by {
     rw [h] at hne
     contradiction
   have h_inter := HC x' hx' y' hy' hne'
+  rw [← hxx', ← hyy']
   rw [dS_flip, dS_flip, ← B.Finset.flipCode_inter, h_inter, B.Finset.flipCode_empty]
 }
+
+lemma wt_flip {n : Nat} (X : List.Vector B n) : wt (B.Vector.flip X) = n - wt X := by {
+  have h_flip : List.num_Is (B.List.flip X.val) = List.num_Os X.val := List.num_Is_flip X.val
+  have h_len : List.num_Os X.val + List.num_Is X.val = n := Eq.trans (List.num_Os_add_num_Is_eq_length X.val) X.property
+  have h_sub : List.num_Os X.val = n - List.num_Is X.val := (Nat.sub_eq_of_eq_add h_len.symm).symm
+  exact Eq.trans h_flip h_sub
+}
+
+namespace B.Finset
+
+lemma filter_flipCode_swap {n : Nat} (C : Finset (List.Vector B n)) (a b : Nat)
+  (Ha : a ≤ n) (Hb : b ≤ n) :
+  (filter (Icc_wt a b) (flipCode C)).card = (filter (Icc_wt (n - b) (n - a)) C).card :=
+by {
+  refine Set.BijOn.finsetCard_eq B.Vector.flip ?_
+  unfold Set.BijOn Set.MapsTo Set.InjOn Set.SurjOn
+  apply And.intro
+  · intro x hx
+    rw [Finset.mem_coe, Finset.mem_filter] at hx ⊢
+    have hC : B.Vector.flip x ∈ C := (flipCode_mem C x).mpr hx.1
+    have hw : Icc_wt (n - b) (n - a) (B.Vector.flip x) := by
+      unfold Icc_wt at hx ⊢
+      rw [wt_flip]
+      have h1 : n - wt x ≤ n - a := Nat.sub_le_sub_left hx.2.1 n
+      have h2 : n - b ≤ n - wt x := Nat.sub_le_sub_left hx.2.2 n
+      exact ⟨h2, h1⟩
+    exact ⟨hC, hw⟩
+  · apply And.intro
+    · intro x _ y _ hxy
+      have hxy_flip : B.Vector.flip (B.Vector.flip x) = B.Vector.flip (B.Vector.flip y) := congrArg B.Vector.flip hxy
+      rw [B.Vector.flip_flip, B.Vector.flip_flip] at hxy_flip
+      exact hxy_flip
+    · intro y hy
+      rw [Finset.mem_coe, Finset.mem_filter] at hy
+      use B.Vector.flip y
+      have h_mem : B.Vector.flip y ∈ filter (Icc_wt a b) (flipCode C) := by
+        rw [Finset.mem_filter]
+        have hc_mem : B.Vector.flip y ∈ flipCode C := (flipCode_mem C (B.Vector.flip y)).mp (by { rw [B.Vector.flip_flip]; exact hy.1 })
+        have hw : Icc_wt a b (B.Vector.flip y) := by
+          unfold Icc_wt at hy ⊢
+          rw [wt_flip]
+          have h1 : a ≤ n - wt y := by
+            have ha_le : a ≤ n - (n - a) := by rw [Nat.sub_sub_self Ha]
+            apply Nat.le_trans ha_le
+            apply Nat.sub_le_sub_left hy.2.2 n
+          have h2 : n - wt y ≤ b := by
+            have hb_le : n - (n - b) ≤ b := by rw [Nat.sub_sub_self Hb]
+            apply Nat.le_trans _ hb_le
+            apply Nat.sub_le_sub_left hy.2.1 n
+          exact ⟨h1, h2⟩
+        exact ⟨hc_mem, hw⟩
+      exact ⟨h_mem, B.Vector.flip_flip y⟩
+}
+
+end B.Finset
 
 lemma exists_DC_card_filter_wt_le
   (S : Finset (List.Vector B n)) (HS : B.Finset.flipCode S = S)
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) (HCS : C ⊆ S)
   (a b : Nat) (Ha : a ≤ n) (Hb : b ≤ n) :
   ∃ C' : Finset (List.Vector B n), is_DelCode C' ∧ C' ⊆ S
-  ∧ C'.card = C.card ∧ (filter (Icc_wt (n - b) (n - a)) C').card ≤ (filter (Icc_wt a b) C).card :=
+  ∧ C'.card = C.card ∧ (filter (Icc_wt (n - b) (n - a)) C').card ≤ (filter (Icc_wt a b) C').card :=
 by {
   by_cases hle : (filter (Icc_wt (n - b) (n - a)) C).card ≤ (filter (Icc_wt a b) C).card
   · exact ⟨C, HC, HCS, rfl, hle⟩
   · use B.Finset.flipCode C
     rw [← HS]
-    -- missing DelCode_flipCode, flipCode_subset, card_flipCode, filter_flipCode_swap
-    sorry
+    refine ⟨DelCode_flipCode HC, B.Finset.flipCode_subset _ _ HCS, B.Finset.card_flipCode _, ?_⟩
+    have h1 : (filter (Icc_wt (n - b) (n - a)) (B.Finset.flipCode C)).card = (filter (Icc_wt a b) C).card := by {
+      rw [B.Finset.filter_flipCode_swap _ _ _ (Nat.sub_le n b) (Nat.sub_le n a)]
+      have h1a : n - (n - a) = a := Nat.sub_sub_self Ha
+      have h1b : n - (n - b) = b := Nat.sub_sub_self Hb
+      rw [h1a, h1b]
+    }
+    have h2 : (filter (Icc_wt a b) (B.Finset.flipCode C)).card = (filter (Icc_wt (n - b) (n - a)) C).card := by {
+      rw [B.Finset.filter_flipCode_swap _ _ _ Ha Hb]
+    }
+    rw [h1, h2]
+    exact le_of_lt (Nat.lt_of_not_ge hle)
 }
 def sum_card_dS {n : Nat} (C : Finset (List.Vector α n)) : Nat :=
   C.sum (fun c => (dS c).card)
@@ -270,24 +337,34 @@ lemma dS_inter_union_dS_of_DelCode'_insert
   dS X ∩ union_dS C = ∅ :=
 by {
   unfold is_DelCode' at HCX
-  -- missing card_union_dS_insert, zero_of_sub_eq_of_le, card_dS_pos
-  sorry
+  rw [card_union_dS_insert X C HX, sum_card_dS_insert C X HX] at HCX
+  rw [← Finset.card_eq_zero]
+  have hdS : 0 < (dS X).card := by {
+    rw [Finset.card_pos]
+    exact ⟨sDel X 0, (mem_dS X (sDel X 0)).mpr ⟨0, Nat.zero_le _, rfl⟩⟩
+  }
+  have Hn : 0 < (dS X).card + (union_dS C).card := Nat.lt_of_lt_of_le hdS (Nat.le_add_right _ _)
+  have Hnm : (dS X).card + (union_dS C).card ≤ (dS X).card + sum_card_dS C := Nat.add_le_add_left (card_union_dS_le C) _
+  exact Nat.zero_of_sub_eq_of_le Hn Hnm HCX
 }
 lemma DelCode'_of_DelCode'_insert
   (HX : X ∉ C) (HCX : is_DelCode' (insert X C)) :
   is_DelCode' C :=
 by {
-  unfold is_DelCode'
-  -- missing card_union_dS_insert
-  sorry
+  have h : (dS X).card + (union_dS C).card - (dS X ∩ union_dS C).card = (dS X).card + sum_card_dS C := by {
+    unfold is_DelCode' at HCX
+    rw [card_union_dS_insert X C HX, sum_card_dS_insert C X HX] at HCX
+    exact HCX
+  }
+  rw [dS_inter_union_dS_of_DelCode'_insert C X HX HCX, Finset.card_empty, Nat.sub_zero] at h
+  exact Nat.add_left_cancel h
 }
 lemma card_dS_insert_of_card_dS
   (HC : is_DelCode' C) (HX : X ∉ C) (HCX : dS X ∩ union_dS C = ∅):
   is_DelCode' (insert X C) :=
 by {
   unfold is_DelCode' at HC ⊢
-  -- missing card_union_dS_insert
-  sorry
+  rw [card_union_dS_insert X C HX, HC, HCX, Finset.card_empty, Nat.sub_zero, sum_card_dS_insert C X HX]
 }
 lemma DelCode'_insert_iff (HX : X ∉ C) :
   is_DelCode' (insert X C) ↔ is_DelCode' C ∧ dS X ∩ union_dS C = ∅ :=
@@ -361,19 +438,30 @@ def dB {n : Nat} (X : List.Vector B n) : Finset (List.Vector B n) :=
 
 lemma mem_dB {n : Nat} (X Y : List.Vector B n) :
   Y ∈ dB X ↔ Y ∈ union_dS (IS X) :=
-by sorry
+by exact Iff.rfl
 lemma mem_dB_iff {n : Nat} (X Y : List.Vector B n) :
   Y ∈ dB X ↔ IS X ∩ IS Y ≠ ∅ :=
 by {
-  -- missing mem_dB, mem_IS_of_mem_dS, exists_mem_of_ne_empty, mem_dS_of_mem_IS
-  sorry
+  apply Iff.intro
+  · intro hY
+    unfold dB union_dS at hY
+    have hY2 : ∃ Z ∈ IS X, Y ∈ dS Z := Finset.mem_biUnion.mp hY
+    rcases hY2 with ⟨Z, hZ, hYZ⟩
+    have h : Z ∈ IS X ∩ IS Y := by {
+      rw [Finset.mem_inter]
+      exact ⟨hZ, mem_IS_of_mem_dS Z Y hYZ⟩
+    }
+    exact Finset.ne_empty_of_mem h
+  · intro h
+    rcases Finset.nonempty_of_ne_empty h with ⟨Z, hZ⟩
+    rw [Finset.mem_inter] at hZ
+    unfold dB union_dS
+    exact Finset.mem_biUnion.mpr ⟨Z, hZ.1, mem_dS_of_mem_IS Y Z hZ.2⟩
 }
 lemma mem_dB_iff' {n : Nat} (X Y : List.Vector B n) :
   Y ∈ dB X ↔ dS X ∩ dS Y ≠ ∅ :=
 by {
-  rw [mem_dB_iff]
-  -- missing IS_inter_ne_empty_iff
-  sorry
+  rw [mem_dB_iff, IS_inter_ne_empty_iff]
 }
 def union_dB {n : Nat} (C : Finset (List.Vector B n)) :=
   C.biUnion dB
@@ -611,12 +699,12 @@ lemma union_dS_wt_union
 by {
   apply Finset.Subset.antisymm
   · intro x hx
-    rw [mem_union_dS_wt, union_dS_union, Finset.mem_union] at hx
-    rcases hx.1 with h_left | h_right
-    · rw [Finset.mem_union, mem_union_dS_wt]
-      exact Or.inl ⟨h_left, hx.2⟩
-    · rw [Finset.mem_union, mem_union_dS_wt]
-      exact Or.inr ⟨h_right, hx.2⟩
+    simp only [mem_union_dS_wt, union_dS_union, Finset.mem_union] at hx
+    rcases hx with ⟨h_left | h_right, hw⟩
+    · rw [Finset.mem_union]
+      exact Or.inl ((mem_union_dS_wt C₁ w x).mpr ⟨h_left, hw⟩)
+    · rw [Finset.mem_union]
+      exact Or.inr ((mem_union_dS_wt C₂ w x).mpr ⟨h_right, hw⟩)
   · apply Finset.union_subset
     · exact union_dS_wt_subset_of_subset _ _ Finset.subset_union_left _
     · exact union_dS_wt_subset_of_subset _ _ Finset.subset_union_right _
@@ -643,7 +731,7 @@ lemma Cwr_empty (w r : Nat) :
   Cwr (∅ : Finset (List.Vector B n)) w r = ∅ :=
 by {
   unfold Cwr
-  exact Finset.filter_empty
+  exact Finset.filter_empty _
 }
 lemma Cwr_subset (C : Finset (List.Vector B n)) (w r : Nat) :
   Cwr C w r ⊆ C :=
@@ -664,119 +752,353 @@ lemma DelCode_Cwr
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) (w r : Nat) :
   is_DelCode (Cwr C w r) :=
 by {
-  exact DelCode_subset HC (Cwr_subset C w r)
+  exact DelCode_subset C (Cwr C w r) HC (Cwr_subset C w r)
 }
 lemma Cwr_insert_of_eq
   (C : Finset (List.Vector B n)) (w r : Nat) (X : List.Vector B n)
   (H : card (dS_wt X w) = r) :
   Cwr (insert X C) w r = insert X (Cwr C w r) :=
-by sorry
+by {
+  unfold Cwr
+  rw [Finset.filter_insert, if_pos H]
+}
 lemma Cwr_insert_of_neq
   (C : Finset (List.Vector B n)) (w r : Nat) (X : List.Vector B n)
   (H : card (dS_wt X w) ≠ r)  :
   Cwr (insert X C) w r = Cwr C w r :=
-by sorry
+by {
+  unfold Cwr
+  rw [Finset.filter_insert, if_neg H]
+}
 lemma Cwr_inter_of_ne (C : Finset (List.Vector B n)) (w r₁ r₂: ℕ) (Hr : r₁ ≠ r₂):
   Cwr C w r₁ ∩ Cwr C w r₂ = ∅  :=
-by sorry
+by {
+  apply Finset.Subset.antisymm
+  · intro x hx
+    rw [Finset.mem_inter, mem_Cwr, mem_Cwr] at hx
+    have h : r₁ = r₂ := by rw [← hx.1.2, ← hx.2.2]
+    contradiction
+  · exact Finset.empty_subset _
+}
 lemma card_union_dS_wt_Cwr_zero (C : Finset (List.Vector B n)) (w : Nat) :
   card (union_dS_wt (Cwr C w 0) w) = 0 :=
-by sorry
+by {
+  induction C using Finset.induction_on with
+  | empty =>
+    rw [Cwr_empty, union_dS_wt_empty, Finset.card_empty]
+  | insert s S hs ihS =>
+    cases Classical.em (card (dS_wt s w) = 0) with
+    | inl heq =>
+      rw [Cwr_insert_of_eq S w 0 s heq]
+      apply Nat.eq_zero_of_le_zero
+      calc card (union_dS_wt (insert s (Cwr S w 0)) w)
+        _ = card (dS_wt s w ∪ union_dS_wt (Cwr S w 0) w) := by rw [union_dS_wt_insert _ _ _ (not_mem_Cwr _ _ _ _ hs)]
+        _ ≤ card (dS_wt s w) + card (union_dS_wt (Cwr S w 0) w) := Finset.card_union_le _ _
+        _ = 0 + 0 := by rw [heq, ihS]
+        _ = 0 := rfl
+    | inr hneq =>
+      rw [Cwr_insert_of_neq S w 0 s hneq]
+      exact ihS
+}
 lemma card_union_dS_wt_Cwr (C : Finset (List.Vector B n)) (HC : is_DelCode C) (w r : Nat) :
   card (union_dS_wt (Cwr C w r) w) = r * card (Cwr C w r) :=
-by sorry
+by {
+  induction C using Finset.induction_on with
+  | empty =>
+    rw [Cwr_empty, union_dS_wt_empty, Finset.card_empty, Finset.card_empty, Nat.mul_zero]
+  | insert s S hs ihS =>
+    have HCS : is_DelCode S ∧ dS s ∩ union_dS S = ∅ := (DelCode_insert_iff' S s hs).mp HC
+    have HCS_DelCode : is_DelCode S := HCS.1
+    cases Classical.em (card (dS_wt s w) = r) with
+    | inl heq =>
+      rw [Cwr_insert_of_eq S w r s heq]
+      rw [union_dS_wt_insert _ _ _ (not_mem_Cwr _ _ _ _ hs)]
+      rw [Finset.card_union_of_disjoint]
+      · rw [heq, ihS HCS_DelCode]
+        rw [Finset.card_insert_of_notMem (not_mem_Cwr _ _ _ _ hs)]
+        rw [Nat.mul_add, Nat.mul_one, Nat.add_comm]
+      · rw [Finset.disjoint_iff_inter_eq_empty]
+        apply Finset.subset_empty.mp
+        intro x hx
+        rw [Finset.mem_inter] at hx
+        have h1 : x ∈ dS s := dS_wt_subset _ _ hx.1
+        have h2 : x ∈ union_dS S := by {
+          have h2a := union_dS_wt_subset _ _ hx.2
+          exact union_dS_subset_of_subset _ _ (Cwr_subset _ _ _) h2a
+        }
+        have h3 : x ∈ dS s ∩ union_dS S := by {
+          rw [Finset.mem_inter]
+          exact ⟨h1, h2⟩
+        }
+        rw [HCS.2] at h3
+        exact h3
+    | inr hneq =>
+      rw [Cwr_insert_of_neq S w r s hneq]
+      exact ihS HCS_DelCode
+}
 def mul_card_dS_wt (C : Finset (List.Vector B n)) (w r : Nat) :=
   r * (card (Cwr C w r))
 
 lemma mul_card_dS_wt_empty (w r : Nat) :
   mul_card_dS_wt (∅ : Finset (List.Vector B n)) w r = 0 :=
-by sorry
+by {
+  unfold mul_card_dS_wt
+  rw [Cwr_empty, Finset.card_empty, Nat.mul_zero]
+}
 lemma mul_card_dS_wt_zero (C : Finset (List.Vector B n)) (w : Nat):
   mul_card_dS_wt C w 0 = 0 :=
-by sorry
+by {
+  unfold mul_card_dS_wt
+  rw [Nat.zero_mul]
+}
 lemma mul_card_dS_wt_eq (C : Finset (List.Vector B n)) (HC : is_DelCode C) (w r : Nat) :
   mul_card_dS_wt C w r = card (union_dS_wt (Cwr C w r) w) :=
-by sorry
+by {
+  unfold mul_card_dS_wt
+  rw [card_union_dS_wt_Cwr C HC w r]
+}
 def Cwr_le (C : Finset (List.Vector B n)) (w r : Nat) : Finset (List.Vector B n) :=
   filter (fun X => card (dS_wt X w) ≤ r) C
 
 lemma mem_Cwr_le (C : Finset (List.Vector B n)) (w r : Nat) (X : List.Vector B n) :
   X ∈ Cwr_le C w r ↔ X ∈ C ∧ card (dS_wt X w) ≤ r :=
-by sorry
+by {
+  unfold Cwr_le
+  rw [Finset.mem_filter]
+}
 lemma not_mem_Cwr_le
   (C : Finset (List.Vector B n)) (w r : Nat) (X : List.Vector B n) (HX : X ∉ C) :
   X ∉ Cwr_le C w r :=
-by sorry
+by {
+  intro h
+  rw [mem_Cwr_le] at h
+  exact HX h.1
+}
 lemma Cwr_le_empty (w r : Nat) :
   Cwr_le (∅ : Finset (List.Vector B n)) w r = ∅ :=
-by sorry
+by {
+  unfold Cwr_le
+  exact Finset.filter_empty _
+}
 lemma Cwr_le_zero (C : Finset (List.Vector B n)) (w : Nat) :
   Cwr_le C w 0 = Cwr C w 0 :=
-by sorry
+by {
+  unfold Cwr_le Cwr
+  apply Finset.filter_congr
+  intro x _
+  exact Nat.le_zero
+}
 lemma Cwr_le_subset (C : Finset (List.Vector B n)) (w r : Nat) :
   Cwr_le C w r ⊆ C :=
-by sorry
+by {
+  intro x hx
+  rw [mem_Cwr_le] at hx
+  exact hx.1
+}
 lemma Cwr_subset_le (C : Finset (List.Vector B n)) (w r : Nat) :
   Cwr C w r ⊆ Cwr_le C w r :=
-by sorry
+by {
+  intro x hx
+  rw [mem_Cwr] at hx
+  rw [mem_Cwr_le]
+  exact ⟨hx.1, Nat.le_of_eq hx.2⟩
+}
 lemma DelCode_Cwr_le
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) (w r : Nat) :
   is_DelCode (Cwr_le C w r) :=
-by sorry
+by {
+  exact DelCode_subset C (Cwr_le C w r) HC (Cwr_le_subset C w r)
+}
 lemma Cwr_le_insert_of_le
   (C : Finset (List.Vector B n)) (w r : Nat) (X : List.Vector B n)
   (H : card (dS_wt X w) ≤ r) :
   Cwr_le (insert X C) w r = insert X (Cwr_le C w r) :=
-by sorry
+by {
+  unfold Cwr_le
+  rw [Finset.filter_insert, if_pos H]
+}
 lemma Cwr_le_insert_of_gt
   (C : Finset (List.Vector B n)) (w r : Nat) (X : List.Vector B n)
   (H : r < card (dS_wt X w)) :
   Cwr_le (insert X C) w r = Cwr_le C w r :=
-by sorry
+by {
+  unfold Cwr_le
+  have H_not_le : ¬ (card (dS_wt X w) ≤ r) := Nat.not_le_of_gt H
+  rw [Finset.filter_insert, if_neg H_not_le]
+}
 lemma Cwr_le_succ (C : Finset (List.Vector B n)) (w r : Nat) :
   Cwr_le C w (r + 1) = Cwr_le C w r ∪ Cwr C w (r + 1) :=
-by sorry
+by {
+  apply Finset.Subset.antisymm
+  · intro x hx
+    rw [mem_Cwr_le] at hx
+    cases Nat.lt_or_eq_of_le hx.2 with
+    | inl h_lt =>
+      rw [Finset.mem_union, mem_Cwr_le]
+      exact Or.inl ⟨hx.1, Nat.le_of_lt_succ h_lt⟩
+    | inr h_eq =>
+      rw [Finset.mem_union, mem_Cwr]
+      exact Or.inr ⟨hx.1, h_eq⟩
+  · intro x hx
+    rw [Finset.mem_union] at hx
+    cases hx with
+    | inl h_le =>
+      rw [mem_Cwr_le] at h_le ⊢
+      exact ⟨h_le.1, Nat.le_succ_of_le h_le.2⟩
+    | inr h_eq =>
+      rw [mem_Cwr] at h_eq
+      rw [mem_Cwr_le]
+      exact ⟨h_eq.1, Nat.le_of_eq h_eq.2⟩
+}
 lemma Cwr_le_inter_eq (C : Finset (List.Vector B n)) (w r : Nat) :
   Cwr_le C w r ∩ Cwr C w (r + 1) = ∅ :=
-by sorry
+by {
+  apply Finset.Subset.antisymm
+  · intro x hx
+    rw [Finset.mem_inter, mem_Cwr_le, mem_Cwr] at hx
+    have h1 : card (dS_wt x w) ≤ r := hx.1.2
+    have h2 : card (dS_wt x w) = r + 1 := hx.2.2
+    rw [h2] at h1
+    exact False.elim (Nat.not_succ_le_self r h1)
+  · exact Finset.empty_subset _
+}
 lemma card_Cwr_le_succ (C : Finset (List.Vector B n)) (w r : Nat) :
   card (Cwr_le C w (r + 1)) = card (Cwr_le C w r) + card (Cwr C w (r + 1)) :=
-by sorry
+by {
+  rw [Cwr_le_succ]
+  rw [Finset.card_union_of_disjoint]
+  rw [Finset.disjoint_iff_inter_eq_empty]
+  exact Cwr_le_inter_eq C w r
+}
 lemma Cwr_le_length (C : Finset (List.Vector B n)) (w : Nat):
-  Cwr_le C w (n - 1 + 1) = C :=
-by sorry
+  Cwr_le C w (n - 1 + 1) = C := by {
+    induction C using Finset.induction
+    · apply rfl
+    · intro x C' _ ihC
+}
 lemma card_union_dS_wt_Cwr_le_zero (C : Finset (List.Vector B n)) (w : Nat) :
   card (union_dS_wt (Cwr_le C w 0) w) = 0 :=
-by sorry
+by {
+  rw [Cwr_le_zero]
+  exact card_union_dS_wt_Cwr_zero C w
+}
 def mul_card_dS_wt_le : Finset (List.Vector B n) → ℕ → ℕ → ℕ
 | C, w, 0       => mul_card_dS_wt C w 0
 | C, w, k + 1 => mul_card_dS_wt C w (k + 1) + mul_card_dS_wt_le C w k
 
 lemma mul_card_dS_wt_le_empty (w r : Nat) :
   mul_card_dS_wt_le (∅ : Finset (List.Vector B n)) w r = 0 :=
-by sorry
+by {
+  induction r with
+  | zero =>
+    unfold mul_card_dS_wt_le
+    rw [mul_card_dS_wt_empty]
+  | succ r ihr =>
+    unfold mul_card_dS_wt_le
+    rw [mul_card_dS_wt_empty, Nat.zero_add, ihr]
+}
 lemma mul_card_dS_wt_le_zero (C : Finset (List.Vector B n)) (w : Nat):
   mul_card_dS_wt_le C w 0 = 0 :=
-by sorry
+by {
+  unfold mul_card_dS_wt_le
+  rw [mul_card_dS_wt_zero]
+}
 lemma mul_card_dS_wt_le_insert_of_gt
   (C : Finset (List.Vector B n)) (w r : Nat)
   (x : List.Vector B n) (Hr : r < card (dS_wt x w)) :
   mul_card_dS_wt_le (insert x C) w r = mul_card_dS_wt_le C w r :=
-by sorry
+by {
+  induction r with
+  | zero =>
+    rw [mul_card_dS_wt_le_zero, mul_card_dS_wt_le_zero]
+  | succ r ihr =>
+    unfold mul_card_dS_wt_le
+    unfold mul_card_dS_wt
+    rw [Cwr_insert_of_neq]
+    · rw [ihr (Nat.lt_of_le_of_lt (Nat.le_succ _) Hr)]
+    · exact Nat.ne_of_lt Hr
+}
 lemma mul_card_dS_wt_le_insert_of_le
   (C : Finset (List.Vector B n)) (w r : Nat)
   (x : List.Vector B n) (Hx : x ∉ C) (Hr : card (dS_wt x w) ≤ r) :
   mul_card_dS_wt_le (insert x C) w r
   = mul_card_dS_wt_le C w r + card (dS_wt x w) :=
-by sorry
+by {
+  induction r with
+  | zero =>
+    rw [mul_card_dS_wt_le_zero, mul_card_dS_wt_le_zero]
+    rw [Nat.eq_zero_of_le_zero Hr]
+  | succ r ihr =>
+    unfold mul_card_dS_wt_le
+    unfold mul_card_dS_wt
+    cases Nat.eq_or_lt_of_le Hr with
+    | inl heq =>
+      rw [Cwr_insert_of_eq C w (r + 1) x heq]
+      rw [Finset.card_insert_of_notMem]
+      · rw [Nat.mul_succ, Nat.add_right_comm]
+        rw [mul_card_dS_wt_le_insert_of_gt]
+        · rw [heq]
+        · rw [heq]
+          exact Nat.lt_succ_self _
+      · exact not_mem_Cwr C w (r + 1) x Hx
+    | inr hlt =>
+      rw [Cwr_insert_of_neq]
+      · rw [ihr (Nat.le_of_lt_succ hlt), Nat.add_assoc]
+      · exact Nat.ne_of_lt hlt
+}
 lemma mul_card_dS_wt_le_eq
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) (w r : Nat) :
   mul_card_dS_wt_le C w r = card (union_dS_wt (Cwr_le C w r) w) :=
-by sorry
+by {
+  induction r with
+  | zero =>
+    rw [mul_card_dS_wt_le_zero]
+    rw [card_union_dS_wt_Cwr_le_zero C]
+  | succ r ihr =>
+    unfold mul_card_dS_wt_le
+    rw [mul_card_dS_wt_eq _ HC, ihr]
+    rw [Cwr_le_succ, union_dS_wt_union]
+    have h_disj : Disjoint (union_dS_wt (Cwr_le C w r) w) (union_dS_wt (Cwr C w (r + 1)) w) := by {
+      rw [Finset.disjoint_iff_inter_eq_empty]
+      rw [← Finset.subset_empty]
+      apply Finset.Subset.trans
+      · apply Finset.inter_subset_inter
+        · exact union_dS_wt_subset _ _
+        · exact union_dS_wt_subset _ _
+      · rw [union_dS_inter_of_DelCode _ _ HC]
+        · rfl
+        · exact Cwr_le_subset _ _ _
+        · exact Cwr_subset _ _ _
+        · exact Cwr_le_inter_eq _ _ _
+    }
+    rw [Finset.card_union_of_disjoint h_disj]
+    rw [Nat.add_comm]
+}
+lemma card_dS {n : Nat} (x : List.Vector B n) : card (dS x) ≤ n - 1 + 1 := by sorry
+
 lemma mul_card_dS_wt_le_le
   (C : Finset (List.Vector B n)) (w r : Nat) :
   mul_card_dS_wt_le C w r ≤ mul_card_dS_wt_le C w (n - 1 + 1) :=
-by sorry
+by {
+  induction C using Finset.induction with
+  | empty =>
+    rw [mul_card_dS_wt_le_empty]
+    exact Nat.zero_le _
+  | insert c C hc ihC =>
+    by_cases hge : card (dS_wt c w) ≤ r
+    · rw [mul_card_dS_wt_le_insert_of_le _ _ _ _ hc hge]
+      rw [mul_card_dS_wt_le_insert_of_le _ _ _ _ hc]
+      · exact Nat.add_le_add_right ihC _
+      · apply Nat.le_trans
+        · exact Finset.card_le_card (dS_wt_subset _ _)
+        · exact card_dS _
+    · rw [mul_card_dS_wt_le_insert_of_gt _ _ _ _ (Nat.lt_of_not_ge hge)]
+      rw [mul_card_dS_wt_le_insert_of_le _ _ _ _ hc]
+      · exact Nat.le_trans ihC (Nat.le_add_right _ _)
+      · apply Nat.le_trans
+        · exact Finset.card_le_card (dS_wt_subset _ _)
+        · exact card_dS _
+}
 lemma mul_card_dS_wt_le_length
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) (w r : Nat) :
   mul_card_dS_wt_le C w (n - 1 + 1) = card (union_dS_wt C w) :=
@@ -903,13 +1225,13 @@ end B
 variable [Fintype α]
 variable (S : Finset (List.Vector α n))
 
-def DCs (n :  Nat) : Finset (Finset (List.Vector α n)) :=
+noncomputable def DCs (n :  Nat) : Finset (Finset (List.Vector α n)) :=
   filter is_DelCode (powerset univ)
 
 lemma mem_DCs :
   C ∈ @DCs α _ _ n ↔ is_DelCode C :=
 by sorry
-def DCs' (n : Nat) : Finset (Finset (List.Vector α n)) :=
+noncomputable def DCs' (n : Nat) : Finset (Finset (List.Vector α n)) :=
   filter is_DelCode' (powerset univ)
 
 lemma DCs'_eq :

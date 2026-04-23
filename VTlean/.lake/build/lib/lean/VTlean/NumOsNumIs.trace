@@ -1,8 +1,8 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["87a92d6ba6481f9e.olean"],
-  "i": "375276f1affca89d.ilean",
+ {"o": ["1003c66b746fa0cc.olean"],
+  "i": "f52ee954d1ad9928.ilean",
   "c": "118e0001ba2d4369.c"},
  "log":
  [{"message":
@@ -23,7 +23,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/NumOsNumIs.lean",
-   "0c1e77ba41d1201b"],
+   "7974986f0b26d232"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -33,4 +33,4 @@
   ["Module.name: VTlean.NumOsNumIs", "e08513977db7f014"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "679e3a6910119676"}
+ "depHash": "591a0e9c233b4377"}

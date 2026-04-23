@@ -1,0 +1,145 @@
+VTlean/DelCode.lean:227:33: error(lean.unknownIdentifier): Unknown identifier `flipCode_subset`
+VTlean/DelCode.lean:227:58: error(lean.unknownIdentifier): Unknown identifier `card_flipCode`
+VTlean/DelCode.lean:229:10: error(lean.unknownIdentifier): Unknown identifier `filter_flipCode_swap`
+VTlean/DelCode.lean:235:10: error(lean.unknownIdentifier): Unknown identifier `filter_flipCode_swap`
+VTlean/DelCode.lean:291:58: error: Application type mismatch: The argument
+  HCX
+has type
+  #X.dS + #(union_dS C) - #(X.dS ∩ union_dS C) = #X.dS + sum_card_dS C
+but is expected to have type
+  #X.dS - #(X.dS ∩ union_dS C) = ?m.93
+in the application
+  zero_of_sub_eq_of_le hdS ?m.98 HCX
+VTlean/DelCode.lean:291:37: error: Application type mismatch: The argument
+  card_union_dS_le C
+has type
+  #(union_dS C) ≤ sum_card_dS C
+but is expected to have type
+  #X.dS ≤ ?m.93
+in the application
+  zero_of_sub_eq_of_le hdS (card_union_dS_le C)
+VTlean/DelCode.lean:301:2: error: unsolved goals
+case H
+α : Type
+inst✝ : DecidableEq α
+n : ℕ
+C : Finset (List.Vector α n)
+X : List.Vector α n
+HX : X ∉ C
+HCX : #X.dS + #(union_dS C) - #(X.dS ∩ union_dS C) = sum_card_dS (insert X C)
+⊢ X ∉ C
+
+case H
+α : Type
+inst✝ : DecidableEq α
+n : ℕ
+C : Finset (List.Vector α n)
+X : List.Vector α n
+HX : X ∉ C
+HCX : #(union_dS (insert X C)) = sum_card_dS (insert X C)
+⊢ X ∉ C
+VTlean/DelCode.lean:382:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:390:16: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  @Membership.mem (List.Vector ?m.32 (?m.34 - 1)) (Finset (List.Vector ?m.32 (?m.34 - 1))) SetLike.instMembership
+    (union_dS ?C) ?Y
+in the target expression
+  @Membership.mem (List.Vector B n) (Finset (List.Vector B (n + 1 - 1))) SetLike.instMembership (union_dS X.IS) Y
+
+case mp
+n : ℕ
+X Y : List.Vector B n
+hY : Y ∈ union_dS X.IS
+⊢ X.IS ∩ Y.IS ≠ ∅
+VTlean/DelCode.lean:398:11: error(lean.unknownIdentifier): Unknown constant `Finset.exists_mem_of_ne_empty`
+VTlean/DelCode.lean:398:48: error: Tactic `rcases` failed: `x✝ : ?m.39` is not an inductive datatype
+VTlean/DelCode.lean:649:19: error: Invalid `⟨...⟩` notation: The expected type
+  Quot.lift (fun l => x ∈ l) ⋯ (union_dS_wt C₂ w).val
+is not an inductive type
+
+Note: This notation can only be used when the expected type is an inductive type with a single constructor
+VTlean/DelCode.lean:676:2: error: Type mismatch
+  filter_empty
+has type
+  ∀ (p : ?m.15 → Prop) [inst : DecidablePred p], Finset.filter p ∅ = ∅
+but is expected to have type
+  {X ∈ ∅ | #(dS_wt X w) = r} = ∅
+VTlean/DelCode.lean:697:23: error: Application type mismatch: The argument
+  HC
+has type
+  is_DelCode C
+of sort `Prop` but is expected to have type
+  Finset (List.Vector ?m.15 ?m.17)
+of sort `Type` in the application
+  DelCode_subset HC
+VTlean/DelCode.lean:699:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:704:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:709:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:712:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:715:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:721:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:724:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:727:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:733:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:736:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:740:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:743:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:746:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:749:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:752:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:756:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:761:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:766:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:769:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:772:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:775:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:778:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:785:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:788:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:791:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:796:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:802:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:806:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:810:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:814:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:818:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:825:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:828:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:831:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:836:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:841:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:845:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:849:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:852:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:856:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:860:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:864:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:867:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:870:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:873:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:879:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:882:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:885:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:890:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:896:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:899:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:905:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:909:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:913:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:917:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:921:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:926:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:936:4: error(lean.dependsOnNoncomputable): failed to compile definition, consider marking it as 'noncomputable' because it depends on 'DecidablePred_is_DelCode', which is 'noncomputable'
+VTlean/DelCode.lean:939:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:945:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:951:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:954:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:957:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:960:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:967:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:973:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:976:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:982:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:991:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:999:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:1003:6: warning: declaration uses `sorry`
+VTlean/DelCode.lean:1007:6: warning: declaration uses `sorry`

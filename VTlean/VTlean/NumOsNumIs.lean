@@ -72,6 +72,18 @@ lemma num_Os_replicate_I (n : Nat) : num_Os (replicate n B.I) = 0 := by
     change num_Os (replicate n B.I) = 0
     exact ih
 
+lemma num_Is_flip (X : List B) : num_Is (B.List.flip X) = num_Os X := by
+  induction X with
+  | nil => rfl
+  | cons x X' ih =>
+    cases x
+    · change num_Is (B.I :: B.List.flip X') = num_Os X' + 1
+      change num_Is (B.List.flip X') + 1 = num_Os X' + 1
+      rw [ih]
+    · change num_Is (B.O :: B.List.flip X') = num_Os X'
+      change num_Is (B.List.flip X') = num_Os X'
+      rw [ih]
+
 end List
 
 namespace Vector

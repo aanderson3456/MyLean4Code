@@ -937,21 +937,97 @@ by {
   exact mem_IS_list x y
 }
 
+lemma mem_dS :
+  Y ∈ dS X ↔ ∃ i : Nat, i ≤ n - 1 ∧ Y = sDel X i :=
+by {
+  unfold dS
+  rw [List.mem_toFinset]
+  unfold dS_list
+  rw [mem_dS_le]
+}
+
 lemma mem_IS_of_mem_dS 
   (X : List.Vector B (n + 1)) (Y : List.Vector B n) (HXY : Y ∈ dS X) :
-  X ∈ IS Y := sorry
+  X ∈ IS Y :=
+by {
+  have h_mem := Iff.mp (mem_dS X Y) HXY
+  rcases h_mem with ⟨i, _, hyi⟩
+  rw [mem_IS]
+  exact ⟨i, sIns_of_sDel i X Y hyi⟩
+}
 
 lemma mem_dS_of_mem_IS 
   (X : List.Vector B n) (Y : List.Vector B (n + 1)) (HXY : Y ∈ IS X) :
-  X ∈ dS Y := sorry
+  X ∈ dS Y :=
+by {
+  rw [mem_IS] at HXY
+  rcases HXY with ⟨i, b, hyib⟩
+  apply Iff.mpr (mem_dS Y X)
+  cases exists_sDel_le Y i with
+  | intro j hj =>
+    use j
+    exact ⟨hj.1, by { rw [← hj.2]; exact sDel_of_sIns i b X Y hyib }⟩
+}
 
 lemma dS_inter_empty_of_IS_inter 
   {X Y : List.Vector B n} (HXY : IS X ∩ IS Y = ∅) : 
-  dS X ∩ dS Y = ∅ := sorry
+  dS X ∩ dS Y = ∅ :=
+by {
+  apply Finset.ext
+  intro z
+  rw [Finset.mem_inter]
+  apply Iff.intro
+  · intro hz
+    have hzX : z ∈ dS X := hz.left
+    have hzY : z ∈ dS Y := hz.right
+    rw [mem_dS] at hzX hzY
+    rcases hzX with ⟨i, _, hzi⟩
+    rcases hzY with ⟨j, _, hzj⟩
+    have h1 : ∃ i' j' : Nat, ∃ a b : B, sIns X i' a = sIns Y j' b :=
+      exists_sIns_eq_of_sDel i j X Y (hzi.symm.trans hzj)
+    rcases h1 with ⟨i', j', a, b, h_eq⟩
+    have h2 : sIns X i' a ∈ IS X ∩ IS Y := by {
+      rw [Finset.mem_inter, mem_IS, mem_IS]
+      exact ⟨⟨i', a, rfl⟩, ⟨j', b, h_eq⟩⟩
+    }
+    have h3 : sIns X i' a ∉ (∅ : Finset _) := by simp
+    rw [← HXY] at h3
+    contradiction
+  · intro hz
+    simp at hz
+}
 
 lemma IS_inter_empty_of_dS_inter
   {X Y : List.Vector B n} (HXY : dS X ∩ dS Y = ∅) : 
-  IS X ∩ IS Y = ∅ := sorry
+  IS X ∩ IS Y = ∅ :=
+by {
+  apply Finset.ext
+  intro z
+  rw [Finset.mem_inter]
+  apply Iff.intro
+  · intro hz
+    have hzX : z ∈ IS X := hz.left
+    have hzY : z ∈ IS Y := hz.right
+    rw [mem_IS] at hzX hzY
+    rcases hzX with ⟨i, a, hzi⟩
+    rcases hzY with ⟨j, b, hzj⟩
+    have h1 : ∃ i' j' : Nat, sDel X i' = sDel Y j' :=
+      exists_sDel_eq_of_sIns i j a b X Y (hzi.symm.trans hzj)
+    rcases h1 with ⟨i', j', h_eq⟩
+    cases exists_sDel_le X i' with
+    | intro i'' hi'' =>
+      cases exists_sDel_le Y j' with
+      | intro j'' hj'' =>
+        have h2 : sDel X i'' ∈ dS X ∩ dS Y := by {
+          rw [Finset.mem_inter, mem_dS, mem_dS]
+          exact ⟨⟨i'', hi''.1, rfl⟩, ⟨j'', hj''.1, by rw [← hi''.2, h_eq, hj''.2]⟩⟩
+        }
+        have h3 : sDel X i'' ∉ (∅ : Finset _) := by simp
+        rw [← HXY] at h3
+        contradiction
+  · intro hz
+    simp at hz
+}
 
 lemma IS_inter_empty_iff (X Y : List.Vector B n) :
   IS X ∩ IS Y = ∅ ↔ dS X ∩ dS Y = ∅ :=
@@ -971,16 +1047,6 @@ by {
   · intro h h'
     rw [IS_inter_empty_iff] at h'
     contradiction
-}
-
-
-lemma mem_dS :
-  Y ∈ dS X ↔ ∃ i : Nat, i ≤ n - 1 ∧ Y = sDel X i :=
-by {
-  unfold dS
-  rw [List.mem_toFinset]
-  unfold dS_list
-  rw [mem_dS_le]
 }
 
 lemma _root_.List.sDel_flip (X : List B) (i : Nat) :
