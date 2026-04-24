@@ -88,6 +88,10 @@ LEAN_EXPORT lean_object* lp_VTlean_B_Cwr__le___lam__0___boxed(lean_object*, lean
 LEAN_EXPORT lean_object* lp_VTlean_B_Cwr__le(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_mul__card__dS__wt__le(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_mul__card__dS__wt__le___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_DelCode_0__B_mul__card__dS__wt__le_match__1_splitter___redArg(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_DelCode_0__B_mul__card__dS__wt__le_match__1_splitter___redArg___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_DelCode_0__B_mul__card__dS__wt__le_match__1_splitter(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_DelCode_0__B_mul__card__dS__wt__le_match__1_splitter___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_VTlean_B_Cwr__ge___lam__0(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_Cwr__ge___lam__0___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_Cwr__ge(lean_object*, lean_object*, lean_object*, lean_object*);
@@ -669,6 +673,73 @@ lean_object* x_5;
 x_5 = lp_VTlean_B_mul__card__dS__wt__le(x_1, x_2, x_3, x_4);
 lean_dec(x_4);
 return x_5;
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_DelCode_0__B_mul__card__dS__wt__le_match__1_splitter___redArg(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
+_start:
+{
+lean_object* x_6; uint8_t x_7; 
+x_6 = lean_unsigned_to_nat(0u);
+x_7 = lean_nat_dec_eq(x_3, x_6);
+if (x_7 == 1)
+{
+lean_object* x_8; 
+lean_dec(x_5);
+x_8 = lean_apply_2(x_4, x_1, x_2);
+return x_8;
+}
+else
+{
+lean_object* x_9; lean_object* x_10; lean_object* x_11; 
+lean_dec(x_4);
+x_9 = lean_unsigned_to_nat(1u);
+x_10 = lean_nat_sub(x_3, x_9);
+x_11 = lean_apply_3(x_5, x_1, x_2, x_10);
+return x_11;
+}
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_DelCode_0__B_mul__card__dS__wt__le_match__1_splitter___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
+_start:
+{
+lean_object* x_6; 
+x_6 = lp_VTlean___private_VTlean_DelCode_0__B_mul__card__dS__wt__le_match__1_splitter___redArg(x_1, x_2, x_3, x_4, x_5);
+lean_dec(x_3);
+return x_6;
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_DelCode_0__B_mul__card__dS__wt__le_match__1_splitter(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
+_start:
+{
+lean_object* x_8; uint8_t x_9; 
+x_8 = lean_unsigned_to_nat(0u);
+x_9 = lean_nat_dec_eq(x_5, x_8);
+if (x_9 == 1)
+{
+lean_object* x_10; 
+lean_dec(x_7);
+x_10 = lean_apply_2(x_6, x_3, x_4);
+return x_10;
+}
+else
+{
+lean_object* x_11; lean_object* x_12; lean_object* x_13; 
+lean_dec(x_6);
+x_11 = lean_unsigned_to_nat(1u);
+x_12 = lean_nat_sub(x_5, x_11);
+x_13 = lean_apply_3(x_7, x_3, x_4, x_12);
+return x_13;
+}
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_DelCode_0__B_mul__card__dS__wt__le_match__1_splitter___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5, lean_object* x_6, lean_object* x_7) {
+_start:
+{
+lean_object* x_8; 
+x_8 = lp_VTlean___private_VTlean_DelCode_0__B_mul__card__dS__wt__le_match__1_splitter(x_1, x_2, x_3, x_4, x_5, x_6, x_7);
+lean_dec(x_5);
+lean_dec(x_1);
+return x_8;
 }
 }
 LEAN_EXPORT uint8_t lp_VTlean_B_Cwr__ge___lam__0(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {

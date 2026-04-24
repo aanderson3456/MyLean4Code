@@ -970,11 +970,33 @@ by {
   rw [Finset.disjoint_iff_inter_eq_empty]
   exact Cwr_le_inter_eq C w r
 }
+lemma length_dS_le {α : Type} [DecidableEq α] (X : List.Vector α n) (k : Nat) : (dS_le X k).length = k + 1 := by {
+  induction k with
+  | zero => rfl
+  | succ k ih => exact congrArg Nat.succ ih
+}
+
+lemma card_dS {n : Nat} (x : List.Vector B n) : card (dS x) ≤ n - 1 + 1 := by {
+  unfold dS dS_list
+  have h1 : (List.toFinset (dS_le x (n - 1))).card ≤ (dS_le x (n - 1)).length := List.toFinset_card_le _
+  have h2 : (dS_le x (n - 1)).length = n - 1 + 1 := length_dS_le x (n - 1)
+  rw [h2] at h1
+  exact h1
+}
+
 lemma Cwr_le_length (C : Finset (List.Vector B n)) (w : Nat):
   Cwr_le C w (n - 1 + 1) = C := by {
-    induction C using Finset.induction
-    · apply rfl
-    · intro x C' _ ihC
+  apply Finset.Subset.antisymm
+  · intro x hx
+    rw [mem_Cwr_le] at hx
+    exact hx.1
+  · intro x hx
+    rw [mem_Cwr_le]
+    exact ⟨hx, by {
+      apply Nat.le_trans
+      · exact Finset.card_le_card (dS_wt_subset _ _)
+      · exact card_dS _
+    }⟩
 }
 lemma card_union_dS_wt_Cwr_le_zero (C : Finset (List.Vector B n)) (w : Nat) :
   card (union_dS_wt (Cwr_le C w 0) w) = 0 :=
@@ -1015,8 +1037,8 @@ by {
     unfold mul_card_dS_wt_le
     unfold mul_card_dS_wt
     rw [Cwr_insert_of_neq]
-    · rw [ihr (Nat.lt_of_le_of_lt (Nat.le_succ _) Hr)]
-    · exact Nat.ne_of_lt Hr
+    · rw [ihr (Nat.lt_trans (Nat.lt_succ_self r) Hr)]
+    · exact Nat.ne_of_gt Hr
 }
 lemma mul_card_dS_wt_le_insert_of_le
   (C : Finset (List.Vector B n)) (w r : Nat)
@@ -1065,17 +1087,12 @@ by {
       · apply Finset.inter_subset_inter
         · exact union_dS_wt_subset _ _
         · exact union_dS_wt_subset _ _
-      · rw [union_dS_inter_of_DelCode _ _ HC]
-        · rfl
-        · exact Cwr_le_subset _ _ _
-        · exact Cwr_subset _ _ _
-        · exact Cwr_le_inter_eq _ _ _
+      · have h_inter := union_dS_inter_of_DelCode HC (Cwr_le_subset C w r) (Cwr_subset C w (r + 1)) (Cwr_le_inter_eq C w r)
+        rw [h_inter]
     }
     rw [Finset.card_union_of_disjoint h_disj]
     rw [Nat.add_comm]
 }
-lemma card_dS {n : Nat} (x : List.Vector B n) : card (dS x) ≤ n - 1 + 1 := by sorry
-
 lemma mul_card_dS_wt_le_le
   (C : Finset (List.Vector B n)) (w r : Nat) :
   mul_card_dS_wt_le C w r ≤ mul_card_dS_wt_le C w (n - 1 + 1) :=
@@ -1099,127 +1116,422 @@ by {
         · exact Finset.card_le_card (dS_wt_subset _ _)
         · exact card_dS _
 }
+
 lemma mul_card_dS_wt_le_length
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) (w r : Nat) :
   mul_card_dS_wt_le C w (n - 1 + 1) = card (union_dS_wt C w) :=
-by sorry
+by {
+  rw [mul_card_dS_wt_le_eq C HC]
+  rw [Cwr_le_length]
+}
+
 lemma mul_card_dS_wt_le_card_univ
   {n : Nat} (C : Finset (List.Vector B n)) (HC : is_DelCode C) (w r : Nat) :
   mul_card_dS_wt_le C w r ≤ card (filter (fun x : List.Vector B (n - 1) => wt x = w) univ) :=
-by sorry
+by {
+  rw [mul_card_dS_wt_le_eq C HC]
+  apply Finset.card_le_card
+  unfold union_dS_wt
+  intro x hx
+  rw [Finset.mem_filter] at hx ⊢
+  exact ⟨Finset.mem_univ _, hx.2⟩
+}
+
 lemma mul_card_dS_wt_le_card_univ'
   {n : Nat} (C : Finset (List.Vector B n)) (HC : is_DelCode C) (w : Nat) :
   mul_card_dS_wt_le C w n ≤ card (filter (fun x : List.Vector B (n - 1) => wt x = w) univ) :=
-by sorry
+by {
+  apply mul_card_dS_wt_le_card_univ _ HC
+}
 def Cwr_ge (C : Finset (List.Vector B n)) (w r : Nat) : Finset (List.Vector B n) :=
   filter (fun X => r ≤ card (dS_wt X w)) C
 
 lemma mem_Cwr_ge (C : Finset (List.Vector B n)) (w r : Nat) (X : List.Vector B n) :
   X ∈ Cwr_ge C w r ↔ X ∈ C ∧ r ≤ card (dS_wt X w) :=
-by sorry
+by {
+  unfold Cwr_ge
+  rw [Finset.mem_filter]
+}
 lemma Cwr_ge_empty (w r : Nat) :
   Cwr_ge (∅ : Finset (List.Vector B n)) w r = ∅ :=
-by sorry
+by {
+  unfold Cwr_ge
+  exact Finset.filter_empty _
+}
 lemma Cwr_ge_insert_of_ge
   (C : Finset (List.Vector B n)) (w r : Nat) (X : List.Vector B n)
   (H : r ≤ card (dS_wt X w)) :
   Cwr_ge (insert X C) w r = insert X (Cwr_ge C w r) :=
-by sorry
+by {
+  unfold Cwr_ge
+  rw [Finset.filter_insert, if_pos H]
+}
 lemma Cwr_ge_insert_of_lt
   (C : Finset (List.Vector B n)) (w r : Nat) (X : List.Vector B n)
   (H : card (dS_wt X w) < r) :
   Cwr_ge (insert X C) w r = Cwr_ge C w r :=
-by sorry
+by {
+  unfold Cwr_ge
+  have H_not_le : ¬ (r ≤ card (dS_wt X w)) := Nat.not_le_of_gt H
+  rw [Finset.filter_insert, if_neg H_not_le]
+}
 lemma Cwr_ge_subset
   (C : Finset (List.Vector B n)) (w r : Nat) :
   Cwr_ge C w r ⊆ C :=
-by sorry
+by {
+  intro x hx
+  rw [mem_Cwr_ge] at hx
+  exact hx.1
+}
 lemma Cwr_ge_subset_of_subset
   {C₁ C₂ : Finset (List.Vector B n)} (H : C₁ ⊆ C₂) (w r : Nat)  :
   Cwr_ge C₁ w r ⊆ Cwr_ge C₂ w r :=
-by sorry
+by {
+  intro x hx
+  rw [mem_Cwr_ge] at hx ⊢
+  exact ⟨H hx.1, hx.2⟩
+}
 lemma Cwr_ge_zero (C : Finset (List.Vector B n)) (w : Nat) :
   Cwr_ge C w 0 = C :=
-by sorry
+by {
+  apply Finset.Subset.antisymm
+  · exact Cwr_ge_subset _ _ _
+  · intro x hx
+    rw [mem_Cwr_ge]
+    exact ⟨hx, Nat.zero_le _⟩
+}
 lemma DelCode_Cwr_ge
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) (w r : Nat) :
   is_DelCode (Cwr_ge C w r) :=
-by sorry
+by {
+  exact DelCode_subset _ _ HC (Cwr_ge_subset _ _ _)
+}
 lemma Cwr_ge_eq
   (C : Finset (List.Vector B n)) (w r : Nat) :
   Cwr_ge C w r = Cwr C w r ∪ Cwr_ge C w (r + 1) :=
-by sorry
+by {
+  apply Finset.Subset.antisymm
+  · intro x hx
+    rw [mem_Cwr_ge] at hx
+    rw [Finset.mem_union]
+    cases Nat.eq_or_lt_of_le hx.2 with
+    | inl heq =>
+      rw [mem_Cwr]
+      exact Or.inl ⟨hx.1, heq.symm⟩
+    | inr hlt =>
+      rw [mem_Cwr_ge]
+      exact Or.inr ⟨hx.1, Nat.succ_le_of_lt hlt⟩
+  · intro x hx
+    rw [Finset.mem_union] at hx
+    cases hx with
+    | inl heq =>
+      rw [mem_Cwr] at heq
+      rw [mem_Cwr_ge]
+      exact ⟨heq.1, Nat.le_of_eq heq.2.symm⟩
+    | inr hle =>
+      rw [mem_Cwr_ge] at hle
+      rw [mem_Cwr_ge]
+      exact ⟨hle.1, Nat.le_of_succ_le hle.2⟩
+}
 lemma Cwr_subset_ge
   (C : Finset (List.Vector B n)) (w r : Nat) :
   Cwr C w r ⊆ Cwr_ge C w r :=
-by sorry
+by {
+  rw [Cwr_ge_eq]
+  exact Finset.subset_union_left
+}
 lemma Cwr_le_union_ge (C : Finset (List.Vector B n)) (w r : Nat) :
   Cwr_le C w r ∪ Cwr_ge C w (r + 1) = C :=
-by sorry
+by {
+  apply Finset.Subset.antisymm
+  · intro x hx
+    rw [Finset.mem_union] at hx
+    cases hx with
+    | inl hl => exact Cwr_le_subset _ _ _ hl
+    | inr hr => exact Cwr_ge_subset _ _ _ hr
+  · intro x hx
+    cases Classical.em (card (dS_wt x w) ≤ r) with
+    | inl hle =>
+      rw [Finset.mem_union, mem_Cwr_le]
+      exact Or.inl ⟨hx, hle⟩
+    | inr hnle =>
+      rw [Finset.mem_union, mem_Cwr_ge]
+      exact Or.inr ⟨hx, Nat.succ_le_of_lt (Nat.lt_of_not_ge hnle)⟩
+}
 lemma Cwr_le_inter_ge (C : Finset (List.Vector B n)) (w r : Nat) :
   Cwr_le C w r ∩ Cwr_ge C w (r + 1) = ∅ :=
-by sorry
+by {
+  apply Finset.Subset.antisymm
+  · intro x hx
+    rw [Finset.mem_inter, mem_Cwr_le, mem_Cwr_ge] at hx
+    have h1 := hx.1.2
+    have h2 := hx.2.2
+    have h3 := Nat.lt_of_succ_le h2
+    exact False.elim (Nat.not_le_of_gt h3 h1)
+  · exact Finset.empty_subset _
+}
 lemma Cwr_ge_succ_eq_sdiff_le (C : Finset (List.Vector B n)) (w r : Nat) :
   Cwr_ge C w (r + 1) = C \ Cwr_le C w r :=
-by sorry
+by {
+  apply Finset.Subset.antisymm
+  · intro x hx
+    rw [Finset.mem_sdiff]
+    have h_sub := Cwr_ge_subset C w (r + 1) hx
+    refine ⟨h_sub, ?_⟩
+    intro hl
+    have h_inter : x ∈ Cwr_le C w r ∩ Cwr_ge C w (r + 1) := Finset.mem_inter.mpr ⟨hl, hx⟩
+    have h_emp : x ∈ (∅ : Finset (List.Vector B n)) := by { rw [← Cwr_le_inter_ge C w r]; exact h_inter }
+    exact Finset.notMem_empty _ h_emp
+  · intro x hx
+    rw [Finset.mem_sdiff] at hx
+    have h_union : x ∈ Cwr_le C w r ∪ Cwr_ge C w (r + 1) := by { rw [Cwr_le_union_ge C w r]; exact hx.1 }
+    rw [Finset.mem_union] at h_union
+    cases h_union with
+    | inl hl => exact False.elim (hx.2 hl)
+    | inr hr => exact hr
+}
 lemma card_Cwr_le_add_ge (C : Finset (List.Vector B n)) (w r : Nat) :
   card (Cwr_le C w r) + card (Cwr_ge C w (r + 1)) = card C :=
-by sorry
+by {
+  have h_disj : Disjoint (Cwr_le C w r) (Cwr_ge C w (r + 1)) := by {
+    rw [Finset.disjoint_iff_inter_eq_empty]
+    exact Cwr_le_inter_ge C w r
+  }
+  have h := Finset.card_union_of_disjoint h_disj
+  rw [Cwr_le_union_ge] at h
+  exact h.symm
+}
 def mul_card_dS_wt_ge (C : Finset (List.Vector B n)) (w r : Nat) : Nat :=
   mul_card_dS_wt_le C w (n - 1 + 1) - mul_card_dS_wt_le C w (r - 1)
 
 lemma mul_card_dS_wt_ge_empty (w r : Nat) :
   mul_card_dS_wt_ge (∅ : Finset (List.Vector B n)) w r = 0 :=
-by sorry
+by {
+  unfold mul_card_dS_wt_ge
+  rw [mul_card_dS_wt_le_empty, mul_card_dS_wt_le_empty, Nat.sub_zero]
+}
 lemma mul_card_dS_wt_ge_zero (C : Finset (List.Vector B n)) (w : Nat) :
   mul_card_dS_wt_ge C w 0 = mul_card_dS_wt_le C w (n - 1 + 1) :=
-by sorry
+by {
+  unfold mul_card_dS_wt_ge
+  rw [mul_card_dS_wt_le_zero, Nat.sub_zero]
+}
 lemma mul_card_dS_wt_ge_insert_of_lt
   (C : Finset (List.Vector B n)) (w r : Nat)
   (x : List.Vector B n) (Hr : card (dS_wt x w) < r) :
   mul_card_dS_wt_ge (insert x C) w r = mul_card_dS_wt_ge C w r :=
-by sorry
+by {
+  cases Classical.em (x ∈ C) with
+  | inl hin => rw [Finset.insert_eq_of_mem hin]
+  | inr hnin =>
+    unfold mul_card_dS_wt_ge
+    rw [mul_card_dS_wt_le_insert_of_le _ _ _ _ hnin]
+    · rw [mul_card_dS_wt_le_insert_of_le _ _ _ _ hnin]
+      · rw [Nat.add_sub_add_right]
+      · apply Nat.le_of_lt_succ
+        apply Nat.lt_of_lt_of_le Hr
+        cases r with
+        | zero => apply Nat.zero_le
+        | succ r => exact Nat.le_refl _
+    · apply Nat.le_trans
+      · exact Finset.card_le_card (dS_wt_subset _ _)
+      · exact card_dS _
+}
+
 lemma mul_card_dS_wt_ge_insert_of_ge
   (C : Finset (List.Vector B n)) (w r : Nat)
   (x : List.Vector B n) (Hx : x ∉ C) (Hr : r ≤ card (dS_wt x w)) :
   mul_card_dS_wt_ge (insert x C) w r
   = mul_card_dS_wt_ge C w r + card (dS_wt x w)  :=
-by sorry
+by {
+  cases r with
+  | zero =>
+    rw [mul_card_dS_wt_ge_zero, mul_card_dS_wt_ge_zero]
+    rw [mul_card_dS_wt_le_insert_of_le _ _ _ _ Hx]
+    apply Nat.le_trans
+    · exact Finset.card_le_card (dS_wt_subset _ _)
+    · exact card_dS _
+  | succ r =>
+    unfold mul_card_dS_wt_ge
+    rw [mul_card_dS_wt_le_insert_of_le _ _ _ _ Hx]
+    · rw [Nat.succ_sub_one]
+      rw [mul_card_dS_wt_le_insert_of_gt _ _ _ _ (Nat.lt_of_succ_le Hr)]
+      rw [Nat.add_comm (mul_card_dS_wt_le C w _), Nat.add_sub_assoc]
+      · rw [Nat.add_comm]
+      · apply mul_card_dS_wt_le_le
+    · apply Nat.le_trans
+      · exact Finset.card_le_card (dS_wt_subset _ _)
+      · exact card_dS _
+}
+
 lemma card_dS_wt_ge_le (C : Finset (List.Vector B n)) (w r : Nat) :
   r * card (Cwr_ge C w r) ≤ mul_card_dS_wt_ge C w r :=
-by sorry
+by {
+  induction C using Finset.induction with
+  | empty =>
+    rw [Cwr_ge_empty, Finset.card_empty, mul_zero]
+    exact Nat.zero_le _
+  | insert c C hc ihC =>
+    cases Classical.em (r ≤ card (dS_wt c w)) with
+    | inl hle =>
+      rw [Cwr_ge_insert_of_ge _ _ _ _ hle]
+      rw [Finset.card_insert_of_notMem]
+      · rw [Nat.mul_succ, mul_card_dS_wt_ge_insert_of_ge _ _ _ _ hc hle]
+        exact Nat.add_le_add ihC hle
+      · unfold Cwr_ge
+        exact mt (fun h_mem => (Finset.mem_filter.mp h_mem).1) hc
+    | inr hnle =>
+      rw [Cwr_ge_insert_of_lt _ _ _ _ (Nat.lt_of_not_ge hnle)]
+      rw [mul_card_dS_wt_ge_insert_of_lt _ _ _ _ (Nat.lt_of_not_ge hnle)]
+      exact ihC
+}
+
 lemma card_dS_wt_ge_le_univ
   (C : Finset (List.Vector B n)) (H : is_DelCode C) (w r : Nat) :
   card (Cwr_ge C w (r + 1))
-  ≤ (card (filter (fun x : List.Vector B (n - 1) => wt x = w) univ)
+  ≤ (card (Finset.filter (fun x : List.Vector B (n - 1) => wt x = w) Finset.univ)
     - mul_card_dS_wt_le C w r) / (r + 1) :=
-by sorry
+by {
+  rw [Nat.le_div_iff_mul_le (Nat.zero_lt_succ r)]
+  rw [Nat.mul_comm]
+  apply Nat.le_trans
+  · exact card_dS_wt_ge_le C w (r + 1)
+  · apply Nat.le_sub_of_add_le
+    unfold mul_card_dS_wt_ge
+    rw [Nat.succ_sub_one]
+    have h_sub_add : mul_card_dS_wt_le C w (n - 1 + 1) - mul_card_dS_wt_le C w r + mul_card_dS_wt_le C w r = mul_card_dS_wt_le C w (n - 1 + 1) := by {
+      apply Nat.sub_add_cancel
+      exact mul_card_dS_wt_le_le C w r
+    }
+    rw [h_sub_add]
+    exact mul_card_dS_wt_le_card_univ _ H _ _
+}
+
 lemma card_Cwr_le_1
   (C : Finset (List.Vector B n)) (w : Nat):
   card (Cwr_le C w 1) = card (Cwr C w 0) + card (Cwr C w 1) :=
-by sorry
+by {
+  have h1 : card (Cwr_le C w 1) = card (Cwr_le C w 0) + card (Cwr C w 1) := card_Cwr_le_succ C w 0
+  rw [h1, Cwr_le_zero]
+}
+
 lemma card_Cwr_le_2
   (C : Finset (List.Vector B n)) (w : Nat):
   card (Cwr_le C w 2) = card (Cwr C w 0) + card (Cwr C w 1) + card (Cwr C w 2):=
-by sorry
+by {
+  have h1 : card (Cwr_le C w 2) = card (Cwr_le C w 1) + card (Cwr C w 2) := card_Cwr_le_succ C w 1
+  have h2 : card (Cwr_le C w 1) = card (Cwr_le C w 0) + card (Cwr C w 1) := card_Cwr_le_succ C w 0
+  rw [h1, h2, Cwr_le_zero, Nat.add_assoc]
+}
+
 lemma mul_card_dS_wt_le_1
   (C : Finset (List.Vector B n)) (w : Nat):
   mul_card_dS_wt_le C w 1 = card (Cwr C w 1) :=
-by sorry
+by {
+  unfold mul_card_dS_wt_le
+  rw [mul_card_dS_wt_le_zero]
+  unfold mul_card_dS_wt
+  rw [Nat.add_zero, Nat.one_mul]
+}
 lemma mul_card_dS_wt_le_2
   (C : Finset (List.Vector B n)) (w : Nat):
   mul_card_dS_wt_le C w 2 = 2 * card (Cwr C w 2) + card (Cwr C w 1) :=
-by sorry
+by {
+  unfold mul_card_dS_wt_le
+  rw [mul_card_dS_wt_le_1, mul_card_dS_wt]
+}
+
 lemma card_le_univ_add_1
   {n : Nat} (C : Finset (List.Vector B n)) (HC : is_DelCode C)
   (w : Nat) (HCw : Cwr C w 0 = ∅) :
-  card C ≤ (card (filter (fun x : List.Vector B (n - 1) => wt x = w) univ) + card (Cwr C w 1)) / 2 :=
-by sorry
+  card C ≤ (card (Finset.filter (fun x : List.Vector B (n - 1) => wt x = w) Finset.univ) + card (Cwr C w 1)) / 2 :=
+by {
+  rw [Nat.le_div_iff_mul_le (Nat.zero_lt_succ 1)]
+  rw [← card_Cwr_le_add_ge C w 1]
+  rw [card_Cwr_le_1, HCw, Finset.card_empty, Nat.zero_add]
+  apply Nat.le_add_of_sub_le
+  rw [Nat.add_mul, Nat.add_comm, Nat.mul_two (card (Cwr C w 1))]
+  rw [← Nat.add_assoc, Nat.add_sub_cancel]
+  apply Nat.le_trans
+  · apply Nat.add_le_add_right
+    rw [← Nat.le_div_iff_mul_le (Nat.zero_lt_succ 1)]
+    apply card_dS_wt_ge_le_univ C HC
+  · rw [← mul_card_dS_wt_le_1]
+    rw [Nat.sub_add_cancel]
+    apply mul_card_dS_wt_le_card_univ C HC
+}
+
 lemma card_le_univ_add_2
   {n : Nat} (C : Finset (List.Vector B n)) (HC : is_DelCode C)
   (w : Nat) (HCw : Cwr C w 0 = ∅) :
-  card C ≤ (card (filter (fun x : List.Vector B (n - 1) => wt x = w) univ) + 2 * card (Cwr C w 1) + card (Cwr C w 2)) / 3 :=
-by sorry
+  card C ≤ (card (Finset.filter (fun x : List.Vector B (n - 1) => wt x = w) Finset.univ) + 2 * card (Cwr C w 1) + card (Cwr C w 2)) / 3 :=
+by {
+  -- First, we convert the division inequality into a multiplication inequality.
+  rw [Nat.le_div_iff_mul_le (by exact Nat.zero_lt_succ 2)]
+  -- We split the cardinality of C into elements with weight <= 2 and >= 3.
+  have h_C := card_Cwr_le_add_ge C w 2
+  -- We substitute this split back into our main inequality.
+  rw [← h_C]
+  -- We distribute the multiplication over the addition.
+  rw [Nat.add_mul]
+  -- We establish an algebraic identity for multiplying by 3.
+  have h3 : card (Cwr_le C w 2) * 3 = card (Cwr_le C w 2) * 2 + card (Cwr_le C w 2) := by {
+    -- We rely on the linear arithmetic solver to prove this simple identity.
+    linarith
+  }
+  -- We apply this identity to the first term in our sum.
+  rw [h3]
+  -- We recall the formula for elements of weight <= 2.
+  have h_le2 := card_Cwr_le_2 C w
+  -- We know that there are no elements of weight 0, so we cancel that term out.
+  rw [HCw, Finset.card_empty, Nat.zero_add] at h_le2
+  -- We substitute this simplified formula into our main inequality.
+  rw [h_le2]
+  -- We rearrange the terms on the left hand side.
+  -- Notice that we expand the multiplication and group terms manually.
+  have h_alg : (card (Cwr C w 1) + card (Cwr C w 2)) * 2 + (card (Cwr C w 1) + card (Cwr C w 2)) + card (Cwr_ge C w 3) * 3
+      = card (Cwr_ge C w 3) * 3 + card (Cwr C w 1) * 3 + card (Cwr C w 2) * 3 := by {
+    -- We rely on the linear arithmetic solver to prove this simple identity.
+    linarith
+  }
+  -- Apply our algebraic rearrangement to the goal.
+  rw [h_alg]
+  -- Now we bring in the universal bound for elements of weight >= 3.
+  have h_univ := card_dS_wt_ge_le_univ C HC w 2
+  -- Convert the division inequality to a multiplication inequality.
+  rw [Nat.le_div_iff_mul_le (by exact Nat.zero_lt_succ 2)] at h_univ
+  -- We recall the formula for mul_card_dS_wt_le at r=2.
+  have h_mul_le := mul_card_dS_wt_le_2 C w
+  -- We recall the universal bound for mul_card_dS_wt_le.
+  have h_le_card_univ := mul_card_dS_wt_le_card_univ C HC w 2
+  -- We apply transitivity to link our current sum with the universal bounds.
+  apply Nat.le_trans
+  -- On the left branch, we add our Cwr 1 and Cwr 2 terms to the h_univ bound.
+  · apply Nat.add_le_add_right
+    -- We add the second term.
+    apply Nat.add_le_add_right
+    -- We apply the h_univ inequality directly.
+    exact h_univ
+  -- On the right branch, we must show that the bound matches our target right-hand side.
+  · rw [h_mul_le]
+    -- We establish that the total cardinality is greater than the parts we are subtracting.
+    have h_U_ge : 2 * card (Cwr C w 2) + card (Cwr C w 1) ≤ card (Finset.filter (fun x => wt x = w) Finset.univ) := by {
+      -- Substitute our formula for r=2 back in.
+      rw [← h_mul_le]
+      -- Apply the universal bound.
+      exact mul_card_dS_wt_le_card_univ C HC w 2
+    }
+    -- We cancel out the subtracted term by adding it back.
+    have h_sub_add1 : card (Finset.filter (fun x => wt x = w) Finset.univ) - (2 * card (Cwr C w 2) + card (Cwr C w 1)) + (2 * card (Cwr C w 2) + card (Cwr C w 1)) = card (Finset.filter (fun x => wt x = w) Finset.univ) := Nat.sub_add_cancel h_U_ge
+    -- We formulate an exact equality for the remaining arithmetic.
+    have h_eq : card (Finset.filter (fun x => wt x = w) Finset.univ) - (2 * card (Cwr C w 2) + card (Cwr C w 1)) + card (Cwr C w 1) * 3 + card (Cwr C w 2) * 3 = card (Finset.filter (fun x => wt x = w) Finset.univ) + 2 * card (Cwr C w 1) + card (Cwr C w 2) := by {
+      -- We rely on the linear arithmetic solver to prove this simple identity.
+      linarith
+    }
+    -- Complete the proof using our exact equality.
+    exact Nat.le_of_eq h_eq
+}
+
 end B
 
 variable [Fintype α]
@@ -1230,50 +1542,153 @@ noncomputable def DCs (n :  Nat) : Finset (Finset (List.Vector α n)) :=
 
 lemma mem_DCs :
   C ∈ @DCs α _ _ n ↔ is_DelCode C :=
-by sorry
+by {
+  -- Unfold the definition of DCs.
+  unfold DCs
+  -- Apply the membership rule for filter.
+  rw [Finset.mem_filter]
+  -- Apply the membership rule for powerset.
+  rw [Finset.mem_powerset]
+  -- Prove both directions of the iff.
+  apply Iff.intro
+  -- Forward direction: extract the right side of the AND.
+  · intro h; exact h.right
+  -- Backward direction: Any set is a subset of the universal set.
+  · intro h; apply And.intro (Finset.subset_univ C) h
+}
 noncomputable def DCs' (n : Nat) : Finset (Finset (List.Vector α n)) :=
   filter is_DelCode' (powerset univ)
 
 lemma DCs'_eq :
   @DCs' α _ _ n = @DCs α _ _ n :=
-by sorry
+by {
+  -- Unfold both definitions.
+  unfold DCs
+  unfold DCs'
+  -- Apply Finset extensionality.
+  ext x
+  -- Rewrite filter membership.
+  rw [Finset.mem_filter, Finset.mem_filter]
+  -- Use the equivalence of the predicates.
+  rw [DelCode'_iff]
+}
 noncomputable def DCs_sub (S : Finset (List.Vector α n)) : Finset (Finset (List.Vector α n)) :=
   filter is_DelCode (powerset S)
 
 lemma mem_DCs_sub :
   C ∈ DCs_sub S ↔ C ⊆ S ∧ is_DelCode C :=
-by sorry
+by {
+  -- Unfold the definition.
+  unfold DCs_sub
+  -- Apply filter membership rule.
+  rw [Finset.mem_filter]
+  -- Apply powerset membership rule.
+  rw [Finset.mem_powerset]
+}
 lemma DCs_sub_empty :
-  @DCs_sub α _ n _ ∅ = singleton ∅ :=
-by sorry
+  @DCs_sub α _ n _ ∅ = {∅} :=
+by {
+  -- We prove equality of Finsets by extensionality.
+  ext C
+  -- We prove both directions.
+  apply Iff.intro
+  -- Forward direction: If C is in DCs_sub ∅, then C = ∅.
+  · intro h
+    -- Expand membership.
+    rw [mem_DCs_sub] at h
+    -- Expand singleton membership.
+    rw [Finset.mem_singleton]
+    -- The subset condition forces C to be empty.
+    have h1 := h.left
+    rw [Finset.subset_empty] at h1
+    exact h1
+  -- Backward direction: ∅ is in DCs_sub ∅.
+  · intro h
+    -- Expand singleton membership.
+    rw [Finset.mem_singleton] at h
+    -- Substitute C = ∅.
+    rw [h]
+    -- Expand membership.
+    rw [mem_DCs_sub]
+    -- Prove both the subset and the property.
+    apply And.intro (Finset.Subset.refl _) DelCode_empty
+}
 lemma DCs_sub_univ :
   @DCs_sub α _ _ _ univ = DCs n :=
-by sorry
+by {
+  -- This is true by definition.
+  rfl
+}
 lemma DCs_sub_subset
   {S₁ S₂ : Finset (List.Vector α n)} (HS : S₁ ⊆ S₂) :
   DCs_sub S₁ ⊆ DCs_sub S₂ :=
-by sorry
+by {
+  -- We start with an arbitrary subset C in the first filter.
+  intro C hC
+  -- Expand the definition for the first.
+  rw [mem_DCs_sub] at hC
+  -- Expand the definition for the second.
+  rw [mem_DCs_sub]
+  -- Use transitivity for the subset, and keep the property.
+  apply And.intro (Finset.Subset.trans hC.left HS) hC.right
+}
 def DCs_sub' (S : Finset (List.Vector α n)) : Finset (Finset (List.Vector α n)) :=
   filter is_DelCode' (powerset S)
 
 lemma DCs_sub'_eq :
   DCs_sub' S = DCs_sub S :=
-by sorry
+by {
+  -- Unfold the definitions.
+  unfold DCs_sub' DCs_sub
+  -- Prove by extensionality.
+  ext C
+  -- Expand filter membership.
+  rw [Finset.mem_filter, Finset.mem_filter]
+  -- The predicates are equivalent.
+  rw [DelCode'_iff]
+}
 noncomputable def DCs_sub_len (S : Finset (List.Vector α n)) (k : Nat) : Finset (Finset (List.Vector α n)) :=
   filter is_DelCode (powersetCard k S)
 
 lemma mem_DCs_sub_len (k : Nat) :
   C ∈ DCs_sub_len S k ↔ C ⊆ S ∧ card C = k ∧ is_DelCode C :=
-by sorry
+by {
+  -- Unfold the definition.
+  unfold DCs_sub_len
+  -- Rewrite filter membership.
+  rw [Finset.mem_filter]
+  -- Rewrite powersetCard membership.
+  rw [Finset.mem_powersetCard]
+  -- The order of ANDs needs adjusting.
+  rw [and_assoc]
+}
 lemma mem_DCs_sub_len' (S : Finset (List.Vector α n)) (k : Nat) :
   C ∈ DCs_sub_len S k ↔ C ∈ DCs_sub S ∧ card C = k :=
-by sorry
+by {
+  -- We expand the length-constrained version.
+  rw [mem_DCs_sub_len]
+  -- We expand the unconstrained version.
+  rw [mem_DCs_sub]
+  -- Reassociate the AND.
+  rw [_root_.and_right_comm]
+  -- Reassociate the AND again.
+  rw [and_assoc]
+}
 def DCs_sub_len' (S : Finset (List.Vector α n)) (k : Nat) : Finset (Finset (List.Vector α n)) :=
   filter is_DelCode' (powersetCard k S)
 
 lemma DCs_sub_len'_eq (S : Finset (List.Vector α n)) (k : Nat) :
   DCs_sub_len' S k = DCs_sub_len S k :=
-by sorry
+by {
+  -- Unfold the definitions.
+  unfold DCs_sub_len' DCs_sub_len
+  -- We use Finset extensionality.
+  ext C
+  -- Expand filter membership.
+  rw [Finset.mem_filter, Finset.mem_filter]
+  -- The predicates are equivalent.
+  rw [DelCode'_iff]
+}
 namespace B
 
 def DCs_sub_DC_len_succ
@@ -1283,7 +1698,12 @@ def DCs_sub_DC_len_succ
 lemma mem_DCs_sub_DC_len_succ
   (S : Finset (List.Vector B n)) (C : Finset (List.Vector B n)) (C' : Finset (List.Vector B n)) :
   C' ∈ DCs_sub_DC_len_succ S C ↔ ∃ c ∈ S \ union_dB C, insert c C = C' :=
-by sorry
+by {
+  -- Unfold definition.
+  unfold DCs_sub_DC_len_succ
+  -- Use image membership.
+  rw [Finset.mem_image]
+}
 def DCs_sub_DCs_len_succ
   (S : Finset (List.Vector B n)) (Cs : Finset (Finset (List.Vector B n))) : Finset (Finset (List.Vector B n)) :=
   Cs.biUnion (fun C => DCs_sub_DC_len_succ S C)
@@ -1291,13 +1711,108 @@ def DCs_sub_DCs_len_succ
 lemma mem_DCs_sub_DCs_len_succ
   (S : Finset (List.Vector B n)) (Cs : Finset (Finset (List.Vector B n))) (C' : Finset (List.Vector B n)) :
   C' ∈ DCs_sub_DCs_len_succ S Cs ↔ ∃ C ∈ Cs, C' ∈ DCs_sub_DC_len_succ S C :=
-by sorry
+by {
+  -- Unfold the definition.
+  unfold DCs_sub_DCs_len_succ
+  -- Finset biUnion membership gives exactly this existential.
+  rw [Finset.mem_biUnion]
+}
 lemma mem_DCs_sub_DCs_len_succ'
   (S : Finset (List.Vector B n)) (Cs : Finset (Finset (List.Vector B n))) (C' : Finset (List.Vector B n)) :
   C' ∈ DCs_sub_DCs_len_succ S Cs ↔ ∃ C ∈ Cs, ∃ c ∈ S \ union_dB C, insert c C = C' :=
-by sorry
+by {
+  -- Start with the main membership equivalence.
+  rw [mem_DCs_sub_DCs_len_succ]
+  -- We can rewrite under the existential binder using congruence.
+  apply exists_congr
+  -- Introduce C.
+  intro C
+  -- We can rewrite under the AND binder.
+  apply and_congr Iff.rfl
+  -- Rewrite the inner membership.
+  rw [mem_DCs_sub_DC_len_succ]
+}
 lemma DCs_sub_DCs_len_succ_eq
   (S : Finset (List.Vector B n)) (k : Nat) :
   DCs_sub_DCs_len_succ S (DCs_sub_len S k) = DCs_sub_len S (k + 1) :=
-by sorry
+by {
+  -- Prove equality by showing both inclusion directions.
+  apply Finset.Subset.antisymm
+  -- Left to right inclusion.
+  · intro C hC
+    -- Expand membership of the LHS.
+    rw [mem_DCs_sub_DCs_len_succ'] at hC
+    -- Destruct the existential quantifiers.
+    rcases hC with ⟨C', hC', c, hc, hCC'c⟩
+    -- Expand membership for the RHS.
+    rw [mem_DCs_sub_len] at hC'
+    -- Expand the set difference.
+    rw [Finset.mem_sdiff] at hc
+    -- We want to show the constructed set satisfies the constraints.
+    rw [← hCC'c]
+    -- Expand the membership constraint on the RHS.
+    rw [mem_DCs_sub_len]
+    -- We have to prove subset, cardinality, and property.
+    apply And.intro
+    -- 1. Subset
+    · rw [Finset.insert_subset_iff]
+      apply And.intro hc.left hC'.left
+    -- 2. Cardinality and Property
+    · apply And.intro
+      -- Cardinality
+      · rw [Finset.card_insert_of_notMem]
+        -- The original cardinality is k.
+        · rw [hC'.right.left]
+        -- c is not in C' because it's not in the union of dB of C'.
+        · exact not_mem_of_not_mem_dB C' c hc.right
+      -- Property (DelCode)
+      · rw [DelCode_insert_iff_not_mem_dB]
+        -- It was a DelCode, and c is not in the union.
+        · apply And.intro hC'.right.right hc.right
+        -- Again, c is not in C'.
+        · exact not_mem_of_not_mem_dB C' c hc.right
+  -- Right to left inclusion.
+  · intro C hC
+    -- Expand membership for the RHS.
+    rw [mem_DCs_sub_len] at hC
+    -- We need to find an element c in C to remove.
+    -- Since card C = k + 1 > 0, C is non-empty.
+    have h_card_pos : 0 < card C := by {
+      rw [hC.right.left]
+      exact Nat.zero_lt_succ k
+    }
+    -- Get an element from the non-empty set.
+    rcases Finset.card_pos.mp h_card_pos with ⟨c, hc⟩
+    -- Now show it belongs to the LHS.
+    rw [mem_DCs_sub_DCs_len_succ']
+    -- We propose removing c from C.
+    apply Exists.intro (erase C c)
+    -- Prove that the erased set works.
+    apply And.intro
+    -- The erased set is in DCs_sub_len S k.
+    · rw [mem_DCs_sub_len]
+      apply And.intro
+      -- Subset condition
+      · exact Finset.Subset.trans (Finset.erase_subset c C) hC.left
+      -- Cardinality and DelCode property
+      · apply And.intro
+        -- Cardinality
+        · rw [Finset.card_erase_of_mem hc]
+          rw [hC.right.left]
+          rfl
+        -- DelCode property
+        · exact DelCode_erase C c hC.right.right
+    -- The removed element c satisfies the conditions.
+    · apply Exists.intro c
+      apply And.intro
+      -- c is in S \ union_dB (erase C c)
+      · rw [Finset.mem_sdiff]
+        apply And.intro
+        -- c is in S
+        · exact hC.left hc
+        -- c is not in union_dB (erase C c)
+        · exact not_mem_union_dB_erase hC.right.right c hc
+      -- Re-inserting c gives C
+      · exact Finset.insert_erase hc
+}
 end B

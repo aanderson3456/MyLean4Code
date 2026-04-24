@@ -1,0 +1,132 @@
+VTlean/Optimal.lean:9:57: warning: unused variable `HC`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+VTlean/Optimal.lean:12:48: warning: unused variable `HC`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+VTlean/Optimal.lean:19:0: warning: automatically included section variable(s) unused in theorem `optimal'_iff`:
+  [Fintype α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Fintype α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+VTlean/Optimal.lean:25:20: warning: unused variable `HC`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+VTlean/Optimal.lean:28:21: warning: unused variable `HC`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+VTlean/Optimal.lean:35:0: warning: automatically included section variable(s) unused in theorem `optimal_sub'_iff`:
+  [Fintype α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Fintype α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+VTlean/Optimal.lean:47:0: warning: automatically included section variable(s) unused in theorem `optimal_sub_of_supset`:
+  [Fintype α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Fintype α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+VTlean/Optimal.lean:199:0: warning: automatically included section variable(s) unused in theorem `card_DCs_sub_le'_iff`:
+  [Fintype α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Fintype α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+VTlean/Optimal.lean:205:0: warning: automatically included section variable(s) unused in theorem `is_card_DCs_sub_le_DC`:
+  [Fintype α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Fintype α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+VTlean/Optimal.lean:208:0: warning: automatically included section variable(s) unused in theorem `card_DCs_sub_le_of_supset`:
+  [Fintype α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Fintype α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+VTlean/Optimal.lean:302:59: warning: unused variable `hx`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+VTlean/Optimal.lean:312:43: warning: unused variable `hx`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+VTlean/Optimal.lean:358:59: warning: unused variable `hx`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+VTlean/Optimal.lean:368:43: warning: unused variable `hx`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+VTlean/Optimal.lean:832:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:857:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:879:2: error: Type mismatch
+  Nat.le_add_left 2 k
+has type
+  2 ≤ k + 2
+but is expected to have type
+  2 ≤ n
+VTlean/Optimal.lean:889:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:893:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:897:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:901:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:907:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:913:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:916:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:919:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:923:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:927:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:931:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:935:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:938:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:941:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:945:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:948:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:952:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:955:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:967:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:970:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:977:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:980:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:984:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:988:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:993:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1000:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1003:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1007:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1011:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1014:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1017:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1021:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1025:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1028:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1031:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1034:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1039:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1044:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1048:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1056:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1062:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1065:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1071:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1077:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1080:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1083:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1086:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1090:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1094:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1098:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1102:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1106:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1108:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1109:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1112:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1113:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1114:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1117:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1118:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1119:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1121:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1125:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1130:6: warning: declaration uses `sorry`
+VTlean/Optimal.lean:1134:6: warning: declaration uses `sorry`

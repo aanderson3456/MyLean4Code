@@ -1,0 +1,1129 @@
+⚠ [639/734] Replayed VTlean.Lemma
+warning: VTlean/Lemma.lean:184:7: '' starts on column 7, but all commands should start at the beginning of the line.
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+⚠ [8249/8253] Replayed VTlean.B
+warning: VTlean/B.lean:5:12: please avoid 'open (scoped) Classical' statements: this can hide theorem statements which would be better stated with explicit decidability statements.
+Instead, use `open Classical in` for definitions or instances, the `classical` tactic for proofs.
+For theorem statements, either add missing decidability assumptions or use `open Classical in`.
+
+Note: This linter can be disabled with `set_option linter.style.openClassical false`
+warning: VTlean/B.lean:130:71: missing space in the source
+
+This part of the code
+  'n):
+  x'
+should be written as
+  'n) :
+ '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/B.lean:137:71: missing space in the source
+
+This part of the code
+  'n):
+  B.Vector.flip'
+should be written as
+  'n) : B.Vector.flip'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+⚠ [8250/8253] Replayed VTlean.InsDel
+warning: VTlean/InsDel.lean:9:12: please avoid 'open (scoped) Classical' statements: this can hide theorem statements which would be better stated with explicit decidability statements.
+Instead, use `open Classical in` for definitions or instances, the `classical` tactic for proofs.
+For theorem statements, either add missing decidability assumptions or use `open Classical in`.
+
+Note: This linter can be disabled with `set_option linter.style.openClassical false`
+warning: VTlean/InsDel.lean:23:0: automatically included section variable(s) unused in theorem `List.sDel_nil`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:23:0: `sDel_nil` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:27:0: automatically included section variable(s) unused in theorem `List.sDel_singleton`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:27:0: `sDel_singleton` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:30:0: automatically included section variable(s) unused in theorem `List.sDel_zero`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:30:0: `sDel_zero` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:37:0: automatically included section variable(s) unused in theorem `List.sDel_cons`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:37:0: `sDel_cons` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:45:0: automatically included section variable(s) unused in theorem `List.length_sDel`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:45:0: `length_sDel` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:64:0: `sDel_of_ovrlen` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:64:43: missing space in the source
+
+This part of the code
+  'i):
+  sDel'
+should be written as
+  'i) : sDel'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/InsDel.lean:88:0: `exists_sDel_le` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:96:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:99:0: `sDel_append_of_lt` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:131:0: automatically included section variable(s) unused in theorem `List.sDel_append_of_ge`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:168:10: 'change
+  sDel (x :: x' :: X'' ++ y :: Y') (i' + 1) =
+    (x :: x' :: X'') ++ sDel (y :: Y') (i' + 1 - length (x :: x' :: X''))' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: VTlean/InsDel.lean:131:0: `sDel_append_of_ge` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:168:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:169:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:171:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:174:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:131:56: missing space in the source
+
+This part of the code
+  '[]):
+  sDel'
+should be written as
+  '[]) : sDel'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/InsDel.lean:179:0: automatically included section variable(s) unused in theorem `List.sDel_replicate`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:179:0: `sDel_replicate` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:208:0: `exists_sDel_sDel` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:244:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:245:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:253:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:254:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:280:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:281:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:282:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:283:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:294:0: automatically included section variable(s) unused in theorem `List.sIns_nil`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:294:0: `sIns_nil` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:298:0: automatically included section variable(s) unused in theorem `List.sIns_zero`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:298:0: `sIns_zero` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:305:0: automatically included section variable(s) unused in theorem `List.sIns_cons`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:305:0: `sIns_cons` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:309:0: automatically included section variable(s) unused in theorem `List.length_sIns`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:309:0: `length_sIns` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:327:0: `sIns_ne_nil` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:336:0: automatically included section variable(s) unused in theorem `List.sIns_of_ovrlen`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:336:0: `sIns_of_ovrlen` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:336:39: missing space in the source
+
+This part of the code
+  'i):
+  sIns'
+should be written as
+  'i) : sIns'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/InsDel.lean:356:0: `exists_sIns_le` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:369:0: automatically included section variable(s) unused in theorem `List.exists_sIns_sIns_eq`:
+  [DecidableEq α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/InsDel.lean:369:0: `exists_sIns_sIns_eq` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:398:0: `sIns_sDel_id` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:398:38: extra space in the source
+
+This part of the code
+  'X)  :
+ '
+should be written as
+  'X) : ∃ (b'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/InsDel.lean:432:0: `sDel_sIns_id` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:446:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:451:0: `sIns_of_sDel` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:459:0: `sDel_of_sIns` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:466:0: `exists_sIns_eq_of_sDel` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:493:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:494:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:501:0: `exists_sDel_eq_of_sIns` does not use the following hypothesis in its type:
+  • [DecidableEq α] (#2)
+
+Consider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).
+
+Note: This linter can be disabled with `set_option linter.unusedDecidableInType false`
+warning: VTlean/InsDel.lean:949:23: remove line break in the source
+
+This part of the code
+  'mem_IS_of_mem_dS 
+  (X'
+should be written as
+  'mem_IS_of_mem_dS (X :'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/InsDel.lean:959:23: remove line break in the source
+
+This part of the code
+  'mem_dS_of_mem_IS 
+  (X'
+should be written as
+  'mem_dS_of_mem_IS (X :'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/InsDel.lean:972:33: remove line break in the source
+
+This part of the code
+  'dS_inter_empty_of_IS_inter 
+  {X'
+should be written as
+  'dS_inter_empty_of_IS_inter {X Y'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/InsDel.lean:1070:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/InsDel.lean:1109:54: unused variable `Hx`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: VTlean/InsDel.lean:1116:69: missing space in the source
+
+This part of the code
+  'C):
+  (union_dS'
+should be written as
+  'C) :
+ '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/InsDel.lean:1182:62: extra space in the source
+
+This part of the code
+  '∅)  :
+ '
+should be written as
+  '∅) : ∀ c'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/InsDel.lean:1197:59: missing space in the source
+
+This part of the code
+  'n)):
+  (∀'
+should be written as
+  'n)) : (∀'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+⚠ [8252/8253] Replayed VTlean.DelCode
+warning: VTlean/DelCode.lean:73:53: missing space in the source
+
+This part of the code
+  '∅):
+  is_DelCode'
+should be written as
+  '∅) : is_DelCode'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:218:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:244:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:252:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:283:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:289:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:347:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:354:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:367:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:363:65: missing space in the source
+
+This part of the code
+  '∅):
+  is_DelCode''
+should be written as
+  '∅) :
+ '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:591:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:673:6: extra space in the source
+
+This part of the code
+  'lemma  union_dS_wt_insert'
+should be written as
+  'lemma union_dS_wt_insert'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:674:77: missing space in the source
+
+This part of the code
+  'C):
+  union_dS_wt'
+should be written as
+  'C) :
+ '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:681:42: missing space in the source
+
+This part of the code
+  'Nat):
+  union_dS_wt'
+should be written as
+  'Nat) : union_dS_wt'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:697:46: missing space in the source
+
+This part of the code
+  'Nat):
+  union_dS_wt'
+should be written as
+  'Nat) :
+ '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:744:63: extra space in the source
+
+This part of the code
+  'Nat)  :
+ '
+should be written as
+  'Nat) : Cwr'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:767:29: extra space in the source
+
+This part of the code
+  'r)  :
+ '
+should be written as
+  'r) :
+  '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:773:61: missing space in the source
+
+This part of the code
+  'r₂: ℕ)'
+should be written as
+  'r₂ : ℕ)'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:773:80: missing space in the source
+
+This part of the code
+  'r₂):
+  Cwr'
+should be written as
+  'r₂) : Cwr'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:795:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:848:66: missing space in the source
+
+This part of the code
+  'Nat):
+  mul_card_dS_wt'
+should be written as
+  'Nat) : mul_card_dS_wt'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:973:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:981:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:987:60: missing space in the source
+
+This part of the code
+  'Nat):
+  Cwr_le'
+should be written as
+  'Nat) : Cwr_le'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:1022:69: missing space in the source
+
+This part of the code
+  'Nat):
+  mul_card_dS_wt_le'
+should be written as
+  'Nat) : mul_card_dS_wt_le'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:1090:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1121:56: unused variable `r`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: VTlean/DelCode.lean:1187:63: extra space in the source
+
+This part of the code
+  'Nat)  :
+ '
+should be written as
+  'Nat) :
+  '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:1283:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1287:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1402:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1411:42: missing space in the source
+
+This part of the code
+  'Nat):
+  card'
+should be written as
+  'Nat) :
+ '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:1419:42: missing space in the source
+
+This part of the code
+  'Nat):
+  card'
+should be written as
+  'Nat) :
+ '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:1428:42: missing space in the source
+
+This part of the code
+  'Nat):
+  mul_card_dS_wt_le'
+should be written as
+  'Nat) : mul_card_dS_wt_le'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:1437:42: missing space in the source
+
+This part of the code
+  'Nat):
+  mul_card_dS_wt_le'
+should be written as
+  'Nat) :
+ '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:1447:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1467:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1492:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1518:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1525:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1527:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1540:27: extra space in the source
+
+This part of the code
+  ':  Nat)'
+should be written as
+  ': Nat)'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/DelCode.lean:1650:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1695:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1708:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1712:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/DelCode.lean:1721:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+✖ [8253/8253] Building VTlean.Optimal (8.4s)
+trace: .> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Optimal.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/Optimal.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/Optimal.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/Optimal.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/Optimal.setup.json --json
+warning: VTlean/Optimal.lean:9:57: unused variable `HC`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: VTlean/Optimal.lean:12:48: unused variable `HC`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: VTlean/Optimal.lean:19:0: automatically included section variable(s) unused in theorem `optimal'_iff`:
+  [Fintype α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Fintype α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/Optimal.lean:19:0: `optimal'_iff` does not use the following hypothesis in its type:
+  • [Fintype α] (#3)
+
+Consider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.
+
+Note: This linter can be disabled with `set_option linter.unusedFintypeInType false`
+warning: VTlean/Optimal.lean:25:20: unused variable `HC`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: VTlean/Optimal.lean:28:21: unused variable `HC`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: VTlean/Optimal.lean:35:0: automatically included section variable(s) unused in theorem `optimal_sub'_iff`:
+  [Fintype α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Fintype α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/Optimal.lean:35:0: `optimal_sub'_iff` does not use the following hypothesis in its type:
+  • [Fintype α] (#3)
+
+Consider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.
+
+Note: This linter can be disabled with `set_option linter.unusedFintypeInType false`
+warning: VTlean/Optimal.lean:47:0: automatically included section variable(s) unused in theorem `optimal_sub_of_supset`:
+  [Fintype α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Fintype α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/Optimal.lean:47:0: `optimal_sub_of_supset` does not use the following hypothesis in its type:
+  • [Fintype α] (#3)
+
+Consider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.
+
+Note: This linter can be disabled with `set_option linter.unusedFintypeInType false`
+warning: VTlean/Optimal.lean:111:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/Optimal.lean:138:0: `optimal_sub_erase_iff` does not use the following hypothesis in its type:
+  • [Fintype α] (#3)
+
+Consider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.
+
+Note: This linter can be disabled with `set_option linter.unusedFintypeInType false`
+warning: VTlean/Optimal.lean:150:0: `optimal_sub_sdiff_iff` does not use the following hypothesis in its type:
+  • [Fintype α] (#3)
+
+Consider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.
+
+Note: This linter can be disabled with `set_option linter.unusedFintypeInType false`
+warning: VTlean/Optimal.lean:161:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/Optimal.lean:176:0: `optimal_sub_sdiff_iff'` does not use the following hypothesis in its type:
+  • [Fintype α] (#3)
+
+Consider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.
+
+Note: This linter can be disabled with `set_option linter.unusedFintypeInType false`
+warning: VTlean/Optimal.lean:192:51: extra space in the source
+
+This part of the code
+  'Decidableis_card_DCs_sub_le  (k :'
+should be written as
+  'Decidableis_card_DCs_sub_le (k :'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:197:52: extra space in the source
+
+This part of the code
+  'Decidableis_card_DCs_sub_le'  (k :'
+should be written as
+  'Decidableis_card_DCs_sub_le' (k :'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:199:0: automatically included section variable(s) unused in theorem `card_DCs_sub_le'_iff`:
+  [Fintype α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Fintype α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/Optimal.lean:199:0: `card_DCs_sub_le'_iff` does not use the following hypothesis in its type:
+  • [Fintype α] (#3)
+
+Consider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.
+
+Note: This linter can be disabled with `set_option linter.unusedFintypeInType false`
+warning: VTlean/Optimal.lean:205:0: automatically included section variable(s) unused in theorem `is_card_DCs_sub_le_DC`:
+  [Fintype α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Fintype α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/Optimal.lean:205:0: `is_card_DCs_sub_le_DC` does not use the following hypothesis in its type:
+  • [Fintype α] (#3)
+
+Consider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.
+
+Note: This linter can be disabled with `set_option linter.unusedFintypeInType false`
+warning: VTlean/Optimal.lean:208:0: automatically included section variable(s) unused in theorem `card_DCs_sub_le_of_supset`:
+  [Fintype α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Fintype α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: VTlean/Optimal.lean:208:0: `card_DCs_sub_le_of_supset` does not use the following hypothesis in its type:
+  • [Fintype α] (#3)
+
+Consider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.
+
+Note: This linter can be disabled with `set_option linter.unusedFintypeInType false`
+warning: VTlean/Optimal.lean:226:0: `card_DCs_sub_le_erase_iff` does not use the following hypothesis in its type:
+  • [Fintype α] (#3)
+
+Consider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.
+
+Note: This linter can be disabled with `set_option linter.unusedFintypeInType false`
+warning: VTlean/Optimal.lean:238:0: `card_DCs_sub_le_sdiff_iff` does not use the following hypothesis in its type:
+  • [Fintype α] (#3)
+
+Consider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.
+
+Note: This linter can be disabled with `set_option linter.unusedFintypeInType false`
+warning: VTlean/Optimal.lean:248:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/Optimal.lean:263:0: `card_DCs_sub_le_sdiff_iff'` does not use the following hypothesis in its type:
+  • [Fintype α] (#3)
+
+Consider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.
+
+Note: This linter can be disabled with `set_option linter.unusedFintypeInType false`
+warning: VTlean/Optimal.lean:276:6: declaration uses `sorry`
+error: VTlean/Optimal.lean:288:56: Application type mismatch: The argument
+  hnle
+has type
+  k < #C
+but is expected to have type
+  ¬#C ≤ k
+in the application
+  Nat.lt_of_not_le hnle
+warning: VTlean/Optimal.lean:302:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:302:21: extra space in the source
+
+This part of the code
+  '(X  : List.Vector'
+should be written as
+  '(X : List.Vector'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:306:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:306:21: extra space in the source
+
+This part of the code
+  '(X  : List.Vector'
+should be written as
+  '(X : List.Vector'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+error: VTlean/Optimal.lean:330:25: Application type mismatch: The argument
+  Y
+has type
+  List.Vector B n
+of sort `Type` but is expected to have type
+  X ∈ C
+of sort `Prop` in the application
+  H X Y
+error: VTlean/Optimal.lean:353:26: Application type mismatch: The argument
+  Y
+has type
+  List.Vector B n
+of sort `Type` but is expected to have type
+  X ∈ C
+of sort `Prop` in the application
+  HC X Y
+warning: VTlean/Optimal.lean:357:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:358:52: missing space in the source
+
+This part of the code
+  'C):
+  Finset.card'
+should be written as
+  'C) :
+ '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+error: VTlean/Optimal.lean:370:4: Application type mismatch: The argument
+  DelCode_filter C' hC'
+has type
+  ∀ (p : List.Vector B n → Prop) [inst : DecidablePred p], is_DelCode (filter p C')
+but is expected to have type
+  is_DelCode (filter (Icc_wt 2 (n - 2)) C')
+in the application
+  H (filter (Icc_wt 2 (n - 2)) C') (filter_subset_filter (Icc_wt 2 (n - 2)) (subset_univ C')) (DelCode_filter C' hC')
+warning: VTlean/Optimal.lean:376:21: extra space in the source
+
+This part of the code
+  'Nat)  : List'
+should be written as
+  'Nat) : List'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:409:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:412:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:415:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:418:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:421:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:424:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:427:21: extra space in the source
+
+This part of the code
+  'Nat)  : List'
+should be written as
+  'Nat) : List'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:430:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:433:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:436:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:439:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:445:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:445:46: missing space in the source
+
+This part of the code
+  'n):
+  '
+should be written as
+  'n) : List.length'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:448:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:451:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:454:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:457:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:460:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:460:30: extra space in the source
+
+This part of the code
+  'Nat)  (Hk'
+should be written as
+  'Nat) (Hk :'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:463:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:466:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:469:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:472:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:475:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:478:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:490:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:496:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:499:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:502:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:506:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:510:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:514:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:518:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:524:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:530:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:533:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:536:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:540:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:544:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:548:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:552:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:555:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:555:66: missing space in the source
+
+This part of the code
+  'n):
+  List.Vector.mkOI'
+should be written as
+  'n) :
+ '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:558:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:562:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:562:66: missing space in the source
+
+This part of the code
+  'n):
+  List.Vector.mkIO'
+should be written as
+  'n) :
+ '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:565:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:569:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:572:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:584:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:584:49: missing space in the source
+
+This part of the code
+  'n)):
+  List.Vector.replicate'
+should be written as
+  'n)) : List.Vector.replicate'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:587:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:594:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:594:62: missing space in the source
+
+This part of the code
+  'n)):
+  List.Vector.replicate'
+should be written as
+  'n)) :
+ '
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:597:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:601:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:605:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:610:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:617:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:620:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:621:48: missing space in the source
+
+This part of the code
+  '1):
+  X'
+should be written as
+  '1) : X'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:624:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:625:65: missing space in the source
+
+This part of the code
+  'X):
+  X'
+should be written as
+  'X) : X'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: VTlean/Optimal.lean:628:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:631:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:634:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:638:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:642:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:645:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:648:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:651:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:656:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:661:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:665:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:673:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:679:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:682:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:688:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:694:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:697:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:700:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:703:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:705:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/Optimal.lean:707:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:709:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VTlean/Optimal.lean:711:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:715:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:719:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:723:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:725:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:726:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:729:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:730:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:731:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:734:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:735:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:736:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:738:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:742:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:747:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:751:6: declaration uses `sorry`
+warning: VTlean/Optimal.lean:751:38: missing space in the source
+
+This part of the code
+  'n):
+  Finset.image'
+should be written as
+  'n) : Finset.image'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+error: Lean exited with code 1
+Some required targets logged failures:
+- VTlean.Optimal
+error: build failed
