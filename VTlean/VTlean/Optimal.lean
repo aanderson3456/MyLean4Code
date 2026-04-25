@@ -1057,9 +1057,80 @@ lemma sDel_IOIO_I (n k : Nat) (Hkn : k + 2 ≤ n) :
   = List.Vector.mkIO (n - 1) k (le_of_succ_le (Nat.le_sub_of_add_le Hkn)) := by
   apply Subtype.ext
   exact List.sDel_IOIO_I n k Hkn
+lemma sDel_IO_succ_of_lt (n k i : Nat) (Hkn : k + 2 ≤ n) (Hki : i ≤ k) :
+  List.Vector.sDel (List.Vector.mkIO n (k + 1) (le_trans (le_succ _) Hkn)) i
+  = List.Vector.mkIO (n - 1) k (le_of_succ_le (Nat.le_sub_of_add_le Hkn)) := by
+  apply Subtype.ext
+  change List.sDel (List.mkIO n (k + 1)) i = List.mkIO (n - 1) k
+  unfold List.mkIO
+  have H : i < List.length (List.replicate (k + 1) B.I) := by
+    rw [List.length_replicate]
+    exact Nat.lt_succ_of_le Hki
+  rw [List.sDel_append_of_lt (List.replicate (k + 1) B.I) (List.replicate (n - (k + 1)) B.O) i (Nat.succ_le_of_lt H)]
+  rw [List.sDel_replicate i B.I (k + 1)]
+  have h_sub_1 : k + 1 - 1 = k := Nat.add_sub_cancel k 1
+  rw [h_sub_1]
+  have h_sub_2 : n - (k + 1) = n - 1 - k := by
+    have h1 : n - 1 - k = n - (1 + k) := Nat.sub_sub n 1 k
+    rw [h1, Nat.add_comm 1 k]
+  rw [h_sub_2]
+
+lemma sDel_IO_succ_of_ge (n k i : Nat) (Hkn : k + 2 ≤ n) (Hki : k < i) (Hin : i < n) :
+  List.Vector.sDel (List.Vector.mkIO n (k + 1) (le_trans (le_succ _) Hkn)) i
+  = List.Vector.mkIO (n - 1) (k + 1) (Nat.le_sub_of_add_le Hkn) := by
+  apply Subtype.ext
+  change List.sDel (List.mkIO n (k + 1)) i = List.mkIO (n - 1) (k + 1)
+  unfold List.mkIO
+  have H : List.length (List.replicate (k + 1) B.I) ≤ i := by
+    rw [List.length_replicate]
+    exact Hki
+  have HY : List.replicate (n - (k + 1)) B.O ≠ [] := by
+    intro h
+    have h_len : List.length (List.replicate (n - (k + 1)) B.O) = 0 := by rw [h]; rfl
+    rw [List.length_replicate] at h_len
+    have h_gt : n - (k + 1) > 0 := Nat.sub_pos_of_lt Hkn
+    have h_contra := Nat.ne_of_gt h_gt
+    exact h_contra h_len
+  rw [List.sDel_append_of_ge (List.replicate (k + 1) B.I) (List.replicate (n - (k + 1)) B.O) i H HY]
+  rw [List.length_replicate]
+  rw [List.sDel_replicate (i - (k + 1)) B.O (n - (k + 1))]
+  have h_sub2 : n - (k + 1) - 1 = n - 1 - (k + 1) := by
+    have h1 : n - (k + 1) - 1 = n - (k + 1 + 1) := Nat.sub_sub n (k + 1) 1
+    have h2 : n - 1 - (k + 1) = n - (1 + (k + 1)) := Nat.sub_sub n 1 (k + 1)
+    rw [h1, h2, Nat.add_comm (k + 1) 1]
+  rw [h_sub2]
+
 lemma dS_IO_subset (n k : Nat) (Hkn : k + 2 ≤ n) :
-  dS (List.Vector.mkIO n (k + 1) (le_trans (le_succ _) Hkn)) ⊆ dS (List.Vector.mkIOIO n k Hkn) :=
-by sorry
+  dS (List.Vector.mkIO n (k + 1) (le_trans (le_succ _) Hkn)) ⊆ dS (List.Vector.mkIOIO n k Hkn) := by
+  intro X hX
+  rw [mem_dS] at hX
+  rcases hX with ⟨i, hi, hXi⟩
+  by_cases hlt : i ≤ k
+  · rw [sDel_IO_succ_of_lt _ _ _ Hkn hlt] at hXi
+    rw [mem_dS]
+    use k + 1
+    have h_bounds : k + 1 ≤ n - 1 := by
+      have hk1 : k + 2 ≤ n := Hkn
+      exact Nat.le_sub_of_add_le hk1
+    use h_bounds
+    have h_sdel := sDel_IOIO_I n k Hkn
+    rw [h_sdel]
+    exact hXi
+  · have hnlt : k < i := Nat.lt_of_not_le hlt
+    have hn_pos : 0 < n := Nat.lt_of_lt_of_le (by decide) (Nat.le_trans (Nat.le_add_left 2 k) Hkn)
+    have hn_sub : n - 1 < n := Nat.sub_lt hn_pos (by decide)
+    have hin : i < n := Nat.lt_of_le_of_lt hi hn_sub
+    rw [sDel_IO_succ_of_ge _ _ _ Hkn hnlt hin] at hXi
+    rw [mem_dS]
+    use k
+    have h_bounds : k ≤ n - 1 := by
+      have hk1 : k + 2 ≤ n := Hkn
+      have hk2 : k + 1 ≤ n - 1 := Nat.le_sub_of_add_le hk1
+      exact Nat.le_trans (Nat.le_succ _) hk2
+    use h_bounds
+    have h_sdel := sDel_IOIO_O n k Hkn
+    rw [h_sdel]
+    exact hXi
 def mkOI (n k : Nat) (Hk : k ≤ n) : List.Vector B n :=
   ⟨List.mkOI n k, List.length_OI n k Hk⟩
 
@@ -1139,35 +1210,159 @@ lemma wt_OIOI_le
   rw [H3]
 lemma sDel_OIOI_I (n k : Nat) (Hkn : k + 2 ≤ n) :
   List.Vector.sDel (List.Vector.mkOIOI n k Hkn) k
-  = List.Vector.mkOI (n - 1) (k + 1) (Nat.le_sub_of_add_le Hkn) :=
-by sorry
+  = List.Vector.mkOI (n - 1) (k + 1) (Nat.le_sub_of_add_le Hkn) := by
+  apply Subtype.ext
+  exact List.sDel_OIOI_I n k
 lemma sDel_OIOI_O (n k : Nat) (Hkn : k + 2 ≤ n) :
   List.Vector.sDel (List.Vector.mkOIOI n k Hkn) (k + 1)
-  = List.Vector.mkOI (n - 1) k (le_of_succ_le (Nat.le_sub_of_add_le Hkn)) :=
-by sorry
+  = List.Vector.mkOI (n - 1) k (le_of_succ_le (Nat.le_sub_of_add_le Hkn)) := by
+  apply Subtype.ext
+  exact List.sDel_OIOI_O n k Hkn
+lemma sDel_OI_succ_of_lt (n k i : Nat) (Hkn : k + 2 ≤ n) (Hki : i ≤ k) :
+  List.Vector.sDel (List.Vector.mkOI n (k + 1) (le_trans (le_succ _) Hkn)) i
+  = List.Vector.mkOI (n - 1) k (le_of_succ_le (Nat.le_sub_of_add_le Hkn)) := by
+  apply Subtype.ext
+  change List.sDel (List.mkOI n (k + 1)) i = List.mkOI (n - 1) k
+  unfold List.mkOI
+  have H : i < List.length (List.replicate (k + 1) B.O) := by
+    rw [List.length_replicate]
+    exact Nat.lt_succ_of_le Hki
+  rw [List.sDel_append_of_lt (List.replicate (k + 1) B.O) (List.replicate (n - (k + 1)) B.I) i (Nat.succ_le_of_lt H)]
+  rw [List.sDel_replicate i B.O (k + 1)]
+  have h_sub_1 : k + 1 - 1 = k := Nat.add_sub_cancel k 1
+  rw [h_sub_1]
+  have h_sub_2 : n - (k + 1) = n - 1 - k := by
+    have h1 : n - 1 - k = n - (1 + k) := Nat.sub_sub n 1 k
+    rw [h1, Nat.add_comm 1 k]
+  rw [h_sub_2]
+
+lemma sDel_OI_succ_of_ge (n k i : Nat) (Hkn : k + 2 ≤ n) (Hki : k < i) (Hin : i < n) :
+  List.Vector.sDel (List.Vector.mkOI n (k + 1) (le_trans (le_succ _) Hkn)) i
+  = List.Vector.mkOI (n - 1) (k + 1) (Nat.le_sub_of_add_le Hkn) := by
+  apply Subtype.ext
+  change List.sDel (List.mkOI n (k + 1)) i = List.mkOI (n - 1) (k + 1)
+  unfold List.mkOI
+  have H : List.length (List.replicate (k + 1) B.O) ≤ i := by
+    rw [List.length_replicate]
+    exact Hki
+  have HY : List.replicate (n - (k + 1)) B.I ≠ [] := by
+    intro h
+    have h_len : List.length (List.replicate (n - (k + 1)) B.I) = 0 := by rw [h]; rfl
+    rw [List.length_replicate] at h_len
+    have h_gt : n - (k + 1) > 0 := Nat.sub_pos_of_lt Hkn
+    have h_contra := Nat.ne_of_gt h_gt
+    exact h_contra h_len
+  rw [List.sDel_append_of_ge (List.replicate (k + 1) B.O) (List.replicate (n - (k + 1)) B.I) i H HY]
+  rw [List.length_replicate]
+  have h_sub : i - (k + 1) < n - (k + 1) := Nat.sub_lt_sub_right Hki Hin
+  rw [List.sDel_replicate (i - (k + 1)) B.I (n - (k + 1))]
+  have h_sub2 : n - (k + 1) - 1 = n - 1 - (k + 1) := by
+    have h1 : n - (k + 1) - 1 = n - (k + 1 + 1) := Nat.sub_sub n (k + 1) 1
+    have h2 : n - 1 - (k + 1) = n - (1 + (k + 1)) := Nat.sub_sub n 1 (k + 1)
+    rw [h1, h2, Nat.add_comm (k + 1) 1]
+  rw [h_sub2]
+
 lemma dS_OI_subset (n k : Nat) (Hkn : k + 2 ≤ n) :
-  dS (List.Vector.mkOI n (k + 1) (le_trans (le_succ _) Hkn)) ⊆ dS (List.Vector.mkOIOI n k Hkn) :=
-by sorry
+  dS (List.Vector.mkOI n (k + 1) (le_trans (le_succ _) Hkn)) ⊆ dS (List.Vector.mkOIOI n k Hkn) := by
+  intro X hX
+  rw [mem_dS] at hX
+  rcases hX with ⟨i, hi, hXi⟩
+  by_cases hlt : i ≤ k
+  · rw [sDel_OI_succ_of_lt _ _ _ Hkn hlt] at hXi
+    rw [mem_dS]
+    use k + 1
+    have h_bounds : k + 1 ≤ n - 1 := by
+      have hk1 : k + 2 ≤ n := Hkn
+      exact Nat.le_sub_of_add_le hk1
+    use h_bounds
+    have h_sdel := sDel_OIOI_O n k Hkn
+    rw [← h_sdel] at hXi
+    exact hXi
+  · have hnlt : k < i := Nat.lt_of_not_le hlt
+    have hn_pos : 0 < n := Nat.lt_of_lt_of_le (by decide) (Nat.le_trans (Nat.le_add_left 2 k) Hkn)
+    have hn_sub : n - 1 < n := Nat.sub_lt hn_pos (by decide)
+    have hin : i < n := Nat.lt_of_le_of_lt hi hn_sub
+    rw [sDel_OI_succ_of_ge _ _ _ Hkn hnlt hin] at hXi
+    rw [mem_dS]
+    use k
+    have h_bounds : k ≤ n - 1 := by
+      have hk1 : k + 2 ≤ n := Hkn
+      have hk2 : k + 1 ≤ n - 1 := Nat.le_sub_of_add_le hk1
+      exact Nat.le_trans (Nat.le_succ _) hk2
+    use h_bounds
+    have h_sdel := sDel_OIOI_I n k Hkn
+    rw [← h_sdel] at hXi
+    exact hXi
 lemma OI_ne_OIOI (n k₁ k₂ : Nat) (Hk₁ : k₁ ≤ n) (Hk₂ : k₂ + 2 ≤ n):
-  List.Vector.mkOI n k₁ Hk₁ ≠ List.Vector.mkOIOI n k₂ Hk₂ :=
-by sorry
+  List.Vector.mkOI n k₁ Hk₁ ≠ List.Vector.mkOIOI n k₂ Hk₂ := by
+  intro h
+  have h_val : List.mkOI n k₁ = List.mkOIOI n k₂ := congrArg Subtype.val h
+  exact List.OI_ne_OIOI n k₁ k₂ h_val
 lemma OI_ne_IOIO (n k₁ k₂ : Nat)
   (H : 3 ≤ n) (Hk₁ : k₁ ≤ n) (Hk₂ : k₂ + 2 ≤ n) :
-  List.Vector.mkOI n k₁ Hk₁ ≠ List.Vector.mkIOIO n k₂ Hk₂ :=
-by sorry
+  List.Vector.mkOI n k₁ Hk₁ ≠ List.Vector.mkIOIO n k₂ Hk₂ := by
+  intro h
+  have h_val : List.mkOI n k₁ = List.mkIOIO n k₂ := congrArg Subtype.val h
+  exact List.OI_ne_IOIO n k₁ k₂ H h_val
 lemma IO_ne_IOIO (n k₁ k₂ : Nat) (Hk₁ : k₁ ≤ n) (Hk₂ : k₂ + 2 ≤ n):
-  List.Vector.mkIO n k₁ Hk₁ ≠ List.Vector.mkIOIO n k₂ Hk₂ :=
-by sorry
+  List.Vector.mkIO n k₁ Hk₁ ≠ List.Vector.mkIOIO n k₂ Hk₂ := by
+  intro h
+  have h_val : List.mkIO n k₁ = List.mkIOIO n k₂ := congrArg Subtype.val h
+  exact List.IO_ne_IOIO n k₁ k₂ h_val
 lemma IO_ne_OIOI (n k₁ k₂ : Nat)
   (H : 3 ≤ n) (Hk₁ : k₁ ≤ n) (Hk₂ : k₂ + 2 ≤ n) :
-  List.Vector.mkIO n k₁ Hk₁ ≠ List.Vector.mkOIOI n k₂ Hk₂ :=
-by sorry
+  List.Vector.mkIO n k₁ Hk₁ ≠ List.Vector.mkOIOI n k₂ Hk₂ := by
+  intro h
+  have h_val : List.mkIO n k₁ = List.mkOIOI n k₂ := congrArg Subtype.val h
+  exact List.IO_ne_OIOI n k₁ k₂ H h_val
+lemma flip_append_list (X Y : List B) :
+  B.List.flip (X ++ Y) = B.List.flip X ++ B.List.flip Y := by
+  induction X with
+  | nil => rfl
+  | cons x X' ih =>
+    change B.flip x :: B.List.flip (X' ++ Y) = (B.flip x :: B.List.flip X') ++ B.List.flip Y
+    rw [ih]
+    rfl
+
+lemma flip_replicate_O (k : Nat) :
+  B.List.flip (List.replicate k B.O) = List.replicate k B.I := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    change B.flip B.O :: B.List.flip (List.replicate k B.O) = B.I :: List.replicate k B.I
+    rw [ih]
+    rfl
+
+lemma flip_replicate_I (k : Nat) :
+  B.List.flip (List.replicate k B.I) = List.replicate k B.O := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    change B.flip B.I :: B.List.flip (List.replicate k B.I) = B.O :: List.replicate k B.O
+    rw [ih]
+    rfl
+
 lemma flip_OIOI (n k : Nat) (Hkn : k + 2 ≤ n) :
-  B.Vector.flip (List.Vector.mkOIOI n k Hkn) = List.Vector.mkIOIO n k Hkn :=
-by sorry
+  B.Vector.flip (List.Vector.mkOIOI n k Hkn) = List.Vector.mkIOIO n k Hkn := by
+  apply Subtype.ext
+  change B.List.flip (List.mkOIOI n k) = List.mkIOIO n k
+  unfold List.mkOIOI List.mkIOIO
+  rw [flip_append_list]
+  rw [flip_replicate_O]
+  change List.replicate k B.I ++ (B.flip B.I :: B.flip B.O :: B.List.flip (List.replicate (n - k - 2) B.I)) = _
+  rw [flip_replicate_I]
+  rfl
+
 lemma flip_IOIO (n k : Nat) (Hkn : k + 2 ≤ n) :
-  B.Vector.flip (List.Vector.mkIOIO n k Hkn) = List.Vector.mkOIOI n k Hkn :=
-by sorry
+  B.Vector.flip (List.Vector.mkIOIO n k Hkn) = List.Vector.mkOIOI n k Hkn := by
+  apply Subtype.ext
+  change B.List.flip (List.mkIOIO n k) = List.mkOIOI n k
+  unfold List.mkIOIO List.mkOIOI
+  rw [flip_append_list]
+  rw [flip_replicate_I]
+  change List.replicate k B.O ++ (B.flip B.O :: B.flip B.I :: B.List.flip (List.replicate (n - k - 2) B.O)) = _
+  rw [flip_replicate_O]
+  rfl
 end List.Vector
 
 namespace Finset
@@ -1178,175 +1373,778 @@ noncomputable def insert_repO (C : Finset (List.Vector B n)) :=
   insert (List.Vector.replicate n O ) (filter (Ici_wt 2) C)
 
 lemma repO_not_mem (C : Finset (List.Vector B n)):
-  List.Vector.replicate n O ∉ filter (Ici_wt 2) C :=
-by sorry
+  List.Vector.replicate n O ∉ filter (Ici_wt 2) C := by
+  intro h
+  rw [mem_filter] at h
+  have h_wt := h.right
+  unfold Ici_wt at h_wt
+  change 2 ≤ List.num_Is (List.replicate n O) at h_wt
+  rw [List.num_Is_replicate_O] at h_wt
+  contradiction
+lemma list_num_Is_sDel_le (X : List B) (i : Nat) :
+  List.num_Is X ≤ List.num_Is (List.sDel X i) + 1 := by
+  induction X generalizing i with
+  | nil =>
+    change 0 ≤ 0 + 1
+    exact Nat.zero_le 1
+  | cons x X' ih =>
+    cases i with
+    | zero =>
+      rw [List.sDel_zero]
+      cases x <;> simp [List.num_Is]
+    | succ j =>
+      by_cases hX' : X' = []
+      · subst hX'
+        rw [List.sDel_singleton]
+        cases x <;> simp [List.num_Is]
+      · rw [List.sDel_cons x X' j hX']
+        cases x
+        · change List.num_Is X' ≤ List.num_Is (List.sDel X' j) + 1
+          apply ih j
+        · change List.num_Is X' + 1 ≤ List.num_Is (List.sDel X' j) + 1 + 1
+          exact Nat.add_le_add_right (ih j) 1
+
+lemma list_num_Os_sDel_le (X : List B) (i : Nat) :
+  List.num_Os X ≤ List.num_Os (List.sDel X i) + 1 := by
+  induction X generalizing i with
+  | nil =>
+    change 0 ≤ 0 + 1
+    exact Nat.zero_le 1
+  | cons x X' ih =>
+    cases i with
+    | zero =>
+      rw [List.sDel_zero]
+      cases x <;> simp [List.num_Os]
+    | succ j =>
+      by_cases hX' : X' = []
+      · subst hX'
+        rw [List.sDel_singleton]
+        cases x <;> simp [List.num_Os]
+      · rw [List.sDel_cons x X' j hX']
+        cases x
+        · change List.num_Os X' + 1 ≤ List.num_Os (List.sDel X' j) + 1 + 1
+          exact Nat.add_le_add_right (ih j) 1
+        · change List.num_Os X' ≤ List.num_Os (List.sDel X' j) + 1
+          apply ih j
+
 lemma DelCode_insert_repO
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) :
-  is_DelCode (insert_repO C) :=
-by sorry
+  is_DelCode (insert_repO C) := by
+  unfold insert_repO
+  apply DelCode_insert
+  · exact DelCode_filter C HC _
+  · intro c hc
+    rw [mem_filter] at hc
+    have hc_in := hc.left
+    have hc_wt : 2 ≤ wt c := hc.right
+    rw [← Finset.disjoint_iff_inter_eq_empty, Finset.disjoint_left]
+    intro x hx_O hx_c
+    rw [List.Vector.mem_dS] at hx_O hx_c
+    rcases hx_O with ⟨i, hi, hx_eq_O⟩
+    rcases hx_c with ⟨j, hj, hx_eq_c⟩
+    have h_wt_x_O : wt x = 0 := by
+      rw [hx_eq_O, wt]
+      change List.num_Is (List.sDel (List.replicate n B.O) i) = 0
+      rw [List.sDel_replicate i B.O n]
+      exact List.num_Is_replicate_O (n - 1)
+    have h_wt_x_c : 1 ≤ wt x := by
+      rw [hx_eq_c, wt]
+      have h1 : List.num_Is c.val ≤ List.num_Is (List.sDel c.val j) + 1 := list_num_Is_sDel_le c.val j
+      have h2 : 2 ≤ List.num_Is c.val := hc_wt
+      have h3 : 2 ≤ List.num_Is (List.sDel c.val j) + 1 := Nat.le_trans h2 h1
+      exact Nat.le_of_succ_le_succ h3
+    rw [h_wt_x_O] at h_wt_x_c
+    contradiction
 noncomputable def insert_repI (C : Finset (List.Vector B n)) :=
   insert (List.Vector.replicate n I ) (filter (Iic_wt (n - 2)) C)
 
 lemma repI_not_mem (Hn : 2 ≤ n) (C : Finset (List.Vector B n)):
-  List.Vector.replicate n I ∉ filter (Iic_wt (n - 2)) C :=
-by sorry
+  List.Vector.replicate n I ∉ filter (Iic_wt (n - 2)) C := by
+  intro h
+  rw [mem_filter] at h
+  have h_wt := h.right
+  unfold Iic_wt at h_wt
+  change List.num_Is (List.replicate n I) ≤ n - 2 at h_wt
+  rw [List.num_Is_replicate_I] at h_wt
+  have h_contra : ¬ (n ≤ n - 2) := by
+    intro hn
+    have hn_pos : 0 < n := Nat.lt_of_lt_of_le (by decide) Hn
+    have h_n_2 : n - 2 < n := Nat.sub_lt hn_pos (by decide)
+    exact Nat.lt_irrefl _ (Nat.lt_of_le_of_lt hn h_n_2)
+  contradiction
 lemma DelCode_insert_repI (Hn : 2 ≤ n)
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) :
-  is_DelCode (insert_repI C) :=
-by sorry
+  is_DelCode (insert_repI C) := by
+  unfold insert_repI
+  apply DelCode_insert
+  · exact DelCode_filter C HC _
+  · intro c hc
+    rw [mem_filter] at hc
+    have hc_in := hc.left
+    have hc_wt : wt c ≤ n - 2 := hc.right
+    rw [← Finset.disjoint_iff_inter_eq_empty, Finset.disjoint_left]
+    intro x hx_I hx_c
+    rw [List.Vector.mem_dS] at hx_I hx_c
+    rcases hx_I with ⟨i, hi, hx_eq_I⟩
+    rcases hx_c with ⟨j, hj, hx_eq_c⟩
+    have h_wt_x_I : List.num_Os x.val = 0 := by
+      have h_val : x.val = List.sDel (List.replicate n B.I) i := congrArg Subtype.val hx_eq_I
+      rw [h_val]
+      rw [List.sDel_replicate i B.I n]
+      exact List.num_Os_replicate_I (n - 1)
+    have h_wt_x_c : 1 ≤ List.num_Os x.val := by
+      have h_val : x.val = List.sDel c.val j := congrArg Subtype.val hx_eq_c
+      rw [h_val]
+      have h1 : List.num_Os c.val ≤ List.num_Os (List.sDel c.val j) + 1 := list_num_Os_sDel_le c.val j
+      have h2 : 2 ≤ List.num_Os c.val := by
+        have hc_wt_val : List.num_Is c.val ≤ n - 2 := hc_wt
+        have h_add : List.num_Is c.val + 2 ≤ n - 2 + 2 := Nat.add_le_add_right hc_wt_val 2
+        have h_len : List.num_Is c.val + List.num_Os c.val = n := by
+          have hl := List.num_Os_add_num_Is_eq_length c.val
+          have hc_prop : c.val.length = n := c.property
+          rw [hc_prop] at hl
+          rw [Nat.add_comm] at hl
+          exact hl
+        have hn_eq : n - 2 + 2 = n := Nat.sub_add_cancel Hn
+        rw [hn_eq] at h_add
+        have h_eq_le : n ≤ List.num_Is c.val + List.num_Os c.val := Nat.le_of_eq h_len.symm
+        have h_add3 : List.num_Is c.val + 2 ≤ List.num_Is c.val + List.num_Os c.val := Nat.le_trans h_add h_eq_le
+        exact Nat.le_of_add_le_add_left h_add3
+      have h3 : 2 ≤ List.num_Os (List.sDel c.val j) + 1 := Nat.le_trans h2 h1
+      exact Nat.le_of_succ_le_succ h3
+    rw [h_wt_x_I] at h_wt_x_c
+    contradiction
 lemma DC_insert_repI_repO (Hn : 2 ≤ n)
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) :
-  is_DelCode (insert_repI (insert_repO C)) :=
-by sorry
+  is_DelCode (insert_repI (insert_repO C)) := by
+  apply DelCode_insert_repI Hn
+  apply DelCode_insert_repO C HC
 lemma card_insert_repI_repO (Hn : 2 ≤ n)
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) :
   Finset.card (insert_repI (insert_repO C))
-  = Finset.card (filter (Icc_wt 2 (n - 2)) C) + 2 :=
-by sorry
+  = Finset.card (filter (Icc_wt 2 (n - 2)) C) + 2 := by
+  unfold insert_repI
+  rw [Finset.card_insert_of_notMem]
+  · unfold insert_repO
+    have h_filter_ext : filter (Iic_wt (n - 2)) (filter (Ici_wt 2) C) = filter (Icc_wt 2 (n - 2)) C := by
+      apply Finset.ext
+      intro x
+      rw [mem_filter, mem_filter, mem_filter]
+      apply Iff.intro
+      · rintro ⟨⟨hC, h2⟩, hn2⟩
+        exact ⟨hC, ⟨h2, hn2⟩⟩
+      · rintro ⟨hC, h2, hn2⟩
+        exact ⟨⟨hC, h2⟩, hn2⟩
+    rw [Finset.filter_insert]
+    have h_if : Iic_wt (n - 2) (List.Vector.replicate n B.O) := by
+      unfold Iic_wt
+      change List.num_Is (List.replicate n B.O) ≤ n - 2
+      rw [List.num_Is_replicate_O]
+      exact Nat.zero_le _
+    rw [if_pos h_if]
+    rw [Finset.card_insert_of_notMem]
+    · rw [h_filter_ext]
+    · rw [mem_filter]
+      intro h
+      have h_not_mem := repO_not_mem C
+      exact h_not_mem h.1
+  · exact repI_not_mem Hn (insert_repO C)
 lemma le_card_insert_repI_repO (Hn : 2 ≤ n)
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) :
-  Finset.card C ≤ Finset.card (insert_repI (insert_repO C)) :=
-by sorry
+  Finset.card C ≤ Finset.card (insert_repI (insert_repO C)) := by
+  rw [card_insert_repI_repO Hn C HC]
+  exact card_le_filter_Icc HC
 noncomputable def W22 (n : Nat) : Finset (List.Vector B n) :=
   filter (@Icc_wt n 2 (n - 2)) univ
 
 lemma mem_W22 {n : Nat} (X : List.Vector B n) :
-  X ∈ W22 n ↔ Icc_wt 2 (n - 2) X :=
-by sorry
+  X ∈ W22 n ↔ Icc_wt 2 (n - 2) X := by
+  unfold W22
+  rw [mem_filter]
+  apply Iff.intro
+  · intro h
+    exact h.right
+  · intro h
+    exact ⟨mem_univ X, h⟩
 lemma not_mem_W22_of_le
   {n : Nat} (X : List.Vector B n) (H : wt X ≤ 1):
-  X ∉ W22 n :=
-by sorry
+  X ∉ W22 n := by
+  intro h
+  rw [mem_W22] at h
+  have h2 : 2 ≤ wt X := h.left
+  have h_absurd := Nat.lt_of_le_of_lt h2 (Nat.lt_succ_of_le H)
+  exact Nat.lt_irrefl _ h_absurd
 lemma not_mem_W22_of_ge
   {n : Nat} (Hn : 2 ≤ n) (X : List.Vector B n) (H : n - 1 ≤ wt X):
-  X ∉ W22 n :=
-by sorry
+  X ∉ W22 n := by
+  intro h
+  rw [mem_W22] at h
+  have hn2 : wt X ≤ n - 2 := h.right
+  have h_absurd : n - 1 ≤ n - 2 := Nat.le_trans H hn2
+  have h_lt : n - 2 < n - 1 := by
+    have hn_pos : 0 < n := Nat.lt_of_lt_of_le (by decide) Hn
+    have h_2_1 : n - 2 = n - 1 - 1 := by
+      have hsub : n - 2 = n - (1 + 1) := rfl
+      rw [hsub, Nat.sub_sub]
+    rw [h_2_1]
+    exact Nat.sub_lt (Nat.sub_pos_of_lt Hn) (by decide)
+  have h_absurd2 := Nat.lt_of_le_of_lt h_absurd h_lt
+  exact Nat.lt_irrefl _ h_absurd2
 lemma W22_of_le_2 {n : Nat} (Hn : n ≤ 2) :
-  W22 n = ∅ :=
-by sorry
+  W22 n = ∅ := by
+  rw [← Finset.subset_empty]
+  intro x hx
+  rw [mem_W22] at hx
+  unfold Icc_wt at hx
+  have h2 : 2 ≤ wt x := hx.left
+  have hn2 : wt x ≤ n - 2 := hx.right
+  have h_zero : n - 2 = 0 := Nat.sub_eq_zero_of_le Hn
+  rw [h_zero] at hn2
+  have h_absurd := Nat.le_trans h2 hn2
+  exact False.elim (Nat.not_le_of_gt (by decide) h_absurd)
 lemma flip_W22 {n : Nat} (Hn : 2 ≤ n) :
-  Finset.image B.Vector.flip (W22 n) = W22 n :=
-by sorry
+  Finset.image B.Vector.flip (W22 n) = W22 n := by
+  apply Finset.ext
+  intro x
+  rw [Finset.mem_image]
+  apply Iff.intro
+  · rintro ⟨y, hy, hyx⟩
+    rw [mem_W22] at hy ⊢
+    rw [← hyx]
+    unfold Icc_wt at hy ⊢
+    rw [wt_flip]
+    have hy1 : 2 ≤ wt y := hy.left
+    have hy2 : wt y ≤ n - 2 := hy.right
+    constructor
+    · have hn_eq : n = n - 2 + 2 := (Nat.sub_add_cancel Hn).symm
+      have hsub : 2 ≤ n - (n - 2) := by
+        nth_rw 1 [hn_eq]
+        exact Nat.le_of_eq (Nat.add_sub_cancel_left (n - 2) 2).symm
+      exact Nat.le_trans hsub (Nat.sub_le_sub_left hy2 n)
+    · exact Nat.sub_le_sub_left hy1 n
+  · intro hx
+    use B.Vector.flip x
+    constructor
+    · rw [mem_W22] at hx ⊢
+      unfold Icc_wt at hx ⊢
+      rw [wt_flip]
+      have hx1 : 2 ≤ wt x := hx.left
+      have hx2 : wt x ≤ n - 2 := hx.right
+      constructor
+      · have hn_eq : n = n - 2 + 2 := (Nat.sub_add_cancel Hn).symm
+        have hsub : 2 ≤ n - (n - 2) := by
+          nth_rw 1 [hn_eq]
+          exact Nat.le_of_eq (Nat.add_sub_cancel_left (n - 2) 2).symm
+        exact Nat.le_trans hsub (Nat.sub_le_sub_left hx2 n)
+      · exact Nat.sub_le_sub_left hx1 n
+    · exact B.Vector.flip_flip x
 lemma filter_Icc_wt
   (C : Finset (List.Vector B n)) (HC : C ⊆ W22 n) :
-  filter (Icc_wt 2 (n - 2)) C = C :=
-by sorry
+  filter (Icc_wt 2 (n - 2)) C = C := by
+  apply Finset.Subset.antisymm
+  · exact filter_subset _ _
+  · intro c hc
+    have h : c ∈ filter (Icc_wt 2 (n - 2)) univ := HC hc
+    rw [mem_filter] at h ⊢
+    exact ⟨hc, h.right⟩
 lemma card_DCs_sub_W22_le (Hn : 2 ≤ n)
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) (HC' : is_optimal C HC) :
-  is_card_DCs_sub_le (W22 n) (Finset.card C - 2) :=
-by sorry
+  is_card_DCs_sub_le (W22 n) (Finset.card C - 2) := by
+  intro C' hCS hC'
+  have h : Finset.card C' + 2 ≤ Finset.card C := by
+    apply le_trans _ (HC' (insert_repI (insert_repO C')) (DC_insert_repI_repO Hn C' hC'))
+    rw [card_insert_repI_repO Hn C' hC']
+    rw [filter_Icc_wt C' hCS]
+  exact Nat.le_sub_of_add_le h
 lemma IO_mem_W22 (Hn : 3 ≤ n) (k : Fin (n - 1)) (Hk : 1 ≤ k.1) (Hk' : k.1 ≤ n - 3) :
-  List.Vector.mkIO n (k + 1)  (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))) ∈ W22 n :=
-by sorry
+  List.Vector.mkIO n (k + 1)  (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))) ∈ W22 n := by
+  rw [mem_W22]
+  apply And.intro
+  · rw [List.Vector.wt_IO]
+    exact Nat.succ_le_succ Hk
+  · rw [List.Vector.wt_IO]
+    have h1 : k.1 + 1 ≤ n - 3 + 1 := Nat.add_le_add_right Hk' 1
+    have h2 : n - 3 + 1 = n - 2 := by
+      have h3 : n = n - 3 + 3 := (Nat.sub_add_cancel Hn).symm
+      nth_rw 2 [h3]
+      rfl
+    rw [h2] at h1
+    exact h1
 lemma IO_mem_W22' (Hn : 4 ≤ n) :
-  List.Vector.mkIO n 2 (le_of_succ_le (le_of_succ_le Hn)) ∈ W22 n :=
-by sorry
+  List.Vector.mkIO n 2 (le_of_succ_le (le_of_succ_le Hn)) ∈ W22 n := by
+  rw [mem_W22]
+  apply And.intro
+  · rw [List.Vector.wt_IO]
+  · rw [List.Vector.wt_IO]
+    have h3 : 2 ≤ n - 4 + 2 := by
+      have h4 : 2 + (n - 4) = n - 4 + 2 := Nat.add_comm 2 (n - 4)
+      rw [← h4]
+      exact Nat.le_add_right 2 (n - 4)
+    have hn_eq : n = n - 4 + 4 := (Nat.sub_add_cancel Hn).symm
+    have h2 : n - 2 = n - 4 + 2 := by
+      nth_rw 1 [hn_eq]
+      rfl
+    rw [h2]
+    exact h3
 lemma OI_mem_W22 (Hn : 3 ≤ n) (k : Fin (n - 1)) (Hk : 1 ≤ k.1) (Hk' : k.1 ≤ n - 3) :
-  List.Vector.mkOI n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))) ∈ W22 n :=
-by sorry
+  List.Vector.mkOI n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))) ∈ W22 n := by
+  rw [mem_W22]
+  apply And.intro
+  · rw [List.Vector.wt_OI]
+    have h1 : k.1 + 3 ≤ n := by
+      have h2 : k.1 + 3 ≤ n - 3 + 3 := Nat.add_le_add_right Hk' 3
+      have h3 : n - 3 + 3 = n := Nat.sub_add_cancel Hn
+      rw [h3] at h2
+      exact h2
+    have h4 : k.1 + 1 + 2 ≤ n := by
+      have h5 : k.1 + 1 + 2 = k.1 + 3 := rfl
+      rw [h5]
+      exact h1
+    have h6 : 2 + (k.1 + 1) ≤ n := by
+      rw [Nat.add_comm 2]
+      exact h4
+    exact Nat.le_sub_of_add_le h6
+  · rw [List.Vector.wt_OI]
+    have h1 : 2 ≤ k.1 + 1 := Nat.add_le_add_right Hk 1
+    exact Nat.sub_le_sub_left h1 n
 lemma optimal_of_W22
   {n : Nat} {C : Finset (List.Vector B n)} (HC : is_DelCode C)
   (H : ∀ C' ⊆ W22 n, is_DelCode C' → Finset.card C' + 2 ≤ Finset.card C) :
-  is_optimal C HC :=
-by sorry
+  is_optimal C HC := by
+  apply optimal_of_div_wt HC
+  exact H
 lemma optimal_of_div_wt' (Hn : 4 ≤ n)
   {C : Finset (List.Vector B n)} (HC : is_DelCode C)
   (HC' : is_card_DCs_sub_le (W22 n) (Finset.card C - 2)) :
-  is_optimal C HC :=
-by sorry
+  is_optimal C HC := by
+  have Hn' : 2 ≤ n := Nat.le_trans (by decide) Hn
+  intro C' hC'
+  apply Nat.le_trans (le_card_insert_repI_repO Hn' C' hC')
+  rw [card_insert_repI_repO Hn' C' hC']
+  have h : 1 ≤ Finset.card C - 2 := by
+    have h_singleton_le : Finset.card {List.Vector.mkIO n 2 (Nat.le_trans (by decide) Hn)} ≤ Finset.card C - 2 := by
+      apply HC'
+      · intro x hx
+        rw [Finset.mem_singleton] at hx
+        rw [hx]
+        exact IO_mem_W22' Hn
+      · exact DelCode_singleton _
+    rw [Finset.card_singleton] at h_singleton_le
+    exact h_singleton_le
+  have h2 : 2 ≤ Finset.card C := by
+    cases hC_card : Finset.card C with
+    | zero => rw [hC_card] at h; contradiction
+    | succ n' =>
+      cases hn' : n' with
+      | zero => rw [hC_card, hn'] at h; contradiction
+      | succ n'' => exact Nat.le_add_left 2 n''
+  have h_A_le : Finset.card (filter (Icc_wt 2 (n - 2)) C') ≤ Finset.card C - 2 := by
+    apply HC'
+    · intro x hx
+      unfold W22
+      rw [mem_filter] at hx
+      rw [mem_filter]
+      exact ⟨Finset.mem_univ x, hx.right⟩
+    · apply DelCode_filter _ hC'
+  have hn_eq : Finset.card C = Finset.card C - 2 + 2 := (Nat.sub_add_cancel h2).symm
+  rw [hn_eq]
+  exact Nat.add_le_add_right h_A_le 2
 lemma card_DCs_sub_le_of_optimal (Hn : 2 ≤ n)
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) (HC' : is_optimal C HC) :
-  is_card_DCs_sub_le (W22 n) (Finset.card C - 2) :=
-by sorry
+  is_card_DCs_sub_le (W22 n) (Finset.card C - 2) := by
+  intro C' hCS hC'
+  have h : Finset.card C' + 2 ≤ Finset.card C := by
+    apply Nat.le_trans _ (HC' (insert_repI (insert_repO C')) (DC_insert_repI_repO Hn C' hC'))
+    rw [card_insert_repI_repO Hn C' hC']
+    rw [filter_Icc_wt _ hCS]
+  exact Nat.le_sub_of_add_le h
 lemma optimal_iff_W22 (Hn : 4 ≤ n)
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) :
-  is_optimal C HC ↔ is_card_DCs_sub_le (W22 n) (Finset.card C - 2) :=
-by sorry
+  is_optimal C HC ↔ is_card_DCs_sub_le (W22 n) (Finset.card C - 2) := by
+  apply Iff.intro
+  · exact card_DCs_sub_le_of_optimal (Nat.le_trans (by decide) Hn) C HC
+  · exact optimal_of_div_wt' Hn HC
 def Repl_sub (n : Nat) (k : Fin (n - 1)) : Finset (List.Vector B n) :=
   { List.Vector.mkOIOI n k.1 (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2)),
    List.Vector.mkIOIO n k.1 (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2)) }
 
 lemma flip_Repl_sub (n : Nat) (k : Fin (n - 1)) :
-  Finset.image B.Vector.flip (Repl_sub n k) = Repl_sub n k :=
-by sorry
+  Finset.image B.Vector.flip (Repl_sub n k) = Repl_sub n k := by
+  unfold Repl_sub
+  apply Finset.ext
+  intro x
+  rw [Finset.mem_image]
+  apply Iff.intro
+  · rintro ⟨y, hy, hyx⟩
+    rw [Finset.mem_insert, Finset.mem_singleton] at hy
+    rw [Finset.mem_insert, Finset.mem_singleton]
+    cases hy with
+    | inl h1 =>
+      right
+      rw [← hyx, h1, List.Vector.flip_OIOI]
+    | inr h2 =>
+      left
+      rw [← hyx, h2, List.Vector.flip_IOIO]
+  · intro hx
+    rw [Finset.mem_insert, Finset.mem_singleton] at hx
+    cases hx with
+    | inl h1 =>
+      use List.Vector.mkIOIO n k.1 (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))
+      constructor
+      · rw [Finset.mem_insert, Finset.mem_singleton]
+        right; rfl
+      · rw [h1, List.Vector.flip_IOIO]
+    | inr h2 =>
+      use List.Vector.mkOIOI n k.1 (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))
+      constructor
+      · rw [Finset.mem_insert, Finset.mem_singleton]
+        left; rfl
+      · rw [h2, List.Vector.flip_OIOI]
 def Repl (n : Nat) : Finset (List.Vector B n) :=
   Finset.biUnion (@univ (Fin (n - 1)) _) (Repl_sub n)
 
 lemma mem_Repl (X : List.Vector B n) :
-  X ∈ Repl n ↔ ∃ k : Fin (n - 1), X ∈ Repl_sub n k :=
-by sorry
+  X ∈ Repl n ↔ ∃ k : Fin (n - 1), X ∈ Repl_sub n k := by
+  unfold Repl
+  rw [Finset.mem_biUnion]
+  apply Iff.intro
+  · rintro ⟨k, _, hk⟩
+    exact ⟨k, hk⟩
+  · rintro ⟨k, hk⟩
+    exact ⟨k, Finset.mem_univ _, hk⟩
 lemma mem_Repl'
   (X : List.Vector B n) (H : X ∈ Repl n) :
   ∃ k : Fin (n - 1),
   (X = List.Vector.mkOIOI n k.1 (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))
-  ∨ X = List.Vector.mkIOIO n k.1 (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2)) ) :=
-by sorry
+  ∨ X = List.Vector.mkIOIO n k.1 (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2)) ) := by
+  rw [mem_Repl] at H
+  cases H with
+  | intro k Hk =>
+    unfold Repl_sub at Hk
+    rw [Finset.mem_insert, Finset.mem_singleton] at Hk
+    cases Hk with
+    | inl h1 => exact ⟨k, Or.inl h1⟩
+    | inr h2 => exact ⟨k, Or.inr h2⟩
 lemma mem_W22_inter_Repl (Hn : 2 ≤ n)
   (X : List.Vector B n) (H : X ∈ W22 n ∩ Repl n) :
   ∃ k : Fin (n - 1), (1 ≤ k.1) ∧ (k.1 ≤ n - 3) ∧
   (X = List.Vector.mkOIOI n k.1 (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))
-  ∨ X = List.Vector.mkIOIO n k.1 (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2)) ) :=
-by sorry
+  ∨ X = List.Vector.mkIOIO n k.1 (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2)) ) := by
+  rw [Finset.mem_inter] at H
+  rw [mem_Repl] at H
+  have hW22 := H.left
+  have hRepl := H.right
+  cases hRepl with
+  | intro k hk =>
+    unfold Repl_sub at hk
+    rw [Finset.mem_insert, Finset.mem_singleton] at hk
+    have H_not_lt_1 : ¬ (k.1 < 1) := by
+      intro hlt
+      cases hk with
+      | inl h1 =>
+        have h_wt : n - 1 ≤ wt X := by
+          rw [h1]
+          exact List.Vector.le_wt_OIOI _ _ hlt
+        have h_not : X ∉ W22 n := not_mem_W22_of_ge Hn X h_wt
+        exact h_not hW22
+      | inr h2 =>
+        have h_wt : wt X ≤ 1 := by
+          rw [h2]
+          exact List.Vector.wt_IOIO_le _ _ hlt
+        have h_not : X ∉ W22 n := not_mem_W22_of_le X h_wt
+        exact h_not hW22
+    have H_not_gt_n3 : ¬ (n - 3 < k.1) := by
+      intro hlt
+      cases hk with
+      | inl h1 =>
+        have h_wt : wt X ≤ 1 := by
+          rw [h1]
+          exact List.Vector.wt_OIOI_le _ _ hlt
+        have h_not : X ∉ W22 n := not_mem_W22_of_le X h_wt
+        exact h_not hW22
+      | inr h2 =>
+        have h_wt : n - 1 ≤ wt X := by
+          rw [h2]
+          exact List.Vector.le_wt_IOIO _ _ hlt
+        have h_not : X ∉ W22 n := not_mem_W22_of_ge Hn X h_wt
+        exact h_not hW22
+    have H1 : 1 ≤ k.1 := Nat.le_of_not_lt H_not_lt_1
+    have H2 : k.1 ≤ n - 3 := Nat.le_of_not_lt H_not_gt_n3
+    exact ⟨k, H1, H2, hk⟩
 lemma flip_Repl (n : Nat) :
-  Finset.image B.Vector.flip (Repl n) = Repl n :=
-by sorry
+  Finset.image B.Vector.flip (Repl n) = Repl n := by
+  apply Finset.Subset.antisymm
+  · intro x hx
+    rw [Finset.mem_image] at hx
+    cases hx with
+    | intro y hy =>
+      cases hy with
+      | intro hy1 hxy =>
+        rw [mem_Repl] at hy1
+        cases hy1 with
+        | intro k hk =>
+          rw [mem_Repl]
+          use k
+          rw [← hxy]
+          have h_flip_sub : Finset.image B.Vector.flip (Repl_sub n k) = Repl_sub n k := flip_Repl_sub n k
+          rw [← h_flip_sub]
+          rw [Finset.mem_image]
+          exact ⟨y, hk, rfl⟩
+  · intro x hx
+    rw [mem_Repl] at hx
+    cases hx with
+    | intro k hk =>
+      rw [Finset.mem_image]
+      use B.Vector.flip x
+      constructor
+      · rw [mem_Repl]
+        use k
+        have h_flip_sub : Finset.image B.Vector.flip (Repl_sub n k) = Repl_sub n k := flip_Repl_sub n k
+        rw [← h_flip_sub]
+        rw [Finset.mem_image]
+        exact ⟨x, hk, rfl⟩
+      · exact B.Vector.flip_flip x
 lemma OI_not_mem_replace (Hn : 3 ≤ n) (k : Fin (n - 1)) :
-  List.Vector.mkOI n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))) ∉ Repl n :=
-by sorry
+  List.Vector.mkOI n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))) ∉ Repl n := by
+  intro h
+  rw [mem_Repl] at h
+  cases h with
+  | intro k' hk =>
+    unfold Repl_sub at hk
+    rw [Finset.mem_insert, Finset.mem_singleton] at hk
+    cases hk with
+    | inl h1 => exact List.Vector.OI_ne_OIOI _ _ _ _ _ h1
+    | inr h2 => exact List.Vector.OI_ne_IOIO _ _ _ Hn _ _ h2
 lemma IO_not_mem_replace (Hn : 3 ≤ n) (k : Fin (n - 1)) :
-  List.Vector.mkIO n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))) ∉ Repl n :=
-by sorry
+  List.Vector.mkIO n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))) ∉ Repl n := by
+  intro h
+  rw [mem_Repl] at h
+  cases h with
+  | intro k' hk =>
+    unfold Repl_sub at hk
+    rw [Finset.mem_insert, Finset.mem_singleton] at hk
+    cases hk with
+    | inl h1 => exact List.Vector.IO_ne_OIOI _ _ _ Hn _ _ h1
+    | inr h2 => exact List.Vector.IO_ne_IOIO _ _ _ _ _ h2
 lemma OI_mem_sdiff_replace
   (Hn : 3 ≤ n) (k : Fin (n - 1)) (Hk : 1 ≤ k.1) (Hk' : k.1 ≤ n - 3) :
-  List.Vector.mkOI n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))) ∈ W22 n \ Repl n :=
-by sorry
+  List.Vector.mkOI n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))) ∈ W22 n \ Repl n := by
+  rw [Finset.mem_sdiff]
+  apply And.intro
+  · exact OI_mem_W22 Hn _ Hk Hk'
+  · exact OI_not_mem_replace Hn k
 lemma IO_mem_sdiff_replace
   (Hn : 3 ≤ n) (k : Fin (n - 1)) (Hk : 1 ≤ k.1) (Hk' : k.1 ≤ n - 3) :
-  List.Vector.mkIO n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))) ∈ W22 n \ Repl n :=
-by sorry
+  List.Vector.mkIO n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2))) ∈ W22 n \ Repl n := by
+  rw [Finset.mem_sdiff]
+  apply And.intro
+  · exact IO_mem_W22 Hn _ Hk Hk'
+  · exact IO_not_mem_replace Hn k
 lemma exists_sdiff_Repl
   (Hn : 3 ≤ n) (X : List.Vector B n) (H : X ∈ W22 n ∩ Repl n) :
-  ∃ X' ∈ W22 n \ Repl n, X' ≠ X ∧ dS X' ⊆ dS X :=
-by sorry
+  ∃ X' ∈ W22 n \ Repl n, X' ≠ X ∧ dS X' ⊆ dS X := by
+  cases mem_W22_inter_Repl (Nat.le_trans (by decide) Hn) X H with
+  | intro k hk =>
+    rcases hk with ⟨hk1, hk2, hk_or⟩
+    cases hk_or with
+    | inl hk_oioi =>
+      use List.Vector.mkOI n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2)))
+      constructor
+      · exact OI_mem_sdiff_replace Hn k hk1 hk2
+      · constructor
+        · rw [hk_oioi]
+          exact List.Vector.OI_ne_OIOI _ _ _ _ _
+        · rw [hk_oioi]
+          exact List.Vector.dS_OI_subset _ _ _
+    | inr hk_ioio =>
+      use List.Vector.mkIO n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2)))
+      constructor
+      · exact IO_mem_sdiff_replace Hn k hk1 hk2
+      · constructor
+        · rw [hk_ioio]
+          exact List.Vector.IO_ne_IOIO _ _ _ _ _
+        · rw [hk_ioio]
+          exact List.Vector.dS_IO_subset _ _ _
 lemma exists_sdiff_Repl'
   (X : List.Vector B n) (H : X ∈ W22 n ∩ Repl n) :
-  ∃ X' ∈ W22 n \ Repl n, X' ≠ X ∧ dS X' ⊆ dS X :=
-by sorry
+  ∃ X' ∈ W22 n \ Repl n, X' ≠ X ∧ dS X' ⊆ dS X := by
+  if hle : 3 ≤ n then
+    exact exists_sdiff_Repl hle _ H
+  else
+    have hn_lt : n < 3 := Nat.lt_of_not_ge hle
+    have hn_le : n ≤ 2 := Nat.le_of_lt_succ hn_lt
+    rw [Finset.mem_inter] at H
+    have h_w22 : X ∈ W22 n := H.left
+    rw [W22_of_le_2 hn_le] at h_w22
+    simp at h_w22
 lemma optimal_iff_sdiff_Repl (Hn : 3 ≤ n)
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) :
-  is_optimal C HC ↔ is_optimal_sub (univ \ Repl n) C HC :=
-by sorry
-lemma Repl_of_le_one (Hn : n ≤ 1) : Repl n = ∅ :=
-by sorry
-lemma Repl_two : Repl 2 = {⟨[I, O], rfl⟩, ⟨[O, I], rfl⟩} := by sorry
-lemma sdiff_Repl_two : univ \ Repl 2 = {⟨[I, I], rfl⟩, ⟨[O, O], rfl⟩} := by sorry
+  is_optimal C HC ↔ is_optimal_sub (univ \ Repl n) C HC := by
+  rw [← is_optimal_sub_univ]
+  rw [Iff.comm]
+  rw [optimal_sub_sdiff_iff]
+  intro x hx
+  cases mem_Repl' x hx with
+  | intro k hk =>
+    cases hk with
+    | inl h1 =>
+      use List.Vector.mkOI n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2)))
+      constructor
+      · rw [Finset.mem_sdiff]
+        constructor
+        · exact Finset.mem_univ _
+        · exact OI_not_mem_replace Hn k
+      · constructor
+        · rw [h1]
+          exact List.Vector.OI_ne_OIOI _ _ _ _ _
+        · rw [h1]
+          exact List.Vector.dS_OI_subset _ _ _
+    | inr h2 =>
+      use List.Vector.mkIO n (k.1 + 1) (le_of_lt (succ_le_of_lt (Nat.add_lt_of_lt_sub k.2)))
+      constructor
+      · rw [Finset.mem_sdiff]
+        constructor
+        · exact Finset.mem_univ _
+        · exact IO_not_mem_replace Hn k
+      · constructor
+        · rw [h2]
+          exact List.Vector.IO_ne_IOIO _ _ _ _ _
+        · rw [h2]
+          exact List.Vector.dS_IO_subset _ _ _
+lemma Repl_of_le_one (Hn : n ≤ 1) : Repl n = ∅ := by
+  rw [← Finset.subset_empty]
+  intro x hx
+  cases mem_Repl' x hx with
+  | intro k hk =>
+    cases hk with
+    | inl h1 =>
+      have hk_le : k.1 + 2 ≤ n := succ_le_of_lt (Nat.add_lt_of_lt_sub k.2)
+      have h_2_le : 2 ≤ k.1 + 2 := Nat.le_add_left 2 k.1
+      have h : 2 ≤ n := Nat.le_trans h_2_le hk_le
+      have h_not : ¬ (2 ≤ n) := Nat.not_le_of_gt (Nat.lt_of_le_of_lt Hn (by decide))
+      exact False.elim (h_not h)
+    | inr h2 =>
+      have hk_le : k.1 + 2 ≤ n := succ_le_of_lt (Nat.add_lt_of_lt_sub k.2)
+      have h_2_le : 2 ≤ k.1 + 2 := Nat.le_add_left 2 k.1
+      have h : 2 ≤ n := Nat.le_trans h_2_le hk_le
+      have h_not : ¬ (2 ≤ n) := Nat.not_le_of_gt (Nat.lt_of_le_of_lt Hn (by decide))
+      exact False.elim (h_not h)
+lemma Repl_two : Repl 2 = {⟨[I, O], rfl⟩, ⟨[O, I], rfl⟩} := by decide
+lemma sdiff_Repl_two : univ \ Repl 2 = {⟨[I, I], rfl⟩, ⟨[O, O], rfl⟩} := by decide
 
 def II : List.Vector B 2 := ⟨[I, I], rfl⟩
-lemma II_ne_IO : II ≠ ⟨[I, O], rfl⟩ := by sorry
-lemma II_mem_sdiff : II ∈ univ \ Repl 2 := by sorry
-lemma dS_II_subset_IO : dS II ⊆ dS ⟨[I, O], rfl⟩ := by sorry
+lemma II_ne_IO : II ≠ ⟨[I, O], rfl⟩ := by decide
+lemma II_mem_sdiff : II ∈ univ \ Repl 2 := by decide
+lemma dS_II_subset_IO : dS II ⊆ dS ⟨[I, O], rfl⟩ := by decide
 
 def OO : List.Vector B 2 := ⟨[O, O], rfl⟩
-lemma OO_ne_OI : OO ≠ ⟨[O, I], rfl⟩ := by sorry
-lemma OO_mem_sdiff : OO ∈ univ \ Repl 2 := by sorry
-lemma dS_OO_subset_OI : dS OO ⊆ dS ⟨[O, I], rfl⟩ := by sorry
+lemma OO_ne_OI : OO ≠ ⟨[O, I], rfl⟩ := by decide
+lemma OO_mem_sdiff : OO ∈ univ \ Repl 2 := by decide
+lemma dS_OO_subset_OI : dS OO ⊆ dS ⟨[O, I], rfl⟩ := by decide
 
 lemma optimal_iff_sdiff_Repl'
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) :
-  is_optimal C HC ↔ is_optimal_sub (univ \ Repl n) C HC :=
-by sorry
+  is_optimal C HC ↔ is_optimal_sub (univ \ Repl n) C HC := by
+  rw [← is_optimal_sub_univ]
+  cases n with
+  | zero =>
+    rw [Repl_of_le_one (by decide)]
+    rw [Finset.sdiff_empty]
+  | succ n' =>
+    cases n' with
+    | zero =>
+      rw [Repl_of_le_one (by decide)]
+      rw [Finset.sdiff_empty]
+    | succ n'' =>
+      cases n'' with
+      | zero =>
+        rw [Iff.comm]
+        rw [optimal_sub_sdiff_iff]
+        intro x hx
+        rw [Repl_two] at hx
+        rw [Finset.mem_insert, Finset.mem_singleton] at hx
+        cases hx with
+        | inl h_IO =>
+          use II
+          constructor
+          · exact II_mem_sdiff
+          · rw [h_IO]
+            constructor
+            · exact II_ne_IO
+            · exact dS_II_subset_IO
+        | inr h_OI =>
+          use OO
+          constructor
+          · exact OO_mem_sdiff
+          · rw [h_OI]
+            constructor
+            · exact OO_ne_OI
+            · exact dS_OO_subset_OI
+      | succ n''' =>
+        rw [is_optimal_sub_univ]
+        rw [optimal_iff_sdiff_Repl (Nat.le_add_left 3 n''') C HC]
 lemma optimal_of_W22_sdiff_Repl
   {n : Nat} {C : Finset (List.Vector B n)} (HC : is_DelCode C)
   (H : ∀ C' ⊆ W22 n \ Repl n, is_DelCode C' → Finset.card C' + 2 ≤ Finset.card C) :
-  is_optimal C HC :=
-by sorry
+  is_optimal C HC := by
+  apply optimal_of_W22
+  intro C' hC hC'
+  have hC_sub : C' ∈ DCs_sub (W22 n) := by
+    rw [mem_DCs_sub]
+    exact ⟨hC, hC'⟩
+  have HX : ∀ x ∈ W22 n ∩ Repl n, ∃ x' ∈ W22 n \ Repl n, x' ≠ x ∧ dS x' ⊆ dS x := by
+    intro x hx
+    exact exists_sdiff_Repl' x hx
+  cases exists_DelCode_sdiff' (W22 n) C' hC_sub (Repl n) HX with
+  | intro C'' hC'' =>
+    rcases hC'' with ⟨hC''_left, hC''_right⟩
+    rw [mem_DCs_sub] at hC''_left
+    rw [← hC''_right]
+    apply H _ hC''_left.left hC''_left.right
 lemma optimal_iff_W22_sdiff_Repl (Hn : 4 ≤ n)
   (C : Finset (List.Vector B n)) (HC : is_DelCode C) :
-  is_optimal C HC ↔ is_card_DCs_sub_le (W22 n \ Repl n) (Finset.card C - 2) :=
-by sorry
+  is_optimal C HC ↔ is_card_DCs_sub_le (W22 n \ Repl n) (Finset.card C - 2) := by
+  rw [optimal_iff_W22 Hn C HC]
+  rw [← card_DCs_sub_le_sdiff_iff']
+  intro x hx
+  exact exists_sdiff_Repl' x hx
 lemma flip_W22_sdiff_Repl (Hn : 2 ≤ n):
-  Finset.image B.Vector.flip (W22 n \ Repl n) = W22 n \ Repl n :=
-by sorry
+  Finset.image B.Vector.flip (W22 n \ Repl n) = W22 n \ Repl n := by
+  apply Finset.ext
+  intro x
+  rw [Finset.mem_image]
+  apply Iff.intro
+  · rintro ⟨y, hy, hyx⟩
+    rw [Finset.mem_sdiff] at hy ⊢
+    constructor
+    · have hw22 : y ∈ W22 n := hy.left
+      have h_flip : B.Vector.flip y ∈ Finset.image B.Vector.flip (W22 n) := Finset.mem_image_of_mem _ hw22
+      rw [flip_W22 Hn] at h_flip
+      rw [hyx] at h_flip
+      exact h_flip
+    · have h_not : y ∉ Repl n := hy.right
+      intro h_in
+      have h_flip : B.Vector.flip x ∈ Finset.image B.Vector.flip (Repl n) := Finset.mem_image_of_mem _ h_in
+      rw [flip_Repl n] at h_flip
+      rw [← hyx] at h_flip
+      rw [B.Vector.flip_flip] at h_flip
+      exact h_not h_flip
+  · intro hx
+    use B.Vector.flip x
+    rw [Finset.mem_sdiff] at hx
+    constructor
+    · rw [Finset.mem_sdiff]
+      constructor
+      · have h_inv : x ∈ W22 n := hx.left
+        have h_flip_mem : B.Vector.flip x ∈ Finset.image B.Vector.flip (W22 n) := Finset.mem_image_of_mem _ h_inv
+        rw [flip_W22 Hn] at h_flip_mem
+        exact h_flip_mem
+      · have h_not : x ∉ Repl n := hx.right
+        intro h_in
+        have h_flip_mem : B.Vector.flip (B.Vector.flip x) ∈ Finset.image B.Vector.flip (Repl n) := Finset.mem_image_of_mem _ h_in
+        rw [flip_Repl n, B.Vector.flip_flip] at h_flip_mem
+        exact h_not h_flip_mem
+    · exact B.Vector.flip_flip x
 end Finset
 
 end B

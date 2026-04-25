@@ -40,6 +40,8 @@ LEAN_EXPORT lean_object* lp_VTlean_B_List_Vector_mkOIOI___redArg(lean_object*, l
 LEAN_EXPORT lean_object* lp_VTlean_B_List_Vector_mkOIOI___redArg___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_List_Vector_mkOIOI(lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_List_Vector_mkOIOI___boxed(lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_Optimal_0__List_num__Is_match__1_splitter___redArg(lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_Optimal_0__List_num__Is_match__1_splitter(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 lean_object* lp_VTlean_instDecidableEqB___boxed(lean_object*, lean_object*);
 uint8_t l_instDecidableEqList___redArg(lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_VTlean_B_Finset_Repl__sub___lam__0(lean_object*, lean_object*);
@@ -322,6 +324,88 @@ lean_object* x_4;
 x_4 = lp_VTlean_B_List_Vector_mkOIOI(x_1, x_2, x_3);
 lean_dec(x_1);
 return x_4;
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_Optimal_0__List_num__Is_match__1_splitter___redArg(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
+_start:
+{
+if (lean_obj_tag(x_1) == 0)
+{
+lean_object* x_5; lean_object* x_6; 
+lean_dec(x_4);
+lean_dec(x_3);
+x_5 = lean_box(0);
+x_6 = lean_apply_1(x_2, x_5);
+return x_6;
+}
+else
+{
+lean_object* x_7; uint8_t x_8; 
+lean_dec(x_2);
+x_7 = lean_ctor_get(x_1, 0);
+x_8 = lean_unbox(x_7);
+if (x_8 == 0)
+{
+lean_object* x_9; lean_object* x_10; 
+lean_dec(x_4);
+x_9 = lean_ctor_get(x_1, 1);
+lean_inc(x_9);
+lean_dec_ref(x_1);
+x_10 = lean_apply_1(x_3, x_9);
+return x_10;
+}
+else
+{
+lean_object* x_11; lean_object* x_12; 
+lean_dec(x_3);
+x_11 = lean_ctor_get(x_1, 1);
+lean_inc(x_11);
+lean_dec_ref(x_1);
+x_12 = lean_apply_1(x_4, x_11);
+return x_12;
+}
+}
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_Optimal_0__List_num__Is_match__1_splitter(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
+_start:
+{
+if (lean_obj_tag(x_2) == 0)
+{
+lean_object* x_6; lean_object* x_7; 
+lean_dec(x_5);
+lean_dec(x_4);
+x_6 = lean_box(0);
+x_7 = lean_apply_1(x_3, x_6);
+return x_7;
+}
+else
+{
+lean_object* x_8; uint8_t x_9; 
+lean_dec(x_3);
+x_8 = lean_ctor_get(x_2, 0);
+x_9 = lean_unbox(x_8);
+if (x_9 == 0)
+{
+lean_object* x_10; lean_object* x_11; 
+lean_dec(x_5);
+x_10 = lean_ctor_get(x_2, 1);
+lean_inc(x_10);
+lean_dec_ref(x_2);
+x_11 = lean_apply_1(x_4, x_10);
+return x_11;
+}
+else
+{
+lean_object* x_12; lean_object* x_13; 
+lean_dec(x_4);
+x_12 = lean_ctor_get(x_2, 1);
+lean_inc(x_12);
+lean_dec_ref(x_2);
+x_13 = lean_apply_1(x_5, x_12);
+return x_13;
+}
+}
 }
 }
 LEAN_EXPORT uint8_t lp_VTlean_B_Finset_Repl__sub___lam__0(lean_object* x_1, lean_object* x_2) {
