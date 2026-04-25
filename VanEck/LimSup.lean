@@ -233,6 +233,22 @@ theorem vanEck_limsup_ge_one :
   -- We split our goal into verifying m >= N and the mathematical inequality.
   constructor
   · -- We prove m >= N using strictly structural relations avoiding omega.
-    sorry
+    have h_a_le_m : vanEckNthTerm m ≤ m := vanEckNthTerm_le_n m
+    have h1 : m * m + 2 * m + 1 ≥ N * N + 2 * N + 2 := by
+      calc m * m + 2 * m + 1 ≥ vanEckNthTerm m * vanEckNthTerm m + 2 * vanEckNthTerm m + 1 := by nlinarith
+        _ ≥ n := hm_ineq
+        _ ≥ N_sq + 1 := hn_gt
+        _ = N * N + 2 * N + 1 + 1 := rfl
+        _ = N * N + 2 * N + 2 := rfl
+    nlinarith
   · -- We prove the sequence element squared bounds m natively.
+    have h_a_le_m : vanEckNthTerm m ≤ m := vanEckNthTerm_le_n m
+    have h1 : m * m + 2 * m + 1 ≥ N * N + 2 * N + 2 := by
+      calc m * m + 2 * m + 1 ≥ vanEckNthTerm m * vanEckNthTerm m + 2 * vanEckNthTerm m + 1 := by nlinarith
+        _ ≥ n := hm_ineq
+        _ ≥ N_sq + 1 := hn_gt
+        _ = N * N + 2 * N + 1 + 1 := rfl
+        _ = N * N + 2 * N + 2 := rfl
+    have hm_ge_m_minus_one : m ≤ n + 1 := hm_le
     sorry
+
