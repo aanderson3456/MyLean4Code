@@ -38,7 +38,7 @@ def is_bound (n v : ℕ) : Prop := ∀ i ≤ n, vanEckNthTerm i ≤ v
 The zerosCount counts the number of zeros, which matches the filter cardinality plus 1.
 -/
 lemma zerosCount_eq_card (m : ℕ) : 
-    zerosCount m = ((Finset.range m).filter (fun i => vanEckNthTerm (i + 1) = 0)).card + 1 := by
+    zerosCount m = ((Finset.range m).filter (fun i => vanEckNthTerm (i + 1) = 0)).card + 1 := by {
   induction m with
   | zero =>
     unfold zerosCount
@@ -61,11 +61,13 @@ lemma zerosCount_eq_card (m : ℕ) :
     · rename_i hz
       simp [ih]
 
+}
+
 /-- 
 If two different indices are both followed by a zero, their values must be strictly distinct.
 -/
 lemma zero_predecessors_inj {i j : ℕ} (hi : vanEckNthTerm (i + 1) = 0) 
-    (hj : vanEckNthTerm (j + 1) = 0) (hneq : i ≠ j) : vanEckNthTerm i ≠ vanEckNthTerm j := by
+    (hj : vanEckNthTerm (j + 1) = 0) (hneq : i ≠ j) : vanEckNthTerm i ≠ vanEckNthTerm j := by {
   cases i
   case zero =>
     cases j
@@ -92,12 +94,14 @@ lemma zero_predecessors_inj {i j : ℕ} (hi : vanEckNthTerm (i + 1) = 0)
       · have h_eval := hi_iff (j + 1) hgt
         exact h_eval.symm
 
+}
+
 /-- 
 Because the predecessors are injective, mapping the filter through the sequence preserves cardinality.
 -/
 lemma zero_predecessors_card (m : ℕ) : 
     ((Finset.range m).filter (fun i => vanEckNthTerm (i + 1) = 0)).card = 
-    (((Finset.range m).filter (fun i => vanEckNthTerm (i + 1) = 0)).image vanEckNthTerm).card := by
+    (((Finset.range m).filter (fun i => vanEckNthTerm (i + 1) = 0)).image vanEckNthTerm).card := by {
   have h_inj : Set.InjOn vanEckNthTerm ((Finset.range m).filter (fun i => vanEckNthTerm (i + 1) = 0)) := by
     intro i hi j hj h_eq
     have hi_mem := Finset.mem_filter.mp hi
@@ -107,11 +111,13 @@ lemma zero_predecessors_card (m : ℕ) :
     exact h_inj_res h_eq
   exact (Finset.card_image_of_injOn h_inj).symm
 
+}
+
 /-- 
 Any element drawn from the predecessor image is bounded by our global max limit v.
 -/
 lemma zero_predecessors_bounded (m n v : ℕ) (h_le : m ≤ n) (h_bound : is_bound n v) : 
-    ∀ x ∈ ((Finset.range m).filter (fun i => vanEckNthTerm (i + 1) = 0)).image vanEckNthTerm, x ≤ v := by
+    ∀ x ∈ ((Finset.range m).filter (fun i => vanEckNthTerm (i + 1) = 0)).image vanEckNthTerm, x ≤ v := by {
   intro x hx
   have h_mem := Finset.mem_image.mp hx
   rcases h_mem with ⟨i, hi, heq⟩
@@ -121,10 +127,12 @@ lemma zero_predecessors_bounded (m n v : ℕ) (h_le : m ≤ n) (h_bound : is_bou
   rw [← heq]
   exact h_bound i h_i_le_n
 
+}
+
 /-- 
 A basic Finset principle: A set of natural numbers bounded by v has size at most v + 1.
 -/
-lemma subset_range_card (S : Finset ℕ) (v : ℕ) (h_bound : ∀ x ∈ S, x ≤ v) : S.card ≤ v + 1 := by
+lemma subset_range_card (S : Finset ℕ) (v : ℕ) (h_bound : ∀ x ∈ S, x ≤ v) : S.card ≤ v + 1 := by {
   have h_sub : S ⊆ Finset.range (v + 1) := by
     intro x hx
     have hx_le := h_bound x hx
@@ -134,6 +142,8 @@ lemma subset_range_card (S : Finset ℕ) (v : ℕ) (h_bound : ∀ x ∈ S, x ≤
   rw [h_range_card] at h_card
   exact h_card
 
+}
+
 /-- 
 Lemma 1: The number of zeros is bounded by v + 2.
 Proof Idea: Each zero (after the first) corresponds to a new, distinct number 
@@ -141,7 +151,7 @@ in the sequence. Since all numbers are ≤ v, there are at most v + 1 such numbe
 Hence zerosCount m ≤ v + 2.
 -/
 lemma zerosCount_le_bound (m n v : ℕ) (h_le : m ≤ n) (h_bound : is_bound n v) :
-    zerosCount m ≤ v + 2 := by
+    zerosCount m ≤ v + 2 := by {
   -- We establish the structural equivalence of our zeros count to the filter cardinality.
   have h_count := zerosCount_eq_card m
   -- We establish the cardinality of the mapped image set exactly matches the filter.
@@ -159,8 +169,10 @@ lemma zerosCount_le_bound (m n v : ℕ) (h_le : m ≤ n) (h_bound : is_bound n v
   -- We close the bound natively.
   exact h_add
 
+}
+
 lemma matchSearch_zero_eq_dist (m : ℕ) (hz : vanEckNthTerm (m + 1) = 0) :
-    ∀ n ≤ m + 1, matchSearch (vanEck (m + 1)) n = if n = 0 then 0 else m + 1 - lastZero (n - 1) := by
+    ∀ n ≤ m + 1, matchSearch (vanEck (m + 1)) n = if n = 0 then 0 else m + 1 - lastZero (n - 1) := by {
   intro n
   induction n with
   | zero =>
@@ -227,11 +239,13 @@ lemma matchSearch_zero_eq_dist (m : ℕ) (hz : vanEckNthTerm (m + 1) = 0) :
         exact ih_eval
       exact ih_simp
 
+}
+
 /-- 
 The element directly following a zero represents the distance to the previous zero natively.
 -/
 lemma vanEck_distance_to_prev_zero (m : ℕ) (hz : vanEckNthTerm (m + 1) = 0) :
-    vanEckNthTerm (m + 2) = m + 1 - lastZero m := by
+    vanEckNthTerm (m + 2) = m + 1 - lastZero m := by {
   have hm := vanEck_term_is_matchSearch (m + 2) (Nat.zero_lt_succ (m + 1))
   have h_sub : m + 2 - 1 = m + 1 := rfl
   rw [h_sub] at hm
@@ -244,10 +258,12 @@ lemma vanEck_distance_to_prev_zero (m : ℕ) (hz : vanEckNthTerm (m + 1) = 0) :
   exact h_eval
 
 
+}
+
 /-- 
 Every sequence fundamentally starts with at least one zero at the index 0.
 -/
-lemma zerosCount_pos (m : ℕ) : zerosCount m ≥ 1 := by
+lemma zerosCount_pos (m : ℕ) : zerosCount m ≥ 1 := by {
   -- We proceed by structural induction on m.
   induction m with
   | zero =>
@@ -263,13 +279,15 @@ lemma zerosCount_pos (m : ℕ) : zerosCount m ≥ 1 := by
     · -- The count remains structurally identical.
       exact ih
 
+}
+
 /-- 
 Lemma 2: The index of the last zero is bounded by (zerosCount m - 1) * v.
 Proof Idea: The distance between any two consecutive zeros is a term in the sequence, 
 which is bounded by v. Summing these gaps telescopes to the last zero index.
 -/
 lemma lastZero_le_gaps (m v : ℕ) (h_bound : ∀ i ≤ m + 1, vanEckNthTerm i ≤ v) :
-    lastZero m ≤ (zerosCount m - 1) * v := by
+    lastZero m ≤ (zerosCount m - 1) * v := by {
   -- We proceed by mathematical induction on the upper bound m.
   induction m with
   | zero =>
@@ -339,7 +357,9 @@ lemma lastZero_le_gaps (m v : ℕ) (h_bound : ∀ i ≤ m + 1, vanEckNthTerm i �
       -- We close the branch perfectly with our inductive hypothesis.
       exact ih h_bound_m
 
-lemma listMax_mem {L : List ℕ} (h : L ≠ []) : listMax L ∈ L := by
+}
+
+lemma listMax_mem {L : List ℕ} (h : L ≠ []) : listMax L ∈ L := by {
   induction L with
   | nil => contradiction
   | cons x xs ih =>
@@ -359,7 +379,9 @@ lemma listMax_mem {L : List ℕ} (h : L ≠ []) : listMax L ∈ L := by
         rw [h2]
         exact List.Mem.tail _ (ih hxs)
 
-lemma vanEckPrefixMax_mem (n : ℕ) : ∃ m ≤ n, vanEckNthTerm m = vanEckPrefixMax n := by
+}
+
+lemma vanEckPrefixMax_mem (n : ℕ) : ∃ m ≤ n, vanEckNthTerm m = vanEckPrefixMax n := by {
   have h_len : (vanEck n).length = n + 1 := vanEckLength n
   have h_not_nil : vanEck n ≠ [] := by
     intro hc
@@ -381,13 +403,15 @@ lemma vanEckPrefixMax_mem (n : ℕ) : ∃ m ≤ n, vanEckNthTerm m = vanEckPrefi
     rw [← h_term]
     exact hk_eq.symm
 
+}
+
 /-- 
 For any n where a(n) = 0, there exists a term a(m) (with m ≤ n + 1)
 that is at least roughly sqrt(n). We express this purely in ℕ as m^2 bounds.
 -/
 theorem vanEck_limsup_bound (n : ℕ) (hn : vanEckNthTerm n = 0) (hn_pos : n > 0) :
     ∃ m ≤ n + 1, (vanEckNthTerm m * vanEckNthTerm m + 2 * vanEckNthTerm m + 1 ≥ n) ∧ 
-                 (vanEckNthTerm m * vanEckNthTerm m + 2 * vanEckNthTerm m + 1 ≥ m) := by
+                 (vanEckNthTerm m * vanEckNthTerm m + 2 * vanEckNthTerm m + 1 ≥ m) := by {
   let v := vanEckPrefixMax (n + 1)
   have h_bound_all : ∀ i ≤ n + 1, vanEckNthTerm i ≤ v := fun i hi => vanEckNthTerm_le_prefixMax (n + 1) i hi
   have h_zc : zerosCount n ≤ v + 2 := zerosCount_le_bound n (n+1) v (Nat.le_succ n) h_bound_all
@@ -421,9 +445,11 @@ theorem vanEck_limsup_bound (n : ℕ) (hn : vanEckNthTerm n = 0) (hn_pos : n > 0
       have h_calc : m ≤ v * v + 2 * v + 1 := by nlinarith
       exact h_calc
 
+}
+
 /-- The main theorem concluding limsup a(n)/sqrt(n) >= 1. -/
 theorem vanEck_limsup_ge_sqrt :
-    ∀ N, ∃ m ≥ N, vanEckNthTerm m * vanEckNthTerm m + 2 * vanEckNthTerm m + 1 ≥ m := by
+    ∀ N, ∃ m ≥ N, vanEckNthTerm m * vanEckNthTerm m + 2 * vanEckNthTerm m + 1 ≥ m := by {
   -- We introduce our arbitrary lower bound N for the index m.
   intro N
   -- We calculate the square-like expansion for our search boundary.
@@ -454,4 +480,4 @@ theorem vanEck_limsup_ge_sqrt :
   · -- We prove the sequence element squared bounds m natively.
     -- We bind the upper limit algebraically against n natively.
     exact hm_ineq_m
-
+}
