@@ -16,3 +16,4 @@ rev = "v4.29.1"
 
 [[lean_lib]]
 name = "VanEck"
+roots = ["VanEck", "ImpossiblePatterns", "LimSup", "SurjectivityLemmas", "FinishedSurjLemmas", "InfiniteTwos"]
