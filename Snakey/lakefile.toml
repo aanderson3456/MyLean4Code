@@ -1,0 +1,10 @@
+name = "Snakey"
+version = "0.1.0"
+defaultTargets = ["snakey"]
+
+[[lean_lib]]
+name = "Snakey"
+
+[[lean_exe]]
+name = "snakey"
+root = "Main"
