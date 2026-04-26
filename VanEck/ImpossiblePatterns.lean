@@ -253,3 +253,85 @@ theorem vanEck_idx_sub_succ_sub_val_unique (i j : ℕ)
       have h_unique := vanEck_idx_sub_val_unique kj ki hkj_pos hk_gt
       exact h_unique hk_eq.symm
 }
+
+/--
+Theorem: If two consecutive elements are equal, the next element must be 1.
+-/
+theorem vanEck_consecutive_eq_implies_next_one (i : ℕ) (h : vanEckNthTerm i = vanEckNthTerm (i + 1)) :
+    vanEckNthTerm (i + 2) = 1 := by {
+  have hm := vanEck_term_is_matchSearch (i + 2) (Nat.zero_lt_succ _)
+  have hsub : i + 2 - 1 = i + 1 := rfl
+  rw [hsub] at hm
+  rw [hm]
+  
+  have hlen : (vanEck (i + 1)).length = i + 2 := vanEckLength (i + 1)
+  have hlen1 : (vanEck (i + 1)).length - 1 = i + 1 := by rw [hlen]; rfl
+  
+  have hd1 : listNth (vanEck (i + 1)) (i + 1) = vanEckNthTerm (i + 1) := by
+    exact VanEck_deterministic (i + 1) (i + 1) (Nat.le_refl _)
+    
+  have hd0 : listNth (vanEck (i + 1)) i = vanEckNthTerm i := by
+    exact VanEck_deterministic (i + 1) i (Nat.le_succ _)
+    
+  have hpos : listNth (vanEck (i + 1)) ((vanEck (i + 1)).length - 1) = listNth (vanEck (i + 1)) i := by
+    rw [hlen1, hd1, hd0]
+    exact h.symm
+    
+  have h_ms := ms_succ_ifpos (vanEck (i + 1)) i hpos
+  rw [hlen1] at h_ms
+  have h_sub_1 : i + 1 - i = 1 := Nat.add_sub_cancel_left i 1
+  rw [h_sub_1] at h_ms
+  exact h_ms
+}
+
+lemma vanEck_consecutive_ones_implies_prev_one (i : ℕ) (hi : i ≥ 1) (h : vanEckNthTerm i = 1 ∧ vanEckNthTerm (i + 1) = 1) :
+    vanEckNthTerm (i - 1) = 1 := by {
+  have hd : vanEckNthTerm i = vanEckNthTerm (i - vanEckNthTerm (i + 1)) := by
+    exact gap_determines_value i (Nat.le_refl _) (vanEckNthTerm (i + 1)) hi rfl (by rw [h.2]; decide)
+  rw [h.2] at hd
+  have heq : vanEckNthTerm i = vanEckNthTerm (i - 1) := hd
+  rw [h.1] at heq
+  exact heq.symm
+}
+
+/--
+Theorem: The sequence never contains two consecutive 1s.
+-/
+theorem vanEck_no_consecutive_ones (i : ℕ) : ¬(vanEckNthTerm i = 1 ∧ vanEckNthTerm (i + 1) = 1) := by {
+  induction i with
+  | zero => 
+    intro h
+    have h0 : vanEckNthTerm 0 = 0 := vanEck_head_eq_zero 0
+    have h1 : 0 = 1 := by calc 0 = vanEckNthTerm 0 := h0.symm
+                            _ = 1 := h.1
+    contradiction
+  | succ i ih =>
+    intro h
+    have h_prev : vanEckNthTerm i = 1 := by
+      have h1 : i + 1 ≥ 1 := Nat.le_add_left 1 i
+      have h_prev_1 := vanEck_consecutive_ones_implies_prev_one (i + 1) h1 h
+      have hsub : i + 1 - 1 = i := rfl
+      rw [hsub] at h_prev_1
+      exact h_prev_1
+    have h_conj : vanEckNthTerm i = 1 ∧ vanEckNthTerm (i + 1) = 1 := ⟨h_prev, h.1⟩
+    exact ih h_conj
+}
+
+/--
+Theorem: The sequence never contains three consecutive identical values (no triples).
+-/
+theorem vanEck_triple_impossible (i x : ℕ) :
+    ¬(vanEckNthTerm i = x ∧ vanEckNthTerm (i + 1) = x ∧ vanEckNthTerm (i + 2) = x) := by {
+  intro h
+  rcases h with ⟨h1, h2, h3⟩
+  have heq : vanEckNthTerm i = vanEckNthTerm (i + 1) := by rw [h1, h2]
+  have hnext := vanEck_consecutive_eq_implies_next_one i heq
+  have h_x_eq_1 : x = 1 := by
+    calc x = vanEckNthTerm (i + 2) := h3.symm
+         _ = 1 := hnext
+  have h_ones : vanEckNthTerm (i + 1) = 1 ∧ vanEckNthTerm (i + 2) = 1 := by
+    constructor
+    · rw [h2, h_x_eq_1]
+    · exact hnext
+  exact vanEck_no_consecutive_ones (i + 1) h_ones
+}
