@@ -18,6 +18,24 @@ def parity : Nat → Parity
   | 1 => Parity.odd
   | n + 2 => parity n
 
+def flip_parity : Parity → Parity
+  | Parity.even => Parity.odd
+  | Parity.odd => Parity.even
+
+def parity_succ (n : Nat) : parity (n + 1) = flip_parity (parity n) :=
+  match n with
+  | 0 => rfl
+  | 1 => rfl
+  | n + 2 => parity_succ n
+
+theorem parity_succ_even (n : Nat) (h : parity n = Parity.even) : parity (n + 1) = Parity.odd := by
+  rw [parity_succ n, h]
+  rfl
+
+theorem parity_succ_odd (n : Nat) (h : parity n = Parity.odd) : parity (n + 1) = Parity.even := by
+  rw [parity_succ n, h]
+  rfl
+
 /--
 The "Brickwork" Paving Strategy.
 Human intuition: Breaker visualizes the grid covered in 1x2 dominoes 
@@ -42,10 +60,52 @@ theorem boxy_is_paving_loser (x y : Nat) :
   ∃ p2 ∈ translate_shape Tetromino_O (x, y),
   is_brickwork_pair p1 p2 :=
 by {
-  -- The mathematical bounds are perfectly isolated here.
-  -- We leave the exhaustive parity branching structural proof as a sorry 
-  -- for now to keep the compilation clean, but the logic holds!
-  sorry
+  have hx : parity x = Parity.even ∨ parity x = Parity.odd := by { cases parity x <;> simp }
+  have hy : parity y = Parity.even ∨ parity y = Parity.odd := by { cases parity y <;> simp }
+  
+  cases hx with
+  | inl hxe =>
+    cases hy with
+    | inl hye =>
+      exists (x, y)
+      constructor
+      · simp [translate_shape, Tetromino_O, translate_point, List.map, Point.x, Point.y]
+      · exists (x + 1, y)
+        constructor
+        · simp [translate_shape, Tetromino_O, translate_point, List.map, Point.x, Point.y]
+        · dsimp [is_brickwork_pair, Point.x, Point.y]
+          simp [hxe, hye]
+    | inr hyo =>
+      exists (x, y + 1)
+      constructor
+      · simp [translate_shape, Tetromino_O, translate_point, List.map, Point.x, Point.y]
+      · exists (x + 1, y + 1)
+        constructor
+        · simp [translate_shape, Tetromino_O, translate_point, List.map, Point.x, Point.y]
+        · dsimp [is_brickwork_pair, Point.x, Point.y]
+          have h1 := parity_succ_odd y hyo
+          simp [h1, hxe]
+  | inr hxo =>
+    cases hy with
+    | inl hye =>
+      exists (x, y + 1)
+      constructor
+      · simp [translate_shape, Tetromino_O, translate_point, List.map, Point.x, Point.y]
+      · exists (x + 1, y + 1)
+        constructor
+        · simp [translate_shape, Tetromino_O, translate_point, List.map, Point.x, Point.y]
+        · dsimp [is_brickwork_pair, Point.x, Point.y]
+          have h1 := parity_succ_even y hye
+          simp [h1, hxo]
+    | inr hyo =>
+      exists (x, y)
+      constructor
+      · simp [translate_shape, Tetromino_O, translate_point, List.map, Point.x, Point.y]
+      · exists (x + 1, y)
+        constructor
+        · simp [translate_shape, Tetromino_O, translate_point, List.map, Point.x, Point.y]
+        · dsimp [is_brickwork_pair, Point.x, Point.y]
+          simp [hxo, hyo]
 }
 
 -- ==========================================

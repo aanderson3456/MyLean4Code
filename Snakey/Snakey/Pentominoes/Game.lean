@@ -25,7 +25,7 @@ Translates a single point by adding the coordinates of an offset point.
 Human intuition: Shifting a square right and up across our grid without rotating it.
 -/
 def translate_point (p : Point) (offset : Point) : Point :=
-  (p.x + offset.x, p.y + offset.y)
+  (offset.x + p.x, offset.y + p.y)
 
 /--
 Translates an entire shape by a given offset.
