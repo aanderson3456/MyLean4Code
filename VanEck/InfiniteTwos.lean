@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Austin Anderson
+SPDX-License-Identifier: MIT
+
+Note: Gemini was used for both intuition and especially detailed entry in formalizing this proof.
+-/
 import Mathlib
 import VanEck
 import LimSup
@@ -644,12 +650,399 @@ If a dense block is periodic and evaluates its own positive bounded gaps
 without any occurrences of 2, the graph structure of the sequence
 cycles breaks and mathematically evaluates to False.
 -/
+lemma matchSearch_upper_bound_of_match (L : List ℕ) (n : ℕ) (start : ℕ) 
+  (h_match : listNth L (L.length - 1) = listNth L start)
+  (h_start_lt : start < n) :
+  matchSearch L n ≤ L.length - 1 - start := by {
+  induction n with
+  | zero => contradiction
+  | succ n ih =>
+    by_cases h : listNth L (L.length - 1) = listNth L n
+    · rw [matchSearch_ite_tt L n h]
+      have h1 : start ≤ n := Nat.le_of_lt_succ h_start_lt
+      exact Nat.sub_le_sub_left h1 (L.length - 1)
+    · rw [matchSearch_ite_ff L n h]
+      have h1 : start < n := Nat.lt_of_le_of_ne (Nat.le_of_lt_succ h_start_lt) (by 
+        intro heq
+        rw [heq] at h_match
+        exact h h_match
+      )
+      exact ih h1
+}
+
+lemma mod_eq_cases (A B P : ℕ) (hA : A < 2 * P) (hB : B < 2 * P) (hc : A % P = B % P) :
+    A = B ∨ A + P = B ∨ B + P = A := by {
+  have h2P : 2 * P = P + P := Nat.two_mul P
+  rw [h2P] at hA hB
+  by_cases hA_lt : A < P
+  · have hA_mod : A % P = A := Nat.mod_eq_of_lt hA_lt
+    by_cases hB_lt : B < P
+    · have hB_mod : B % P = B := Nat.mod_eq_of_lt hB_lt
+      rw [hA_mod, hB_mod] at hc
+      left; exact hc
+    · push Not at hB_lt
+      have h1 : B - P < P := Nat.sub_lt_left_of_lt_add hB_lt hB
+      have hB_mod : B % P = B - P := by {
+        have hB_add : B = B - P + P := (Nat.sub_add_cancel hB_lt).symm
+        nth_rw 1 [hB_add]
+        have h_add := Nat.add_mod_right (B - P) P
+        rw [Nat.mod_eq_of_lt h1] at h_add
+        exact h_add
+      }
+      rw [hA_mod, hB_mod] at hc
+      right; left
+      have h_eq : A = B - P := hc
+      rw [h_eq]
+      exact Nat.sub_add_cancel hB_lt
+  · push Not at hA_lt
+    have h1 : A - P < P := Nat.sub_lt_left_of_lt_add hA_lt hA
+    have hA_mod : A % P = A - P := by {
+      have hA_add : A = A - P + P := (Nat.sub_add_cancel hA_lt).symm
+      nth_rw 1 [hA_add]
+      have h_add := Nat.add_mod_right (A - P) P
+      rw [Nat.mod_eq_of_lt h1] at h_add
+      exact h_add
+    }
+    by_cases hB_lt : B < P
+    · have hB_mod : B % P = B := Nat.mod_eq_of_lt hB_lt
+      rw [hA_mod, hB_mod] at hc
+      right; right
+      have h_eq : A - P = B := hc
+      rw [← h_eq]
+      exact Nat.sub_add_cancel hA_lt
+    · push Not at hB_lt
+      have h2 : B - P < P := Nat.sub_lt_left_of_lt_add hB_lt hB
+      have hB_mod : B % P = B - P := by {
+        have hB_add : B = B - P + P := (Nat.sub_add_cancel hB_lt).symm
+        nth_rw 1 [hB_add]
+        have h_add := Nat.add_mod_right (B - P) P
+        rw [Nat.mod_eq_of_lt h2] at h_add
+        exact h_add
+      }
+      rw [hA_mod, hB_mod] at hc
+      left
+      have h_eq : A - P = B - P := hc
+      have hA_ge : P ≤ A := hA_lt
+      have hB_ge : P ≤ B := hB_lt
+      calc A = A - P + P := (Nat.sub_add_cancel hA_ge).symm
+           _ = B - P + P := by rw [h_eq]
+           _ = B := Nat.sub_add_cancel hB_ge
+}
+
 lemma finite_cycle_gap_collapse (n_1 n_2 K : ℕ)
     (hn1_lt_n2 : n_1 < n_2)
     (h_K_large : K ≥ n_2 - n_1 + 3)
     (h_no_zero : ∀ k, 1 ≤ k → k ≤ K → vanEckNthTerm (n_2 + k) ≠ 0)
     (h_no_twos : ∀ m > n_1, vanEckNthTerm m ≠ 2)
     (h_per : ∀ k ≤ K, vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_2 + k)) : False := by {
+  -- The user requested we attempt induction on K or n_2 and write the edge-sum deductions,
+  -- summarizing where we get stuck.
+  let P := n_2 - n_1
+  have h_P_pos : P ≥ 1 := Nat.sub_pos_of_lt hn1_lt_n2
+  
+  -- We proceed by induction on the evaluation length K.
+  -- To capture the sum of edges, we would define a Finset sum over the period.
+  -- Since we need to prove False, we can extract the local properties first.
+  
+  -- 1. Bound the values: every gap is bounded by P.
+  have h_val_le_P : ∀ k, 1 ≤ k → k ≤ K → vanEckNthTerm (n_2 + k) ≤ P := by {
+    intro k hk1 hkK
+    have h_gap := vanEck_term_is_matchSearch (n_2 + k) (Nat.le_trans hk1 (Nat.le_add_left k n_2))
+    rw [h_gap]
+    
+    have h_match : listNth (vanEck (n_2 + k - 1)) ((vanEck (n_2 + k - 1)).length - 1) = 
+                   listNth (vanEck (n_2 + k - 1)) (n_1 + k - 1) := by {
+      have hl : (vanEck (n_2 + k - 1)).length = n_2 + k := by {
+        have hlen := vanEckLength (n_2 + k - 1)
+        have h_sub_add : n_2 + k - 1 + 1 = n_2 + k := Nat.sub_add_cancel (Nat.le_trans hk1 (Nat.le_add_left k n_2))
+        rw [h_sub_add] at hlen
+        exact hlen
+      }
+      have hl_sub_1 : (vanEck (n_2 + k - 1)).length - 1 = n_2 + k - 1 := by rw [hl]
+      rw [hl_sub_1]
+      have h_left : listNth (vanEck (n_2 + k - 1)) (n_2 + k - 1) = vanEckNthTerm (n_2 + k - 1) := rfl
+      have h_right : listNth (vanEck (n_2 + k - 1)) (n_1 + k - 1) = vanEckNthTerm (n_1 + k - 1) := by {
+        apply VanEck_deterministic (n_2 + k - 1) (n_1 + k - 1)
+        have h1 : n_1 + k ≤ n_2 + k := Nat.add_le_add_right (Nat.le_of_lt hn1_lt_n2) k
+        exact Nat.sub_le_sub_right h1 1
+      }
+      rw [h_left, h_right]
+      have h_k_sub : k - 1 ≤ K := Nat.le_trans (Nat.sub_le k 1) hkK
+      have hs1 : n_2 + k - 1 = n_2 + (k - 1) := Nat.add_sub_assoc hk1 n_2
+      have hs2 : n_1 + k - 1 = n_1 + (k - 1) := Nat.add_sub_assoc hk1 n_1
+      rw [hs1, hs2]
+      exact (h_per (k - 1) h_k_sub).symm
+    }
+    
+    have h_start_lt : n_1 + k - 1 < n_2 + k - 1 := by {
+      have hs1 : n_1 + k - 1 = n_1 + (k - 1) := Nat.add_sub_assoc hk1 n_1
+      have hs2 : n_2 + k - 1 = n_2 + (k - 1) := Nat.add_sub_assoc hk1 n_2
+      rw [hs1, hs2]
+      exact Nat.add_lt_add_right hn1_lt_n2 (k - 1)
+    }
+    
+    have h_bound := matchSearch_upper_bound_of_match (vanEck (n_2 + k - 1)) (n_2 + k - 1) (n_1 + k - 1) h_match h_start_lt
+    
+    have hl : (vanEck (n_2 + k - 1)).length = n_2 + k := by {
+      have hlen := vanEckLength (n_2 + k - 1)
+      have h_sub_add : n_2 + k - 1 + 1 = n_2 + k := Nat.sub_add_cancel (Nat.le_trans hk1 (Nat.le_add_left k n_2))
+      rw [h_sub_add] at hlen
+      exact hlen
+    }
+    have hl_sub_1 : (vanEck (n_2 + k - 1)).length - 1 = n_2 + k - 1 := by rw [hl]
+    rw [hl_sub_1] at h_bound
+    
+    have h_sub : n_2 + k - 1 - (n_1 + k - 1) = P := by {
+      have hs1 : n_2 + k - 1 = n_2 + (k - 1) := Nat.add_sub_assoc hk1 n_2
+      have hs2 : n_1 + k - 1 = n_1 + (k - 1) := Nat.add_sub_assoc hk1 n_1
+      rw [hs1, hs2]
+      have hs3 : n_2 + (k - 1) - (n_1 + (k - 1)) = n_2 - n_1 := Nat.add_sub_add_right n_2 (k - 1) n_1
+      rw [hs3]
+    }
+    rw [h_sub] at h_bound
+    exact h_bound
+  }
+  
+  -- 2. No alternating pairs implies gaps cannot be 2.
+  -- 3. We construct the graph map f(k) = k - v(n_2+k).
+  
+  -- To get past Stuck point 1, we must formalize the Graph Permutation.
+  -- We define f(k) = (k - v(n_2+k)) % P for k ∈ {1..P}.
+  -- Stuck subpoint 1a: f(k) is well-defined and bounded, already proven above as h_val_le_P!
+  
+  -- Stuck subpoint 1b: Proving f(k) is injective modulo P.
+  have f_inj : ∀ i j, 1 ≤ i → i ≤ P → 1 ≤ j → j ≤ P → i < j →
+      (i + P - vanEckNthTerm (n_2 + i)) % P ≠ (j + P - vanEckNthTerm (n_2 + j)) % P := by {
+    intro i j hi1 hiP hj1 hjP hij hc
+    
+    have h_P_le_K : P ≤ K := by
+      calc P ≤ P + 3 := Nat.le_add_right P 3
+           _ = n_2 - n_1 + 3 := rfl
+           _ ≤ K := h_K_large
+    have hiK : i ≤ K := Nat.le_trans hiP h_P_le_K
+    have hjK : j ≤ K := Nat.le_trans hjP h_P_le_K
+    
+    have h_vi_le := h_val_le_P i hi1 hiK
+    have h_vj_le := h_val_le_P j hj1 hjK
+    have h_vi_pos : vanEckNthTerm (n_2 + i) > 0 := Nat.pos_of_ne_zero (h_no_zero i hi1 hiK)
+    have h_vj_pos : vanEckNthTerm (n_2 + j) > 0 := Nat.pos_of_ne_zero (h_no_zero j hj1 hjK)
+    
+    let A := i + P - vanEckNthTerm (n_2 + i)
+    let B := j + P - vanEckNthTerm (n_2 + j)
+    
+    have hA_lt : A < 2 * P := by {
+      change i + P - vanEckNthTerm (n_2 + i) < 2 * P
+      have h_iP_le : i + P ≤ 2 * P := by 
+        have h2 : 2 * P = P + P := Nat.two_mul P
+        rw [h2]
+        exact Nat.add_le_add_right hiP P
+      have h_sub_lt : i + P - vanEckNthTerm (n_2 + i) < i + P := Nat.sub_lt (by
+        calc 0 < i := hi1
+             _ ≤ i + P := Nat.le_add_right i P
+      ) h_vi_pos
+      exact Nat.lt_of_lt_of_le h_sub_lt h_iP_le
+    }
+    have hB_lt : B < 2 * P := by {
+      change j + P - vanEckNthTerm (n_2 + j) < 2 * P
+      have h_jP_le : j + P ≤ 2 * P := by 
+        have h2 : 2 * P = P + P := Nat.two_mul P
+        rw [h2]
+        exact Nat.add_le_add_right hjP P
+      have h_sub_lt : j + P - vanEckNthTerm (n_2 + j) < j + P := Nat.sub_lt (by
+        calc 0 < j := hj1
+             _ ≤ j + P := Nat.le_add_right j P
+      ) h_vj_pos
+      exact Nat.lt_of_lt_of_le h_sub_lt h_jP_le
+    }
+    
+    have h_cases := mod_eq_cases A B P hA_lt hB_lt hc
+    
+    rcases h_cases with h1 | h2 | h3
+    · -- Case m = 0: n_2+i - v(n_2+i) = n_2+j - v(n_2+j). 
+      --   This directly contradicts `vanEck_idx_sub_val_unique`!
+      have heq : n_2 + i - vanEckNthTerm (n_2 + i) = n_2 + j - vanEckNthTerm (n_2 + j) := by {
+        change i + P - vanEckNthTerm (n_2 + i) = j + P - vanEckNthTerm (n_2 + j) at h1
+        have hn1_le : n_1 ≤ n_2 := Nat.le_of_lt hn1_lt_n2
+        have h_n2_i : n_2 + i = i + P + n_1 := by
+          calc n_2 + i = i + n_2 := Nat.add_comm n_2 i
+               _ = i + (P + n_1) := by 
+                 have h_P : P = n_2 - n_1 := rfl
+                 rw [h_P, Nat.sub_add_cancel hn1_le]
+               _ = i + P + n_1 := (Nat.add_assoc i P n_1).symm
+        have h_n2_j : n_2 + j = j + P + n_1 := by
+          calc n_2 + j = j + n_2 := Nat.add_comm n_2 j
+               _ = j + (P + n_1) := by
+                 have h_P : P = n_2 - n_1 := rfl
+                 rw [h_P, Nat.sub_add_cancel hn1_le]
+               _ = j + P + n_1 := (Nat.add_assoc j P n_1).symm
+        have h_vi_le_add : vanEckNthTerm (n_2 + i) ≤ i + P := Nat.le_trans h_vi_le (Nat.le_add_left P i)
+        have h_vj_le_add : vanEckNthTerm (n_2 + j) ≤ j + P := Nat.le_trans h_vj_le (Nat.le_add_left P j)
+        have h_i_sub_add : i + P - vanEckNthTerm (n_2 + i) + n_1 = i + P + n_1 - vanEckNthTerm (n_2 + i) := (Nat.sub_add_comm h_vi_le_add).symm
+        have h_j_sub_add : j + P - vanEckNthTerm (n_2 + j) + n_1 = j + P + n_1 - vanEckNthTerm (n_2 + j) := (Nat.sub_add_comm h_vj_le_add).symm
+        have h_eq1 : i + P - vanEckNthTerm (n_2 + i) + n_1 = j + P - vanEckNthTerm (n_2 + j) + n_1 := congrArg (· + n_1) h1
+        rw [h_i_sub_add, h_j_sub_add] at h_eq1
+        rw [← h_n2_i, ← h_n2_j] at h_eq1
+        exact h_eq1
+      }
+      have h_unique_lt : n_2 + i < n_2 + j := Nat.add_lt_add_left hij n_2
+      have h_unique := vanEck_idx_sub_val_unique (n_2 + i) (n_2 + j) h_vi_pos h_unique_lt
+      exact h_unique heq
+    · -- Case m = 1: i - v(n_2+i) = j - v(n_2+j) + P.
+      --   Then n_2+i - v(n_2+i) = n_2+j - P - v(n_2+j) = n_1+j - v(n_1+j) (since v(n_2+j) = v(n_1+j)).
+      --   This means `idx - v(idx)` is the same for `idx1 = n_2+i` and `idx2 = n_1+j`.
+      --   Since i < j ≤ P, n_2+i ≠ n_1+j. This contradicts `vanEck_idx_sub_val_unique`!
+      have heq : n_2 + i - vanEckNthTerm (n_2 + i) = n_1 + j - vanEckNthTerm (n_1 + j) := by {
+        change i + P - vanEckNthTerm (n_2 + i) + P = j + P - vanEckNthTerm (n_2 + j) at h2
+        have h_P : P = n_2 - n_1 := rfl
+        have hn1_le : n_1 ≤ n_2 := Nat.le_of_lt hn1_lt_n2
+        have h_vj_le_add : vanEckNthTerm (n_2 + j) ≤ j := by
+          have h_P_le : P ≤ j + P - vanEckNthTerm (n_2 + j) := by
+            rw [← h2]
+            exact Nat.le_add_left P (i + P - vanEckNthTerm (n_2 + i))
+          have h_add_le := Nat.add_le_add_right h_P_le (vanEckNthTerm (n_2 + j))
+          have h_add_le2 : vanEckNthTerm (n_2 + j) + P ≤ j + P := by
+            calc vanEckNthTerm (n_2 + j) + P = P + vanEckNthTerm (n_2 + j) := Nat.add_comm _ P
+                 _ ≤ j + P - vanEckNthTerm (n_2 + j) + vanEckNthTerm (n_2 + j) := h_add_le
+                 _ = j + P := Nat.sub_add_cancel (Nat.le_trans h_vj_le (Nat.le_add_left P j))
+          exact Nat.le_of_add_le_add_right h_add_le2
+        have h_vj_le_add2 : vanEckNthTerm (n_2 + j) ≤ n_1 + j := Nat.le_trans h_vj_le_add (Nat.le_add_left j n_1)
+        have h_vi_le_add : vanEckNthTerm (n_2 + i) ≤ n_2 + i := Nat.le_trans h_vi_le (by
+          have h_P_le_n2 : P ≤ n_2 := by rw [h_P]; exact Nat.sub_le n_2 n_1
+          exact Nat.le_trans h_P_le_n2 (Nat.le_add_right n_2 i)
+        )
+        
+        apply Nat.add_right_cancel (m := P)
+        have h_left : n_2 + i - vanEckNthTerm (n_2 + i) + P = i + P - vanEckNthTerm (n_2 + i) + n_2 := by
+          have h_sum : n_2 + i + P = i + P + n_2 := by rw [Nat.add_assoc, Nat.add_comm n_2 (i + P)]
+          calc n_2 + i - vanEckNthTerm (n_2 + i) + P = n_2 + i + P - vanEckNthTerm (n_2 + i) := (Nat.sub_add_comm h_vi_le_add).symm
+               _ = i + P + n_2 - vanEckNthTerm (n_2 + i) := by rw [h_sum]
+               _ = i + P - vanEckNthTerm (n_2 + i) + n_2 := Nat.sub_add_comm (Nat.le_trans h_vi_le (Nat.le_add_left P i))
+        have h_right : n_1 + j - vanEckNthTerm (n_1 + j) + P = j + P - vanEckNthTerm (n_2 + j) + n_1 := by
+          have h_vj_eq : vanEckNthTerm (n_1 + j) = vanEckNthTerm (n_2 + j) := h_per j hjK
+          rw [h_vj_eq]
+          have h_sum : n_1 + j + P = j + P + n_1 := by rw [Nat.add_assoc, Nat.add_comm n_1 (j + P)]
+          calc n_1 + j - vanEckNthTerm (n_2 + j) + P = n_1 + j + P - vanEckNthTerm (n_2 + j) := (Nat.sub_add_comm h_vj_le_add2).symm
+               _ = j + P + n_1 - vanEckNthTerm (n_2 + j) := by rw [h_sum]
+               _ = j + P - vanEckNthTerm (n_2 + j) + n_1 := Nat.sub_add_comm (Nat.le_trans h_vj_le (Nat.le_add_left P j))
+        
+        rw [h_left, h_right]
+        have h2_add_n1 : i + P - vanEckNthTerm (n_2 + i) + P + n_1 = j + P - vanEckNthTerm (n_2 + j) + n_1 := congrArg (· + n_1) h2
+        have hP_add_n1 : P + n_1 = n_2 := by rw [h_P, Nat.sub_add_cancel hn1_le]
+        rw [Nat.add_assoc, hP_add_n1] at h2_add_n1
+        exact h2_add_n1
+      }
+      have h_n1j_pos : vanEckNthTerm (n_1 + j) > 0 := by {
+        have h_vj_eq : vanEckNthTerm (n_1 + j) = vanEckNthTerm (n_2 + j) := h_per j hjK
+        rw [h_vj_eq]
+        exact h_vj_pos
+      }
+      have h_lt : n_1 + j < n_2 + i := by
+        calc n_1 + j ≤ n_1 + P := Nat.add_le_add_left hjP n_1
+             _ = n_2 := by 
+               have h_P : P = n_2 - n_1 := rfl
+               have hn1_le : n_1 ≤ n_2 := Nat.le_of_lt hn1_lt_n2
+               rw [h_P, Nat.add_comm, Nat.sub_add_cancel hn1_le]
+             _ < n_2 + i := Nat.lt_add_of_pos_right hi1
+      have h_unique := vanEck_idx_sub_val_unique (n_1 + j) (n_2 + i) h_n1j_pos h_lt
+      exact h_unique heq.symm
+    · -- Case m = -1: i - v(n_2+i) = j - v(n_2+j) - P.
+      --   Since v(n_2+i) ≥ 1, LHS ≤ i - 1. Since v(n_2+j) ≤ P, RHS ≥ j - P + P = j.
+      --   So i - 1 ≥ j, which contradicts i < j!
+      change j + P - vanEckNthTerm (n_2 + j) + P = i + P - vanEckNthTerm (n_2 + i) at h3
+      have h_j_le : j + P ≤ j + P - vanEckNthTerm (n_2 + j) + P := by
+        calc j + P = j + P - vanEckNthTerm (n_2 + j) + vanEckNthTerm (n_2 + j) := (Nat.sub_add_cancel (Nat.le_trans h_vj_le (Nat.le_add_left P j))).symm
+             _ ≤ j + P - vanEckNthTerm (n_2 + j) + P := Nat.add_le_add_left h_vj_le _
+      have h_i_lt : i + P - vanEckNthTerm (n_2 + i) < i + P := Nat.sub_lt (by
+        calc 0 < vanEckNthTerm (n_2 + i) := h_vi_pos
+             _ ≤ P := h_vi_le
+             _ ≤ i + P := Nat.le_add_left P i
+      ) h_vi_pos
+      have h_j_lt_i : j + P < i + P := by
+        calc j + P ≤ j + P - vanEckNthTerm (n_2 + j) + P := h_j_le
+             _ = i + P - vanEckNthTerm (n_2 + i) := h3
+             _ < i + P := h_i_lt
+      have h_j_lt_i2 : j < i := Nat.lt_of_add_lt_add_right h_j_lt_i
+      exact False.elim (Nat.lt_irrefl i (Nat.lt_trans hij h_j_lt_i2))
+  }
+  
+  -- Stuck subpoint 1c: Promoting Injection to Bijection.
+  let f : Fin P → Fin P := fun k => ⟨(k.val + 1 + P - vanEckNthTerm (n_2 + k.val + 1)) % P, Nat.mod_lt _ (Nat.pos_of_ne_zero (by 
+    intro h
+    have h1 : P ≥ 1 := h_P_pos
+    rw [h] at h1
+    exact Nat.not_lt_zero 0 h1
+  ))⟩
+
+  have f_bij : Function.Bijective f := by {
+    have h_inj : Function.Injective f := by {
+      intro i j heq
+      have h1 : 1 ≤ i.val + 1 := Nat.le_add_left 1 i.val
+      have h2 : i.val + 1 ≤ P := i.isLt
+      have h3 : 1 ≤ j.val + 1 := Nat.le_add_left 1 j.val
+      have h4 : j.val + 1 ≤ P := j.isLt
+      by_cases hlt : i.val + 1 < j.val + 1
+      · have hc := f_inj (i.val + 1) (j.val + 1) h1 h2 h3 h4 hlt
+        have heq_val := congr_arg Fin.val heq
+        exact False.elim (hc heq_val)
+      · by_cases hlt2 : j.val + 1 < i.val + 1
+        · have hc := f_inj (j.val + 1) (i.val + 1) h3 h4 h1 h2 hlt2
+          have heq_val := congr_arg Fin.val heq
+          exact False.elim (hc heq_val.symm)
+        · have heq_val : i.val + 1 = j.val + 1 := by 
+            have h_not_lt1 : ¬(i.val + 1 < j.val + 1) := hlt
+            have h_not_lt2 : ¬(j.val + 1 < i.val + 1) := hlt2
+            exact Nat.le_antisymm (Nat.le_of_not_lt h_not_lt2) (Nat.le_of_not_lt h_not_lt1)
+          exact Fin.eq_of_val_eq (Nat.add_right_cancel heq_val)
+    }
+    exact Finite.injective_iff_bijective.mp h_inj
+  }
+
+  
+  -- Stuck point 3: The Numeric Contradiction
+  -- We would then need to prove V * P = \sum v(n_2+k).
+  -- Since we have `h_no_twos` and `h_no_zero`, we know v(n_2+k) ∈ {1} ∪ [3, P].
+  -- The only way the average gap can be an integer V without hitting 2 or 0
+  -- is if V = 1 (meaning all 1s, which creates alternating pairs) or through
+  -- a strictly symmetric permutation of {1, 3} gaps, which contradicts the
+  -- sequence's fundamental injection rules.
+  -- This entire chain requires ~500-1000 lines of `Finset.sum_bij` and `Finset.sum_partition`
+  -- deductions, which Lean 4 struggles with without heavy automation.
+  
+  -- We can evaluate the sum of the bijection over the period:
+  have h_sum_bij : ∑ k : Fin P, (f k).val = ∑ k : Fin P, k.val := by {
+    have heq : ∑ k : Fin P, (f k).val = ∑ k : Fin P, (fun x => x.val) (f k) := rfl
+    rw [heq]
+    exact Equiv.sum_comp (Equiv.ofBijective f f_bij) (fun k => k.val)
+  }
+  
+  sorry
+}
+
+/--
+A mathematically isolated zero-bound evaluation.
+If a dense sequence bound is maintained, 0 cannot occur because it
+forces older unbounded gaps into the block.
+-/
+lemma bounded_dense_block_zero_impossible (B n_1 K : ℕ)
+    (h_bound : ∀ k ≤ K, vanEckNthTerm (n_1 + k) < B + 1)
+    (h_no_twos : ∀ m > n_1, vanEckNthTerm m ≠ 2) :
+    ∀ k ≤ K, vanEckNthTerm (n_1 + k) > 0 := by {
+  intro k hk
+  by_contra h_zero
+  have h_eq_0 : vanEckNthTerm (n_1 + k) = 0 := Nat.eq_zero_of_le_zero (Nat.le_of_not_lt h_zero)
+  
+  -- If v(n_1+k) = 0, then v(n_1+k-1) must be a brand new number that has NEVER appeared before.
+  -- But we know that v(n_1+k-1) < B + 1.
+  -- Since the sequence bounds its values, any number ≤ B can only be "new" a maximum of B+1 times.
+  -- If n_1 is sufficiently large (which it is, generated by DenseSmallNumbers after N),
+  -- all elements ≤ B have already appeared.
+  
+  -- Stuck point: formalizing "maximum index of first occurrences" requires 
+  -- defining a Finset over the first occurrences of 0...B, mapping it to indices, 
+  -- and taking Finset.sup. Then we must show that start > Finset.sup.
+  -- Since `bounded_dense_block_zero_impossible` currently lacks the `start` parameter
+  -- and just assumes it happens locally, it's structurally unprovable without
+  -- threading `start` and the `M` bound all the way down from `dense_collisions_force_twos`.
   sorry
 }
 
@@ -782,6 +1175,7 @@ theorem dense_collisions_force_twos (B : ℕ) (hB_gt : B > 0) :
         have hC : 3 + (n_2 - start) = n_2 - start + 3 := Nat.add_comm _ _
         rw [hA, hB, hC]
       rw [h4] at h3
+
       have h5 : n_2 - start < G_small - 1 := Nat.sub_lt_left_of_lt_add (Nat.le_trans (Nat.le_add_right start (B + 1)) hn1_ge |>.trans (Nat.le_of_lt hn1_lt_n2)) hn2_lt
       have h6 : n_2 - start + 3 < G_small - 1 + 3 := Nat.add_lt_add_right h5 3
       have h7 : G_small - 1 + 3 ≤ G_small + 3 := Nat.add_le_add_right (Nat.sub_le G_small 1) 3
@@ -793,12 +1187,13 @@ theorem dense_collisions_force_twos (B : ℕ) (hB_gt : B > 0) :
     rw [h_k_eq] at h_le
     exact Nat.lt_succ_of_le h_le
 
-  have hd1_pos : ∀ k ≤ K, vanEckNthTerm (n_1 + k) > 0 := by
-    intro k hk
-    by_contra h_zero
-    have h_zero_eq : vanEckNthTerm (n_1 + k) = 0 := Nat.eq_zero_of_le_zero (Nat.le_of_not_lt h_zero)
-    -- If it's zero, we prove finite_twos_implies_old_gaps
-    sorry
+  have hd1_pos : ∀ k ≤ K, vanEckNthTerm (n_1 + k) > 0 := bounded_dense_block_zero_impossible B n_1 K hd1_lt (by
+    intro m hm
+    have h_start_le_n1 : start ≤ n_1 := Nat.le_trans (Nat.le_add_right start (B + 1)) hn1_ge
+    have h_N_lt_n1 : N < n_1 := Nat.lt_of_lt_of_le h_start_gt h_start_le_n1
+    have h_m_gt_N : m > N := Nat.lt_trans h_N_lt_n1 hm
+    exact h_no_twos m h_m_gt_N
+  )
 
   have hn1_ge_B : B + 1 ≤ n_1 := Nat.le_trans (Nat.le_add_left (B + 1) start) hn1_ge
   have hn2_ge_B : B + 1 ≤ n_2 := Nat.le_trans hn1_ge_B (Nat.le_of_lt hn1_lt_n2)
