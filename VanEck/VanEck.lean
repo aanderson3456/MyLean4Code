@@ -445,6 +445,8 @@ def vanEckState (n B : ℕ) : List ℕ :=
 
 #eval (vanEckState 9 4)
 
+#eval vanEckState 10 10
+
 -- We formally verify that the evaluation limit retains its exact dimension `B` natively.
 lemma vanEckState_length (n B : ℕ) (hn : n ≥ B) (hB : B > 0) :
     (vanEckState n B).length = B := by
@@ -780,7 +782,7 @@ lemma continuous_ones_propagate (n : ℕ) (hn : n ≥ 1) (h1 : vanEckNthTerm n =
   exact hk.symm
 
 -- Step 3: Pushing 1s backward completely down to index 0.
-lemma constant_one_tail_backward (n : ℕ) (h_tail : ∀ k ≥ n, vanEckNthTerm k = 1) (m : ℕ) : 
+lemma constant_one_tail_backward (n : ℕ) (h_tail : ∀ k ≥ n, vanEckNthTerm k = 1) (m : ℕ) :
     vanEckNthTerm m = 1 := by
   by_cases hm : m ≥ n
   · exact h_tail m hm
@@ -815,7 +817,7 @@ lemma constant_one_tail_contradiction (n : ℕ) (h_tail : ∀ k ≥ n, vanEckNth
 open Classical in
 lemma max_value_exists (N B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
     ∃ M < B, (∃ k ≥ N, vanEckNthTerm k = M) ∧ ∀ j ≥ N, vanEckNthTerm j ≤ M := by
-  have H : ∀ b, (∀ k ≥ N, vanEckNthTerm k < b) → 
+  have H : ∀ b, (∀ k ≥ N, vanEckNthTerm k < b) →
                  ∃ M < b, (∃ k ≥ N, vanEckNthTerm k = M) ∧ ∀ j ≥ N, vanEckNthTerm j ≤ M := by
     intro b
     induction b with
@@ -853,7 +855,7 @@ lemma max_value_exists (N B : ℕ) (h_bound : ∀ k, vanEckNthTerm k < B) :
 
 -- Chunk 1: Gap Evaluation Equivalence
 -- Formalize that `vanEckNthTerm (k + 1)` exactly matches the gap index natively.
-lemma vanEck_is_gap (k : ℕ) (hk : k ≥ 1) : 
+lemma vanEck_is_gap (k : ℕ) (hk : k ≥ 1) :
     vanEckNthTerm k = matchSearch (vanEck (k - 1)) (k - 1) := vanEck_term_is_matchSearch k hk
 
 lemma matchSearch_is_gap_distance (k : ℕ) (hk : k ≥ 1) (x : ℕ)
@@ -889,7 +891,7 @@ lemma gap_determines_value {n : ℕ} (k : ℕ) (hk : k ≥ n) (x : ℕ) (hn_pos 
   exact ht
 
 -- Window Property: Maximum Distance Equivalence
-lemma max_gap_le_M {n M : ℕ} (h_bound : ∀ k ≥ n, vanEckNthTerm k ≤ M) (k : ℕ) (hk : k ≥ n) : 
+lemma max_gap_le_M {n M : ℕ} (h_bound : ∀ k ≥ n, vanEckNthTerm k ≤ M) (k : ℕ) (hk : k ≥ n) :
     vanEckNthTerm (k + 1) ≤ M := h_bound (k + 1) (Nat.le_trans hk (Nat.le_add_right k 1))
 
 -- Bouncing element density constraints
@@ -967,7 +969,7 @@ lemma sequence_homogeneity_collapse_native (n M P : ℕ)
     (h_bound : ∀ k ≥ n, vanEckNthTerm k ≤ M)
     (h_no_zeros : ∀ k ≥ n, vanEckNthTerm k ≠ 0)
     (hn_pos : n ≥ 1)
-    (hM_exists : ∃ k ≥ n + M + 1, vanEckNthTerm k = M) : 
+    (hM_exists : ∃ k ≥ n + M + 1, vanEckNthTerm k = M) :
     M ≤ 1 := by
   by_cases hM : M ≤ 1
   · exact hM
@@ -1015,9 +1017,9 @@ theorem infinite_zeros_vanEck (N : ℕ) : ∃ m : ℕ, m > N ∧ vanEckNthTerm m
   have hb := bounded_if_tail_eq_nonzero N h1
   rcases hb with ⟨B, hb2⟩
   have h_bound : ∀ k, vanEckNthTerm k < B := hb2
-  
+
   have hb0 : B > 0 := h_bound 0
-    
+
   have h_coll := pigeonhole_state_collision B h_bound
   let n_1 := Classical.choose h_coll
   have h_n1_rest : ∃ n_2, B ≤ n_1 ∧ n_1 < n_2 ∧ vanEckState n_1 B = vanEckState n_2 B := Classical.choose_spec h_coll
@@ -1027,18 +1029,18 @@ theorem infinite_zeros_vanEck (N : ℕ) : ∃ m : ℕ, m > N ∧ vanEckNthTerm m
   have hn_lt := h_n2_rest.2.1
   have h_state_eq := h_n2_rest.2.2
   have hn2 : B ≤ n_2 := Nat.le_trans hn1 (Nat.le_of_lt hn_lt)
-  
+
   let N_1 := n_1 + N + 1
   let N_2 := n_2 + N + 1
   have hn_shift_eq : vanEckState N_1 B = vanEckState N_2 B := (forward_periodicity n_1 n_2 B h_bound h_state_eq hn1 hn2 hb0 (N + 1)).1
-  
+
   have hN1_le : B ≤ N_1 := Nat.le_trans hn1 (Nat.le_trans (Nat.le_add_right n_1 N) (Nat.le_add_right (n_1 + N) 1))
   have hN2_le : B ≤ N_2 := Nat.le_trans hn2 (Nat.le_trans (Nat.le_add_right n_2 N) (Nat.le_add_right (n_2 + N) 1))
   have h_period := forward_periodicity N_1 N_2 B h_bound hn_shift_eq hN1_le hN2_le hb0
-  
+
   have h_max := max_value_exists N_1 B h_bound
   rcases h_max with ⟨M, hM_lt, ⟨k, hk, hkM⟩, h_M_bound⟩
-  
+
   have hP : N_2 - N_1 ≥ 1 := by
     have h1 : n_1 < n_2 := hn_lt
     have h2 : n_1 + N + 1 < n_2 + N + 1 := by
@@ -1074,7 +1076,7 @@ theorem infinite_zeros_vanEck (N : ℕ) : ∃ m : ℕ, m > N ∧ vanEckNthTerm m
     · have h_per_mul : ∀ m, vanEckNthTerm k = vanEckNthTerm (k + m * (N_2 - N_1)) := by
         intro m
         induction m with
-        | zero => 
+        | zero =>
           have h1 : 0 * (N_2 - N_1) = 0 := Nat.zero_mul (N_2 - N_1)
           rw [h1, Nat.add_zero k]
         | succ m ih =>
@@ -1100,5 +1102,5 @@ theorem infinite_zeros_vanEck (N : ℕ) : ∃ m : ℕ, m > N ∧ vanEckNthTerm m
     have hjN : j > N := Nat.lt_of_lt_of_le hN_lt hj
     exact h1 j hjN
   ) hN1_pos
-  
+
   exact constant_one_tail_contradiction N_1 h_ones

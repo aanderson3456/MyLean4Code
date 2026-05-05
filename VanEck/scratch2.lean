@@ -1,19 +1,8 @@
-import VanEck
-import ImpossiblePatterns
+import Mathlib
+import VanEck.VanEck.Basic
 
-lemma matchSearch_neq_zero_of_match (L : List ℕ) (n k : ℕ) (hk : k < n)
-    (h_match : listNth L (L.length - 1) = listNth L k) : matchSearch L n ≠ 0 := by
-  induction n with
-  | zero => exfalso; exact Nat.not_lt_zero k hk
-  | succ n ih =>
-    by_cases h_eq : listNth L (L.length - 1) = listNth L n
-    · rw [matchSearch_ite_tt L n h_eq]
-      intro h0
-      -- L.length - 1 - n = 0 implies L.length - 1 <= n. 
-      -- This depends on L.length > n, which is true.
-      sorry
-    · rw [matchSearch_ite_ff L n h_eq]
-      have hkn : k < n := by
-        have h1 : k ≤ n := Nat.le_of_lt_succ hk
-        exact lt_of_le_of_ne h1 (fun h_k_eq_n => h_eq (by rw [← h_k_eq_n]; exact h_match))
-      exact ih hkn
+lemma test (n_2 start : ℕ) (hh : start ≤ n_2) : n_2 + 3 - start = n_2 - start + 3 := by
+  have hA : n_2 + 3 = 3 + n_2 := Nat.add_comm _ _
+  have hB : 3 + n_2 - start = 3 + (n_2 - start) := Nat.add_sub_assoc hh 3
+  have hC : 3 + (n_2 - start) = n_2 - start + 3 := Nat.add_comm _ _
+  rw [hA, hB, hC]
