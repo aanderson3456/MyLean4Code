@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snakey: Polyomino Achievement Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>SNAKEY</h1>
+        <p class="subtitle">Harary's Polyomino Achievement Game</p>
+        <p class="credits">Inspired by Numberphile & Sophie Germaine (MacLean)</p>
+    </header>
+
+    <main>
+        <div class="sidebar">
+            <div class="controls">
+                <div class="control-group">
+                    <h3>Target Polyomino</h3>
+                    <select id="shape-selector">
+                        <option value="Monomino">Monomino (n=1)</option>
+                        <option value="Domino">Domino (n=2)</option>
+                        <option value="Tromino_I">Straight Tromino (n=3)</option>
+                        <option value="Tromino_L">L-Tromino (n=3)</option>
+                        <option value="Tetromino_I">Straight Tetromino (n=4)</option>
+                        <option value="Tetromino_T">T-Tetromino (n=4)</option>
+                        <option value="Tetromino_L">L-Tetromino (n=4)</option>
+                        <option value="Tetromino_S">S-Tetromino (n=4)</option>
+                        <option value="Tetromino_O">Boxy (n=4, Loser!)</option>
+                        <option value="Pentomino_F" selected>F-Pentomino (n=5)</option>
+                        <option value="Snakey_Hexomino">Snakey Hexomino (n=6, Unsolved)</option>
+                    </select>
+                    <div id="shape-preview" class="shape-preview"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Game Mode</h3>
+                    <select id="game-mode">
+                        <option value="pvp" selected>Player vs Player</option>
+                        <option value="p_vs_ai_random">Player (Maker) vs AI (Random)</option>
+                        <option value="p_vs_ai_optimal">Player (Maker) vs AI (Optimal)</option>
+                        <option value="ai_random_vs_p">AI (Random) vs Player (Breaker)</option>
+                        <option value="ai_optimal_vs_p">AI (Optimal) vs Player (Breaker)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <h3>Game Rules</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.4;">
+                        <strong>Maker</strong> (Blue) tries to build the target shape.<br>
+                        <strong>Breaker</strong> (Red) tries to prevent it.<br>
+                        Turns alternate. Maker goes first.
+                    </p>
+                </div>
+
+                <div class="control-group">
+                    <button id="reset-btn" class="primary">Reset Game</button>
+                    <button id="toggle-paving" style="margin-top: 0.5rem;">Show Paving Strategy</button>
+                </div>
+
+                <div class="status-card">
+                    <div class="status-label">Current Turn</div>
+                    <div id="turn-display" class="status-value turn-maker">Maker</div>
+                </div>
+
+                <div id="win-status" class="status-card" style="display: none; border: 2px solid var(--accent-color);">
+                    <div class="status-label">Result</div>
+                    <div id="winner-name" class="status-value" style="color: var(--accent-color);">MAKER WINS!</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <svg id="grid-svg"></svg>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

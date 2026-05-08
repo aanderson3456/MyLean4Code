@@ -1,3 +1,4 @@
+-- Credit: Numberphile and Sophie Germaine (MacLean)
 import Snakey.Pentominoes.Game
 import Snakey.Pentominoes.Shapes
 

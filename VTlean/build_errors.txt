@@ -1,1 +1,0 @@
-VTlean/DelCode.lean:1:0: error: object file '/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/InsDel.olean' of module VTlean.InsDel does not exist

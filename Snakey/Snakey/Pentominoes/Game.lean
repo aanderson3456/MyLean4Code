@@ -1,3 +1,4 @@
+-- Credit: Numberphile and Sophie Germaine (MacLean)
 import Snakey.Pentominoes.Basic
 
 -- Formalizing Harary's Tic-Tac-Toe (Polyomino Achievement Game)

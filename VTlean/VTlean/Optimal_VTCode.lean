@@ -7,19 +7,25 @@ open Nat Finset B B.Finset
 namespace Finset
 noncomputable def VTCode (n a : Nat) : Finset (List.Vector B n) := sorry
 end Finset
-theorem DelCode_VTCode (n a : Nat) : is_DelCode (Finset.VTCode n a) := by sorry
+theorem DelCode_VTCode (n a : Nat) : is_DelCode (Finset.VTCode n a) := by {
+  sorry
+}
 
 namespace length1
 
 lemma optimal_VTCode_1_0 :
-  is_optimal (Finset.VTCode 1 0) (DelCode_VTCode 1 0) := by sorry
+  is_optimal (Finset.VTCode 1 0) (DelCode_VTCode 1 0) := by {
+  sorry
+}
 
 end length1
 
 namespace length2
 
 lemma optimal_VTCode_2_0 :
-  is_optimal (Finset.VTCode 2 0) (DelCode_VTCode 2 0) := by sorry
+  is_optimal (Finset.VTCode 2 0) (DelCode_VTCode 2 0) := by {
+  sorry
+}
 
 end length2
 
@@ -27,7 +33,9 @@ end length2
 namespace length3
 
 lemma optimal_VTCode_3_0 :
-  is_optimal (Finset.VTCode 3 0) (DelCode_VTCode 3 0) := by sorry
+  is_optimal (Finset.VTCode 3 0) (DelCode_VTCode 3 0) := by {
+  sorry
+}
 
 end length3
 

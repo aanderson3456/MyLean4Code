@@ -1,0 +1,66 @@
+VTlean/VTCode.lean:205:4: warning: 'change 0 = 0 + num_Is (List.drop i [])' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+VTlean/VTCode.lean:422:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:429:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:437:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:442:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:449:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:469:4: warning: declaration uses `sorry`
+VTlean/VTCode.lean:471:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:476:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:481:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:486:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:491:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:496:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:501:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:508:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:516:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:524:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:532:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:542:2: warning: unused variable `x`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+VTlean/VTCode.lean:542:5: warning: unused variable `X`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+VTlean/VTCode.lean:546:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:549:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:555:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:561:4: warning: declaration uses `sorry`
+VTlean/VTCode.lean:563:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:568:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:574:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:580:4: warning: declaration uses `sorry`
+VTlean/VTCode.lean:582:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:588:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:596:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:604:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:615:4: warning: declaration uses `sorry`
+VTlean/VTCode.lean:617:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:622:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:627:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:632:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:637:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:642:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:647:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:653:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:660:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:667:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:674:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:681:4: warning: declaration uses `sorry`
+VTlean/VTCode.lean:683:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:688:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:693:4: warning: declaration uses `sorry`
+VTlean/VTCode.lean:695:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:700:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:705:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:710:4: warning: declaration uses `sorry`
+VTlean/VTCode.lean:712:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:717:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:723:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:730:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:737:8: warning: declaration uses `sorry`
+VTlean/VTCode.lean:746:4: warning: declaration uses `sorry`
+VTlean/VTCode.lean:748:6: warning: declaration uses `sorry`
+VTlean/VTCode.lean:753:8: warning: declaration uses `sorry`
