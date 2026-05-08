@@ -3,17 +3,22 @@ import VanEck
 
 open List
 
-lemma count_pos_of_mem_my {L : List ℕ} {x : ℕ} (h : x ∈ L) : L.count x > 0 := by {
+lemma mem_implies_count_pos {L : List ℕ} {x : ℕ} (h : x ∈ L) : L.count x ≥ 1 := by {
   induction L with
   | nil => cases h
   | cons a as ih =>
     cases h with
-    | head => unfold count countP; rw [if_pos rfl]; exact Nat.zero_lt_succ _
+    | head => 
+      rw [List.count_cons, if_pos rfl]
+      exact Nat.le_add_left 1 _
     | tail _ h_tail => 
-      unfold count countP
+      have ih_res := ih h_tail
+      rw [List.count_cons]
       by_cases ha : a = x
-      · rw [if_pos ha]; exact Nat.zero_lt_succ _
-      · rw [if_neg ha]; exact ih h_tail
+      · rw [if_pos ha]
+        exact Nat.le_add_left 1 _
+      · rw [if_neg ha]
+        exact ih_res
 }
 
 lemma new_number_implies_next_zero (n : ℕ) (h : (vanEck n).count (vanEckNthTerm n) = 1) : 
@@ -39,14 +44,14 @@ lemma new_number_implies_next_zero (n : ℕ) (h : (vanEck n).count (vanEckNthTer
     
     have h_not_mem : vanEckNthTerm (m + 1) ∉ vanEck m := by {
       intro h_mem
-      have h_pos := count_pos_of_mem_my h_mem
+      have h_pos := mem_implies_count_pos h_mem
       omega
     }
     
     have h_rhs : ∀ k < m + 1, vanEckNthTerm k ≠ vanEckNthTerm (m + 1) := by {
       intro k hk h_eq
       have h_mem : vanEckNthTerm k ∈ vanEck m := by {
-        have h_eq2 : vanEckNthTerm k = listNth (vanEck m) k := (VanEck_deterministic m k (Nat.le_of_lt hk)).symm
+        have h_eq2 : vanEckNthTerm k = listNth (vanEck m) k := (VanEck_deterministic m k (Nat.le_of_lt_succ hk)).symm
         rw [h_eq2]
         apply listNth_mem
         rw [vanEckLength]

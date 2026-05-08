@@ -1,33 +1,59 @@
-import Mathlib
-import VanEck.VanEck.Basic
-import VanEck.LimSup
-import VanEck.InfiniteTwos
-import VanEck.ImpossiblePatterns
+import VanEck.Basic
+import VanEck
 
-lemma alternating_pair_implies_two (i : ℕ) (h : vanEckNthTerm i = vanEckNthTerm (i + 2)) :
-    vanEckNthTerm (i + 3) = 2 := by {
-  by_cases h_eq1 : vanEckNthTerm (i + 1) = vanEckNthTerm (i + 2)
-  · have h_trip : vanEckNthTerm i = vanEckNthTerm (i + 2) ∧ vanEckNthTerm (i + 1) = vanEckNthTerm (i + 2) ∧ vanEckNthTerm (i + 2) = vanEckNthTerm (i + 2) := ⟨h, h_eq1, rfl⟩
-    have hc := vanEck_triple_impossible i (vanEckNthTerm (i + 2))
-    exfalso
-    exact hc h_trip
-  · have hm := vanEck_term_is_matchSearch (i + 3) (by decide)
-    have hsub : i + 3 - 1 = i + 2 := rfl
-    rw [hsub] at hm
+open List
+
+lemma new_number_implies_next_zero (n : ℕ) (h : (vanEck n).count (vanEckNthTerm n) = 1) : 
+    vanEckNextTerm (vanEck n) = 0 := by {
+  cases n with
+  | zero => rfl
+  | succ m =>
+    -- vanEck (m + 1) = vanEck m ++ [vanEckNextTerm (vanEck m)]
+    have h_append : vanEck (m + 1) = vanEck m ++ [vanEckNextTerm (vanEck m)] := rfl
+    have h_term : vanEckNextTerm (vanEck m) = vanEckNthTerm (m + 1) := by {
+      unfold vanEckNthTerm
+      have hlen : (vanEck (m + 1)).length = m + 2 := vanEckLength _
+      rw [h_append]
+      have hlen2 : (vanEck m).length = m + 1 := vanEckLength _
+      rw [← hlen2]
+      exact listNth_last _ _
+    }
+    rw [h_term] at h_append
+    rw [h_append] at h
+    rw [count_append] at h
+    have hsimp : [vanEckNthTerm (m + 1)].count (vanEckNthTerm (m + 1)) = 1 := by simp
+    rw [hsimp] at h
+    have h_count_zero : (vanEck m).count (vanEckNthTerm (m + 1)) = 0 := by omega
     
-    have hlen : (vanEck (i + 2)).length = i + 3 := vanEckLength (i + 2)
-    have hd_last : listNth (vanEck (i + 2)) (i + 2) = vanEckNthTerm (i + 2) := by
-      exact VanEck_deterministic (i + 2) (i + 2) (Nat.le_refl _)
-    have hd_1 : listNth (vanEck (i + 2)) (i + 1) = vanEckNthTerm (i + 1) := by
-      exact VanEck_deterministic (i + 2) (i + 1) (Nat.le_succ _)
-    have hd_0 : listNth (vanEck (i + 2)) i = vanEckNthTerm i := by
-      exact VanEck_deterministic (i + 2) i (Nat.le_trans (Nat.le_succ _) (Nat.le_succ _))
-      
-    rw [matchSearch, hlen] at hm
-    have hsub2 : i + 3 - 1 = i + 2 := rfl
-    have hsub3 : i + 3 - 2 = i + 1 := rfl
+    have h_not_mem : vanEckNthTerm (m + 1) ∉ vanEck m := by {
+      intro h_mem
+      have h_pos := count_pos_iff_mem.mpr h_mem
+      omega
+    }
     
-    -- need to evaluate matchSearchAux
-    sorry
+    have h_rhs : ∀ k < m + 1, vanEckNthTerm k ≠ vanEckNthTerm (m + 1) := by {
+      intro k hk h_eq
+      have h_mem : vanEckNthTerm k ∈ vanEck m := by {
+        apply listNth_mem
+        rw [vanEckLength]
+        exact hk
+      }
+      rw [h_eq] at h_mem
+      exact h_not_mem h_mem
+    }
+    
+    have h_iff := vanEck_mth_term_eq_zero_iff_prev_term_new m
+    have h_zero : vanEckNthTerm (m + 2) = 0 := h_iff.mpr h_rhs
+    
+    have h_next : vanEckNthTerm (m + 2) = vanEckNextTerm (vanEck (m + 1)) := by {
+      unfold vanEckNthTerm
+      have h_append2 : vanEck (m + 2) = vanEck (m + 1) ++ [vanEckNextTerm (vanEck (m + 1))] := rfl
+      rw [h_append2]
+      have hlen3 : (vanEck (m + 1)).length = m + 2 := vanEckLength _
+      rw [← hlen3]
+      exact listNth_last _ _
+    }
+    
+    rw [← h_next]
+    exact h_zero
 }
-

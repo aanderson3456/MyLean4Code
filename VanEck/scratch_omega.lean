@@ -21,7 +21,8 @@ lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
     have h_mod := Nat.div_add_mod (k.val + 1 + P - v k) P
     have hfk := hf k
     have hd_def : d k = (k.val + 1 + P - v k) / P := rfl
-    omega
+    rw [hfk, hd_def]
+    exact h_mod.symm
   }
 
   have h_sum1 : ∑ k : Fin P, (k.val + 1 + P - v k) = ∑ k : Fin P, (P * d k + (f k).val) := by {
@@ -35,7 +36,12 @@ lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
     apply Finset.sum_congr rfl
     intro x _
     have h2 := hvP x
-    omega
+    have h3 : v x ≤ x.val + 1 + P := by
+      have h_le : 1 + P ≤ x.val + 1 + P := by
+        rw [Nat.add_assoc]
+        exact Nat.le_add_left (1 + P) x.val
+      exact le_trans (le_trans h2 (Nat.le_add_left P 1)) h_le
+    exact Nat.sub_add_cancel h3
   }
 
   have h_sum_right : ∑ k : Fin P, (P * d k + (f k).val) = P * ∑ k : Fin P, d k + ∑ k : Fin P, (f k).val := by {
@@ -46,7 +52,8 @@ lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
     have h1 : ∑ k : Fin P, (k.val + 1 + P) = ∑ k : Fin P, k.val + ∑ k : Fin P, (1 + P) := by
       rw [← Finset.sum_add_distrib]
       apply Finset.sum_congr rfl
-      intro x _; omega
+      intro x _
+      rw [Nat.add_assoc]
     rw [h1]
     have h2 : ∑ k : Fin P, (1 + P) = P * (P + 1) := by
       have hz : ∑ k : Fin P, (1 + P) = (Finset.card (Finset.univ : Finset (Fin P))) * (1 + P) := by
@@ -55,7 +62,7 @@ lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
       rw [hc] at hz
       rw [hz]
       ring
-    omega
+    rw [h2]
   }
 
   have h_eq1 : ∑ k : Fin P, (k.val + 1 + P - v k) = P * ∑ k : Fin P, d k + ∑ k : Fin P, k.val := by {
@@ -69,12 +76,20 @@ lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
   }
 
   have h_eq3 : (∑ k : Fin P, k.val) + (P * ∑ k : Fin P, d k + ∑ k : Fin P, v k) = (∑ k : Fin P, k.val) + P * (P + 1) := by {
-    omega
+    have hr : (∑ k : Fin P, k.val) + (P * ∑ k : Fin P, d k + ∑ k : Fin P, v k) = P * ∑ k : Fin P, d k + ∑ k : Fin P, k.val + ∑ k : Fin P, v k := by
+      calc
+        (∑ k : Fin P, k.val) + (P * ∑ k : Fin P, d k + ∑ k : Fin P, v k) 
+          = ((∑ k : Fin P, k.val) + P * ∑ k : Fin P, d k) + ∑ k : Fin P, v k := by rw [Nat.add_assoc]
+        _ = (P * ∑ k : Fin P, d k + (∑ k : Fin P, k.val)) + ∑ k : Fin P, v k := by rw [Nat.add_comm (∑ k : Fin P, k.val) (P * ∑ k : Fin P, d k)]
+    rw [hr]
+    exact h_eq2
   }
 
   have h_eq4 : P * ∑ k : Fin P, d k + ∑ k : Fin P, v k = P * (P + 1) := Nat.add_left_cancel h_eq3
 
-  have h_eq5 : ∑ k : Fin P, v k = P * (P + 1) - P * ∑ k : Fin P, d k := by omega
+  have h_eq5 : ∑ k : Fin P, v k = P * (P + 1) - P * ∑ k : Fin P, d k := by {
+    exact Nat.eq_sub_of_add_eq' h_eq4
+  }
 
   have h_eq6 : ∑ k : Fin P, v k = ((P + 1) - ∑ k : Fin P, d k) * P := by {
     rw [h_eq5]

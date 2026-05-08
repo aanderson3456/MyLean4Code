@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Van Eck Sequence Race</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Van Eck Sequence Race</h1>
+            <p>Observing the limsup behavior of the Van Eck sequence</p>
+        </header>
+
+        <main>
+            <div class="plot-container glass-panel">
+                <svg id="d3-plot"></svg>
+            </div>
+
+            <div class="controls glass-panel">
+                <div class="stats">
+                    <div class="stat-item"><span class="label">n:</span> <span id="val-n" class="val blue">0</span></div>
+                    <div class="stat-item"><span class="label">a(n):</span> <span id="val-a" class="val pink">0</span></div>
+                    <div class="stat-item"><span class="label">n - a(n):</span> <span id="val-na" class="val violet">0</span></div>
+                </div>
+                <div class="buttons">
+                    <button id="btn-walk" title="Click to advance 1 step">🚶 Walking</button>
+                    <button id="btn-trot">🐎 Trotting</button>
+                    <button id="btn-cavort">🦌 Cavorting</button>
+                    <button id="btn-gallop">⚡ Galloping</button>
+                    <button id="btn-pause" class="active">⏸ Pause</button>
+                    <button id="btn-reset">🔄 Reset</button>
+                </div>
+            </div>
+
+            <div class="race-container glass-panel">
+                <div class="track" id="track-1">
+                    <div class="horse" id="horse-1"><span>n</span>🏇</div>
+                </div>
+                <div class="track" id="track-2">
+                    <div class="horse" id="horse-2"><span>a(n)</span>🏇</div>
+                </div>
+                <div class="track" id="track-3">
+                    <div class="horse" id="horse-3"><span>n-a(n)</span>🏇</div>
+                </div>
+                <div class="finish-line"></div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -729,7 +729,7 @@ lemma mod_eq_cases (A B P : ℕ) (hA : A < 2 * P) (hB : B < 2 * P) (hc : A % P =
            _ = B := Nat.sub_add_cancel hB_ge
 }
 
-lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
+lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ) 
     (hv1 : ∀ k, 1 ≤ v k) (hvP : ∀ k, v k ≤ P)
     (f : Fin P → Fin P)
     (hf : ∀ k, (f k).val = (k.val + 1 + P - v k) % P)
@@ -746,8 +746,8 @@ lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
     intro k
     have h_mod := Nat.div_add_mod (k.val + 1 + P - v k) P
     have hfk := hf k
-    have hd_def : P * ((k.val + 1 + P - v k) / P) = P * d k := rfl
-    rw [hd_def, ← hfk] at h_mod
+    have hd_def : d k = (k.val + 1 + P - v k) / P := rfl
+    rw [hfk, hd_def]
     exact h_mod.symm
   }
 
@@ -761,8 +761,13 @@ lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
     rw [← Finset.sum_add_distrib]
     apply Finset.sum_congr rfl
     intro x _
-    have h_le : v x ≤ x.val + 1 + P := Nat.le_trans (hvP x) (Nat.le_add_left P (x.val + 1))
-    exact Nat.sub_add_cancel h_le
+    have h2 := hvP x
+    have h3 : v x ≤ x.val + 1 + P := by
+      have h_le : 1 + P ≤ x.val + 1 + P := by
+        rw [Nat.add_assoc]
+        exact Nat.le_add_left (1 + P) x.val
+      exact le_trans (le_trans h2 (Nat.le_add_left P 1)) h_le
+    exact Nat.sub_add_cancel h3
   }
 
   have h_sum_right : ∑ k : Fin P, (P * d k + (f k).val) = P * ∑ k : Fin P, d k + ∑ k : Fin P, (f k).val := by {
@@ -773,15 +778,17 @@ lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
     have h1 : ∑ k : Fin P, (k.val + 1 + P) = ∑ k : Fin P, k.val + ∑ k : Fin P, (1 + P) := by
       rw [← Finset.sum_add_distrib]
       apply Finset.sum_congr rfl
-      intro x _; omega
+      intro x _
+      rw [Nat.add_assoc]
     rw [h1]
     have h2 : ∑ k : Fin P, (1 + P) = P * (P + 1) := by
-      have hz : ∑ k : Fin P, (1 + P) = (Finset.card (Finset.univ : Finset (Fin P))) * (1 + P) := Finset.sum_const (1 + P)
+      have hz : ∑ k : Fin P, (1 + P) = (Finset.card (Finset.univ : Finset (Fin P))) * (1 + P) := by
+        exact Finset.sum_const (1 + P)
       have hc : Finset.card (Finset.univ : Finset (Fin P)) = P := Fintype.card_fin P
       rw [hc] at hz
       rw [hz]
       ring
-    omega
+    rw [h2]
   }
 
   have h_eq1 : ∑ k : Fin P, (k.val + 1 + P - v k) = P * ∑ k : Fin P, d k + ∑ k : Fin P, k.val := by {
@@ -795,12 +802,20 @@ lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
   }
 
   have h_eq3 : (∑ k : Fin P, k.val) + (P * ∑ k : Fin P, d k + ∑ k : Fin P, v k) = (∑ k : Fin P, k.val) + P * (P + 1) := by {
-    omega
+    have hr : (∑ k : Fin P, k.val) + (P * ∑ k : Fin P, d k + ∑ k : Fin P, v k) = P * ∑ k : Fin P, d k + ∑ k : Fin P, k.val + ∑ k : Fin P, v k := by
+      calc
+        (∑ k : Fin P, k.val) + (P * ∑ k : Fin P, d k + ∑ k : Fin P, v k) 
+          = ((∑ k : Fin P, k.val) + P * ∑ k : Fin P, d k) + ∑ k : Fin P, v k := by rw [Nat.add_assoc]
+        _ = (P * ∑ k : Fin P, d k + (∑ k : Fin P, k.val)) + ∑ k : Fin P, v k := by rw [Nat.add_comm (∑ k : Fin P, k.val) (P * ∑ k : Fin P, d k)]
+    rw [hr]
+    exact h_eq2
   }
 
   have h_eq4 : P * ∑ k : Fin P, d k + ∑ k : Fin P, v k = P * (P + 1) := Nat.add_left_cancel h_eq3
 
-  have h_eq5 : ∑ k : Fin P, v k = P * (P + 1) - P * ∑ k : Fin P, d k := by omega
+  have h_eq5 : ∑ k : Fin P, v k = P * (P + 1) - P * ∑ k : Fin P, d k := by {
+    exact Nat.eq_sub_of_add_eq' h_eq4
+  }
 
   have h_eq6 : ∑ k : Fin P, v k = ((P + 1) - ∑ k : Fin P, d k) * P := by {
     rw [h_eq5]
@@ -811,6 +826,28 @@ lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
   }
 
   exact ⟨((P + 1) - ∑ k : Fin P, d k), h_eq6⟩
+}lemma fin_sum_three {n : ℕ} (hn : n = 3) (f : Fin n → ℕ) :
+  ∑ k : Fin n, f k = f ⟨0, by omega⟩ + f ⟨1, by omega⟩ + f ⟨2, by omega⟩ := by {
+  subst hn
+  exact Fin.sum_univ_three f
+}
+
+lemma period_three_forces_all_threes (a b c C : ℕ)
+  (ha13 : a = 1 ∨ a = 3)
+  (hb13 : b = 1 ∨ b = 3)
+  (hc13 : c = 1 ∨ c = 3)
+  (hC2 : C ≥ 2)
+  (h_sum : a + b + c = C * 3) : a = 3 ∧ b = 3 ∧ c = 3 := by {
+  have ha_eq : a = 3 := by {
+    rcases ha13 with rfl | rfl <;> rcases hb13 with rfl | rfl <;> rcases hc13 with rfl | rfl <;> omega
+  }
+  have hb_eq : b = 3 := by {
+    rcases ha13 with rfl | rfl <;> rcases hb13 with rfl | rfl <;> rcases hc13 with rfl | rfl <;> omega
+  }
+  have hc_eq : c = 3 := by {
+    rcases ha13 with rfl | rfl <;> rcases hb13 with rfl | rfl <;> rcases hc13 with rfl | rfl <;> omega
+  }
+  exact ⟨ha_eq, hb_eq, hc_eq⟩
 }
 
 --
@@ -1321,39 +1358,138 @@ lemma finite_cycle_gap_collapse (n_1 n_2 K : ℕ)
 
     -- Case P ≥ 3: C ≥ 2 contradiction via counting and no-2 constraint.
     · have h_P_ge_3 : P ≥ 3 := by omega
-      -- For P ≥ 3 with C ≥ 2: the no-alternating-pairs constraint applied
-      -- cyclically within the periodic block, combined with the gap-sum
-      -- telescoping (C = U = number of unique values) and the d-function
-      -- counting, forces the final structural contradiction.
-      sorry
+      -- We must show a contradiction for P >= 3.
+      -- We know C = P + 1 - ∑ d_k. 
+      -- We first prove that d_k is an indicator function: d_k ≤ 1.
+      have h_dk_bound : ∀ k : Fin P, (k.val + 1 + P - v_fn k) / P ≤ 1 := by {
+        intro k
+        -- (k + 1 + P - v) / P ≤ 1 because k + 1 + P - v < 2 * P
+        have hk_lt := k.isLt  -- k.val < P
+        have hv_ge := hv1 k   -- 1 ≤ v_fn k
+        -- k + 1 + P - v ≤ k + P ≤ (P-1) + P = 2P - 1 < 2P
+        have h_num_lt : k.val + 1 + P - v_fn k < 2 * P := by omega
+        exact Nat.div_lt_iff_lt_mul h_P_pos |>.mpr h_num_lt |> Nat.lt_succ_iff.mp
+      }
+      
+      have h_dk_sum_le_P : ∑ k : Fin P, ((k.val + 1 + P - v_fn k) / P) ≤ P := by {
+        -- Sum of P elements each ≤ 1 is ≤ P
+        calc ∑ k : Fin P, ((k.val + 1 + P - v_fn k) / P)
+            ≤ ∑ _k : Fin P, 1 := Finset.sum_le_sum (fun k _ => h_dk_bound k)
+          _ = P := by simp [Finset.sum_const, Finset.card_fin]
+      }
+      
+      -- ══════════════════════════════════════════════════════════════
+      -- Case P = 3: values from {1, 3}, sum = C*3 ≥ 6 → all 3s → contradiction.
+      -- ══════════════════════════════════════════════════════════════
+      by_cases hP3 : P = 3
+      · -- P = 3. Let a, b, c be the three values in the period.
+        let a := v_fn ⟨0, by omega⟩
+        let b := v_fn ⟨1, by omega⟩
+        let c := v_fn ⟨2, by omega⟩
+        
+        -- Expand the sum using our lemma
+        have h_sum_abc : a + b + c = C * 3 := by {
+          have h1 := fin_sum_three hP3 v_fn
+          rw [h1] at hC
+          have h_CP : C * P = C * 3 := by rw [hP3]
+          rw [h_CP] at hC
+          exact hC
+        }
+
+        -- Show a, b, c are 1 or 3
+        have ha13 : a = 1 ∨ a = 3 := by {
+          have h1 := hv1 ⟨0, by omega⟩
+          have hP_bnd := hvP ⟨0, by omega⟩
+          have h2 : a ≠ 2 := h_no_twos (n_2 + 0 + 1) (by omega)
+          have hp : P = 3 := hP3
+          omega
+        }
+        have hb13 : b = 1 ∨ b = 3 := by {
+          have h1 := hv1 ⟨1, by omega⟩
+          have hP_bnd := hvP ⟨1, by omega⟩
+          have h2 : b ≠ 2 := h_no_twos (n_2 + 1 + 1) (by omega)
+          have hp : P = 3 := hP3
+          omega
+        }
+        have hc13 : c = 1 ∨ c = 3 := by {
+          have h1 := hv1 ⟨2, by omega⟩
+          have hP_bnd := hvP ⟨2, by omega⟩
+          have h2 : c ≠ 2 := h_no_twos (n_2 + 2 + 1) (by omega)
+          have hp : P = 3 := hP3
+          omega
+        }
+
+        -- Use standalone lemma to force them to 3
+        have h_all_3 := period_three_forces_all_threes a b c C ha13 hb13 hc13 h_C_ge_2 h_sum_abc
+        have ha_eq := h_all_3.1
+        have hb_eq := h_all_3.2.1
+        have hc_eq := h_all_3.2.2
+
+        -- a = v_fn 0 = vanEckNthTerm(n_2 + 1)
+        -- b = v_fn 1 = vanEckNthTerm(n_2 + 2)
+        -- c = v_fn 2 = vanEckNthTerm(n_2 + 3)
+        have h_a_val : a = vanEckNthTerm (n_2 + 1) := rfl
+        have h_b_val : b = vanEckNthTerm (n_2 + 2) := rfl
+        have h_c_val : c = vanEckNthTerm (n_2 + 3) := rfl
+
+        -- a = b = 3 → consecutive equals → next = 1.
+        have h_cons : vanEckNthTerm (n_2 + 1) = vanEckNthTerm (n_2 + 2) := by omega
+        have h_next_1 : c = 1 := by {
+          rw [h_c_val]
+          have h := vanEck_consecutive_eq_implies_next_one (n_2 + 1) h_cons
+          have : n_2 + 1 + 2 = n_2 + 3 := by omega
+          rw [this] at h; exact h
+        }
+        -- c = 3 and c = 1. Contradiction!
+        omega
+
+      -- ══════════════════════════════════════════════════════════════
+      -- Case P ≥ 4: remaining open case.
+      -- The d_k bounds (h_dk_bound, h_dk_sum_le_P) constrain the
+      -- displacement graph. The same sum-mod argument generalizes
+      -- but requires handling more value combinations.
+      -- ══════════════════════════════════════════════════════════════
+      · have h_P_ge_4 : P ≥ 4 := by omega
+        sorry
 }
 
-/--
-A mathematically isolated zero-bound evaluation.
-If a dense sequence bound is maintained, 0 cannot occur because it
-forces older unbounded gaps into the block.
--/
-lemma bounded_dense_block_zero_impossible (B n_1 K : ℕ)
-    (h_bound : ∀ k ≤ K, vanEckNthTerm (n_1 + k) < B + 1)
-    (h_no_twos : ∀ m > n_1, vanEckNthTerm m ≠ 2) :
-    ∀ k ≤ K, vanEckNthTerm (n_1 + k) > 0 := by {
-  intro k hk
-  by_contra h_zero
-  have h_eq_0 : vanEckNthTerm (n_1 + k) = 0 := Nat.eq_zero_of_le_zero (Nat.le_of_not_lt h_zero)
-
-  -- If v(n_1+k) = 0, then v(n_1+k-1) must be a brand new number that has NEVER appeared before.
-  -- But we know that v(n_1+k-1) < B + 1.
-  -- Since the sequence bounds its values, any number ≤ B can only be "new" a maximum of B+1 times.
-  -- If n_1 is sufficiently large (which it is, generated by DenseSmallNumbers after N),
-  -- all elements ≤ B have already appeared.
-
-  -- Stuck point: formalizing "maximum index of first occurrences" requires
-  -- defining a Finset over the first occurrences of 0...B, mapping it to indices,
-  -- and taking Finset.sup. Then we must show that start > Finset.sup.
-  -- Since `bounded_dense_block_zero_impossible` currently lacks the `start` parameter
-  -- and just assumes it happens locally, it's structurally unprovable without
-  -- threading `start` and the `M` bound all the way down from `dense_collisions_force_twos`.
-  sorry
+lemma exists_max_first_occurrence (B : ℕ) :
+  ∃ N, ∀ x ≤ B, (∃ k, vanEckNthTerm k = x) → ∃ k ≤ N, vanEckNthTerm k = x := by {
+  induction B with
+  | zero =>
+    by_cases h : ∃ k, vanEckNthTerm k = 0
+    · rcases h with ⟨k, hk⟩
+      exact ⟨k, fun x hx h_ex => by
+        have h0 : x = 0 := Nat.eq_zero_of_le_zero hx
+        rw [h0]
+        exact ⟨k, Nat.le_refl k, hk⟩
+      ⟩
+    · exact ⟨0, fun x hx h_ex => by
+        have h0 : x = 0 := Nat.eq_zero_of_le_zero hx
+        rw [h0] at h_ex
+        contradiction
+      ⟩
+  | succ B ih =>
+    rcases ih with ⟨N_B, hN_B⟩
+    by_cases h : ∃ k, vanEckNthTerm k = B + 1
+    · rcases h with ⟨k, hk⟩
+      exact ⟨max N_B k, fun x hx h_ex => by
+        have h_or := (splitting_le x (B + 1)).mp hx
+        rcases h_or with h_lt | h_eq
+        · have h_le := Nat.le_of_lt_succ h_lt
+          rcases hN_B x h_le h_ex with ⟨k2, hk2_le, hk2_eq⟩
+          exact ⟨k2, Nat.le_trans hk2_le (Nat.le_max_left N_B k), hk2_eq⟩
+        · rw [h_eq]
+          exact ⟨k, Nat.le_max_right N_B k, hk⟩
+      ⟩
+    · exact ⟨N_B, fun x hx h_ex => by
+        have h_or := (splitting_le x (B + 1)).mp hx
+        rcases h_or with h_lt | h_eq
+        · have h_le := Nat.le_of_lt_succ h_lt
+          exact hN_B x h_le h_ex
+        · rw [h_eq] at h_ex
+          contradiction
+      ⟩
 }
 
 
@@ -1431,13 +1567,16 @@ theorem dense_collisions_force_twos (B : ℕ) (hB_gt : B > 0) :
   push Not at h_no_twos
 
   -- From h_dense, we obtain a dense block far out in the sequence.
-  have h_ex := h_dense N
+  have h_max_occ := exists_max_first_occurrence (B + 1)
+  rcases h_max_occ with ⟨N_max, hN_max⟩
+  let N' := max N N_max
+  have h_ex := h_dense N'
   rcases h_ex with ⟨start, h_start_gt, h_block⟩
 
   -- By our stepping stone, this dense block has NO alternating pairs.
   have h_no_alt := dense_block_without_twos_has_no_alternating_pairs B ((B + 1) ^ (B + 1) + (B + 1) + 5) start h_block (by
     intro m hm_gt
-    exact h_no_twos m (Nat.lt_trans h_start_gt hm_gt)
+    exact h_no_twos m (Nat.lt_trans (Nat.lt_of_le_of_lt (Nat.le_max_left N N_max) h_start_gt) hm_gt)
   )
 
   -- Because the block is bounded strictly by B + 1, we can apply our
@@ -1497,13 +1636,77 @@ theorem dense_collisions_force_twos (B : ℕ) (hB_gt : B > 0) :
     rw [h_k_eq] at h_le
     exact Nat.lt_succ_of_le h_le
 
-  have hd1_pos : ∀ k ≤ K, vanEckNthTerm (n_1 + k) > 0 := bounded_dense_block_zero_impossible B n_1 K hd1_lt (by
-    intro m hm
-    have h_start_le_n1 : start ≤ n_1 := Nat.le_trans (Nat.le_add_right start (B + 1)) hn1_ge
-    have h_N_lt_n1 : N < n_1 := Nat.lt_of_lt_of_le h_start_gt h_start_le_n1
-    have h_m_gt_N : m > N := Nat.lt_trans h_N_lt_n1 hm
-    exact h_no_twos m h_m_gt_N
-  )
+  have hd1_pos : ∀ k ≤ K, vanEckNthTerm (n_1 + k) > 0 := by
+    intro k hk
+    by_contra hc
+    have h_zero : vanEckNthTerm (n_1 + k) = 0 := Nat.eq_zero_of_le_zero (Nat.le_of_not_lt hc)
+    have h_n1_pos : n_1 ≥ 1 := Nat.succ_le_of_lt (by
+      calc 0 < B + 1 := Nat.zero_lt_succ B
+           _ ≤ start + (B + 1) := Nat.le_add_left (B + 1) start
+           _ ≤ n_1 := hn1_ge
+    )
+    have h1 : n_1 + k ≥ 2 := by
+      have hb_ge_1 : B + 1 ≥ 2 := Nat.succ_le_succ hB_gt
+      calc n_1 + k ≥ n_1 := Nat.le_add_right n_1 k
+           _ ≥ start + (B + 1) := hn1_ge
+           _ ≥ 0 + 2 := Nat.add_le_add (Nat.zero_le start) hb_ge_1
+           _ = 2 := rfl
+    have h_m2 : n_1 + k - 2 + 2 = n_1 + k := Nat.sub_add_cancel h1
+    have h_iff := vanEck_mth_term_eq_zero_iff_prev_term_new (n_1 + k - 2)
+    rw [h_m2] at h_iff
+    have h_new := h_iff.mp h_zero
+    have h_m1 : n_1 + k - 2 + 1 = n_1 + k - 1 := by
+      have hB2 : n_1 + k - 1 ≥ 1 := Nat.le_sub_one_of_lt h1
+      exact Nat.sub_add_cancel hB2
+    rw [h_m1] at h_new
+    have h_prev_bound : vanEckNthTerm (n_1 + k - 1) < B + 1 := by
+      have h_idx_ge : start ≤ n_1 + k - 1 := by
+        calc start ≤ start + B := Nat.le_add_right start B
+             _ = start + B + 1 - 1 := rfl
+             _ ≤ n_1 - 1 := Nat.sub_le_sub_right hn1_ge 1
+             _ ≤ n_1 + k - 1 := Nat.sub_le_sub_right (Nat.le_add_right n_1 k) 1
+      have h_idx_lt : n_1 + k - 1 - start < ((B + 1) ^ (B + 1) + (B + 1) + 5) := by
+        have ht1 : n_1 + k - 1 ≤ n_1 + K := by
+          calc n_1 + k - 1 ≤ n_1 + k := Nat.sub_le (n_1 + k) 1
+               _ ≤ n_1 + K := Nat.add_le_add_left hk n_1
+        have ht2 : n_1 + K = n_2 + 3 := by
+          have hh1 : n_1 + (n_2 - n_1 + 3) = n_1 + (n_2 - n_1) + 3 := rfl
+          rw [hh1]
+          have hh2 : n_1 + (n_2 - n_1) = n_2 := Nat.add_sub_of_le (Nat.le_of_lt hn1_lt_n2)
+          rw [hh2]
+        rw [ht2] at ht1
+        have ht3 : n_1 + k - 1 - start ≤ n_2 + 3 - start := Nat.sub_le_sub_right ht1 start
+        have ht4 : n_2 + 3 - start = n_2 - start + 3 := by
+          have hh : start ≤ n_2 := Nat.le_trans (Nat.le_trans (Nat.le_add_right start (B + 1)) hn1_ge) (Nat.le_of_lt hn1_lt_n2)
+          have hA2 : n_2 + 3 = 3 + n_2 := Nat.add_comm _ _
+          have hB2 : 3 + n_2 - start = 3 + (n_2 - start) := Nat.add_sub_assoc hh 3
+          have hC2 : 3 + (n_2 - start) = n_2 - start + 3 := Nat.add_comm _ _
+          rw [hA2, hB2, hC2]
+        rw [ht4] at ht3
+        have ht5 : n_2 - start < G_small - 1 := Nat.sub_lt_left_of_lt_add (Nat.le_trans (Nat.le_add_right start (B + 1)) hn1_ge |>.trans (Nat.le_of_lt hn1_lt_n2)) hn2_lt
+        have ht6 : n_2 - start + 3 < G_small - 1 + 3 := Nat.add_lt_add_right ht5 3
+        have ht7 : G_small - 1 + 3 ≤ G_small + 3 := Nat.add_le_add_right (Nat.sub_le G_small 1) 3
+        have ht8 : G_small + 3 = ((B + 1) ^ (B + 1) + (B + 1) + 5) := rfl
+        exact Nat.lt_of_le_of_lt ht3 (Nat.lt_of_lt_of_le ht6 (by rw [ht8]; exact ht7))
+      have h_b := h_block (n_1 + k - 1 - start) h_idx_lt
+      have h_rw : start + (n_1 + k - 1 - start) = n_1 + k - 1 := Nat.add_sub_cancel' h_idx_ge
+      rw [h_rw] at h_b
+      exact Nat.lt_succ_of_le h_b
+    have h_ex_j := hN_max (vanEckNthTerm (n_1 + k - 1)) (Nat.le_of_lt h_prev_bound) ⟨n_1 + k - 1, rfl⟩
+    rcases h_ex_j with ⟨j, hj_le, hj_eq⟩
+    have hj_lt : j < n_1 + k - 1 := by
+      have hA : j ≤ N' := Nat.le_trans hj_le (Nat.le_max_right N N_max)
+      have hB : N' < start := h_start_gt
+      have hC : start ≤ n_1 + k - 1 := by
+        calc start ≤ start + B := Nat.le_add_right start B
+             _ ≤ start + B + 1 - 1 := by
+               have hD : start + B + 1 - 1 = start + B := rfl
+               rw [hD]
+             _ ≤ n_1 - 1 := Nat.sub_le_sub_right hn1_ge 1
+             _ ≤ n_1 + k - 1 := Nat.sub_le_sub_right (Nat.le_add_right n_1 k) 1
+      exact Nat.lt_of_lt_of_le (Nat.lt_of_le_of_lt hA hB) hC
+    have h_contra := h_new j hj_lt
+    exact h_contra hj_eq
 
   have hn1_ge_B : B + 1 ≤ n_1 := Nat.le_trans (Nat.le_add_left (B + 1) start) hn1_ge
   have hn2_ge_B : B + 1 ≤ n_2 := Nat.le_trans hn1_ge_B (Nat.le_of_lt hn1_lt_n2)
@@ -1514,7 +1717,7 @@ theorem dense_collisions_force_twos (B : ℕ) (hB_gt : B > 0) :
     intro m hm
     have h1 : start ≤ n_1 := Nat.le_trans (Nat.le_add_right start (B + 1)) hn1_ge
     have h2 : start < m := Nat.lt_of_le_of_lt h1 hm
-    exact h_no_twos m (Nat.lt_trans h_start_gt h2)
+    exact h_no_twos m (Nat.lt_trans (Nat.lt_of_le_of_lt (Nat.le_max_left N N_max) h_start_gt) h2)
   )
 
 
