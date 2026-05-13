@@ -12,4 +12,6 @@ lean_lib «AnalysTSP» where
 
 lean_lib «WeierstrassLimitR2» where
 
+@[default_target]
 lean_lib «AnalyticTSP» where
+
