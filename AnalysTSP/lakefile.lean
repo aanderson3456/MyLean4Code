@@ -18,3 +18,5 @@ lean_lib «HausdorffVariation» where
 @[default_target]
 lean_lib «AnalyticTSP» where
 
+@[default_target]
+lean_lib «Main» where

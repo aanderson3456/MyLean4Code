@@ -1,3 +1,10 @@
+/-
+Copyright (c) 2026 Austin Anderson and Tony Ou. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Austin Anderson, Tony Ou
+Assisted by Gemini (AI assistant)
+-/
+
 import Mathlib.Topology.Basic -- Basic topological definitions, including IsCompact
 import Mathlib.Topology.Instances.Real.Lemmas -- Defines topology on ℝ and product topology on ℝ × ℝ
 import Mathlib.Topology.Separation.Basic
