@@ -54,7 +54,7 @@ def neg_fit_part (z : ℤ) : ℕ :=
   | 0 => 0
   | 1 => 0
   | (-1) => 1
-  | x => 2 --should never occur
+  | _ => 2 --should never occur
 
 def neg_fit (z : ℤ) : ℕ :=
   neg_fit_part (Int.sign z)

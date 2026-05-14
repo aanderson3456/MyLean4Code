@@ -757,13 +757,13 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
       intro u h_u_in_K
 
       by_contra h_not_seq_cpt
-      push_neg at h_not_seq_cpt
+      push Not at h_not_seq_cpt
 
       -- Step 1: For every x ∈ K, there is a small ball containing u_n only finitely often.
       have h_local_finite : ∀ x ∈ K, ∃ ε > 0, {n | euclideanDist (u n) x < ε}.Finite := by
         intro x hx
         by_contra h_inf_nbhd
-        push_neg at h_inf_nbhd
+        push Not at h_inf_nbhd
         obtain ⟨φ, hφ_mono, hφ_conv⟩ := exists_seq_of_infinite_mem h_inf_nbhd
         exact h_not_seq_cpt x φ hx hφ_mono hφ_conv
 
@@ -870,7 +870,7 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
         -- We prove there exists δ > 0 such that ∀ x ∈ K, B(x, δ) ⊆ U i for some i.
         have h_lebesgue : ∃ δ > 0, ∀ x ∈ K, ∃ i, {y | euclideanDist x y < δ} ⊆ U i := by
           by_contra h_no_delta
-          push_neg at h_no_delta
+          push Not at h_no_delta
           -- If no such δ, then for every n, δ = 1/(n+1) fails.
           -- So exists x_n such that B(x_n, 1/(n+1)) is not in any U i.
           have h_seq_exists : ∀ n : ℕ, ∃ x ∈ K, ∀ i, ¬({y | euclideanDist x y < 1 / (n + 1 : ℝ)} ⊆ U i) := by
@@ -988,7 +988,7 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
         -- We'll show K ⊆ ⋃ (finite set), B(c, δ).
         have h_finite_cover : ∃ t : Finset (ℝ × ℝ), (∀ x ∈ t, x ∈ K) ∧ K ⊆ ⋃ c ∈ t, {z | euclideanDist c z < δ} := by
           by_contra h_not_covered
-          push_neg at h_not_covered
+          push Not at h_not_covered
           have h_choice : ∃ u : ℕ → ℝ × ℝ, (∀ n, u n ∈ K) ∧ (∀ n m, n ≠ m → euclideanDist (u n) (u m) ≥ δ) := by
             -- This is the "greedy sequence" construction.
             -- We skip the formal recursive definition and assume the standard result that
@@ -1003,7 +1003,7 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
               -- h_not_covered says K is not subset of Union B(y, δ)
               -- So exist x ∈ K, x ∉ Union B(y, δ)
               rw [Set.subset_def] at h_not_covered
-              push_neg at h_not_covered
+              push Not at h_not_covered
               obtain ⟨x, hxK, hx_not_in_union⟩ := h_not_covered
 
               use x, hxK
@@ -1195,7 +1195,7 @@ lemma setContraR (x : ℝ) (s : Set ℝ) : x ∈ s ∧ x ∈ sᶜ → False :=
   fun ⟨hs, hsc⟩ => hsc hs
 
 lemma SetNegLeftProjR (A B : Set ℝ) : ∀ (x : ℝ), x ∉ A → x ∉ (A ∩ B) :=
-  fun x hx hAB => hx hAB.1
+  fun _ hx hAB => hx hAB.1
 
 lemma SetNegRightProjR (A B : Set ℝ) : ∀ (x : ℝ), x ∉ B → x ∉ (A ∩ B) := by
   rw [Set.inter_comm]; apply SetNegLeftProjR
@@ -1251,7 +1251,7 @@ lemma ComplLemmaFinsetR {ι' : Type*} (s : Finset ι') (K : Set ℝ) :
   · intro hEmpty x hxK
     by_contra h_not_in_union
     have h_in_inter : x ∈ ⋂ i ∈ s, (U i)ᶜ := by
-      rw [Set.mem_iInter]; intro i; rw [Set.mem_iInter]; intro hi_s; intro hx_Ui
+      rw [Set.mem_iInter]; intro i; rw [Set.mem_iInter]; intro hi_s hx_Ui
       exact h_not_in_union (Set.mem_iUnion.mpr ⟨i, Set.mem_iUnion.mpr ⟨hi_s, hx_Ui⟩⟩)
     exact Set.notMem_empty x (hEmpty ▸ ⟨h_in_inter, hxK⟩)
 
@@ -1296,10 +1296,10 @@ theorem EqCptRSubcoverSeqDefs (K : Set ℝ) :
   constructor
   · -- Direction 1: Open Cover → Sequential
     intro h_cover_compact u h_u_in_K
-    by_contra h_not_seq_cpt; push_neg at h_not_seq_cpt
+    by_contra h_not_seq_cpt; push Not at h_not_seq_cpt
     have h_local_finite : ∀ x ∈ K, ∃ ε > 0, {n | abs (u n - x) < ε}.Finite := by
       intro x hx
-      by_contra h_inf; push_neg at h_inf
+      by_contra h_inf; push Not at h_inf
       obtain ⟨φ, hφ_mono, hφ_conv⟩ := exists_seq_of_infinite_mem_R h_inf
       exact h_not_seq_cpt x φ hx hφ_mono hφ_conv
     choose ε hε_pos hε_finite using h_local_finite
@@ -1356,7 +1356,7 @@ theorem EqCptRSubcoverSeqDefs (K : Set ℝ) :
     | inr hK_nonempty =>
       -- PART 1: Lebesgue number lemma
       have h_lebesgue : ∃ δ > 0, ∀ x ∈ K, ∃ i, {y | abs (x - y) < δ} ⊆ U i := by
-        by_contra h_no_delta; push_neg at h_no_delta
+        by_contra h_no_delta; push Not at h_no_delta
         have h_seq_exists : ∀ n : ℕ, ∃ x ∈ K,
             ∀ i, ¬({y | abs (x - y) < 1 / (↑n + 1 : ℝ)} ⊆ U i) :=
           fun n => h_no_delta _ (by positivity)
@@ -1393,12 +1393,12 @@ theorem EqCptRSubcoverSeqDefs (K : Set ℝ) :
       obtain ⟨δ, hδ_pos, h_lebesgue⟩ := h_lebesgue
       have h_finite_cover : ∃ t : Finset ℝ, (∀ x ∈ t, x ∈ K) ∧
           K ⊆ ⋃ c ∈ t, {z | abs (c - z) < δ} := by
-        by_contra h_not_covered; push_neg at h_not_covered
+        by_contra h_not_covered; push Not at h_not_covered
         have h_always_extends : ∀ s : Finset ℝ, (∀ y ∈ s, y ∈ K) →
             ∃ x ∈ K, ∀ y ∈ s, abs (y - x) ≥ δ := by
           intro s hsK
           specialize h_not_covered s hsK
-          rw [Set.subset_def] at h_not_covered; push_neg at h_not_covered
+          rw [Set.subset_def] at h_not_covered; push Not at h_not_covered
           obtain ⟨x, hxK, hx_not⟩ := h_not_covered
 
           -- h_lt : abs(y-x) < δ directly witnesses x ∈ {z | abs(y-z) < δ} (no comm needed)
@@ -1464,7 +1464,7 @@ theorem EqCptRSubcoverSeqDefs (K : Set ℝ) :
         simp only [Set.mem_iUnion, Set.mem_setOf_eq] at htc
         rcases htc with ⟨c, hc_t, _⟩; exact ⟨c, hc_t⟩
       · intro x hx
-        simp only [Set.mem_iUnion, Set.mem_setOf_eq]
+        simp only [Set.mem_iUnion]
         have htc := ht_cover hx
         simp only [Set.mem_iUnion, Set.mem_setOf_eq] at htc
         rcases htc with ⟨c, hc_t, h_dist⟩
@@ -1512,7 +1512,7 @@ lemma CtsImagesCptRtoR2 {ι : Type} [Nonempty ι] {X : Set ℝ} {Y : Set (ℝ ×
     rw [sqDistZero]; simp; exact hε
   · -- use continuity: dist (x_seq(φ n)) L < δ and x_seq(φ n) ≠ L
     have h_abs : abs (L_val - (x_seq (φ n)).val) < δ := by
-      have := hN n hn; simp only [ConvergesR, Function.comp] at this; exact this
+      have := hN n hn; simp only [Function.comp] at this; exact this
     have h_dist_sub : dist (x_seq (φ n)) L < δ := by
       rw [Subtype.dist_eq (x_seq (φ n)) L]
       change abs ((x_seq (φ n)).val - L_val) < δ
