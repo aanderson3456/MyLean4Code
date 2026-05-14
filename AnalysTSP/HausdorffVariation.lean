@@ -1,7 +1,5 @@
 import Mathlib
 import WeierstrassLimitR2
-import AnalyticTSP
-
 open scoped MeasureTheory
 open Set Topology
 

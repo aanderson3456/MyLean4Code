@@ -1,6 +1,7 @@
 import Mathlib
 import AnalysTSP
 import WeierstrassLimitR2
+import HausdorffVariation
 import Mathlib.MeasureTheory.Measure.Hausdorff
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 
@@ -240,12 +241,15 @@ lemma rectifiable_hausdorff_bound (S : Set (ℝ × ℝ)) (L : ℝ) (hrect : CtsR
         exact h_symm.symm
       _ ≤ ENNReal.ofReal L := ENNReal.ofReal_le_ofReal h_bound
   }
-  
+
   -- With the continuous variation bounded, we apply the geometric measure theory
   -- theorem bounding the 1D Hausdorff measure of a parameterization by its variation.
   -- The Hausdorff measure of the image of `[0, 1]` is bounded by the variation on `[0, 1]`.
   -- Note: If `φ` is surjective to `ℝ × ℝ`, then `μH[1] S = ∞`, contradicting `L < ∞`.
-  sorry
+  calc μH[1] S
+    _ ≤ μH[1] (φ '' Icc (0:ℝ) 1) := measure_mono h_cover
+    _ ≤ eVariationOn φ (Icc (0:ℝ) 1) := continuous_variation_bounds_hausdorff φ h_cont
+    _ ≤ ENNReal.ofReal L := h_eVar
 }
 
 /-- If a set has finite 1D Hausdorff measure, its 2D Hausdorff measure (and thus Lebesgue measure) is zero. -/
