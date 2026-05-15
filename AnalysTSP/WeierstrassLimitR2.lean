@@ -385,6 +385,7 @@ section ArbitraryIndex
 
 universe u
 variable (ι : Type u) --arbitrary index set
+set_option linter.unusedSectionVars false
 variable [Nonempty ι]  --exclude trivial case for easier thm statements
 
 --@IsOpenCoverR2 {u} {ι}
@@ -447,7 +448,7 @@ lemma SetEmptyComplInter (A B : Set (ℝ × ℝ)) : ∅ = (Aᶜ ∩ B) → B ⊆
   exact False.elim (hxbNotinB hxb)
 }
 
-lemma ExistsIntroBcNonempty : ∃ i : ι, True := by {
+lemma ExistsIntroBcNonempty : ∃ _i : ι, True := by {
   rename_i nonTrivialIndex
   exact (exists_const ι).mpr trivial
 }
@@ -753,8 +754,7 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
   (∀ {ι : Type} [Nonempty ι], @IsCompactR2Subcover ι K) ↔ IsCompactR2Seq K := by {
     constructor
     · -- Direction: Open Cover Compactness → Sequential Compactness
-      intro h_cover_compact
-      intro u h_u_in_K
+      intro h_cover_compact u h_u_in_K
 
       by_contra h_not_seq_cpt
       push Not at h_not_seq_cpt
@@ -853,8 +853,7 @@ theorem EqCptSubcoverSeqDefs (K : Set (ℝ × ℝ)) :
         exact Set.infinite_univ h_finite_univ
 
     · -- Direction: Sequential Compactness → Open Cover Compactness
-      intro h_seq_compact
-      intro ι _nonempty_ι U h_open_cover
+      intro h_seq_compact ι _nonempty_ι U h_open_cover
 
       -- Handle the empty case trivially
       cases K.eq_empty_or_nonempty with
