@@ -185,31 +185,27 @@ theorem vanEck_idx_sub_succ_sub_val_unique (i j : ℕ)
       have h0 : vanEckNthTerm 0 = 0 := vanEck_head_eq_zero 0
       rw [h0] at hi_pos; contradiction
     | succ i1 => exact Nat.le_add_left 1 i1
-
   have hj_ge_1 : j ≥ 1 := Nat.le_trans hi_ge_1 (Nat.le_of_lt h_lt)
-
   have hd_i : vanEckNthTerm i = vanEckNthTerm (i - vanEckNthTerm (i + 1)) := by
-    exact gap_determines_value i hi_ge_1 (vanEckNthTerm (i + 1)) (Nat.le_refl 1) rfl (Nat.ne_of_gt hi1_pos)
-
+    exact gap_determines_value i hi_ge_1 (vanEckNthTerm (i + 1))
+      (Nat.le_refl 1) rfl (Nat.ne_of_gt hi1_pos)
   have hd_j : vanEckNthTerm j = vanEckNthTerm (j - vanEckNthTerm (j + 1)) := by
-    exact gap_determines_value j hj_ge_1 (vanEckNthTerm (j + 1)) (Nat.le_refl 1) rfl (Nat.ne_of_gt hj1_pos)
-
+    exact gap_determines_value j hj_ge_1 (vanEckNthTerm (j + 1))
+      (Nat.le_refl 1) rfl (Nat.ne_of_gt hj1_pos)
   let ki := i - vanEckNthTerm (i + 1)
   let kj := j - vanEckNthTerm (j + 1)
-
   have hk_eq : ki - vanEckNthTerm ki = kj - vanEckNthTerm kj := by
     have h1 : ki - vanEckNthTerm ki = i - vanEckNthTerm (i + 1) - vanEckNthTerm i := by rw [← hd_i]
     have h2 : kj - vanEckNthTerm kj = j - vanEckNthTerm (j + 1) - vanEckNthTerm j := by rw [← hd_j]
     rw [h1, h2]
     exact h_eq
-
   have hki_pos : vanEckNthTerm ki > 0 := by
     rw [← hd_i]
     exact hi_pos
-
   by_cases hki_eq : ki = kj
   · have hj_match := matchSearch_matches (vanEck j) j
-    have hj_search : vanEckNthTerm (j + 1) = matchSearch (vanEck j) j := vanEck_term_is_matchSearch (j + 1) (Nat.le_add_left 1 j)
+    have hj_search : vanEckNthTerm (j + 1) = matchSearch (vanEck j) j :=
+      vanEck_term_is_matchSearch (j + 1) (Nat.le_add_left 1 j)
     have hj_neq : matchSearch (vanEck j) j ≠ 0 := by rw [← hj_search]; exact Nat.ne_of_gt hj1_pos
     have hm := hj_match hj_neq
     have h_len : (vanEck j).length = j + 1 := vanEckLength j
@@ -225,7 +221,6 @@ theorem vanEck_idx_sub_succ_sub_val_unique (i j : ℕ)
     have h_sub_kj : j - vanEckNthTerm (j + 1) = kj := rfl
     rw [h_sub_kj, hl_kj] at hm
     have h_aj_eq : vanEckNthTerm j = vanEckNthTerm kj := hm
-
     have h_first := matchSearch_first (vanEck j) j i hj_neq h_lt
     have h_match2 : listNth (vanEck j) ((vanEck j).length - 1) = listNth (vanEck j) i := by
       rw [h_len_sub_1, hl_j]
@@ -247,7 +242,8 @@ theorem vanEck_idx_sub_succ_sub_val_unique (i j : ℕ)
     have h_contra : i - vanEckNthTerm (i + 1) ≥ i := by
       calc i - vanEckNthTerm (i + 1) = ki := h_ki_sub.symm
         _ ≥ i := h_kj_ge_i
-    have h_i_lt : i - vanEckNthTerm (i + 1) < i := Nat.sub_lt (Nat.le_trans (by decide) hi_ge_1) hi1_pos
+    have h_i_lt : i - vanEckNthTerm (i + 1) < i :=
+      Nat.sub_lt (Nat.le_trans (by decide) hi_ge_1) hi1_pos
     have h_not_ge : ¬(i - vanEckNthTerm (i + 1) ≥ i) := Nat.not_le_of_lt h_i_lt
     exact h_not_ge h_contra
   · by_cases hk_lt_ki : ki < kj
@@ -264,26 +260,23 @@ theorem vanEck_idx_sub_succ_sub_val_unique (i j : ℕ)
 /--
 Theorem: If two consecutive elements are equal, the next element must be 1.
 -/
-theorem vanEck_consecutive_eq_implies_next_one (i : ℕ) (h : vanEckNthTerm i = vanEckNthTerm (i + 1)) :
+theorem vanEck_consecutive_eq_implies_next_one (i : ℕ)
+    (h : vanEckNthTerm i = vanEckNthTerm (i + 1)) :
     vanEckNthTerm (i + 2) = 1 := by {
   have hm := vanEck_term_is_matchSearch (i + 2) (Nat.zero_lt_succ _)
   have hsub : i + 2 - 1 = i + 1 := rfl
   rw [hsub] at hm
   rw [hm]
-
   have hlen : (vanEck (i + 1)).length = i + 2 := vanEckLength (i + 1)
   have hlen1 : (vanEck (i + 1)).length - 1 = i + 1 := by rw [hlen]; rfl
-
   have hd1 : listNth (vanEck (i + 1)) (i + 1) = vanEckNthTerm (i + 1) := by
     exact VanEck_deterministic (i + 1) (i + 1) (Nat.le_refl _)
-
   have hd0 : listNth (vanEck (i + 1)) i = vanEckNthTerm i := by
     exact VanEck_deterministic (i + 1) i (Nat.le_succ _)
-
-  have hpos : listNth (vanEck (i + 1)) ((vanEck (i + 1)).length - 1) = listNth (vanEck (i + 1)) i := by
+  have hpos : listNth (vanEck (i + 1)) ((vanEck (i + 1)).length - 1) =
+              listNth (vanEck (i + 1)) i := by
     rw [hlen1, hd1, hd0]
     exact h.symm
-
   have h_ms := ms_succ_ifpos (vanEck (i + 1)) i hpos
   rw [hlen1] at h_ms
   have h_sub_1 : i + 1 - i = 1 := Nat.add_sub_cancel_left i 1
@@ -291,10 +284,12 @@ theorem vanEck_consecutive_eq_implies_next_one (i : ℕ) (h : vanEckNthTerm i = 
   exact h_ms
 }
 
-lemma vanEck_consecutive_ones_implies_prev_one (i : ℕ) (hi : i ≥ 1) (h : vanEckNthTerm i = 1 ∧ vanEckNthTerm (i + 1) = 1) :
+lemma vanEck_consecutive_ones_implies_prev_one (i : ℕ) (hi : i ≥ 1)
+    (h : vanEckNthTerm i = 1 ∧ vanEckNthTerm (i + 1) = 1) :
     vanEckNthTerm (i - 1) = 1 := by {
   have hd : vanEckNthTerm i = vanEckNthTerm (i - vanEckNthTerm (i + 1)) := by
-    exact gap_determines_value i (Nat.le_refl _) (vanEckNthTerm (i + 1)) hi rfl (by rw [h.2]; decide)
+    exact gap_determines_value i (Nat.le_refl _) (vanEckNthTerm (i + 1)) hi
+      rfl (by rw [h.2]; decide)
   rw [h.2] at hd
   have heq : vanEckNthTerm i = vanEckNthTerm (i - 1) := hd
   rw [h.1] at heq
@@ -304,7 +299,8 @@ lemma vanEck_consecutive_ones_implies_prev_one (i : ℕ) (hi : i ≥ 1) (h : van
 /--
 Theorem: The sequence never contains two consecutive 1s.
 -/
-theorem vanEck_no_consecutive_ones (i : ℕ) : ¬(vanEckNthTerm i = 1 ∧ vanEckNthTerm (i + 1) = 1) := by {
+theorem vanEck_no_consecutive_ones (i : ℕ) :
+    ¬(vanEckNthTerm i = 1 ∧ vanEckNthTerm (i + 1) = 1) := by {
   induction i with
   | zero =>
     intro h
@@ -341,4 +337,55 @@ theorem vanEck_triple_impossible (i x : ℕ) :
     · rw [h2, h_x_eq_1]
     · exact hnext
   exact vanEck_no_consecutive_ones (i + 1) h_ones
+}
+
+
+lemma constant_tail_backward (c n : ℕ) (hc : c > 0)
+    (h_tail : ∀ k ≥ n, vanEckNthTerm k = c) :
+    ∀ m ≤ n, ∀ k ≥ n - m, vanEckNthTerm k = c := by {
+  intro m
+  induction m with
+  | zero =>
+    intro h_le k hk
+    have h_eq : n - 0 = n := rfl
+    rw [h_eq] at hk
+    exact h_tail k hk
+  | succ m ih =>
+    intro h_le k hk
+    have h_le_m : m ≤ n := Nat.le_trans (Nat.le_succ m) h_le
+    have h_prev := ih h_le_m
+
+    by_cases hk_ge : k ≥ n - m
+    · exact h_prev k hk_ge
+    · have h_k_eq : k = n - (m + 1) := by omega
+
+      let k2 := k + c + 1
+      have hk2_ge : k2 ≥ n - m := by omega
+      have h1 : vanEckNthTerm k2 = c := h_prev k2 hk2_ge
+
+      let k1 := k + c
+      have hk1_ge : k1 ≥ n - m := by omega
+      have h2 : vanEckNthTerm k1 = c := h_prev k1 hk1_ge
+
+      have hk1_ge1 : k1 ≥ 1 := by omega
+      have h_c_neq_0 : c ≠ 0 := by omega
+      
+      have hk_eq_succ : k1 + 1 = k2 := by omega
+      have h1_subst : vanEckNthTerm (k1 + 1) = c := by rw [hk_eq_succ]; exact h1
+      
+      have h_gap := gap_determines_value (n := 1) k1 hk1_ge1 c (by omega) h1_subst h_c_neq_0
+      
+      have h_sub : k1 - c = k := by omega
+      
+      rw [h_sub] at h_gap
+      rw [h2] at h_gap
+      exact h_gap.symm
+}
+
+lemma constant_tail_contradiction (c n_0 : ℕ) (hc : c > 0)
+    (h_tail : ∀ k ≥ n_0, vanEckNthTerm k = c) : False := by {
+  have hz := constant_tail_backward c n_0 hc h_tail n_0 (Nat.le_refl n_0) 0 (by omega)
+  have hz_def : vanEckNthTerm 0 = 0 := rfl
+  rw [hz_def] at hz
+  omega
 }

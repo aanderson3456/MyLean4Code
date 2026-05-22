@@ -1,0 +1,1333 @@
+⚠ [8247/8253] Replayed VanEck.Basic
+warning: VanEck/Basic.lean:145:3: unused variable `hyp2`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: VanEck/Basic.lean:270:61: unused variable `n`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: VanEck/Basic.lean:341:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                        ↓
+  ⏎      exact obv10_res⏎⏎    -- Now that we have `L.length - 2 - n = X + 1`, we can naturally construct the matchSearch if-statement natively without unfolding heavily.⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck/Basic.lean:347:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                ↓
+  ⏎      exact matchSearch_ite_tt L (L.length - 2 - (n + 1)) heq⏎⏎    -- Output distance is guaranteed non-zero by obv13 bounds testing.⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck/Basic.lean:351:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                ↓
+  ⏎      apply obv13 L n hlen hn⏎⏎    -- Using the match location, we apply our previous backwards depth search hook verification⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck/Basic.lean:360:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                      ↓
+  ⏎      exact match_search_nonzero_after_match_before_end (n+1) L hm3⏎⏎    -- Having proven matchSearch is not 0 natively, it must be at least 1 trivially.⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck/Basic.lean:333:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck/Basic.lean:342:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck/Basic.lean:445:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                 ↓
+  ⏎      exact hd⏎⏎    have hidx1 : L1.length - B + (B - 1 - d) = L1.length - 1 - d := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck/Basic.lean:453:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                     ↓
+  ⏎        _ = L1.length - 1 - d             := by rw [← Nat.sub_sub]⏎⏎    have hidx2 : L2.length - B + (B - 1 - d) = L2.length - 1 - d := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck/Basic.lean:535:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck/Basic.lean:615:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                  ↓
+  ⏎    rw [← h_last, hm1, h_eq_d1]⏎⏎  have h_fail : ∀ k, 1 ≤ k → k ≤ d1 - 1 → listNth L2 (L2.length - 1) ≠ listNth L2 (L2.length - 1 - d1 + k) := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck/Basic.lean:641:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                    ↓
+  ⏎    exact Nat.lt_irrefl _ h_false⏎⏎  have h_eval := matchSearch_eq_dist L2 (L2.length - 1 - d1) (d1 - 1) h_match h_fail⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck/Basic.lean:605:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck/Basic.lean:606:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck/Basic.lean:616:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck/Basic.lean:624:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck/Basic.lean:625:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck/Basic.lean:626:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck/Basic.lean:634:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck/Basic.lean:637:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+⚠ [8248/8253] Replayed VanEck
+info: VanEck.lean:446:0: [0, 2, 2, 1]
+info: VanEck.lean:448:0: [0, 0, 1, 0, 2, 0, 2, 2, 1, 6]
+info: VanEck.lean:490:0: 210
+info: VanEck.lean:491:0: 825
+warning: VanEck.lean:573:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:591:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:620:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                        ↓
+  ⏎    rw [h]; exact hn2⏎⏎  have h_van_eq : (vanEck (n_1 - 1)).drop ((vanEck (n_1 - 1)).length - B) =⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:629:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                 ↓
+  ⏎    exact h_eq⏎⏎  have ht1 := vanEck_term_is_matchSearch n_1 hn1_pos⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:632:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                       ↓
+  ⏎  have ht2 := vanEck_term_is_matchSearch n_2 hn2_pos⏎⏎  have hind1 : n_1 - 1 = (vanEck (n_1 - 1)).length - 1 := by rw [vanEckLength, Nat.add_sub_cancel]⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:635:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                     ↓
+  ⏎  have hind2 : n_2 - 1 = (vanEck (n_2 - 1)).length - 1 := by rw [vanEckLength, Nat.add_sub_cancel]⏎⏎  have h_lhs : matchSearch (vanEck (n_1 - 1)) ((vanEck (n_1 - 1)).length - 1) = vanEckNthTerm n_1 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:638:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                   ↓
+  ⏎    rw [← hind1]; exact ht1.symm⏎⏎  have h_rhs_term : matchSearch (vanEck (n_2 - 1)) ((vanEck (n_2 - 1)).length - 1) = vanEckNthTerm n_2 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:641:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                   ↓
+  ⏎    rw [← hind2]; exact ht2.symm⏎⏎  have d2_lt : vanEckNthTerm n_2 < B := h_bound n_2⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:643:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                      ↓
+  ⏎  have d2_lt : vanEckNthTerm n_2 < B := h_bound n_2⏎⏎  exact matchSearch_symm_eval (vanEck (n_1 - 1)) (vanEck (n_2 - 1)) B hb0 hL1_len hL2_len h_van_eq⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:636:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:639:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:713:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                    ↓
+  ⏎    rw [hk1, hk2]⏎⏎    have h_s1 := vanEckState_succ (n_1 + k) B (Nat.le_trans hn1 (Nat.le_add_right n_1 k)) hb0⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:716:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                ↓
+  ⏎    have h_s2 := vanEckState_succ (n_2 + k) B (Nat.le_trans hn2 (Nat.le_add_right n_2 k)) hb0⏎⏎    have h_next_state : vanEckState ((n_1 + k) + 1) B = vanEckState ((n_2 + k) + 1) B := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:719:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                           ↓
+  ⏎      rw [h_s1, h_s2, ih_state, ih_term]⏎⏎    constructor⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:722:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:729:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:738:51: The following tactic starts with 2 goals and ends with 1 goal, 1 of which is not operated on.
+  contradiction
+Please focus on the current goal, for instance using `·` (typed as "\.").
+
+Note: This linter can be disabled with `set_option linter.style.multiGoal false`
+warning: VanEck.lean:738:87: The following tactic starts with 2 goals and ends with 1 goal, 1 of which is not operated on.
+  contradiction
+Please focus on the current goal, for instance using `·` (typed as "\.").
+
+Note: This linter can be disabled with `set_option linter.style.multiGoal false`
+warning: VanEck.lean:740:49: The following tactic starts with 2 goals and ends with 1 goal, 1 of which is not operated on.
+  contradiction
+Please focus on the current goal, for instance using `·` (typed as "\.").
+
+Note: This linter can be disabled with `set_option linter.style.multiGoal false`
+warning: VanEck.lean:740:85: The following tactic starts with 2 goals and ends with 1 goal, 1 of which is not operated on.
+  contradiction
+Please focus on the current goal, for instance using `·` (typed as "\.").
+
+Note: This linter can be disabled with `set_option linter.style.multiGoal false`
+warning: VanEck.lean:765:68: The following tactic starts with 2 goals and ends with 1 goal, 1 of which is not operated on.
+  contradiction
+Please focus on the current goal, for instance using `·` (typed as "\.").
+
+Note: This linter can be disabled with `set_option linter.style.multiGoal false`
+warning: VanEck.lean:738:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:740:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:765:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:770:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:774:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:775:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:889:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:903:11: Please use 'fun' and not 'λ' to define anonymous functions.
+The 'λ' syntax is deprecated in mathlib4.
+
+Note: This linter can be disabled with `set_option linter.style.lambdaSyntax false`
+warning: VanEck.lean:907:37: Please use 'fun' and not 'λ' to define anonymous functions.
+The 'λ' syntax is deprecated in mathlib4.
+
+Note: This linter can be disabled with `set_option linter.style.lambdaSyntax false`
+warning: VanEck.lean:922:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:944:37: unused variable `h_bound`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: VanEck.lean:949:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:980:46: unused variable `hP`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: VanEck.lean:995:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:1020:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                   ↓
+  ⏎  have h_bound : ∀ k, vanEckNthTerm k < B := hb2⏎⏎  have hb0 : B > 0 := h_bound 0⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:1022:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                  ↓
+  ⏎  have hb0 : B > 0 := h_bound 0⏎⏎  have h_coll := pigeonhole_state_collision B h_bound⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:1032:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                ↓
+  ⏎  have hn2 : B ≤ n_2 := Nat.le_trans hn1 (Nat.le_of_lt hn_lt)⏎⏎  let N_1 := n_1 + N + 1⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:1036:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                                                         ↓
+  ⏎  have hn_shift_eq : vanEckState N_1 B = vanEckState N_2 B := (forward_periodicity n_1 n_2 B h_bound h_state_eq hn1 hn2 hb0 (N + 1)).1⏎⏎  have hN1_le : B ≤ N_1 := Nat.le_trans hn1 (Nat.le_trans (Nat.le_add_right n_1 N) (Nat.le_add_right (n_1 + N) 1))⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:1040:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                         ↓
+  ⏎  have h_period := forward_periodicity N_1 N_2 B h_bound hn_shift_eq hN1_le hN2_le hb0⏎⏎  have h_max := max_value_exists N_1 B h_bound⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:1043:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                          ↓
+  ⏎  rcases h_max with ⟨M, hM_lt, ⟨k, hk, hkM⟩, h_M_bound⟩⏎⏎  have hP : N_2 - N_1 ≥ 1 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:1051:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                 ↓
+  ⏎    exact Nat.sub_pos_of_lt h2⏎⏎  have h_per : ∀ k ≥ N_1, vanEckNthTerm k = vanEckNthTerm (k + (N_2 - N_1)) := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:1067:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+               ↓
+  ⏎    exact hp⏎⏎  have h_M_inf : ∃ k2 ≥ N_1 + M + 1, vanEckNthTerm k2 = M := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:1094:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                  ↓
+  ⏎      exact hkM⏎⏎  have hN1_pos : N_1 ≥ 1 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:1098:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+               ↓
+  ⏎    exact h1⏎⏎  have h_ones := zero_free_implies_constant_one N_1 M (N_2 - N_1) hP h_per h_M_bound h_M_inf (by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:1105:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+              ↓
+  ⏎  ) hN1_pos⏎⏎  exact constant_one_tail_contradiction N_1 h_ones⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: VanEck.lean:1025:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:1027:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:1035:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:1037:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:1038:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:1084:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: VanEck.lean:1089:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+⚠ [8249/8253] Replayed LimSup
+warning: LimSup.lean:37:3: error: doc-strings should start with a single space or newline
+
+Note: This linter can be disabled with `set_option linter.style.docString false`
+warning: LimSup.lean:66:3: error: doc-strings should start with a single space or newline
+
+Note: This linter can be disabled with `set_option linter.style.docString false`
+warning: LimSup.lean:69:71: remove line break in the source
+
+This part of the code
+  '0) 
+   '
+should be written as
+  '0) (hj :'
+
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: LimSup.lean:99:3: error: doc-strings should start with a single space or newline
+
+Note: This linter can be disabled with `set_option linter.style.docString false`
+warning: LimSup.lean:100:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:104:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:105:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:116:3: error: doc-strings should start with a single space or newline
+
+Note: This linter can be disabled with `set_option linter.style.docString false`
+warning: LimSup.lean:120:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:132:3: error: doc-strings should start with a single space or newline
+
+Note: This linter can be disabled with `set_option linter.style.docString false`
+warning: LimSup.lean:147:3: error: doc-strings should start with a single space or newline
+
+Note: This linter can be disabled with `set_option linter.style.docString false`
+warning: LimSup.lean:162:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:166:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:241:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                      ↓
+  ⏎      exact ih_simp⏎⏎}⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: LimSup.lean:175:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:194:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:200:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:204:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:214:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:218:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:244:3: error: doc-strings should start with a single space or newline
+
+Note: This linter can be disabled with `set_option linter.style.docString false`
+warning: LimSup.lean:263:3: error: doc-strings should start with a single space or newline
+
+Note: This linter can be disabled with `set_option linter.style.docString false`
+warning: LimSup.lean:284:3: error: doc-strings should start with a single space or newline
+
+Note: This linter can be disabled with `set_option linter.style.docString false`
+warning: LimSup.lean:320:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:356:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:381:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                         ↓
+  ⏎        exact List.Mem.tail _ (ih hxs)⏎⏎}⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: LimSup.lean:405:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                       ↓
+  ⏎    exact hk_eq.symm⏎⏎}⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: LimSup.lean:408:3: error: doc-strings should start with a single space or newline
+
+Note: This linter can be disabled with `set_option linter.style.docString false`
+warning: LimSup.lean:416:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: LimSup.lean:474:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+⚠ [8251/8253] Replayed ImpossiblePatterns
+warning: ImpossiblePatterns.lean:34:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                     ↓
+  ⏎    have h_a_i_1 : vanEckNthTerm (i - 1) = 0 := hm⏎⏎    have h_first := matchSearch_first (vanEck (i - 1)) (i - 1) 0 hm_neq (Nat.sub_pos_of_lt (Nat.lt_of_succ_le hi))⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:11:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:14:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:16:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:27:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:35:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:36:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:62:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+               ↓
+  ⏎  intro h_eq⏎⏎  have hi_ge_2 : i ≥ 2 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:74:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                ↓
+  ⏎      | succ i2 => exact Nat.le_add_left 2 i2⏎⏎  have hj_ge_2 : j ≥ 2 := Nat.le_trans hi_ge_2 (Nat.le_of_lt h_lt)⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:76:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                     ↓
+  ⏎  have hj_ge_2 : j ≥ 2 := Nat.le_trans hi_ge_2 (Nat.le_of_lt h_lt)⏎⏎  have ha_i_le : vanEckNthTerm i ≤ i - 1 := a_le_idx_minus_one hi_ge_2 hi_pos⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:78:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                ↓
+  ⏎  have ha_i_le : vanEckNthTerm i ≤ i - 1 := a_le_idx_minus_one hi_ge_2 hi_pos⏎⏎  have h_sub_i : i - vanEckNthTerm i ≥ 1 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:85:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+        ↓
+  ⏎    )⏎⏎  have hj_pos : vanEckNthTerm j > 0 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:98:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                     ↓
+  ⏎    · exact Nat.pos_of_ne_zero hj0⏎⏎  have ha_j_le : vanEckNthTerm j ≤ j - 1 := a_le_idx_minus_one hj_ge_2 hj_pos⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:100:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                ↓
+  ⏎  have ha_j_le : vanEckNthTerm j ≤ j - 1 := a_le_idx_minus_one hj_ge_2 hj_pos⏎⏎  have hd_i : vanEckNthTerm (i - 1) = vanEckNthTerm (i - 1 - vanEckNthTerm i) := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:108:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                        ↓
+  ⏎    exact gap_determines_value (i - 1) (Nat.le_refl _) (vanEckNthTerm i) h1 hx hi_neq⏎⏎  have hd_j : vanEckNthTerm (j - 1) = vanEckNthTerm (j - 1 - vanEckNthTerm j) := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:116:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                        ↓
+  ⏎    exact gap_determines_value (j - 1) (Nat.le_refl _) (vanEckNthTerm j) h1 hx hj_neq⏎⏎  have h_sub_eq : i - 1 - vanEckNthTerm i = j - 1 - vanEckNthTerm j := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:121:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                       ↓
+  ⏎      _ = j - 1 - vanEckNthTerm j := (Nat.sub_right_comm j 1 (vanEckNthTerm j)).symm⏎⏎  have ha_eq : vanEckNthTerm (i - 1) = vanEckNthTerm (j - 1) := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:124:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                ↓
+  ⏎    rw [hd_i, hd_j, h_sub_eq]⏎⏎  have h_a_j : vanEckNthTerm j = matchSearch (vanEck (j - 1)) (j - 1) := vanEck_term_is_matchSearch j (Nat.le_trans (by decide) hj_ge_2)⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:128:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                               ↓
+  ⏎  have hk_lt : i - 1 < j - 1 := Nat.sub_lt_sub_right (Nat.le_trans (by decide) hi_ge_2) h_lt⏎⏎  have hl_len : (vanEck (j - 1)).length = j := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:135:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                              ↓
+  ⏎  have hl_len_sub_1 : (vanEck (j - 1)).length - 1 = j - 1 := by rw [hl_len]⏎⏎  have h_match : listNth (vanEck (j - 1)) ((vanEck (j - 1)).length - 1) = listNth (vanEck (j - 1)) (i - 1) := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:146:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                       ↓
+  ⏎    exact ha_eq.symm⏎⏎  have h_first := matchSearch_first (vanEck (j - 1)) (j - 1) (i - 1) hj_neq hk_lt h_match⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:150:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                            ↓
+  ⏎  rw [← h_a_j] at h_first⏎⏎  have h_j_sub : j - vanEckNthTerm j ≥ i := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:162:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                      ↓
+  ⏎      _ = i := Nat.sub_sub_self (Nat.le_of_lt h_lt)⏎⏎  have h_contra : j - vanEckNthTerm j < i := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:167:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                           ↓
+  ⏎      _ < i := Nat.sub_lt h_i_pos hi_pos⏎⏎  have h_not : ¬(j - vanEckNthTerm j ≥ i) := Nat.not_le_of_lt h_contra⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:118:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:125:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:126:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:136:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:141:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:156:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:181:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+               ↓
+  ⏎  intro h_eq⏎⏎  have hi_ge_1 : i ≥ 1 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:179:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ImpossiblePatterns.lean:357:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                               ↓
+  ⏎    have h_prev := ih h_le_m⏎⏎    by_cases hk_ge : k ≥ n - m⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:361:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                  ↓
+  ⏎    · have h_k_eq : k = n - (m + 1) := by omega⏎⏎      let k2 := k + c + 1⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:365:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                           ↓
+  ⏎      have h1 : vanEckNthTerm k2 = c := h_prev k2 hk2_ge⏎⏎      let k1 := k + c⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ImpossiblePatterns.lean:369:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                           ↓
+  ⏎      have h2 : vanEckNthTerm k1 = c := h_prev k1 hk1_ge⏎⏎      have hk1_ge1 : k1 ≥ 1 := by omega⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+⚠ [8253/8253] Built InfiniteTwos (11s)
+warning: InfiniteTwos.lean:18:8: declaration uses `sorry`
+warning: InfiniteTwos.lean:48:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                    ↓
+  ⏎  by_contra h_new⏎⏎  have h_new_forall : ∀ i < z + 1, vanEckNthTerm i ≠ vanEckNthTerm (z + 1) := by {⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:54:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+      ↓
+  ⏎  }⏎⏎  have hz2 : vanEckNthTerm (z + 2) = 0 := (vanEck_mth_term_eq_zero_iff_prev_term_new z).mpr h_new_forall⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:56:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                           ↓
+  ⏎  have hz2 : vanEckNthTerm (z + 2) = 0 := (vanEck_mth_term_eq_zero_iff_prev_term_new z).mpr h_new_forall⏎⏎  have hz1_neq_0 : vanEckNthTerm (z + 1) ≠ 0 := by {⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:63:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+      ↓
+  ⏎  }⏎⏎  have hl_z : lastZero z = z := by {⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:71:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+      ↓
+  ⏎  }⏎⏎  have hl_z1 : lastZero (z + 1) = z := by {⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:77:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+      ↓
+  ⏎  }⏎⏎  have h_dist := vanEck_distance_to_prev_zero (z + 1) hz2⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:91:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+      ↓
+  ⏎  }⏎⏎  have hz3_gt : z + 3 > N_0 := by {⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:96:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+      ↓
+  ⏎  }⏎⏎  have h_contra := h_no_twos (z + 3) hz3_gt⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:55:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:115:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+            ↓
+  ⏎  intro N⏎⏎  -- We obtain a zero-gap after N that is a brand new number.⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:119:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                ↓
+  ⏎  rcases h_ex with ⟨z, hz_gt, hz_zero, h_new⟩⏎⏎  -- We provide z + 3 as the index where 2 will be generated.⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:122:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+              ↓
+  ⏎  use z + 3⏎⏎  constructor⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:129:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                      ↓
+  ⏎    have hz2 : vanEckNthTerm (z + 2) = 0 := (vanEck_mth_term_eq_zero_iff_prev_term_new z).mpr h_new⏎⏎    have hz1_neq_0 : vanEckNthTerm (z + 1) ≠ 0 := by {⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:136:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+        ↓
+  ⏎    }⏎⏎    have hl_z : lastZero z = z := by {⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:144:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+        ↓
+  ⏎    }⏎⏎    have hl_z1 : lastZero (z + 1) = z := by {⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:150:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+        ↓
+  ⏎    }⏎⏎    have h_dist := vanEck_distance_to_prev_zero (z + 1) hz2⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:170:8: declaration uses `sorry`
+warning: InfiniteTwos.lean:250:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                        ↓
+  ⏎  rw [listNth_drop (n - B) k (vanEck (n - 1))] at heq⏎⏎  have h_idx_le : n - B + k ≤ n - 1 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:256:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                           ↓
+  ⏎         _ = n - 1 := by rw [Nat.sub_add_cancel (Nat.le_trans (Nat.le_add_left B N) hN)]⏎⏎  have h_det : listNth (vanEck (n - 1)) (n - B + k) = vanEckNthTerm (n - B + k) :=⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:259:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                        ↓
+  ⏎    VanEck_deterministic (n - 1) (n - B + k) h_idx_le⏎⏎  have h_idx_ge : N ≤ n - B + k := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:263:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                 ↓
+  ⏎         _ ≤ n - B + k := Nat.le_add_right _ _⏎⏎  have hn_pos : n > 0 := Nat.lt_of_lt_of_le hB0 (Nat.le_trans (Nat.le_add_left B N) hN)⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:268:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                       ↓
+  ⏎         _ < n := Nat.sub_lt_self (by decide) hn_pos⏎⏎  rw [heq, h_det]⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:289:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                      ↓
+  ⏎  let f : ℕ → ℕ := fun x => stateEval (vanEckState (N + B + x) B) B⏎⏎  have h_G_minus : N + B + M < N + G - 1 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:301:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                 ↓
+  ⏎    exact Nat.lt_of_succ_le h4⏎⏎  have hb0 : B > 0 := Nat.lt_trans (Nat.zero_lt_succ 0) hB_gt⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:303:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                ↓
+  ⏎  have hb0 : B > 0 := Nat.lt_trans (Nat.zero_lt_succ 0) hB_gt⏎⏎  have h_lim : ∀ x, x ≤ M → f x < M := fun x hx => by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:311:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                   ↓
+  ⏎      vanEckState_length (N + B + x) B hx_ge hb0⏎⏎    have h_state_bounded : IsBoundedState (vanEckState (N + B + x) B) B := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:319:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                        ↓
+  ⏎           _ < N + G - 1 := h_G_minus⏎⏎    have hl := stateEval_lt_pow (vanEckState (N + B + x) B) B hB_gt h_state_bounded⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:323:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+               ↓
+  ⏎    exact hl⏎⏎  let f_fin : Fin (M + 1) → Fin M := fun x => ⟨f x.val, h_lim x.val (Nat.le_of_lt_succ x.isLt)⟩⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:329:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                              ↓
+  ⏎  have heq_val : f x.val = f y.val := congr_arg Fin.val heq⏎⏎  have hx_ge : B ≤ N + B + x.val := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:336:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                     ↓
+  ⏎         _ ≤ N + B + y.val := Nat.le_add_right _ _⏎⏎  have h_state_bounded_x : IsBoundedState (vanEckState (N + B + x.val) B) B := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:344:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                      ↓
+  ⏎         _ < N + G - 1 := h_G_minus⏎⏎  have h_state_bounded_y : IsBoundedState (vanEckState (N + B + y.val) B) B := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:352:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                      ↓
+  ⏎         _ < N + G - 1 := h_G_minus⏎⏎  have h_state_eq : vanEckState (N + B + x.val) B = vanEckState (N + B + y.val) B := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:359:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                      ↓
+  ⏎    · exact heq_val⏎⏎  by_cases h_lt : x.val < y.val⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:355:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:368:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:391:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                            ↓
+  ⏎  have hn2_pos : 0 < n_2 := Nat.lt_of_lt_of_le hb0 hn2_ge⏎⏎  have hL1_len : (vanEck (n_1 - 1)).length ≥ B := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:396:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                           ↓
+  ⏎    rw [h]; exact hn1_ge⏎⏎  have hL2_len : (vanEck (n_2 - 1)).length ≥ B := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:401:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                           ↓
+  ⏎    rw [h]; exact hn2_ge⏎⏎  have h_van_eq : (vanEck (n_1 - 1)).drop ((vanEck (n_1 - 1)).length - B) =⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:410:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                 ↓
+  ⏎    exact h_eq⏎⏎  have ht1 := vanEck_term_is_matchSearch n_1 hn1_pos⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:413:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                       ↓
+  ⏎  have ht2 := vanEck_term_is_matchSearch n_2 hn2_pos⏎⏎  have hind1 : n_1 - 1 = (vanEck (n_1 - 1)).length - 1 := by rw [vanEckLength, Nat.add_sub_cancel]⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:416:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                     ↓
+  ⏎  have hind2 : n_2 - 1 = (vanEck (n_2 - 1)).length - 1 := by rw [vanEckLength, Nat.add_sub_cancel]⏎⏎  have h_lhs : matchSearch (vanEck (n_1 - 1)) ((vanEck (n_1 - 1)).length - 1) = vanEckNthTerm n_1 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:419:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                   ↓
+  ⏎    rw [← hind1]; exact ht1.symm⏎⏎  have h_rhs_term : matchSearch (vanEck (n_2 - 1)) ((vanEck (n_2 - 1)).length - 1) = vanEckNthTerm n_2 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:422:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                   ↓
+  ⏎    rw [← hind2]; exact ht2.symm⏎⏎  have h_aux := matchSearch_symm_aux (vanEck (n_1 - 1)) (vanEck (n_2 - 1)) B hb0 hL1_len hL2_len h_van_eq (vanEckNthTerm n_1) d1_lt h_lhs d1_pos⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:417:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:420:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:423:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:461:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                    ↓
+  ⏎    rw [hk1, hk2]⏎⏎    have h_s1 := vanEckState_succ (n_1 + k) B (Nat.le_trans hn1_ge (Nat.le_add_right n_1 k)) hb0⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:464:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                   ↓
+  ⏎    have h_s2 := vanEckState_succ (n_2 + k) B (Nat.le_trans hn2_ge (Nat.le_add_right n_2 k)) hb0⏎⏎    have h_next_state : vanEckState ((n_1 + k) + 1) B = vanEckState ((n_2 + k) + 1) B := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:467:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                           ↓
+  ⏎      rw [h_s1, h_s2, ih_state, ih_term]⏎⏎    constructor⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:453:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:488:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                                                  ↓
+  ⏎  have h_G_large : G ≥ (vanEckPrefixMax N + 1) ^ (vanEckPrefixMax N + 1) + (vanEckPrefixMax N + 1) + 2 := Nat.le_of_not_lt h_ge⏎⏎  let M := vanEckPrefixMax N⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:497:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                ↓
+  ⏎    exact Nat.succ_lt_succ hM⏎⏎  have h_bound : ∀ k, N ≤ k → k < N + G - 1 → vanEckNthTerm k < B := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:505:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                 ↓
+  ⏎    exact Nat.lt_succ_of_le h1⏎⏎  have h_coll := local_pigeonhole_state_collision N G B h_bound hB_gt h_G_large⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:508:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                   ↓
+  ⏎  rcases h_coll with ⟨n_1, n_2, hn1_ge, hn1_lt_n2, hn2_lt, h_eq⟩⏎⏎  have h_NG_minus_2 : N + G ≥ 2 := Nat.le_trans hN_ge (Nat.le_add_right N G)⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:510:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                               ↓
+  ⏎  have h_NG_minus_2 : N + G ≥ 2 := Nat.le_trans hN_ge (Nat.le_add_right N G)⏎⏎  let K := N + G - 1 - n_2⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:515:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                        ↓
+  ⏎    exact Nat.add_sub_cancel' h_n2_le⏎⏎  have hd1_lt : ∀ k ≤ K, vanEckNthTerm (n_1 + k) < B := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:529:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                 ↓
+  ⏎    exact Nat.lt_succ_of_le h1⏎⏎  have hd1_pos : ∀ k ≤ K, vanEckNthTerm (n_1 + k) > 0 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:543:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                  ↓
+  ⏎    exact Nat.pos_of_ne_zero hz⏎⏎  have h_per := local_forward_periodicity_left B n_1 n_2 K h_eq (Nat.le_trans (Nat.le_add_left B N) hn1_ge) (Nat.le_trans (Nat.le_add_left B N) (Nat.le_trans hn1_ge (Nat.le_of_lt hn1_lt_n2))) hb0 hd1_lt hd1_pos⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:545:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                                                                                                                                     ↓
+  ⏎  have h_per := local_forward_periodicity_left B n_1 n_2 K h_eq (Nat.le_trans (Nat.le_add_left B N) hn1_ge) (Nat.le_trans (Nat.le_add_left B N) (Nat.le_trans hn1_ge (Nat.le_of_lt hn1_lt_n2))) hb0 hd1_lt hd1_pos⏎⏎  have h_term_eq := (h_per K (Nat.le_refl K)).right⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:548:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                             ↓
+  ⏎  rw [h_n2_K] at h_term_eq⏎⏎  have h_contra_lt : n_1 + K < N + G - 1 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:552:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                   ↓
+  ⏎         _ = N + G - 1 := h_n2_K⏎⏎  have h_iff := vanEck_mth_term_eq_zero_iff_prev_term_new (N + G - 2)⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:557:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                      ↓
+  ⏎  have h_new := h_iff.mp h_end_zero⏎⏎  have h_sub_add1 : N + G - 2 + 1 = N + G - 1 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:564:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                             ↓
+  ⏎  rw [h_sub_add1] at h_new⏎⏎  have h_not_eq := h_new (n_1 + K) h_contra_lt⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:487:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:500:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:501:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:526:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:544:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:584:5: unused variable `h_dense`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: InfiniteTwos.lean:593:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:615:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:616:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:627:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:731:38: unused variable `hP`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: InfiniteTwos.lean:732:5: unused variable `hv1`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: InfiniteTwos.lean:759:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:772:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:793:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:797:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:798:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:803:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:804:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:807:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:808:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:828:1: 'lemma fin_sum_three {n : ℕ} (hn : n = 3) (f : Fin n → ℕ) :
+    ∑ k : Fin n, f k = f ⟨0, by omega⟩ + f ⟨1, by omega⟩ + f ⟨2, by omega⟩ := by
+  {
+  subst hn
+  exact Fin.sum_univ_three f
+}' starts on column 1, but all commands should start at the beginning of the line.
+
+Note: This linter can be disabled with `set_option linter.style.whitespace false`
+warning: InfiniteTwos.lean:841:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:844:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:847:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:857:5: unused variable `h_K_large`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: InfiniteTwos.lean:868:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:875:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:895:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:899:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:936:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                    ↓
+  ⏎    have hjK : j ≤ K := Nat.le_trans hjP h_P_le_K⏎⏎    have h_vi_le := h_val_le_P i hi1 hiK⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:941:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                              ↓
+  ⏎    have h_vj_pos : vanEckNthTerm (n_2 + j) > 0 := Nat.pos_of_ne_zero (h_no_zero j hj1 hjK)⏎⏎    let A := i + P - vanEckNthTerm (n_2 + i)⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:944:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                               ↓
+  ⏎    let B := j + P - vanEckNthTerm (n_2 + j)⏎⏎    have hA_lt : A < 2 * P := by {⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:957:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+        ↓
+  ⏎    }⏎⏎    have h_cases := mod_eq_cases A B P hA_lt hB_lt hc⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:959:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                        ↓
+  ⏎    have h_cases := mod_eq_cases A B P hA_lt hB_lt hc⏎⏎    rcases h_cases with h1 | h2 | h3⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:993:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                  ↓
+  ⏎        have h_vi_le_add : vanEckNthTerm (n_2 + i) ≤ n_2 + i := Nat.le_trans h_vi_le (by omega)⏎⏎        apply Nat.add_right_cancel (m := P)⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1007:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                                            ↓
+  ⏎               _ = j + P - vanEckNthTerm (n_2 + j) + n_1 := Nat.sub_add_comm (Nat.le_trans h_vj_le (Nat.le_add_left P j))⏎⏎        rw [h_left, h_right]⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1038:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+      ↓
+  ⏎  }⏎⏎  let f : Fin P → Fin P := fun k => ⟨(k.val + 1 + P - vanEckNthTerm (n_2 + k.val + 1)) % P, Nat.mod_lt _ (Nat.pos_of_ne_zero (by omega))⟩⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:925:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:966:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:967:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:968:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:969:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:970:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:991:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:995:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:997:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:999:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1000:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1004:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1006:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1009:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1024:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1039:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1060:6: declaration uses `sorry`
+warning: InfiniteTwos.lean:1072:6: declaration uses `sorry`
+warning: InfiniteTwos.lean:1082:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1087:6: declaration uses `sorry`
+warning: InfiniteTwos.lean:1386:46: This simp argument is unused:
+  Finset.card_fin
+
+Hint: Omit it from the simp argument list.
+  simp [Finset.sum_const,̵ ̵F̵i̵n̵s̵e̵t̵.̵c̵a̵r̵d̵_̵f̵i̵n̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: InfiniteTwos.lean:1272:6: 'simp at hp0' is a flexible tactic modifying 'hp0'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: InfiniteTwos.lean:1272:19: 'rw [h_n2] at hp0' uses 'hp0'!
+warning: InfiniteTwos.lean:1272:6: 'simp at hp0' is a flexible tactic modifying 'hp0'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: InfiniteTwos.lean:1272:37: 'exact hp0' uses 'hp0'!
+warning: InfiniteTwos.lean:1284:19: The following tactic starts with 2 goals and ends with 1 goal, 1 of which is not operated on.
+  exact h1
+Please focus on the current goal, for instance using `·` (typed as "\.").
+
+Note: This linter can be disabled with `set_option linter.style.multiGoal false`
+warning: InfiniteTwos.lean:1313:23: The following tactic starts with 2 goals and ends with 1 goal, 1 of which is not operated on.
+  exact hv2_1
+Please focus on the current goal, for instance using `·` (typed as "\.").
+
+Note: This linter can be disabled with `set_option linter.style.multiGoal false`
+warning: InfiniteTwos.lean:1121:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1211:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1344:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1345:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1354:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1576:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                          ↓
+  ⏎  push Not at h_no_twos⏎⏎  -- From h_dense, we obtain a dense block far out in the sequence.⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1583:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                  ↓
+  ⏎  rcases h_ex with ⟨start, h_start_gt, h_block⟩⏎⏎  -- By our stepping stone, this dense block has NO alternating pairs.⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1589:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+      ↓
+  ⏎  )⏎⏎  -- Because the block is bounded strictly by B + 1, we can apply our⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1594:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                   ↓
+  ⏎  let G_small := (B + 1) ^ (B + 1) + (B + 1) + 2⏎⏎  have h_bound : ∀ k, start ≤ k → k < start + G_small - 1 → vanEckNthTerm k < B + 1 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1605:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                   ↓
+  ⏎    exact Nat.lt_succ_of_le h_le⏎⏎  have hB1_gt : B + 1 > 1 := Nat.add_lt_add_right hB_gt 1⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1607:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                            ↓
+  ⏎  have hB1_gt : B + 1 > 1 := Nat.add_lt_add_right hB_gt 1⏎⏎  have h_coll := local_pigeonhole_state_collision start G_small (B + 1) h_bound hB1_gt (Nat.le_refl _)⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1609:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                         ↓
+  ⏎  have h_coll := local_pigeonhole_state_collision start G_small (B + 1) h_bound hB1_gt (Nat.le_refl _)⏎⏎  rcases h_coll with ⟨n_1, n_2, hn1_ge, hn1_lt_n2, hn2_lt, h_state_eq⟩⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1611:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                         ↓
+  ⏎  rcases h_coll with ⟨n_1, n_2, hn1_ge, hn1_lt_n2, hn2_lt, h_state_eq⟩⏎⏎  -- We now have n_1 < n_2 with exactly matching states of length B+1!⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1615:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                           ↓
+  ⏎  let K := n_2 - n_1 + 3⏎⏎  have hd1_lt : ∀ k ≤ K, vanEckNthTerm (n_1 + k) < B + 1 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1635:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                      ↓
+  ⏎      rw [h4] at h3⏎⏎      have h5 : n_2 - start < G_small - 1 := Nat.sub_lt_left_of_lt_add (Nat.le_trans (Nat.le_add_right start (B + 1)) hn1_ge |>.trans (Nat.le_of_lt hn1_lt_n2)) hn2_lt⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1641:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                   ↓
+  ⏎      exact Nat.lt_of_le_of_lt h3 (Nat.lt_of_lt_of_le h6 (by rw [h8]; exact h7))⏎⏎    have h_le := h_block (n_1 + k - start) hk_lt_G⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1646:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                   ↓
+  ⏎    exact Nat.lt_succ_of_le h_le⏎⏎  have hd1_pos : ∀ k ≤ K, vanEckNthTerm (n_1 + k) > 0 := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1718:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                           ↓
+  ⏎    exact h_contra hj_eq⏎⏎  have hn1_ge_B : B + 1 ≤ n_1 := Nat.le_trans (Nat.le_add_left (B + 1) start) hn1_ge⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1721:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                  ↓
+  ⏎  have hn2_ge_B : B + 1 ≤ n_2 := Nat.le_trans hn1_ge_B (Nat.le_of_lt hn1_lt_n2)⏎⏎  have h_per := local_forward_periodicity_left (B + 1) n_1 n_2 K h_state_eq hn1_ge_B hn2_ge_B (Nat.zero_lt_succ B) hd1_lt hd1_pos⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1723:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                                                                                                                    ↓
+  ⏎  have h_per := local_forward_periodicity_left (B + 1) n_1 n_2 K h_state_eq hn1_ge_B hn2_ge_B (Nat.zero_lt_succ B) hd1_lt hd1_pos⏎⏎  have h_contra := local_periodicity_impossible n_1 n_2 K hn1_lt_n2 (Nat.le_refl _) (by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1730:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+      ↓
+  ⏎  )⏎⏎⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: InfiniteTwos.lean:1585:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1592:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1608:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1618:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1629:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1636:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1688:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1694:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1703:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1722:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: InfiniteTwos.lean:1732:100: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+Build completed successfully (8253 jobs).

@@ -1,0 +1,29 @@
+/-
+Copyright (c) 2026 Austin Anderson
+SPDX-License-Identifier: MIT
+
+Note: Gemini was used for both intuition and especially detailed entry in formalizing this proof.
+-/
+import Mathlib
+import VanEck
+import LimSup
+import ImpossiblePatterns
+import FinishedSurjLemmas
+
+
+/--
+Infinite Twos Lemma
+
+To prove: The number 2 appears infinitely many times in the Van Eck sequence.
+-/
+theorem infinite_twos_vanEck (N : ℕ) : ∃ m > N, vanEckNthTerm m = 2 := by {
+  sorry
+}
+
+/--
+valueCount counts the number of occurrences of a specific value up to index m.
+This acts as a histogram function.
+-/
+def valueCount (val : ℕ) : ℕ → ℕ
+  | 0 => if vanEckNthTerm 0 = val then 1 else 0
+  | m + 1 => if vanEckNthTerm (m + 1) = val then valueCount val m + 1 else valueCount val m
