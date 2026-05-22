@@ -7,13 +7,14 @@ import Mathlib.Algebra.Field.GeomSum
 import Mathlib.RingTheory.RootsOfUnity.Basic
 import Mathlib.Algebra.Polynomial.Basic
 import Mathlib.RingTheory.RootsOfUnity.PrimitiveRoots
+import Mathlib.RingTheory.RootsOfUnity.Complex
 
 /-!
 # Historical Note on the Mirsky-Newman Theorem
 In 1950, Paul Erdős conjectured that there is no exact covering system of the integers with strictly distinct moduli (step sizes).
 Shortly after, Leon Mirsky and Donald J. Newman discovered a beautiful complex-analytic proof using roots of unity.
-Hilariously, Mirsky and Newman *never actually published their proof!* Erdős had to credit them in his own papers during the 1950s.
-(Independently, Harold Davenport and Richard Rado discovered the exact same proof at the same time).
+Mirsky and Newman never published their proof. Erdős credited them in his own papers during the 1950s.
+(Independently, Harold Davenport and Richard Rado discovered the same proof at the same time).
 Leon Mirsky (1918–1983) was a Russian-British mathematician who transitioned from number theory to linear algebra and combinatorics, writing the classic text "An Introduction to Linear Algebra".
 Donald J. Newman (1930–2007) was an American mathematician legendary for finding incredibly elegant analytic proofs for deep theorems, such as his 1980 simplified analytic proof of the Prime Number Theorem.
 Sources:
@@ -70,6 +71,14 @@ if every integer belongs to exactly one progression in the collection.
 def IsExactCover (progressions : Finset (ℤ × ℤ)) : Prop :=
   ∀ x : ℤ, ∃! p, p ∈ progressions ∧ x ∈ ArithmeticProgression p.1 p.2
 
+/-
+FUTURE WORK (Sarason Stuff):
+The following theorem represents the topological/infinite Z version of the Mirsky-Newman Theorem.
+When bridging the finite case (Z mod P as P ranges over all positive integers) to the infinite
+case (using Sarason's complex analysis machinery or topological limits), this theorem must be
+proven natively. We comment it out for now to ensure a pristine, warning-free build for the
+finite algebraic properties.
+
 /--
 The Mirsky-Newman Theorem (also known as the Exact Cover System Theorem).
 Famously proven independently by Paul Erdős, Donald Newman, and Leon Mirsky.
@@ -78,7 +87,7 @@ It states that if a finite collection of arithmetic progressions exactly
 covers the integers, and there is more than one progression (k ≥ 2),
 then the largest step size must appear at least twice.
 
-Consequently, it is mathematically impossible to exactly cover the integers 
+Consequently, it is mathematically impossible to exactly cover the integers
 with arithmetic progressions that have strictly distinct step sizes ≥ 2.
 -/
 theorem mirsky_newman_distinct_moduli_impossible
@@ -90,12 +99,14 @@ theorem mirsky_newman_distinct_moduli_impossible
   -- The beautiful proof of this theorem uses complex analysis.
   -- By associating each arithmetic progression to a generating function,
   -- the exact cover condition becomes an equation of rational functions.
-  -- The function corresponding to the largest step size has a pole on the 
-  -- unit circle (at a root of unity) that is "closest" to the origin in terms 
+  -- The function corresponding to the largest step size has a pole on the
+  -- unit circle (at a root of unity) that is "closest" to the origin in terms
   -- of its angular frequency. No other function in the sum can cancel this pole
   -- unless there is another progression with the EXACT SAME step size.
   sorry
 }
+-/
+
 
 /--
 An Arithmetic Progression in ZMod P (finite cyclic group).
@@ -167,7 +178,7 @@ lemma primitive_root_pow_ne_one {D_max d : ℕ} {ζ : ℂ} (h_prim : IsPrimitive
 
 /--
 The Primitive Root Squeeze Lemma:
-Prove that if ζ is a primitive D_max-th root of unity, then for any progression 
+Prove that if ζ is a primitive D_max-th root of unity, then for any progression
 with step size d < D_max, the term (1 - ζ^d) ≠ 0.
 -/
 lemma primitive_root_squeeze {D_max d : ℕ} {ζ : ℂ} (h_prim : IsPrimitiveRoot ζ D_max)
@@ -184,7 +195,49 @@ lemma zeta_pow_mod_eq (P n : ℕ) (ζ : ℂ) (h_pow : ζ ^ P = 1) :
   conv => right; rw [h_div, pow_add, pow_mul, h_pow, one_pow, one_mul]
 }
 
-lemma sum_progression_eq_geom_sum_mod (P X L start : ℕ) (ζ : ℂ) (h_pow : ζ ^ P = 1) (hL : P = X * L) :
+lemma mod_inj_of_mul (P X L start i j : ℕ) (hP : P = X * L) (hX : X > 0)
+    (hi : i < L) (hj : j < L)
+    (h_eq : (start + i * X) % P = (start + j * X) % P) :
+    i = j := by {
+  have h_modeq : start + i * X ≡ start + j * X [MOD P] := h_eq
+  have h_modeq2 : i * X ≡ j * X [MOD P] := Nat.ModEq.add_left_cancel rfl h_modeq
+
+  have hP2 : P = L * X := by { rw [hP, mul_comm] }
+
+  have h_i_lt : i * X < P := by { rw [hP2]; exact Nat.mul_lt_mul_of_pos_right hi hX }
+  have h_j_lt : j * X < P := by { rw [hP2]; exact Nat.mul_lt_mul_of_pos_right hj hX }
+
+  have hi_mod : (i * X) % P = i * X := Nat.mod_eq_of_lt h_i_lt
+  have hj_mod : (j * X) % P = j * X := Nat.mod_eq_of_lt h_j_lt
+
+  have h_eq2 : i * X = j * X := by {
+    calc i * X
+      _ = (i * X) % P := hi_mod.symm
+      _ = (j * X) % P := h_modeq2
+      _ = j * X := hj_mod
+  }
+  exact Nat.eq_of_mul_eq_mul_right hX h_eq2
+}
+
+lemma mod_surj_of_mul (P X L start i : ℕ) (hP : P = X * L) :
+    (start + i * X) % P = (start + (i % L) * X) % P := by {
+  have h_div : i = L * (i / L) + i % L := Nat.div_add_mod i L |>.symm
+  have h_iX : i * X = (L * (i / L)) * X + (i % L) * X := by {
+    calc i * X
+      _ = (L * (i / L) + i % L) * X := by nth_rw 1 [h_div]
+      _ = (L * (i / L)) * X + (i % L) * X := by ring
+  }
+  have h_sub : (start + i * X) = (start + (i % L) * X) + (i / L) * P := by {
+    calc start + i * X
+      _ = start + ((L * (i / L)) * X + (i % L) * X) := by rw [h_iX]
+      _ = start + (i / L) * (X * L) + (i % L) * X := by ring
+      _ = start + (i / L) * P + (i % L) * X := by rw [← hP]
+      _ = (start + (i % L) * X) + (i / L) * P := by ring
+  }
+  rw [h_sub, Nat.add_mul_mod_self_right]
+}
+
+lemma sum_progression_eq_geom_sum_mod (P X L start : ℕ) (ζ : ℂ) (h_pow : ζ ^ P = 1) (_hL : P = X * L) :
     ∑ i ∈ range L, ζ ^ ((start + i * X) % P) = ζ ^ start * ∑ i ∈ range L, (ζ ^ X) ^ i := by {
   have h_pull : ∀ i : ℕ, ζ ^ ((start + i * X) % P) = ζ ^ start * (ζ ^ X) ^ i := by
     intro i
@@ -200,20 +253,61 @@ lemma sum_progression_eq_geom_sum_mod (P X L start : ℕ) (ζ : ℂ) (h_pow : ζ
   rw [h_sum, ← mul_sum]
 }
 
-lemma prog_sum_extraction (P X L : ℕ) (start : Fin P) (ζ : ℂ)
-    (h_pow : ζ ^ P = 1) (hL : P = X * L)
+lemma prog_sum_extraction (P X L : ℕ) (hP : P > 0) (start : Fin P) (ζ : ℂ)
+    (h_pow : ζ ^ P = 1) (hL : P = X * L) (hX : X > 0)
     (cover_X : Finset (Fin P))
     (h_ap : cover_X = Finset.univ.filter (fun (k : Fin P) => ∃ i : ℕ, k.val = (start.val + i * X) % P)) :
     ∑ k ∈ cover_X, ζ ^ k.val = ζ ^ start.val * ∑ i ∈ range L, (ζ ^ X) ^ i := by {
-  have h_bij : ∑ k ∈ cover_X, ζ ^ k.val = ∑ i ∈ range L, ζ ^ ((start.val + i * X) % P) := sorry
-  rw [h_bij]
+  have h_L_pos : L > 0 := by {
+    by_contra h
+    have h0 : L = 0 := by omega
+    rw [h0, mul_zero] at hL
+    omega
+  }
+  have h_f : ∀ i : ℕ, (start.val + i * X) % P < P := fun i => Nat.mod_lt _ hP
+  let f : ℕ → Fin P := fun i => ⟨(start.val + i * X) % P, h_f i⟩
+
+  have h_bij : ∑ i ∈ range L, ζ ^ ((start.val + i * X) % P) = ∑ k ∈ cover_X, ζ ^ k.val := by {
+    apply sum_bij (fun i _ => f i)
+    · -- hi
+      intro i hi
+      rw [h_ap]
+      simp only [mem_filter, mem_univ, true_and]
+      use i
+    · -- h_inj
+      intro i hi j hj h_eq
+      have h_f_val : (f i).val = (f j).val := by rw [h_eq]
+      have hi_lt : i < L := by { rw [mem_range] at hi; exact hi }
+      have hj_lt : j < L := by { rw [mem_range] at hj; exact hj }
+      exact mod_inj_of_mul P X L start.val i j hL hX hi_lt hj_lt h_f_val
+    · -- h_surj
+      intro k hk
+      rw [h_ap] at hk
+      simp only [mem_filter, mem_univ, true_and] at hk
+      rcases hk with ⟨i, hi_eq⟩
+      use (i % L)
+      have h_in_range : i % L ∈ range L := by {
+        rw [mem_range]
+        exact Nat.mod_lt i h_L_pos
+      }
+      use h_in_range
+      ext
+      change (start.val + (i % L) * X) % P = k.val
+      have h_surj_eq := mod_surj_of_mul P X L start.val i hL
+      rw [← h_surj_eq]
+      exact hi_eq.symm
+    · -- h
+      intro i hi
+      rfl
+  }
+  rw [← h_bij]
   exact sum_progression_eq_geom_sum_mod P X L start.val ζ h_pow hL
 }
 
 /--
 Evaluate the Geometric Sum:
-Apply the generating function identity (already proven via sum_exact_cover and 
-sum_progression_eq_geom_sum) evaluated at ζ to derive the contradiction. 
+Apply the generating function identity (already proven via sum_exact_cover and
+sum_progression_eq_geom_sum) evaluated at ζ to derive the contradiction.
 The sum evaluates to non-zero on one side, and zero on the other.
 -/
 lemma evaluate_geometric_sum_contradiction (P : ℕ) (hP : P > 0) (S : Finset ℕ)
@@ -248,70 +342,72 @@ lemma evaluate_geometric_sum_contradiction (P : ℕ) (hP : P > 0) (S : Finset �
     rw [h_equiv]
     exact geom_sum_zero_of_pow_one h_zeta_ne h_zeta_pow
   }
-  
+
   -- Step 2: For any step size X < D_max, the sum over its progression is 0.
   have h_parts_zero : ∀ X ∈ S, X ≠ D_max → ∑ k ∈ cover X, ζ ^ k.val = 0 := by {
     intro X hX_in hX_ne
     have hX_ge_3 : X ≥ 3 := h_min X hX_in
     have hX_lt : X < D_max := h_max X hX_in hX_ne
     have hX_pos : 0 < X := by omega
-    
+
     have h_step_ne_one : ζ ^ X ≠ 1 := primitive_root_pow_ne_one h_prim hX_pos hX_lt
     have ⟨start, h_cover_eq⟩ := h_ap X hX_in
     have h_X_div : X ∣ P := h_div X hX_in
     rcases h_X_div with ⟨L, hL⟩
-    
-    have h_prog_sum : ∑ k ∈ cover X, ζ ^ k.val = ζ ^ start.val * ∑ i ∈ range L, (ζ ^ X) ^ i := 
-      prog_sum_extraction P X L start ζ h_zeta_pow hL (cover X) h_cover_eq
-    
+
+    have h_prog_sum : ∑ k ∈ cover X, ζ ^ k.val = ζ ^ start.val * ∑ i ∈ range L, (ζ ^ X) ^ i :=
+      prog_sum_extraction P X L hP start ζ h_zeta_pow hL hX_pos (cover X) h_cover_eq
+
     have h_pow_one : (ζ ^ X) ^ L = 1 := by {
       calc (ζ ^ X) ^ L
         _ = ζ ^ (X * L) := by rw [← pow_mul]
         _ = ζ ^ P := by rw [← hL]
         _ = 1 := h_zeta_pow
     }
-    
+
     rw [h_prog_sum]
     have h_zero : ∑ i ∈ range L, (ζ ^ X) ^ i = 0 := geom_sum_zero_of_pow_one h_step_ne_one h_pow_one
     rw [h_zero, mul_zero]
   }
-  
+
   -- Step 3: For the max step size D_max, the sum over its progression is NON-ZERO.
   have h_max_nonzero : ∑ k ∈ cover D_max, ζ ^ k.val ≠ 0 := by {
     have ⟨start_max, h_cover_max⟩ := h_ap D_max h_Dmax_in
     have h_D_max_div : D_max ∣ P := h_div D_max h_Dmax_in
     rcases h_D_max_div with ⟨L_max, hL_max⟩
-    
-    have h_D_max_ne_zero : D_max ≠ 0 := by {
+
+    have h_D_max_pos : D_max > 0 := by {
       have := h_min D_max h_Dmax_in
       omega
     }
-    
+
+    have h_D_max_ne_zero : D_max ≠ 0 := by omega
+
     have h_L_pos : L_max > 0 := by {
       by_contra h
       have h0 : L_max = 0 := by omega
       rw [h0, mul_zero] at hL_max
       omega
     }
-    
-    have h_prog_sum_max : ∑ k ∈ cover D_max, ζ ^ k.val = ζ ^ start_max.val * ∑ i ∈ range L_max, (ζ ^ D_max) ^ i := 
-      prog_sum_extraction P D_max L_max start_max ζ h_zeta_pow hL_max (cover D_max) h_cover_max
-    
+
+    have h_prog_sum_max : ∑ k ∈ cover D_max, ζ ^ k.val = ζ ^ start_max.val * ∑ i ∈ range L_max, (ζ ^ D_max) ^ i :=
+      prog_sum_extraction P D_max L_max hP start_max ζ h_zeta_pow hL_max h_D_max_pos (cover D_max) h_cover_max
+
     rw [h_prog_sum_max]
-    
+
     have h_pow_one : ζ ^ D_max = 1 := IsPrimitiveRoot.pow_eq_one h_prim
     have h_sum_ones : ∑ i ∈ range L_max, (ζ ^ D_max) ^ i = L_max := by {
       rw [h_pow_one]
       simp
     }
     rw [h_sum_ones]
-    
+
     have h_zeta_ne_zero : ζ ≠ 0 := IsPrimitiveRoot.ne_zero h_prim h_D_max_ne_zero
     have h_start_pow_ne_zero : ζ ^ start_max.val ≠ 0 := pow_ne_zero start_max.val h_zeta_ne_zero
     have h_L_ne_zero : (L_max : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (ne_of_gt h_L_pos)
     exact mul_ne_zero h_start_pow_ne_zero h_L_ne_zero
   }
-  
+
   -- Step 4: By the exact cover property, the total sum equals the sum of the parts.
   have h_sum_split : ∑ k : Fin P, ζ ^ k.val = ∑ X ∈ S, ∑ k ∈ cover X, ζ ^ k.val := by {
     choose f hf using h_partition
@@ -326,7 +422,7 @@ lemma evaluate_geometric_sum_contradiction (P : ℕ) (hP : P > 0) (S : Finset �
       · intro hk
         rw [← hk]
         exact (hf k).1.2
-    
+
     have hs := Finset.sum_fiberwise_of_maps_to h_maps_to (fun k => ζ ^ k.val)
     rw [← hs]
     apply Finset.sum_congr rfl
@@ -337,7 +433,7 @@ lemma evaluate_geometric_sum_contradiction (P : ℕ) (hP : P > 0) (S : Finset �
     · intro _ _
       rfl
   }
-  
+
   -- Step 5: But 0 = 0 + non-zero is a contradiction!
   have h_split_eval : ∑ X ∈ S, ∑ k ∈ cover X, ζ ^ k.val = ∑ k ∈ cover D_max, ζ ^ k.val := by {
     have h_eq := Finset.sum_eq_single D_max (by {
@@ -349,7 +445,7 @@ lemma evaluate_geometric_sum_contradiction (P : ℕ) (hP : P > 0) (S : Finset �
     })
     exact h_eq
   }
-  
+
   rw [h_split_eval] at h_sum_split
   rw [h_left_zero] at h_sum_split
   exact h_max_nonzero h_sum_split.symm
@@ -357,11 +453,13 @@ lemma evaluate_geometric_sum_contradiction (P : ℕ) (hP : P > 0) (S : Finset �
 
 open Classical
 
--- We assume the existence of our "magic" primitive root to avoid getting bogged down in 
+-- We assume the existence of our "magic" primitive root to avoid getting bogged down in
 -- abstract algebra. We just need to know that a D_max-th root of unity exists!
-lemma magic_primitive_root (D_max : ℕ) (h_pos : D_max > 0) : 
+lemma magic_primitive_root (D_max : ℕ) (h_pos : 0 < D_max) :
     ∃ ζ : ℂ, IsPrimitiveRoot ζ D_max := by {
-  sorry
+  have h_ne_zero : D_max ≠ 0 := by omega
+  use Complex.exp (2 * Real.pi * Complex.I / D_max)
+  exact Complex.isPrimitiveRoot_exp D_max h_ne_zero
 }
 
 /--
@@ -383,20 +481,25 @@ theorem mirsky_newman_exact_cover (P : ℕ) (hP : P > 0) (S : Finset ℕ)
     have ⟨X, hX, _⟩ := h_partition k
     exact ⟨X, hX.1⟩
   }
-  
+
   -- Step 2: Pick the largest step size D_max out of our set of step sizes S.
   have ⟨D_max, h_Dmax_in, h_max⟩ := exists_max_step_size S hS_nonempty
-  
+
   -- Step 3: We know the biggest step size is at least 3, so it's strictly positive.
   have h_Dmax_ge_3 : D_max ≥ 3 := h_min D_max h_Dmax_in
   have h_Dmax_pos : D_max > 0 := by omega
-  
+
   -- Step 4: Summon our magic primitive D_max-th root of unity (ζ).
   have ⟨ζ, h_prim⟩ := magic_primitive_root D_max h_Dmax_pos
-  
+
   -- Step 5: Feed everything into the geometric sum evaluator to get our contradiction!
   exact evaluate_geometric_sum_contradiction P hP S h_min cover h_partition h_ap h_div D_max h_Dmax_in h_max ζ h_prim
 }
+
+/-
+FUTURE WORK:
+The following lemmas form the core of the Van Eck bridging into the Exact Cover system.
+They define the structural properties of the Van Eck fiber under the f(k) = k - X bijection.
 
 lemma vanEck_fiber_sum (P : ℕ) (hP : P ≥ 4)
     (v : ℕ → ℕ)
@@ -410,7 +513,9 @@ lemma vanEck_fiber_sum (P : ℕ) (hP : P ≥ 4)
   -- The total sum of gaps between consecutive occurrences of X in the cycle is exactly P.
   sorry
 }
+-/
 
+/-
 open Classical in
 lemma vanEck_fiber_is_ap (P : ℕ) (hP : P ≥ 4)
     (v : ℕ → ℕ)
@@ -427,3 +532,4 @@ lemma vanEck_fiber_is_ap (P : ℕ) (hP : P ≥ 4)
   -- one arithmetic progression of step size X.
   sorry
 }
+-/
