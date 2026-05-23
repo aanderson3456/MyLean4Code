@@ -1,4 +1,4 @@
-/- Copyright Manabu Hagiwara 2022, 2026 -/
+/- Copyright Yuki Kondo c/o Manabu Hagiwara 2022, 2026 -/
 import VTlean.NumOsNumIs
 import VTlean.InsDel
 import Mathlib
@@ -60,6 +60,53 @@ lemma moment_le_cons (x : B) (X : List B) :
   moment X ≤ moment (x :: X) := by {
   rw [moment_cons]
   exact Nat.le_add_right _ _
+}
+
+lemma moment_sub_append (X Y : List B) (n : Nat) :
+  List.moment_sub (X ++ Y) n = List.moment_sub X n + List.moment_sub Y (n + X.length) := by {
+  revert n
+  induction X with
+  | nil =>
+    intro n
+    rw [List.nil_append]
+    have h_len : ([] : List B).length = 0 := rfl
+    rw [h_len]
+    change List.moment_sub Y n = 0 + List.moment_sub Y (n + 0)
+    rw [Nat.zero_add, Nat.add_zero]
+  | cons x X' ih =>
+    intro n
+    cases x
+    · change List.moment_sub (X' ++ Y) (n + 1) = List.moment_sub X' (n + 1) + List.moment_sub Y (n + (X'.length + 1))
+      have h : n + (X'.length + 1) = n + 1 + X'.length := by ac_rfl
+      rw [h]
+      exact ih (n + 1)
+    · change List.moment_sub (X' ++ Y) (n + 1) + n = List.moment_sub X' (n + 1) + n + List.moment_sub Y (n + (X'.length + 1))
+      have h : n + (X'.length + 1) = n + 1 + X'.length := by ac_rfl
+      rw [h]
+      have ih_eval := ih (n + 1)
+      rw [ih_eval]
+      ac_rfl
+}
+
+lemma moment_append_O (X : List B) :
+  List.moment (X ++ [B.O]) = List.moment X := by {
+  unfold List.moment
+  rw [moment_sub_append]
+  have h0 : List.moment_sub [B.O] (1 + X.length) = 0 := rfl
+  rw [h0, Nat.add_zero]
+}
+
+lemma moment_append_I (X : List B) :
+  List.moment (X ++ [B.I]) = List.moment X + X.length + 1 := by {
+  unfold List.moment
+  rw [moment_sub_append]
+  have h1 : List.moment_sub [B.I] (1 + X.length) = 1 + X.length := by {
+    change List.moment_sub [] (1 + X.length + 1) + (1 + X.length) = 1 + X.length
+    change 0 + (1 + X.length) = 1 + X.length
+    rw [Nat.zero_add]
+  }
+  rw [h1]
+  ac_rfl
 }
 
 lemma num_Is_sDel_le (X : List B) (i : Nat) : num_Is (sDel X i) ≤ num_Is X := by {
@@ -407,6 +454,26 @@ lemma moment_sDel_le :
 lemma moment_le_sIns {b : B} :
   (moment X) ≤ (moment ((sIns X i b))) := by {
   exact List.moment_le_sIns X.toList i
+}
+
+def push {n : Nat} (v : List.Vector B n) (b : B) : List.Vector B (n + 1) :=
+  ⟨v.toList ++ [b], by simp⟩
+
+lemma moment_push_O {n : Nat} (v : List.Vector B n) :
+  moment (push v B.O) = moment v := by {
+  unfold push moment
+  dsimp
+  apply moment_append_O
+}
+
+lemma moment_push_I {n : Nat} (v : List.Vector B n) :
+  moment (push v B.I) = moment v + n + 1 := by {
+  unfold push moment
+  dsimp
+  have h := moment_append_I v.toList
+  have h_len : v.toList.length = n := v.property
+  rw [h_len] at h
+  exact h
 }
 
 lemma moment_sIns_zero :

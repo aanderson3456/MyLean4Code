@@ -1,4 +1,4 @@
-/- Copyright Manabu Hagiwara 2022, 2026 -/
+/- Copyright Yuki Kondo c/o Manabu Hagiwara 2022, 2026 -/
 import .Optimal .VTCode
 
 open nat finset B B.finset

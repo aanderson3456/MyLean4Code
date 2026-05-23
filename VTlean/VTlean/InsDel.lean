@@ -1,4 +1,4 @@
-/- Copyright Manabu Hagiwara 2022, 2026 -/
+/- Copyright Yuki Kondo c/o Manabu Hagiwara 2022, 2026 -/
 import Mathlib.Data.Vector.Basic
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Fintype.Basic
