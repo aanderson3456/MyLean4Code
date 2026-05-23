@@ -312,7 +312,7 @@ lemma moment_sIns_one :
         ac_rfl
 }
 
-lemma moment_sub_sDel_of_sDel_O 
+lemma moment_sub_sDel_of_sDel_O
   (H : sIns (sDel X i) i B.O = X) :
   moment X - moment (sDel X i) = num_RIs (sDel X i) i := by {
   have h : moment (sIns (sDel X i) i B.O) = moment (sDel X i) + num_RIs (sDel X i) i := moment_sIns_zero (sDel X i) i
@@ -321,7 +321,7 @@ lemma moment_sub_sDel_of_sDel_O
   exact Nat.add_sub_cancel_left (moment (sDel X i)) (num_RIs (sDel X i) i)
 }
 
-lemma moment_sub_sDel_of_sDel_I 
+lemma moment_sub_sDel_of_sDel_I
   (H : sIns (sDel X i) i B.I = X) :
   moment X - moment (sDel X i) = num_LOs (sDel X i) i + num_Is (sDel X i) + 1 := by {
   have h : moment (sIns (sDel X i) i B.I) = moment (sDel X i) + num_LOs (sDel X i) i + num_Is (sDel X i) + 1 := moment_sIns_one (sDel X i) i
@@ -486,38 +486,55 @@ lemma moment_sIns_one :
   exact List.moment_sIns_one X.toList i
 }
 
-lemma moment_sub_sDel_of_sDel_O 
+lemma moment_sub_sDel_of_sDel_O
   (X : List.Vector B (n + 1))
   (H : sIns ((sDel X i)) i B.O = X) :
   (moment X) - (moment ((sDel X i))) = num_RIs ((sDel X i)) i := by {
-  sorry
+  unfold moment
+  apply List.moment_sub_sDel_of_sDel_O
+  unfold sIns at H
+  apply Subtype.mk.inj H
 }
 
-lemma moment_sub_sDel_of_sDel_I 
+lemma moment_sub_sDel_of_sDel_I
   (X : List.Vector B (n + 1))
   (H : sIns ((sDel X i)) i B.I = X) :
   (moment X) - (moment ((sDel X i))) = num_LOs ((sDel X i)) i + wt ((sDel X i)) + 1 := by {
-  sorry
+  unfold moment
+  apply List.moment_sub_sDel_of_sDel_I
+  unfold sIns at H
+  apply Subtype.mk.inj H
 }
 
 
 lemma moment_sub_sDel_le :
   (moment X) - (moment ((sDel X i))) ≤ n := by {
-  sorry
+  have h := List.moment_sub_sDel_le X.val i
+  have hlen : X.val.length = n := X.property
+  rw [hlen] at h
+  exact h
 }
 
 lemma sIns_fig_of_pos_of_moment
     (X : List.Vector B (n + 1))
     (H : (moment X) - (moment ((sDel X i))) ≤ wt ((sDel X i))) :
     sIns ((sDel X i)) i B.O = X := by {
-  sorry
+  apply Subtype.ext
+  apply List.sIns_fig_of_pos_of_moment
+  · have hlen : 1 ≤ List.length X.val := by { rw [X.property]; apply Nat.succ_le_succ; apply Nat.zero_le }
+    exact hlen
+  · exact H
 }
 
 lemma sIns_fig_of_neg_of_moment
     (X : List.Vector B (n + 1))
     (H : ¬ (moment X) - (moment ((sDel X i))) ≤ wt ((sDel X i))) :
     sIns ((sDel X i)) i B.I = X := by {
-  sorry
+  apply Subtype.ext
+  apply List.sIns_fig_of_neg_of_moment
+  · have hlen : 1 ≤ List.length X.val := by { rw [X.property]; apply Nat.succ_le_succ; apply Nat.zero_le }
+    exact hlen
+  · exact H
 }
 
 end List.Vector
@@ -532,294 +549,704 @@ instance decidable_pred_VTCode (n a : Nat) : DecidablePred (VTCode n a) :=
   fun X => inferInstanceAs (Decidable (List.Vector.moment X % (n + 1) = a % (n + 1)))
 
 
-namespace List 
-def sub_mod (m a : Nat) (X : List B) : Nat := sorry
+namespace List
+def sub_mod (m a : Nat) (X : List B) : Nat :=
+  if moment X < a then (a - moment X) % m
+  else (m - (moment X - a) % m) % m
 
 lemma sub_mod_zero (m : Nat) (X : List B) :
     sub_mod m 0 X = (m - (moment X) % m) % m := by {
-  sorry
+  unfold sub_mod
+  rw [if_neg]
+  · rfl
+  · exact Nat.not_lt_zero _
 }
 
 lemma sub_mod_mod_self (m : Nat) (X : List B) :
   sub_mod m m X = sub_mod m 0 X := by {
-  sorry
+  rw [sub_mod, sub_mod_zero]
+  cases Decidable.em (moment X < m) with
+  | inl hlt =>
+    rw [if_pos hlt]
+    have h1 : moment X % m = moment X := Nat.mod_eq_of_lt hlt
+    rw [h1]
+  | inr hnlt =>
+    rw [if_neg hnlt]
+    have h1 : moment X % m = (moment X - m) % m := Nat.mod_eq_sub_mod (Nat.le_of_not_lt hnlt)
+    rw [← h1]
 }
 
 lemma sub_mod_nil (m : Nat) :
     sub_mod m a [] = a % m := by {
-  sorry
+  cases a with
+  | zero =>
+    rw [sub_mod_zero]
+    rw [List.moment_nil]
+    rw [Nat.zero_mod, Nat.sub_zero, Nat.mod_self]
+  | succ a =>
+    unfold sub_mod
+    rw [List.moment_nil]
+    rw [if_pos (Nat.zero_lt_succ _)]
+    rw [Nat.sub_zero]
 }
 
 lemma sub_mod_add (m : Nat) (X : List B) :
   sub_mod m (a + m) X = sub_mod m a X := by {
-  sorry
+  induction a using Nat.case_strong_induction_on with
+  | hz =>
+    rw [Nat.zero_add]
+    rw [sub_mod_mod_self]
+  | hi a IHa =>
+    unfold sub_mod
+    cases Decidable.em (moment X < a + 1) with
+    | inl hlt =>
+      rw [if_pos hlt]
+      have hlt_add : moment X < a + 1 + m := Nat.lt_of_lt_of_le hlt (Nat.le_add_right _ _)
+      rw [if_pos hlt_add]
+      rw [Nat.add_comm (a + 1)]
+      rw [Nat.add_sub_assoc]
+      · rw [Nat.add_comm m, Nat.add_mod_right]
+      · exact Nat.le_of_lt hlt
+    | inr hnlt =>
+      rw [if_neg hnlt]
+      have hnlt2 : ¬ moment X < a + 1 := hnlt
+      rw [Nat.not_lt] at hnlt
+      cases Decidable.em (moment X < a + 1 + m) with
+      | inl hlt' =>
+        rw [if_pos hlt']
+        -- rw @mod_eq_of_lt ((ρ X) - (a + 1))
+        -- rw sub_sub_eq_add_sub hnlt, rw add_comm
+        -- rw nat.sub_lt_left_iff_lt_add hnlt, apply hlt'
+        sorry
+      | inr hnlt' =>
+        rw [if_neg hnlt']
+        -- rw ← nat.sub_sub, rw ← mod_eq_sub_mod
+        -- rw ge, rw nat.le_sub_left_iff_add_le hnlt, apply hnlt'
+        sorry
 }
 
 lemma sub_mod_sub (m : Nat) (X : List B) (H : m  ≤ a) :
   sub_mod m (a - m) X = sub_mod m a X := by {
-  sorry
+  rw [← sub_mod_add m X]
+  rw [Nat.sub_add_cancel H]
 }
 
 lemma sub_mod_mod (m : Nat) (X : List B) :
   sub_mod m (a % m) X = sub_mod m a X := by {
-  sorry
+  cases m with
+  | zero =>
+    rw [Nat.mod_zero]
+  | succ m =>
+    induction a using Nat.case_strong_induction_on with
+    | hz =>
+      rw [Nat.zero_mod]
+    | hi a IHa =>
+      cases Decidable.em (a + 1 ≤ m + 1) with
+      | inl hle =>
+        cases Decidable.em (a + 1 = m + 1) with
+        | inl heq =>
+          rw [heq]
+          rw [Nat.mod_self]
+          rw [sub_mod_mod_self]
+        | inr hneq =>
+          have hlt_m : a + 1 < m + 1 := Nat.lt_of_le_of_ne hle hneq
+          rw [Nat.mod_eq_of_lt hlt_m]
+      | inr hnle =>
+        -- rw mod_eq_sub_mod (le_of_not_ge hnle), rw IHa
+        -- rw sub_mod_sub _ _ _ (le_of_not_ge hnle)
+        -- rw succ_sub_succ, apply nat.sub_le
+        sorry
 }
 
 lemma sub_mod_sDel
-  {n a : Nat} {X : List B} (HX : length X = n) 
-  (H : (moment X) % (n + 1) = a % (n + 1)) (i : Nat) : 
+  {n a : Nat} {X : List B} (HX : length X = n)
+  (H : (moment X) % (n + 1) = a % (n + 1)) (i : Nat) :
   sub_mod (n + 1) a ((sDel X i)) = (moment X) - (moment ((sDel X i))) := by {
-  sorry
+  cases X with
+  | nil =>
+    rw [sDel_nil, sub_mod_nil, ← H]
+    rw [moment_nil, Nat.zero_mod]
+  | cons x X' =>
+    rw [← sub_mod_mod, ← H, sub_mod_mod]
+    unfold sub_mod
+    cases Decidable.em (moment (sDel (x :: X') i) = moment (x :: X')) with
+    | inl heq =>
+      rw [if_neg]
+      · rw [heq, Nat.sub_self, Nat.zero_mod, Nat.sub_zero, Nat.mod_self]
+      · apply Nat.not_lt_of_ge
+        rw [heq]
+    | inr hneq =>
+      have hlt : moment (sDel (x :: X') i) < moment (x :: X') := Nat.lt_of_le_of_ne (moment_sDel_le (x :: X') i) hneq
+      rw [if_pos hlt]
+      have hlt2 : moment (x :: X') - moment (sDel (x :: X') i) < n + 1 := Nat.lt_of_le_of_lt (moment_sub_sDel_le (x :: X') i) (by {
+        rw [HX]
+        exact Nat.lt_succ_of_le (Nat.le_refl _)
+      })
+      rw [Nat.mod_eq_of_lt hlt2]
 }
 
 lemma sub_mod_sDel_of_pos
-    {n a : Nat} {X : List B} (HX : 1 ≤ length X) 
-    (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1)) 
+    {n a : Nat} {X : List B} (HX : 1 ≤ length X)
+    (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1))
     (i : Nat) (H : sub_mod (n + 1) a ((sDel X i)) ≤ num_Is ((sDel X i))) :
     sub_mod (n + 1) a ((sDel X i)) = num_RIs ((sDel X i)) i := by {
-  sorry
+  rw [sub_mod_sDel HXn HXa]
+  apply moment_sub_sDel_of_sDel_O
+  rw [sIns_fig_of_pos_of_moment X i HX]
+  · rw [← sub_mod_sDel HXn HXa]
+    exact H
 }
 
 lemma sub_mod_sDel_of_neg
-    {n a : Nat} {X : List B} (HX : 1 ≤ length X) 
-    (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1)) 
+    {n a : Nat} {X : List B} (HX : 1 ≤ length X)
+    (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1))
     (i : Nat) (H : ¬ sub_mod (n + 1) a ((sDel X i)) ≤ num_Is ((sDel X i))) :
     sub_mod (n + 1) a ((sDel X i)) = num_LOs ((sDel X i)) i + num_Is ((sDel X i)) + 1 := by {
-  sorry
+  rw [sub_mod_sDel HXn HXa]
+  apply moment_sub_sDel_of_sDel_I
+  rw [sIns_fig_of_neg_of_moment X i HX]
+  · rw [← sub_mod_sDel HXn HXa]
+    exact H
 }
 
 lemma sIns_fig_of_pos
-    {n a : Nat} {X : List B} (HX : 1 ≤ length X) 
-    (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1)) 
+    {n a : Nat} {X : List B} (HX : 1 ≤ length X)
+    (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1))
     (i : Nat) (H : sub_mod (n + 1) a ((sDel X i)) ≤ num_Is ((sDel X i)))   :
   sIns ((sDel X i)) i B.O = X := by {
-  sorry
+  have H2 := sIns_sDel_id X i HX
+  rcases H2 with ⟨b, hb⟩
+  cases b with
+  | O => exact hb
+  | I =>
+    -- apply absurd H, apply not_le_of_gt,
+    -- rw sub_mod_sDel HXn HXa,
+    -- rw moment_sub_sDel_of_sDel_I _ _ hb,
+    -- apply lt_succ_of_le, apply nat.le_add_left
+    sorry
 }
 
 lemma sIns_fig_of_neg
-    {n a : Nat} {X : List B} (HX : 1 ≤ length X) 
-    (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1)) 
+    {n a : Nat} {X : List B} (HX : 1 ≤ length X)
+    (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1))
     (i : Nat) (H : ¬ sub_mod (n + 1) a ((sDel X i)) ≤ num_Is ((sDel X i)))   :
   sIns ((sDel X i)) i B.I = X := by {
-  sorry
+  have H2 := sIns_sDel_id X i HX
+  rcases H2 with ⟨b, hb⟩
+  cases b with
+  | O =>
+    -- have h : sub_mod (n + 1) a (sDel X i) ≤ num_Is (sDel X i),
+    --  {rw sub_mod_sDel HXn HXa,
+    --   rw moment_sub_sDel_of_sDel_O _ _ hb,
+    --   apply num_RIs_le_num_Is},
+    -- contradiction
+    sorry
+  | I => exact hb
 }
 
-def min_num_LOs : List B → Nat → Nat 
+def min_num_LOs : List B → Nat → Nat
 | [], _ => 0
 | x::X, 0 => 0
 | B.O::X, n + 1 => min_num_LOs X n + 1
 | B.I::X, n + 1 => min_num_LOs X (n + 1) + 1
 
 lemma min_num_LOs_zero (X : List B) :
-  min_num_LOs X 0 = 0 := sorry
+  min_num_LOs X 0 = 0 := by {
+  cases X with
+  | nil => rfl
+  | cons x X' =>
+    cases x with
+    | O => rfl
+    | I => rfl
+}
 
-lemma min_num_LOs_of_num_Os (X : List B) (i : Nat) 
+lemma min_num_LOs_of_num_Os (X : List B) (i : Nat)
   (H : num_Os X + 1 ≤ i) :
   min_num_LOs X i = length X := by {
-  sorry
+  revert i
+  induction X with
+  | nil =>
+    intro i H
+    rfl
+  | cons x X' IHX =>
+    intro i H
+    cases i with
+    | zero =>
+      exact False.elim (Nat.not_succ_le_zero (num_Os (x :: X')) H)
+    | succ i =>
+      cases x with
+      | O =>
+        unfold min_num_LOs
+        unfold length
+        rw [IHX]
+        exact Nat.le_of_succ_le_succ H
+      | I =>
+        unfold min_num_LOs
+        unfold length
+        rw [IHX]
+        exact H
 }
 
-lemma num_LOs_min_num_LOs (X : List B) (i : Nat)  
+lemma num_LOs_min_num_LOs (X : List B) (i : Nat)
   (H : i ≤ num_Os X) :
   num_LOs X (min_num_LOs X i) = i := by {
-  sorry
+  revert i
+  induction X with
+  | nil =>
+    intro i H
+    cases i with
+    | zero => rfl
+    | succ i => exact False.elim (Nat.not_succ_le_zero i H)
+  | cons x X' IHX =>
+    intro i H
+    cases i with
+    | zero =>
+      rw [min_num_LOs_zero]
+      rfl
+    | succ i =>
+      cases x with
+      | O =>
+        unfold min_num_LOs
+        change num_LOs X' (min_num_LOs X' i) + 1 = i + 1
+        rw [IHX _ (Nat.le_of_succ_le_succ H)]
+      | I =>
+        unfold min_num_LOs
+        change num_LOs X' (min_num_LOs X' (i + 1)) = i + 1
+        rw [IHX _ H]
 }
 
-def max_num_RIs : List B → Nat → Nat := sorry
+lemma num_Is_le_cons (x : B) (X : List B) : num_Is X ≤ num_Is (x::X) := by {
+  cases x with
+  | O => exact Nat.le_refl _
+  | I => exact Nat.le_succ _
+}
+
+lemma num_Is_cons_le (x : B) (X : List B) : num_Is (x::X) ≤ num_Is X + 1 := by {
+  cases x with
+  | O => exact Nat.le_succ _
+  | I => exact Nat.le_refl _
+}
+
+def max_num_RIs : List B → Nat → Nat
+| [], _ => 0
+| (x::X), n => if num_Is X + 1 ≤ n
+               then max_num_RIs X n else max_num_RIs X n + 1
 
 lemma max_num_RIs_zero (X : List B) :
   max_num_RIs X 0 = length X := by {
-  sorry
+  induction X with
+  | nil => rfl
+  | cons x X' IHX =>
+    unfold max_num_RIs
+    cases Decidable.em (num_Is X' + 1 ≤ 0) with
+    | inl h_le =>
+      exact False.elim (Nat.not_succ_le_zero (num_Is X') h_le)
+    | inr h_nle =>
+      rw [if_neg h_nle]
+      unfold length
+      rw [IHX]
 }
 
-lemma max_num_RIs_of_num_Is (X : List B) (i : Nat) 
+lemma max_num_RIs_of_num_Is (X : List B) (i : Nat)
   (H : num_Is X + 1 ≤ i) :
   max_num_RIs X i = 0 := by {
-  sorry
+  revert i
+  induction X with
+  | nil =>
+    intro i H
+    rfl
+  | cons x X' IHX =>
+    intro i H
+    cases i with
+    | zero =>
+      exact False.elim (Nat.not_succ_le_zero (num_Is (x::X')) H)
+    | succ i =>
+      unfold max_num_RIs
+      have h : num_Is X' + 1 ≤ Nat.succ i := by {
+        apply Nat.le_trans (Nat.add_le_add_right (num_Is_le_cons x X') 1) H
+      }
+      rw [if_pos h]
+      rw [IHX (Nat.succ i) h]
 }
 
-lemma num_RIs_max_num_RIs (X : List B) (i : Nat) 
+lemma num_RIs_max_num_RIs (X : List B) (i : Nat)
   (H : i ≤ num_Is X) :
   num_RIs X (max_num_RIs X i) = i := by {
-  sorry
+  revert i
+  induction X with
+  | nil =>
+    intro i H
+    cases i with
+    | zero => rfl
+    | succ i => exact False.elim (Nat.not_succ_le_zero i H)
+  | cons x X' IHX =>
+    intro i H
+    unfold max_num_RIs
+    cases Decidable.em (num_Is X' + 1 ≤ i) with
+    | inl hle =>
+      rw [if_pos hle]
+      have h : max_num_RIs X' i = 0 := by {
+        apply max_num_RIs_of_num_Is _ _ hle
+      }
+      rw [h]
+      unfold List.num_RIs
+      apply Nat.le_antisymm (Nat.le_trans (num_Is_cons_le x X') hle) H
+    | inr hnle =>
+      rw [if_neg hnle]
+      have hlt : i < num_Is X' + 1 := Nat.lt_of_not_ge hnle
+      have hle2 : i ≤ num_Is X' := Nat.le_of_lt_succ hlt
+      unfold List.num_RIs
+      change num_RIs X' (max_num_RIs X' i) = i
+      rw [IHX _ hle2]
 }
 
-def decoding_alg (n a : Nat) (X : List B) : List B := sorry
+lemma sIns_zero_of_num_RIs (X : List B) (i j : Nat) (H : num_RIs X i = num_RIs X j) :
+  sIns X i B.O = sIns X j B.O := sorry
 
-lemma length_decoding_alg 
+lemma sIns_one_of_num_LOs (X : List B) (i j : Nat) (H : num_LOs X i = num_LOs X j) :
+  sIns X i B.I = sIns X j B.I := sorry
+
+def decoding_alg (n a : Nat) (X : List B) : List B :=
+  if length X = n then X
+  else if sub_mod (n + 1) a X ≤ num_Is X
+      then sIns X (max_num_RIs X (sub_mod (n + 1) a X)) B.O
+      else sIns X (min_num_LOs X ((sub_mod (n + 1) a X) - num_Is X - 1)) B.I
+
+lemma length_decoding_alg
   (n a : Nat) (X : List B) (H : length X = n - 1) :
   length (decoding_alg n a X) = n := by {
-  sorry
+  unfold decoding_alg
+  cases Decidable.em (n ≤ 0) with
+  | inl hle_len =>
+    have h : length X = n := by {
+      rw [H, Nat.eq_zero_of_le_zero hle_len]
+    }
+    rw [if_pos h]
+    exact h
+  | inr hnle_len =>
+    have h : length X ≠ n := by {
+      rw [H]
+      apply Nat.ne_of_lt
+      apply Nat.sub_lt
+      · exact Nat.lt_of_not_ge hnle_len
+      · exact Nat.zero_lt_one
+    }
+    rw [if_neg h]
+    cases Decidable.em (sub_mod (n + 1) a X ≤ num_Is X) with
+    | inl hle =>
+      rw [if_pos hle]
+      rw [List.length_sIns]
+      rw [H]
+      rw [Nat.sub_add_cancel]
+      apply Nat.succ_le_of_lt
+      exact Nat.lt_of_not_ge hnle_len
+    | inr hnle =>
+      rw [if_neg hnle]
+      rw [List.length_sIns]
+      rw [H]
+      rw [Nat.sub_add_cancel]
+      apply Nat.succ_le_of_lt
+      exact Nat.lt_of_not_ge hnle_len
 }
 
 lemma sDelErr_correctable_of_pos
-    {n a : Nat} {X : List B} (HX : 1 ≤ length X) 
-    (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1)) 
-    (i : Nat) (Hr : sub_mod (n + 1) a ((sDel X i)) ≤ num_Is ((sDel X i))) :
-    decoding_alg n a ((sDel X i)) = X := by {
-  sorry
+    {n a : Nat} {X : List B} (HX : 1 ≤ length X)
+    (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1))
+    (i : Nat) (Hr : sub_mod (n + 1) a (sDel X i) ≤ num_Is (sDel X i)) :
+    decoding_alg n a (sDel X i) = X := by {
+  unfold decoding_alg
+  rw [if_neg]
+  · rw [if_pos Hr]
+    rw [← sIns_fig_of_pos HX HXn HXa _ Hr]
+    rw [sDel_sIns_id]
+    apply sIns_zero_of_num_RIs
+    rw [num_RIs_max_num_RIs _ _ Hr]
+    apply sub_mod_sDel_of_pos HX HXn HXa _ Hr
+  · apply Nat.ne_of_lt
+    rw [length_sDel]
+    rw [← HXn]
+    apply Nat.sub_lt_self
+    · exact Nat.zero_lt_one
+    · exact HX
 }
 
 lemma sDelErr_correctable_of_neg
-    {n a : Nat} {X : List B} (HX : 1 ≤ length X) 
-    (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1)) 
-    (i : Nat) (Hr : ¬ sub_mod (n + 1) a ((sDel X i)) ≤ num_Is ((sDel X i))) :
-    decoding_alg n a ((sDel X i)) = X := by {
-  sorry
+    {n a : Nat} {X : List B} (HX : 1 ≤ length X)
+    (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1))
+    (i : Nat) (Hr : ¬ sub_mod (n + 1) a (sDel X i) ≤ num_Is (sDel X i)) :
+    decoding_alg n a (sDel X i) = X := by {
+  unfold decoding_alg
+  rw [if_neg]
+  · rw [if_neg Hr]
+    rw [← sIns_fig_of_neg HX HXn HXa _ Hr]
+    rw [sDel_sIns_id]
+    apply sIns_one_of_num_LOs
+    rw [num_LOs_min_num_LOs]
+    · rw [sub_mod_sDel_of_neg HX HXn HXa _ Hr]
+      rw [Nat.add_right_comm]
+      rw [Nat.add_sub_cancel]
+      rw [Nat.add_sub_cancel]
+    · rw [sub_mod_sDel_of_neg HX HXn HXa _ Hr]
+      rw [Nat.add_right_comm]
+      rw [Nat.add_sub_cancel]
+      rw [Nat.add_sub_cancel]
+      apply num_LOs_le_num_Os
+  · apply Nat.ne_of_lt
+    rw [length_sDel]
+    rw [← HXn]
+    apply Nat.sub_lt_self
+    · exact Nat.zero_lt_one
+    · exact HX
 }
 
 lemma sDelErr_correctable
-  {n a : Nat} {X : List B} 
+  {n a : Nat} {X : List B}
   (HXn : length X = n) (HXa : (moment X) % (n + 1) = a % (n + 1)) (i : Nat) :
-  decoding_alg n a ((sDel X i)) = X := by {
-  sorry
+  decoding_alg n a (sDel X i) = X := by {
+  cases n with
+  | zero =>
+    unfold decoding_alg
+    rw [if_pos]
+    · rw [List.eq_nil_of_length_eq_zero HXn]
+      rw [sDel_nil]
+    · rw [List.eq_nil_of_length_eq_zero HXn]
+      rw [sDel_nil]
+      rfl
+  | succ m =>
+    cases Decidable.em (sub_mod (m + 2) a (sDel X i) ≤ num_Is (sDel X i)) with
+    | inl hle =>
+      apply sDelErr_correctable_of_pos _ HXn HXa _ hle
+      rw [HXn]
+      apply Nat.succ_le_succ
+      exact Nat.zero_le _
+    | inr hnle =>
+      apply sDelErr_correctable_of_neg _ HXn HXa _ hnle
+      rw [HXn]
+      apply Nat.succ_le_succ
+      exact Nat.zero_le _
 }
 
-end List 
+end List
 namespace List.Vector
 variable {n : Nat} (X : List.Vector B n) (c : List.Vector B n)
 
-def sub_mod (m a : Nat) (X : List.Vector B n) : Nat := sorry
+def sub_mod (m a : Nat) (X : List.Vector B n) : Nat := List.sub_mod m a X.toList
 
 lemma sub_mod_zero (m : Nat) :
     sub_mod m 0 X = (m - (moment X) % m) % m := by {
-  sorry
+  unfold sub_mod moment
+  apply List.sub_mod_zero
 }
 
 lemma sub_mod_mod_self (m : Nat) :
   sub_mod m m X = sub_mod m 0 X := by {
-  sorry
+  unfold sub_mod
+  apply List.sub_mod_mod_self
 }
 
 lemma sub_mod_nil (m : Nat) :
     sub_mod m a List.Vector.nil = a % m := by {
-  sorry
+  unfold sub_mod
+  apply List.sub_mod_nil
 }
 
 lemma sub_mod_add (m : Nat) :
   sub_mod m (a + m) X = sub_mod m a X := by {
-  sorry
+  unfold sub_mod
+  apply List.sub_mod_add
 }
 
 lemma sub_mod_sub (m : Nat) (H : m ≤ a) :
   sub_mod m (a - m) X = sub_mod m a X := by {
-  sorry
+  unfold sub_mod
+  apply List.sub_mod_sub
+  exact H
 }
 
 lemma sub_mod_mod (m : Nat) :
   sub_mod m (a % m) X = sub_mod m a X := by {
-  sorry
+  unfold sub_mod
+  apply List.sub_mod_mod
 }
 
 lemma sub_mod_sDel
-  {n a : Nat} {X : List.Vector B n} (H : X ∈ VTCode n a) (i : Nat) : 
+  {n a : Nat} {X : List.Vector B n} (H : X ∈ VTCode n a) (i : Nat) :
   sub_mod (n + 1) a ((sDel X i)) = (moment X) - (moment ((sDel X i))) := by {
-  sorry
+  unfold sub_mod moment
+  apply List.sub_mod_sDel
+  · rw [X.property]
+  · rw [mem_VTCode] at H
+    apply H
 }
 
 lemma sub_mod_sDel_of_pos
-  {n a : Nat} {X : List.Vector B (n + 1)} (HX : X ∈ VTCode (n + 1) a) 
-  (i : Nat) (H : sub_mod (n + 2) a ((sDel X i)) ≤ wt ((sDel X i))) : 
+  {n a : Nat} {X : List.Vector B (n + 1)} (HX : X ∈ VTCode (n + 1) a)
+  (i : Nat) (H : sub_mod (n + 2) a ((sDel X i)) ≤ wt ((sDel X i))) :
   sub_mod (n + 2) a ((sDel X i)) = num_RIs ((sDel X i)) i := by {
-  sorry
+  unfold sub_mod wt
+  apply List.sub_mod_sDel_of_pos
+  · rw [X.property]; apply Nat.succ_le_succ; apply Nat.zero_le
+  · rw [X.property]
+  · rw [mem_VTCode] at HX
+    apply HX
+  · apply H
 }
 
 lemma sub_mod_sDel_of_neg
-  {n a : Nat} {X : List.Vector B (n + 1)} (HX : X ∈ VTCode (n + 1) a) 
-  (i : Nat) (H : ¬ sub_mod (n + 2) a ((sDel X i)) ≤ wt ((sDel X i))) : 
+  {n a : Nat} {X : List.Vector B (n + 1)} (HX : X ∈ VTCode (n + 1) a)
+  (i : Nat) (H : ¬ sub_mod (n + 2) a ((sDel X i)) ≤ wt ((sDel X i))) :
   sub_mod (n + 2) a ((sDel X i)) = num_LOs ((sDel X i)) i + wt ((sDel X i)) + 1 := by {
-  sorry
+  unfold sub_mod wt
+  apply List.sub_mod_sDel_of_neg
+  · rw [X.property]; apply Nat.succ_le_succ; apply Nat.zero_le
+  · rw [X.property]
+  · rw [mem_VTCode] at HX
+    apply HX
+  · apply H
 }
 
 lemma sIns_fig_of_pos
-  {n a : Nat} {c : List.Vector B (n + 1)} (Hc : c ∈ VTCode (n + 1) a) 
+  {n a : Nat} {c : List.Vector B (n + 1)} (Hc : c ∈ VTCode (n + 1) a)
   (i : Nat) (H : sub_mod (n + 2) a ((sDel c i)) ≤ wt ((sDel c i)))  :
   sIns ((sDel c i)) i B.O = c := by {
   sorry
 }
 
 lemma sIns_fig_of_neg
-  {n a : Nat} {c : List.Vector B (n + 1)} (Hc : c ∈ VTCode (n + 1) a) 
+  {n a : Nat} {c : List.Vector B (n + 1)} (Hc : c ∈ VTCode (n + 1) a)
   (i : Nat) (H : ¬ sub_mod (n + 2) a ((sDel c i)) ≤ wt ((sDel c i)))  :
   sIns ((sDel c i)) i B.I = c := by {
   sorry
 }
 
-def min_num_LOs {n : Nat} (X : List.Vector B n) (i : Nat) : Nat := sorry
+def min_num_LOs {n : Nat} (X : List.Vector B n) (i : Nat) : Nat := List.min_num_LOs X.val i
 
 lemma min_num_LOs_zero :
   min_num_LOs X 0 = 0 := by {
-  sorry
+  unfold min_num_LOs
+  apply List.min_num_LOs_zero
 }
 
 lemma num_LOs_min_num_LOs (i : Nat) (H : i ≤ n - wt X) :
   num_LOs X (min_num_LOs X i) = i := by {
-  sorry
+  unfold min_num_LOs
+  apply List.num_LOs_min_num_LOs
+  have hlen : X.val.length = n := X.property
+  rw [hlen] at H
+  exact H
 }
 
-def max_num_RIs {n : Nat} (X : List.Vector B n) (i : Nat) : Nat := sorry
+def max_num_RIs {n : Nat} (X : List.Vector B n) (i : Nat) : Nat := List.max_num_RIs X.val i
 
 lemma max_num_RIs_zero :
   max_num_RIs X 0 = n := by {
-  sorry
+  unfold max_num_RIs
+  have h := List.max_num_RIs_zero X.val
+  have hlen : X.val.length = n := X.property
+  rw [hlen] at h
+  exact h
 }
 
 lemma max_num_RIs_of_num_Is (i : Nat) (H : wt X + 1 ≤ i) :
   max_num_RIs X i = 0 := by {
-  sorry
+  unfold max_num_RIs wt at *
+  apply List.max_num_RIs_of_num_Is
+  exact H
 }
 
 lemma num_RIs_max_num_RIs (i : Nat) (H : i ≤ wt X) :
   num_RIs X (max_num_RIs X i) = i := by {
-  sorry
+  unfold num_RIs max_num_RIs wt at *
+  apply List.num_RIs_max_num_RIs
+  exact H
 }
 
-def decoding_alg (n a : Nat) (X : List.Vector B (n - 1)) : List.Vector B n := sorry
+def decoding_alg (n a : Nat) (X : List.Vector B (n - 1)) : List.Vector B n :=
+  ⟨List.decoding_alg n a X.val, List.length_decoding_alg n a X.val X.property⟩
 
-lemma decoding_alg_to_list (n a : Nat) (X : List.Vector B (n - 1)) : 
-  (decoding_alg n a X).toList = _root_.List.decoding_alg n a X.toList := by {
-  sorry
-}
+lemma decoding_alg_to_list (n a : Nat) (X : List.Vector B (n - 1)) :
+  (decoding_alg n a X).toList = _root_.List.decoding_alg n a X.toList := rfl
 
 lemma sDelErr_correctable_of_nil
     {a : Nat} {X : List.Vector B 0} (H : X ∈ VTCode 0 a) (i : Nat) :
     decoding_alg 0 a ((sDel X i)) = X := by {
-  sorry
+  apply Subtype.ext
+  rw [decoding_alg_to_list]
+  unfold List.decoding_alg
+  have hlen : List.length ((sDel X i)).val = 0 := by {
+    rw [List.length_sDel]
+    rw [X.property]
+  }
+  rw [if_pos hlen]
+  have h_val_nil : X.val = [] := by {
+    have h : List.length X.val = 0 := X.property
+    cases X.val with
+    | nil => rfl
+    | cons head tail => contradiction
+  }
+  rw [h_val_nil]
+  rfl
 }
 
 lemma sDelErr_correctable_of_pos
-    {n a : Nat} {X : List.Vector B (n + 1)} (HX : X ∈ VTCode (n + 1) a) 
+    {n a : Nat} {X : List.Vector B (n + 1)} (HX : X ∈ VTCode (n + 1) a)
     (i : Nat) (Hr : sub_mod (n + 2) a ((sDel X i)) ≤ wt ((sDel X i))) :
     decoding_alg (n + 1) a ((sDel X i)) = X := by {
-  sorry
+  apply Subtype.ext
+  rw [decoding_alg_to_list]
+  apply List.sDelErr_correctable_of_pos
+  · rw [X.property]; apply Nat.succ_le_succ; apply Nat.zero_le
+  · rw [X.property]
+  · rw [mem_VTCode] at HX; apply HX
+  · apply Hr
 }
 
 lemma sDelErr_correctable_of_neg
-    {n a : Nat} {X : List.Vector B (n + 1)} (HX : X ∈ VTCode (n + 1) a) 
+    {n a : Nat} {X : List.Vector B (n + 1)} (HX : X ∈ VTCode (n + 1) a)
     (i : Nat) (Hr : ¬ sub_mod (n + 2) a ((sDel X i)) ≤ wt ((sDel X i))) :
     decoding_alg (n + 1) a ((sDel X i)) = X := by {
-  sorry
+  apply Subtype.ext
+  rw [decoding_alg_to_list]
+  apply List.sDelErr_correctable_of_neg
+  · rw [X.property]; apply Nat.succ_le_succ; apply Nat.zero_le
+  · rw [X.property]
+  · rw [mem_VTCode] at HX; apply HX
+  · apply Hr
 }
 
 theorem sDelErr_correctable
-  {n a : Nat} {c : List.Vector B n} 
+  {n a : Nat} {c : List.Vector B n}
   (Hc : c ∈ VTCode n a) (i : Nat) :
   decoding_alg n a ((sDel c i)) = c := by {
-  sorry
+  cases n with
+  | zero =>
+    apply sDelErr_correctable_of_nil Hc
+  | succ n =>
+    cases Decidable.em (sub_mod (n + 2) a (sDel c i) ≤ wt (sDel c i)) with
+    | inl h => apply sDelErr_correctable_of_pos Hc i h
+    | inr h => apply sDelErr_correctable_of_neg Hc i h
 }
 
 end List.Vector
 namespace Finset
-def VTCode (n a : Nat) : Finset (List.Vector B n) := sorry
+def VTCode (n a : Nat) : Finset (List.Vector B n) := Finset.filter (fun (X : List.Vector B n) => X ∈ VTCode n a) Finset.univ
 
 lemma mem_VTCode (n a : Nat) (x : List.Vector B n) :
   x ∈ Finset.VTCode n a ↔ x ∈ VTCode n a := by {
-  sorry
+  unfold VTCode
+  rw [Finset.mem_filter]
+  simp
 }
 
 theorem DelCode_VTCode (n a : Nat) :
   is_DelCode (VTCode n a) := by {
-  sorry
+  unfold is_DelCode
+  intro X HX i
+  apply Exists.intro (decoding_alg n a (sDel X i))
+  apply And.intro
+  · rw [mem_VTCode]
+    exact HX
+  · apply sDelErr_correctable HX i
 }
 
 end Finset
