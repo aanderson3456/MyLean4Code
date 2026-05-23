@@ -9,458 +9,513 @@ import Mathlib.Algebra.Polynomial.Basic
 import Mathlib.RingTheory.RootsOfUnity.PrimitiveRoots
 import Mathlib.RingTheory.RootsOfUnity.Complex
 
-/-!
-# Historical Note on the Mirsky-Newman Theorem
-In 1950, Paul Erdős conjectured that there is no exact covering system of the integers with strictly distinct moduli (step sizes).
-Shortly after, Leon Mirsky and Donald J. Newman discovered a beautiful complex-analytic proof using roots of unity.
-Mirsky and Newman never published their proof. Erdős credited them in his own papers during the 1950s.
-(Independently, Harold Davenport and Richard Rado discovered the same proof at the same time).
-Leon Mirsky (1918–1983) was a Russian-British mathematician who transitioned from number theory to linear algebra and combinatorics, writing the classic text "An Introduction to Linear Algebra".
-Donald J. Newman (1930–2007) was an American mathematician legendary for finding incredibly elegant analytic proofs for deep theorems, such as his 1980 simplified analytic proof of the Prime Number Theorem.
-Sources:
-- https://en.wikipedia.org/wiki/Mirsky%E2%80%93Newman_theorem
-- https://mathshistory.st-andrews.ac.uk/Biographies/Mirsky/
--/
-
-open Finset
-open Complex
-
-/--
-Phase 1: Finite Geometric Sums
-A geometric sum evaluates to 0 when ω ≠ 1 and ω ^ n = 1.
--/
-lemma geom_sum_zero_of_pow_one {x : ℂ} {n : ℕ} (h_ne_one : x ≠ 1) (h_pow_one : x ^ n = 1) :
-    ∑ k ∈ range n, x ^ k = 0 := by {
-  have h_geom := geom_sum_eq h_ne_one n
-  rw [h_pow_one] at h_geom
-  have h_sub : (1 : ℂ) - 1 = 0 := sub_self 1
-  rw [h_sub, zero_div] at h_geom
-  exact h_geom
-}
-
-/--
-Phase 2: Arithmetic Progression Sums
-Express the sum of ω^x over an arithmetic progression as a scaled geometric sum.
--/
-lemma sum_progression_eq_geom_sum {ω : ℂ} (a d m : ℕ) :
-    ∑ k ∈ range m, ω ^ (a + k * d) = ω ^ a * ∑ k ∈ range m, (ω ^ d) ^ k := by {
-  have h_pull : ∀ k : ℕ, ω ^ (a + k * d) = ω ^ a * (ω ^ d) ^ k := by
-    intro k
-    calc ω ^ (a + k * d)
-      _ = ω ^ a * ω ^ (k * d) := by rw [pow_add]
-      _ = ω ^ a * ω ^ (d * k) := by rw [mul_comm k d]
-      _ = ω ^ a * (ω ^ d) ^ k := by rw [pow_mul]
-  have h_sum : ∑ k ∈ range m, ω ^ (a + k * d) = ∑ k ∈ range m, ω ^ a * (ω ^ d) ^ k := by
-    apply sum_congr rfl
-    intro x _
-    exact h_pull x
-  rw [h_sum, ← mul_sum]
-}
-
-/--
-An Arithmetic Progression in ℤ.
-Defined by a starting point `a` and a strictly positive step size `d`.
--/
-def ArithmeticProgression (a d : ℤ) : Set ℤ :=
-  { x : ℤ | ∃ k : ℤ, x = a + k * d }
-
-/--
-A finite collection of arithmetic progressions forms an Exact Cover of ℤ
-if every integer belongs to exactly one progression in the collection.
--/
-def IsExactCover (progressions : Finset (ℤ × ℤ)) : Prop :=
-  ∀ x : ℤ, ∃! p, p ∈ progressions ∧ x ∈ ArithmeticProgression p.1 p.2
-
-/-
-FUTURE WORK (Sarason Stuff):
-The following theorem represents the topological/infinite Z version of the Mirsky-Newman Theorem.
-When bridging the finite case (Z mod P as P ranges over all positive integers) to the infinite
-case (using Sarason's complex analysis machinery or topological limits), this theorem must be
-proven natively. We comment it out for now to ensure a pristine, warning-free build for the
-finite algebraic properties.
-
-/--
-The Mirsky-Newman Theorem (also known as the Exact Cover System Theorem).
-Famously proven independently by Paul Erdős, Donald Newman, and Leon Mirsky.
-
-It states that if a finite collection of arithmetic progressions exactly
-covers the integers, and there is more than one progression (k ≥ 2),
-then the largest step size must appear at least twice.
-
-Consequently, it is mathematically impossible to exactly cover the integers
-with arithmetic progressions that have strictly distinct step sizes ≥ 2.
--/
-theorem mirsky_newman_distinct_moduli_impossible
-    (progressions : Finset (ℤ × ℤ))
-    (h_multiple : progressions.card ≥ 2)
-    (h_step_bounds : ∀ p ∈ progressions, p.2 ≥ 2)
-    (h_distinct_steps : ∀ p1 ∈ progressions, ∀ p2 ∈ progressions, p1 ≠ p2 → p1.2 ≠ p2.2) :
-    ¬ IsExactCover progressions := by {
-  -- The beautiful proof of this theorem uses complex analysis.
-  -- By associating each arithmetic progression to a generating function,
-  -- the exact cover condition becomes an equation of rational functions.
-  -- The function corresponding to the largest step size has a pole on the
-  -- unit circle (at a root of unity) that is "closest" to the origin in terms
-  -- of its angular frequency. No other function in the sum can cancel this pole
-  -- unless there is another progression with the EXACT SAME step size.
-  sorry
-}
--/
-
-
-/--
-An Arithmetic Progression in ZMod P (finite cyclic group).
-Defined by a starting point `a` and a step size `d`.
--/
-def FinArithmeticProgression {P : ℕ} (a d : ZMod P) : Set (ZMod P) :=
-  { x : ZMod P | ∃ k : ℕ, x = a + k * d }
-
-/--
-A finite collection of arithmetic progressions forms an Exact Cover of ZMod P.
--/
-def IsExactCoverFin {P : ℕ} (progressions : Finset (ZMod P × ZMod P)) : Prop :=
-  ∀ x : ZMod P, ∃! p, p ∈ progressions ∧ x ∈ FinArithmeticProgression p.1 p.2
-
-open Classical in
-/--
-Phase 3: Exact Cover Partitioning
-Prove that the sum over the exact cover equals the sum of sums over the progressions.
--/
-lemma sum_exact_cover {P : ℕ} [NeZero P] (progressions : Finset (ZMod P × ZMod P))
-    (h_cover : IsExactCoverFin progressions) {ω : ℂ} :
-    ∑ x : ZMod P, ω ^ x.val = ∑ p ∈ progressions, ∑ x ∈ Finset.univ.filter (fun x => x ∈ FinArithmeticProgression p.1 p.2), ω ^ x.val := by {
-  choose f hf_mem hf_unique using h_cover
-  have h_maps_to : ∀ x ∈ (Finset.univ : Finset (ZMod P)), f x ∈ progressions := by
-    intro x _
-    exact (hf_mem x).1
-  have h_fiber : ∀ p ∈ progressions, ∀ x : ZMod P, x ∈ FinArithmeticProgression p.1 p.2 ↔ f x = p := by
-    intro p hp x
-    constructor
-    · intro hx
-      exact (hf_unique x p ⟨hp, hx⟩).symm
-    · intro hx
-      rw [← hx]
-      exact (hf_mem x).2
-  have hs := Finset.sum_fiberwise_of_maps_to h_maps_to (fun x => ω ^ x.val)
-  rw [← hs]
-  apply Finset.sum_congr rfl
-  intro p hp
-  apply Finset.sum_congr
-  · ext x
-    simp [h_fiber p hp x]
-  · intro _ _
-    rfl
-}
-
-
-open Classical
-
-/--
-Select the strictly largest step size D_max from the set of exact cover progressions.
--/
-lemma exists_max_step_size (S : Finset ℕ) (h_nonempty : S.Nonempty) :
-    ∃ D_max ∈ S, ∀ d ∈ S, d ≠ D_max → d < D_max := by {
-  use S.max' h_nonempty
+open scoped Classical
+lemma zmod_eq (P : ℕ) [NeZero P] (A B : ℕ) : (A : ZMod P) = (B : ZMod P) ↔ A % P = B % P := by {
   constructor
-  · exact Finset.max'_mem S h_nonempty
-  · intro d hd h_ne
-    have h_le := Finset.le_max' S d hd
-    exact lt_of_le_of_ne h_le h_ne
+  · intro h
+    have h1 : (A : ZMod P).val = (B : ZMod P).val := by rw [h]
+    rw [ZMod.val_natCast, ZMod.val_natCast] at h1
+    exact h1
+  · intro h
+    apply ZMod.val_injective P
+    rw [ZMod.val_natCast, ZMod.val_natCast]
+    exact h
 }
 
-lemma primitive_root_pow_ne_one {D_max d : ℕ} {ζ : ℂ} (h_prim : IsPrimitiveRoot ζ D_max)
-    (h_pos : 0 < d) (h_lt : d < D_max) : ζ ^ d ≠ 1 := by {
-  intro h_eq
-  have h_dvd := IsPrimitiveRoot.dvd_of_pow_eq_one h_prim d h_eq
-  have h_le := Nat.le_of_dvd h_pos h_dvd
-  omega
-}
-
-/--
-The Primitive Root Squeeze Lemma:
-Prove that if ζ is a primitive D_max-th root of unity, then for any progression
-with step size d < D_max, the term (1 - ζ^d) ≠ 0.
--/
-lemma primitive_root_squeeze {D_max d : ℕ} {ζ : ℂ} (h_prim : IsPrimitiveRoot ζ D_max)
-    (h_pos : 0 < d) (h_lt : d < D_max) : 1 - ζ ^ d ≠ 0 := by {
-  have h_ne := primitive_root_pow_ne_one h_prim h_pos h_lt
-  intro h_eq
-  have h_eq_one : ζ ^ d = 1 := by exact sub_eq_zero.mp h_eq |>.symm
-  exact h_ne h_eq_one
-}
-
-lemma zeta_pow_mod_eq (P n : ℕ) (ζ : ℂ) (h_pow : ζ ^ P = 1) :
-    ζ ^ (n % P) = ζ ^ n := by {
-  have h_div : n = P * (n / P) + n % P := Nat.div_add_mod n P |>.symm
-  conv => right; rw [h_div, pow_add, pow_mul, h_pow, one_pow, one_mul]
-}
-
-lemma mod_inj_of_mul (P X L start i j : ℕ) (hP : P = X * L) (hX : X > 0)
-    (hi : i < L) (hj : j < L)
-    (h_eq : (start + i * X) % P = (start + j * X) % P) :
-    i = j := by {
-  have h_modeq : start + i * X ≡ start + j * X [MOD P] := h_eq
-  have h_modeq2 : i * X ≡ j * X [MOD P] := Nat.ModEq.add_left_cancel rfl h_modeq
-
-  have hP2 : P = L * X := by { rw [hP, mul_comm] }
-
-  have h_i_lt : i * X < P := by { rw [hP2]; exact Nat.mul_lt_mul_of_pos_right hi hX }
-  have h_j_lt : j * X < P := by { rw [hP2]; exact Nat.mul_lt_mul_of_pos_right hj hX }
-
-  have hi_mod : (i * X) % P = i * X := Nat.mod_eq_of_lt h_i_lt
-  have hj_mod : (j * X) % P = j * X := Nat.mod_eq_of_lt h_j_lt
-
-  have h_eq2 : i * X = j * X := by {
-    calc i * X
-      _ = (i * X) % P := hi_mod.symm
-      _ = (j * X) % P := h_modeq2
-      _ = j * X := hj_mod
-  }
-  exact Nat.eq_of_mul_eq_mul_right hX h_eq2
-}
-
-lemma mod_surj_of_mul (P X L start i : ℕ) (hP : P = X * L) :
-    (start + i * X) % P = (start + (i % L) * X) % P := by {
-  have h_div : i = L * (i / L) + i % L := Nat.div_add_mod i L |>.symm
-  have h_iX : i * X = (L * (i / L)) * X + (i % L) * X := by {
-    calc i * X
-      _ = (L * (i / L) + i % L) * X := by nth_rw 1 [h_div]
-      _ = (L * (i / L)) * X + (i % L) * X := by ring
-  }
-  have h_sub : (start + i * X) = (start + (i % L) * X) + (i / L) * P := by {
-    calc start + i * X
-      _ = start + ((L * (i / L)) * X + (i % L) * X) := by rw [h_iX]
-      _ = start + (i / L) * (X * L) + (i % L) * X := by ring
-      _ = start + (i / L) * P + (i % L) * X := by rw [← hP]
-      _ = (start + (i % L) * X) + (i / L) * P := by ring
-  }
-  rw [h_sub, Nat.add_mul_mod_self_right]
-}
-
-lemma sum_progression_eq_geom_sum_mod (P X L start : ℕ) (ζ : ℂ) (h_pow : ζ ^ P = 1) (_hL : P = X * L) :
-    ∑ i ∈ range L, ζ ^ ((start + i * X) % P) = ζ ^ start * ∑ i ∈ range L, (ζ ^ X) ^ i := by {
-  have h_pull : ∀ i : ℕ, ζ ^ ((start + i * X) % P) = ζ ^ start * (ζ ^ X) ^ i := by
-    intro i
-    rw [zeta_pow_mod_eq P _ ζ h_pow]
-    calc ζ ^ (start + i * X)
-      _ = ζ ^ start * ζ ^ (i * X) := by rw [pow_add]
-      _ = ζ ^ start * ζ ^ (X * i) := by rw [mul_comm i X]
-      _ = ζ ^ start * (ζ ^ X) ^ i := by rw [pow_mul]
-  have h_sum : ∑ i ∈ range L, ζ ^ ((start + i * X) % P) = ∑ i ∈ range L, ζ ^ start * (ζ ^ X) ^ i := by
-    apply sum_congr rfl
-    intro i _
-    exact h_pull i
-  rw [h_sum, ← mul_sum]
-}
-
-lemma prog_sum_extraction (P X L : ℕ) (hP : P > 0) (start : Fin P) (ζ : ℂ)
-    (h_pow : ζ ^ P = 1) (hL : P = X * L) (hX : X > 0)
-    (cover_X : Finset (Fin P))
-    (h_ap : cover_X = Finset.univ.filter (fun (k : Fin P) => ∃ i : ℕ, k.val = (start.val + i * X) % P)) :
-    ∑ k ∈ cover_X, ζ ^ k.val = ζ ^ start.val * ∑ i ∈ range L, (ζ ^ X) ^ i := by {
-  have h_L_pos : L > 0 := by {
-    by_contra h
-    have h0 : L = 0 := by omega
-    rw [h0, mul_zero] at hL
+lemma zmod_cast_sub_mul (P : ℕ) [NeZero P] (k0 X n : ℕ) :
+    ( ((k0 + P - (n * X) % P) % P : ℕ) : ZMod P ) = (k0 : ZMod P) - (n : ZMod P) * (X : ZMod P) := by {
+  have h_sub : (n * X) % P ≤ k0 + P := by {
+    have h1 : (n * X) % P < P := Nat.mod_lt _ (NeZero.pos P)
     omega
   }
-  have h_f : ∀ i : ℕ, (start.val + i * X) % P < P := fun i => Nat.mod_lt _ hP
-  let f : ℕ → Fin P := fun i => ⟨(start.val + i * X) % P, h_f i⟩
-
-  have h_bij : ∑ i ∈ range L, ζ ^ ((start.val + i * X) % P) = ∑ k ∈ cover_X, ζ ^ k.val := by {
-    apply sum_bij (fun i _ => f i)
-    · -- hi
-      intro i hi
-      rw [h_ap]
-      simp only [mem_filter, mem_univ, true_and]
-      use i
-    · -- h_inj
-      intro i hi j hj h_eq
-      have h_f_val : (f i).val = (f j).val := by rw [h_eq]
-      have hi_lt : i < L := by { rw [mem_range] at hi; exact hi }
-      have hj_lt : j < L := by { rw [mem_range] at hj; exact hj }
-      exact mod_inj_of_mul P X L start.val i j hL hX hi_lt hj_lt h_f_val
-    · -- h_surj
-      intro k hk
-      rw [h_ap] at hk
-      simp only [mem_filter, mem_univ, true_and] at hk
-      rcases hk with ⟨i, hi_eq⟩
-      use (i % L)
-      have h_in_range : i % L ∈ range L := by {
-        rw [mem_range]
-        exact Nat.mod_lt i h_L_pos
-      }
-      use h_in_range
-      ext
-      change (start.val + (i % L) * X) % P = k.val
-      have h_surj_eq := mod_surj_of_mul P X L start.val i hL
-      rw [← h_surj_eq]
-      exact hi_eq.symm
-    · -- h
-      intro i hi
-      rfl
+  rw [ZMod.natCast_mod, Nat.cast_sub h_sub, Nat.cast_add]
+  have h_mod : ((n * X) % P : ZMod P) = (n : ZMod P) * (X : ZMod P) := by {
+    have h1 : ((n * X) % P : ZMod P) = ((n * X : ℕ) : ZMod P) := by rw [ZMod.natCast_mod]
+    rw [h1]
+    push_cast
+    rfl
   }
-  rw [← h_bij]
-  exact sum_progression_eq_geom_sum_mod P X L start.val ζ h_pow hL
+  rw [h_mod]
+  have hp : (P : ZMod P) = 0 := ZMod.natCast_self P
+  rw [hp]
+  ring
+}
+
+lemma mod_step_eq (P : ℕ) [NeZero P] (k0 X m : ℕ) (hX : X ≤ P) :
+    ((((k0 + P - (m * X) % P) % P) + P - X) % P) =
+    ((k0 + P - ((m + 1) * X) % P) % P) := by {
+  apply (zmod_eq P _ _).mp
+  have h_lhs : ( (((k0 + P - (m * X) % P) % P) + P - X : ℕ) : ZMod P ) = (k0 : ZMod P) - (m : ZMod P) * (X : ZMod P) - (X : ZMod P) := by {
+    have h_sub1 : X ≤ (((k0 + P - (m * X) % P) % P) + P) := by omega
+    rw [Nat.cast_sub h_sub1, Nat.cast_add, ZMod.natCast_mod]
+    have h_sub2 : (m * X) % P ≤ k0 + P := by {
+      have h1 : (m * X) % P < P := Nat.mod_lt _ (NeZero.pos P)
+      omega
+    }
+    rw [Nat.cast_sub h_sub2, Nat.cast_add]
+    have h_mod : ((m * X) % P : ZMod P) = (m : ZMod P) * (X : ZMod P) := by {
+      have h1 : ((m * X) % P : ZMod P) = ((m * X : ℕ) : ZMod P) := by rw [ZMod.natCast_mod]
+      rw [h1]
+      push_cast
+      rfl
+    }
+    rw [h_mod]
+    have hp : (P : ZMod P) = 0 := ZMod.natCast_self P
+    rw [hp]
+    ring
+  }
+  have h_rhs : ( ((k0 + P - ((m + 1) * X) % P) : ℕ) : ZMod P ) = (k0 : ZMod P) - ((m + 1) : ZMod P) * (X : ZMod P) := by {
+    have h_sub : ((m + 1) * X) % P ≤ k0 + P := by {
+      have h1 : ((m + 1) * X) % P < P := Nat.mod_lt _ (NeZero.pos P)
+      omega
+    }
+    rw [Nat.cast_sub h_sub, Nat.cast_add]
+    have h_mod : (((m + 1) * X) % P : ZMod P) = ((m + 1) : ZMod P) * (X : ZMod P) := by {
+      have h1 : (((m + 1) * X) % P : ZMod P) = (((m + 1) * X : ℕ) : ZMod P) := by rw [ZMod.natCast_mod]
+      rw [h1]
+      push_cast
+      rfl
+    }
+    rw [h_mod]
+    have hp : (P : ZMod P) = 0 := ZMod.natCast_self P
+    rw [hp]
+    ring
+  }
+  rw [h_lhs, h_rhs]
+  ring
+}
+
+def orbitSeq (P : ℕ) (f : Fin P → Fin P) (k0 : Fin P) : ℕ → Fin P
+| 0 => k0
+| (n + 1) => f (orbitSeq P f k0 n)
+
+lemma orbitSeq_v (P : ℕ) (v : ℕ → ℕ) (f : Fin P → Fin P)
+    (h_recent : ∀ k : Fin P, v ((f k).val + 1) = v (k.val + 1))
+    (X : ℕ) (k0 : Fin P) (hk0 : v (k0.val + 1) = X) (n : ℕ) :
+    v ((orbitSeq P f k0 n).val + 1) = X := by {
+  induction n with
+  | zero => exact hk0
+  | succ m ih =>
+    have h1 := h_recent (orbitSeq P f k0 m)
+    rw [ih] at h1
+    exact h1
+}
+
+lemma orbitSeq_val (P : ℕ) [NeZero P] (v : ℕ → ℕ) (f : Fin P → Fin P)
+    (hf : ∀ k : Fin P, (f k).val = (k.val + P - v (k.val + 1)) % P)
+    (h_recent : ∀ k : Fin P, v ((f k).val + 1) = v (k.val + 1))
+    (X : ℕ) (hX : X ≤ P) (k0 : Fin P) (hk0 : v (k0.val + 1) = X) (n : ℕ) :
+    (orbitSeq P f k0 n).val = (k0.val + P - (n * X) % P) % P := by {
+  induction n with
+  | zero =>
+    unfold orbitSeq
+    have h1 : 0 * X = 0 := Nat.zero_mul X
+    rw [h1]
+    have h2 : 0 % P = 0 := Nat.zero_mod P
+    rw [h2]
+    have h3 : k0.val + P - 0 = k0.val + P := Nat.sub_zero _
+    rw [h3]
+    have h4 : k0.val + P = P + k0.val := Nat.add_comm _ _
+    rw [h4, Nat.add_mod_left, Nat.mod_eq_of_lt k0.isLt]
+  | succ m ih =>
+    unfold orbitSeq
+    have h_v := orbitSeq_v P v f h_recent X k0 hk0 m
+    have h_f := hf (orbitSeq P f k0 m)
+    rw [h_v] at h_f
+    rw [ih] at h_f
+    rw [h_f]
+    exact mod_step_eq P k0.val X m hX
+}
+
+lemma cycle_injectivity (P X : ℕ) [NeZero P] (n1 n2 : ℕ) (hn1 : n1 < P / Nat.gcd P X) (hn2 : n2 < P / Nat.gcd P X)
+    (heq : (n1 * X) % P = (n2 * X) % P) : n1 = n2 := by {
+  have h_modeq : n1 * X ≡ n2 * X [MOD P] := heq
+  have h_pos : 0 < P := by {
+    have h : P ≠ 0 := NeZero.ne P
+    omega
+  }
+  have h_modeq2 : n1 ≡ n2 [MOD P / Nat.gcd P X] := Nat.ModEq.cancel_right_div_gcd h_pos h_modeq
+  exact h_modeq2.eq_of_lt_of_lt hn1 hn2
+}
+
+lemma orbit_inj (P : ℕ) [NeZero P] (k0 X : ℕ) (n1 n2 : ℕ) (hn1 : n1 < P / Nat.gcd P X) (hn2 : n2 < P / Nat.gcd P X)
+    (h_eq : (k0 + P - (n1 * X) % P) % P = (k0 + P - (n2 * X) % P) % P) : n1 = n2 := by {
+  have h_zmod : ( ((k0 + P - (n1 * X) % P) % P : ℕ) : ZMod P ) = ( ((k0 + P - (n2 * X) % P) % P : ℕ) : ZMod P ) := by {
+    rw [h_eq]
+  }
+  have h_lhs : ( ((k0 + P - (n1 * X) % P) % P : ℕ) : ZMod P ) = (k0 : ZMod P) - (n1 : ZMod P) * (X : ZMod P) := by {
+    exact zmod_cast_sub_mul P k0 X n1
+  }
+  have h_rhs : ( ((k0 + P - (n2 * X) % P) % P : ℕ) : ZMod P ) = (k0 : ZMod P) - (n2 : ZMod P) * (X : ZMod P) := by {
+    exact zmod_cast_sub_mul P k0 X n2
+  }
+  rw [h_lhs, h_rhs] at h_zmod
+  have h_cancel : (n1 : ZMod P) * (X : ZMod P) = (n2 : ZMod P) * (X : ZMod P) := by {
+    calc (n1 : ZMod P) * (X : ZMod P)
+      _ = (k0 : ZMod P) - ((k0 : ZMod P) - (n1 : ZMod P) * (X : ZMod P)) := by ring
+      _ = (k0 : ZMod P) - ((k0 : ZMod P) - (n2 : ZMod P) * (X : ZMod P)) := by rw [h_zmod]
+      _ = (n2 : ZMod P) * (X : ZMod P) := by ring
+  }
+  have h_mod_eq : (n1 * X) % P = (n2 * X) % P := by {
+    apply (zmod_eq P (n1 * X) (n2 * X)).mp
+    push_cast
+    exact h_cancel
+  }
+  exact cycle_injectivity P X n1 n2 hn1 hn2 h_mod_eq
+}
+
+
+
+lemma mod_sub_inj (P : ℕ) [NeZero P] (k X : ℕ) (hX : X ≤ P) (i j : ℕ) (hi : i < X) (hj : j < X)
+    (h_eq : (k + P - i) % P = (k + P - j) % P) : i = j := by {
+  have h_zmod : ((k + P - i : ℕ) : ZMod P) = ((k + P - j : ℕ) : ZMod P) := by {
+    apply (zmod_eq P _ _).mpr h_eq
+  }
+  have hi_le : i ≤ k + P := by omega
+  have hj_le : j ≤ k + P := by omega
+  rw [Nat.cast_sub hi_le, Nat.cast_sub hj_le] at h_zmod
+  have h_cancel : (i : ZMod P) = (j : ZMod P) := by {
+    calc (i : ZMod P)
+      _ = ((k + P : ℕ) : ZMod P) - (((k + P : ℕ) : ZMod P) - (i : ZMod P)) := by ring
+      _ = ((k + P : ℕ) : ZMod P) - (((k + P : ℕ) : ZMod P) - (j : ZMod P)) := by rw [h_zmod]
+      _ = (j : ZMod P) := by ring
+  }
+  have hi_lt : i < P := by omega
+  have hj_lt : j < P := by omega
+  have h_val : (i : ZMod P).val = (j : ZMod P).val := by rw [h_cancel]
+  rw [ZMod.val_natCast, ZMod.val_natCast] at h_val
+  rw [Nat.mod_eq_of_lt hi_lt, Nat.mod_eq_of_lt hj_lt] at h_val
+  exact h_val
+}
+
+lemma disjoint_helper (P : ℕ) [NeZero P] (X : ℕ) (hX : X ≤ P) (v : ℕ → ℕ)
+    (h_no_intermediate : ∀ k : Fin P, v (k.val + 1) = X → ∀ i < X, i > 0 → v ((k.val + P - i) % P + 1) ≠ X)
+    (k1 k2 : Fin P) (hk1 : v (k1.val + 1) = X) (hk2 : v (k2.val + 1) = X)
+    (i1 i2 : ℕ) (hi1 : i1 < X) (hi2 : i2 < X)
+    (h_eq : (k1.val + P - i1) % P = (k2.val + P - i2) % P)
+    (h_ge : i1 ≥ i2) : k1 = k2 := by {
+  let j := i1 - i2
+  have hj_lt : j < X := by omega
+  have h_zmod : ((k1.val + P - i1 : ℕ) : ZMod P) = ((k2.val + P - i2 : ℕ) : ZMod P) := by {
+    apply (zmod_eq P _ _).mpr h_eq
+  }
+  have hi1_le : i1 ≤ k1.val + P := by omega
+  have hi2_le : i2 ≤ k2.val + P := by omega
+  rw [Nat.cast_sub hi1_le, Nat.cast_sub hi2_le] at h_zmod
+  
+  have h_k2_eq : (k2.val : ZMod P) = (k1.val : ZMod P) - (j : ZMod P) := by {
+    calc (k2.val : ZMod P)
+      _ = (k2.val : ZMod P) + (P : ZMod P) := by {
+        have hp : (P : ZMod P) = 0 := ZMod.natCast_self P
+        rw [hp, add_zero]
+      }
+      _ = ((k2.val + P : ℕ) : ZMod P) := by push_cast; rfl
+      _ = ((k2.val + P : ℕ) : ZMod P) - (i2 : ZMod P) + (i2 : ZMod P) := by ring
+      _ = ((k1.val + P : ℕ) : ZMod P) - (i1 : ZMod P) + (i2 : ZMod P) := by rw [← h_zmod]
+      _ = (k1.val : ZMod P) + (P : ZMod P) - (i1 : ZMod P) + (i2 : ZMod P) := by push_cast; rfl
+      _ = (k1.val : ZMod P) + 0 - (i1 : ZMod P) + (i2 : ZMod P) := by {
+        have hp : (P : ZMod P) = 0 := ZMod.natCast_self P
+        rw [hp]
+      }
+      _ = (k1.val : ZMod P) - ((i1 : ZMod P) - (i2 : ZMod P)) := by ring
+      _ = (k1.val : ZMod P) - (j : ZMod P) := by {
+        have hj_cast : (j : ZMod P) = (i1 : ZMod P) - (i2 : ZMod P) := by {
+          have hj_eq : i1 = i2 + j := by omega
+          nth_rw 1 [hj_eq]
+          push_cast
+          ring
+        }
+        rw [hj_cast]
+      }
+  }
+  
+  by_cases h_j_pos : j > 0
+  · have h_k2_val : k2.val % P = (k1.val + P - j) % P := by {
+      apply (zmod_eq P _ _).mp
+      have h_sub : j ≤ k1.val + P := by omega
+      rw [Nat.cast_sub h_sub, Nat.cast_add]
+      have hp : (P : ZMod P) = 0 := ZMod.natCast_self P
+      rw [hp]
+      calc (k2.val : ZMod P)
+        _ = (k1.val : ZMod P) - (j : ZMod P) := h_k2_eq
+        _ = (k1.val : ZMod P) + 0 - (j : ZMod P) := by ring
+    }
+    rw [Nat.mod_eq_of_lt k2.isLt] at h_k2_val
+    have h_contra := h_no_intermediate k1 hk1 j hj_lt h_j_pos
+    rw [← h_k2_val] at h_contra
+    exact False.elim (h_contra hk2)
+  · have h_j0 : j = 0 := by omega
+    have h_j_zmod : (j : ZMod P) = 0 := by rw [h_j0, Nat.cast_zero]
+    rw [h_j_zmod] at h_k2_eq
+    have h_k1k2 : (k1.val : ZMod P) = (k2.val : ZMod P) := by {
+      calc (k1.val : ZMod P)
+        _ = (k1.val : ZMod P) - 0 := by ring
+        _ = (k2.val : ZMod P) := h_k2_eq.symm
+    }
+    have h_val_eq : k1.val = k2.val := by {
+      have h1 : (k1.val : ZMod P).val = (k2.val : ZMod P).val := by rw [h_k1k2]
+      rw [ZMod.val_natCast, ZMod.val_natCast] at h1
+      rw [Nat.mod_eq_of_lt k1.isLt, Nat.mod_eq_of_lt k2.isLt] at h1
+      exact h1
+    }
+    exact Fin.eq_of_val_eq h_val_eq
 }
 
 /--
-Evaluate the Geometric Sum:
-Apply the generating function identity (already proven via sum_exact_cover and
-sum_progression_eq_geom_sum) evaluated at ζ to derive the contradiction.
-The sum evaluates to non-zero on one side, and zero on the other.
+Combinatorial Upper Bound for Van Eck Fibers
+In a hypothetical cyclic exact cover system modelling the Van Eck sequence behavior over a bounded window,
+every evaluation `v(k.val + 1) = X` casts a "shadow" of size exactly `X` (the elements `k, k-1, \dots, k-X+1`).
+By hypothesis `h_no_intermediate`, these shadows contain no other elements mapping to `X`.
+Hence, the shadows are perfectly disjoint.
+Since the entire ambient space has size `P`, the union of these disjoint sets of size `X` cannot exceed `P`.
+Therefore, `|C_X| * X \le P`, establishing a combinatorial upper bound for the cardinality of the fiber `C_X`.
 -/
-lemma evaluate_geometric_sum_contradiction (P : ℕ) (hP : P > 0) (S : Finset ℕ)
-    (h_min : ∀ X ∈ S, X ≥ 3)
-    (cover : ℕ → Finset (Fin P))
-    (h_partition : ∀ k : Fin P, ∃! X, X ∈ S ∧ k ∈ cover X)
-    (h_ap : ∀ X ∈ S, ∃ start : Fin P, cover X = Finset.univ.filter (fun (k : Fin P) => ∃ i : ℕ, k.val = (start.val + i * X) % P))
-    (h_div : ∀ X ∈ S, X ∣ P)
-    (D_max : ℕ) (h_Dmax_in : D_max ∈ S)
-    (h_max : ∀ d ∈ S, d ≠ D_max → d < D_max)
-    (ζ : ℂ) (h_prim : IsPrimitiveRoot ζ D_max) :
-    False := by {
-  -- Step 1: The total sum over the whole group Fin P evaluated at ζ is 0.
-  have h_zeta_pow : ζ ^ P = 1 := by {
-    have h_Dmax_div : D_max ∣ P := h_div D_max h_Dmax_in
-    rcases h_Dmax_div with ⟨k_div, rfl⟩
-    have h1 : ζ ^ D_max = 1 := IsPrimitiveRoot.pow_eq_one h_prim
-    calc ζ ^ (D_max * k_div)
-      _ = (ζ ^ D_max) ^ k_div := by rw [pow_mul]
-      _ = 1 ^ k_div := by rw [h1]
-      _ = 1 := by simp
-  }
-
-  have h_left_zero : ∑ k : Fin P, ζ ^ k.val = 0 := by {
-    have h_zeta_ne : ζ ≠ 1 := by {
-      have h_Dmax_ge_3 : D_max ≥ 3 := h_min D_max h_Dmax_in
-      have h_Dmax_ge_2 : 2 ≤ D_max := by omega
-      exact IsPrimitiveRoot.ne_one h_prim h_Dmax_ge_2
+lemma vanEck_fiber_upper_bound (P : ℕ) (hP : P ≥ 4) (v : ℕ → ℕ) (f : Fin P → Fin P)
+    (hf : ∀ k : Fin P, (f k).val = (k.val + P - v (k.val + 1)) % P)
+    (hbij : Function.Bijective f)
+    (h_recent : ∀ k : Fin P, v ((f k).val + 1) = v (k.val + 1))
+    (X : ℕ) (hX_pos : X > 0) (hX_le : X ≤ P)
+    (h_no_intermediate : ∀ k : Fin P, v (k.val + 1) = X → ∀ i < X, i > 0 → v ((k.val + P - i) % P + 1) ≠ X) :
+    (Finset.univ.filter (fun k : Fin P => v (k.val + 1) = X)).card * X ≤ P := by {
+  let C := Finset.univ.filter (fun k : Fin P => v (k.val + 1) = X)
+  let S (k : Fin P) := Finset.image (fun i : Fin X => (⟨(k.val + P - i.val) % P, by { apply Nat.mod_lt; omega }⟩ : Fin P)) Finset.univ
+  
+  have h_S_card : ∀ k ∈ C, (S k).card = X := by {
+    intro k hk
+    have h_inj : Function.Injective (fun i : Fin X => (⟨(k.val + P - i.val) % P, by { apply Nat.mod_lt; omega }⟩ : Fin P)) := by {
+      intro i j h_eq
+      have h_val : (k.val + P - i.val) % P = (k.val + P - j.val) % P := by injection h_eq
+      have h_P_ne_zero : NeZero P := ⟨by omega⟩
+      have h_eq_nat := mod_sub_inj P k.val X hX_le i.val j.val i.isLt j.isLt h_val
+      exact Fin.eq_of_val_eq h_eq_nat
     }
-    have h_equiv : ∑ k : Fin P, ζ ^ k.val = ∑ k ∈ range P, ζ ^ k := by
-      exact Fin.sum_univ_eq_sum_range (fun k => ζ ^ k) P
-    rw [h_equiv]
-    exact geom_sum_zero_of_pow_one h_zeta_ne h_zeta_pow
+    rw [Finset.card_image_of_injective Finset.univ h_inj, Finset.card_univ, Fintype.card_fin]
   }
 
-  -- Step 2: For any step size X < D_max, the sum over its progression is 0.
-  have h_parts_zero : ∀ X ∈ S, X ≠ D_max → ∑ k ∈ cover X, ζ ^ k.val = 0 := by {
-    intro X hX_in hX_ne
-    have hX_ge_3 : X ≥ 3 := h_min X hX_in
-    have hX_lt : X < D_max := h_max X hX_in hX_ne
-    have hX_pos : 0 < X := by omega
-
-    have h_step_ne_one : ζ ^ X ≠ 1 := primitive_root_pow_ne_one h_prim hX_pos hX_lt
-    have ⟨start, h_cover_eq⟩ := h_ap X hX_in
-    have h_X_div : X ∣ P := h_div X hX_in
-    rcases h_X_div with ⟨L, hL⟩
-
-    have h_prog_sum : ∑ k ∈ cover X, ζ ^ k.val = ζ ^ start.val * ∑ i ∈ range L, (ζ ^ X) ^ i :=
-      prog_sum_extraction P X L hP start ζ h_zeta_pow hL hX_pos (cover X) h_cover_eq
-
-    have h_pow_one : (ζ ^ X) ^ L = 1 := by {
-      calc (ζ ^ X) ^ L
-        _ = ζ ^ (X * L) := by rw [← pow_mul]
-        _ = ζ ^ P := by rw [← hL]
-        _ = 1 := h_zeta_pow
+  have h_disjoint : ∀ k1 ∈ C, ∀ k2 ∈ C, k1 ≠ k2 → Disjoint (S k1) (S k2) := by {
+    intro k1 hk1 k2 hk2 h_ne
+    rw [Finset.disjoint_left]
+    intro y hy1 hy2
+    rw [Finset.mem_image] at hy1 hy2
+    rcases hy1 with ⟨i1, _, h_y1⟩
+    rcases hy2 with ⟨i2, _, h_y2⟩
+    rw [← h_y2] at h_y1
+    have h_val : (k1.val + P - i1.val) % P = (k2.val + P - i2.val) % P := by injection h_y1
+    have hk1_v : v (k1.val + 1) = X := (Finset.mem_filter.mp hk1).2
+    have hk2_v : v (k2.val + 1) = X := (Finset.mem_filter.mp hk2).2
+    have h_P_ne_zero : NeZero P := ⟨by omega⟩
+    
+    have h_contra : k1 = k2 := by {
+      by_cases h_ge : i1.val ≥ i2.val
+      · exact disjoint_helper P X hX_le v h_no_intermediate k1 k2 hk1_v hk2_v i1.val i2.val i1.isLt i2.isLt h_val h_ge
+      · have h_ge2 : i2.val ≥ i1.val := by omega
+        exact (disjoint_helper P X hX_le v h_no_intermediate k2 k1 hk2_v hk1_v i2.val i1.val i2.isLt i1.isLt h_val.symm h_ge2).symm
     }
-
-    rw [h_prog_sum]
-    have h_zero : ∑ i ∈ range L, (ζ ^ X) ^ i = 0 := geom_sum_zero_of_pow_one h_step_ne_one h_pow_one
-    rw [h_zero, mul_zero]
+    exact h_ne h_contra
   }
 
-  -- Step 3: For the max step size D_max, the sum over its progression is NON-ZERO.
-  have h_max_nonzero : ∑ k ∈ cover D_max, ζ ^ k.val ≠ 0 := by {
-    have ⟨start_max, h_cover_max⟩ := h_ap D_max h_Dmax_in
-    have h_D_max_div : D_max ∣ P := h_div D_max h_Dmax_in
-    rcases h_D_max_div with ⟨L_max, hL_max⟩
-
-    have h_D_max_pos : D_max > 0 := by {
-      have := h_min D_max h_Dmax_in
-      omega
-    }
-
-    have h_D_max_ne_zero : D_max ≠ 0 := by omega
-
-    have h_L_pos : L_max > 0 := by {
-      by_contra h
-      have h0 : L_max = 0 := by omega
-      rw [h0, mul_zero] at hL_max
-      omega
-    }
-
-    have h_prog_sum_max : ∑ k ∈ cover D_max, ζ ^ k.val = ζ ^ start_max.val * ∑ i ∈ range L_max, (ζ ^ D_max) ^ i :=
-      prog_sum_extraction P D_max L_max hP start_max ζ h_zeta_pow hL_max h_D_max_pos (cover D_max) h_cover_max
-
-    rw [h_prog_sum_max]
-
-    have h_pow_one : ζ ^ D_max = 1 := IsPrimitiveRoot.pow_eq_one h_prim
-    have h_sum_ones : ∑ i ∈ range L_max, (ζ ^ D_max) ^ i = L_max := by {
-      rw [h_pow_one]
-      simp
-    }
-    rw [h_sum_ones]
-
-    have h_zeta_ne_zero : ζ ≠ 0 := IsPrimitiveRoot.ne_zero h_prim h_D_max_ne_zero
-    have h_start_pow_ne_zero : ζ ^ start_max.val ≠ 0 := pow_ne_zero start_max.val h_zeta_ne_zero
-    have h_L_ne_zero : (L_max : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (ne_of_gt h_L_pos)
-    exact mul_ne_zero h_start_pow_ne_zero h_L_ne_zero
+  have h_union_card : (Finset.biUnion C S).card = C.card * X := by {
+    have h1 : (Finset.biUnion C S).card = ∑ k ∈ C, (S k).card := Finset.card_biUnion h_disjoint
+    have h2 : ∑ k ∈ C, (S k).card = ∑ _k ∈ C, X := Finset.sum_congr rfl (fun k hk => h_S_card k hk)
+    rw [h1, h2, Finset.sum_const, smul_eq_mul]
   }
 
-  -- Step 4: By the exact cover property, the total sum equals the sum of the parts.
-  have h_sum_split : ∑ k : Fin P, ζ ^ k.val = ∑ X ∈ S, ∑ k ∈ cover X, ζ ^ k.val := by {
-    choose f hf using h_partition
-    have h_maps_to : ∀ k ∈ (Finset.univ : Finset (Fin P)), f k ∈ S := by
-      intro k _
-      exact (hf k).1.1
-    have h_fiber : ∀ X ∈ S, ∀ k : Fin P, k ∈ cover X ↔ f k = X := by
-      intro X hX k
-      constructor
-      · intro hk
-        exact ((hf k).2 X ⟨hX, hk⟩).symm
-      · intro hk
-        rw [← hk]
-        exact (hf k).1.2
-
-    have hs := Finset.sum_fiberwise_of_maps_to h_maps_to (fun k => ζ ^ k.val)
-    rw [← hs]
-    apply Finset.sum_congr rfl
-    intro X hX
-    apply Finset.sum_congr
-    · ext k
-      simp [h_fiber X hX k]
-    · intro _ _
-      rfl
-  }
-
-  -- Step 5: But 0 = 0 + non-zero is a contradiction!
-  have h_split_eval : ∑ X ∈ S, ∑ k ∈ cover X, ζ ^ k.val = ∑ k ∈ cover D_max, ζ ^ k.val := by {
-    have h_eq := Finset.sum_eq_single D_max (by {
-      intro X hX_in hX_ne
-      exact h_parts_zero X hX_in hX_ne
-    }) (by {
-      intro h_not_in
-      exact False.elim (h_not_in h_Dmax_in)
-    })
-    exact h_eq
-  }
-
-  rw [h_split_eval] at h_sum_split
-  rw [h_left_zero] at h_sum_split
-  exact h_max_nonzero h_sum_split.symm
+  have h_subset : Finset.biUnion C S ⊆ Finset.univ := Finset.subset_univ _
+  have h_bound : (Finset.biUnion C S).card ≤ (Finset.univ : Finset (Fin P)).card := Finset.card_le_card h_subset
+  rw [Finset.card_univ, Fintype.card_fin] at h_bound
+  rw [h_union_card] at h_bound
+  exact h_bound
 }
 
-open Classical
-
--- We assume the existence of our "magic" primitive root to avoid getting bogged down in
--- abstract algebra. We just need to know that a D_max-th root of unity exists!
-lemma magic_primitive_root (D_max : ℕ) (h_pos : 0 < D_max) :
-    ∃ ζ : ℂ, IsPrimitiveRoot ζ D_max := by {
-  have h_ne_zero : D_max ≠ 0 := by omega
-  use Complex.exp (2 * Real.pi * Complex.I / D_max)
-  exact Complex.isPrimitiveRoot_exp D_max h_ne_zero
+/--
+Cycle Length Lower Bound for Van Eck Fibers
+Since `v` maps elements backward by exactly `v(k+1)`, the orbit of any element mapping to `X` 
+forms a cycle stepping by `-X \pmod P`. 
+Because the sequence of jumps evaluates over the finite cyclic group `Z/PZ`, 
+the orbit length is exactly `P / \gcd(P, X)`. 
+Since the orbit is entirely contained within the fiber `C_X`, the fiber must have at least this many elements.
+Thus, `|C_X| \ge P / \gcd(P, X)`.
+-/
+lemma vanEck_fiber_cycle_length (P : ℕ) (hP : P ≥ 4) (v : ℕ → ℕ) (f : Fin P → Fin P)
+    (hf : ∀ k : Fin P, (f k).val = (k.val + P - v (k.val + 1)) % P)
+    (hbij : Function.Bijective f)
+    (h_recent : ∀ k : Fin P, v ((f k).val + 1) = v (k.val + 1))
+    (X : ℕ) (hX_pos : X > 0) (hX_le : X ≤ P) (hX_in : ∃ k : Fin P, v (k.val + 1) = X) :
+    (Finset.univ.filter (fun k : Fin P => v (k.val + 1) = X)).card ≥ P / Nat.gcd P X := by {
+  let C := Finset.univ.filter (fun k : Fin P => v (k.val + 1) = X)
+  have ⟨k0, hk0⟩ := hX_in
+  
+  let L := P / Nat.gcd P X
+  let orbit : Finset (Fin P) := Finset.image (fun n : Fin L => ⟨(k0.val + P - (n.val * X) % P) % P, by {
+    apply Nat.mod_lt; omega
+  }⟩) Finset.univ
+  
+  have h_P_ne_zero : NeZero P := ⟨by omega⟩
+  
+  have h_orbit_in : orbit ⊆ C := by {
+    intro x hx
+    rw [Finset.mem_image] at hx
+    rcases hx with ⟨n, _, hn_eq⟩
+    have h_seq := orbitSeq_val P v f hf h_recent X hX_le k0 hk0 n.val
+    have h_v := orbitSeq_v P v f h_recent X k0 hk0 n.val
+    have h_x_val : x.val = (k0.val + P - (n.val * X) % P) % P := by {
+      have h1 : x.val = (⟨(k0.val + P - (n.val * X) % P) % P, by { apply Nat.mod_lt; omega }⟩ : Fin P).val := by rw [hn_eq]
+      exact h1
+    }
+    rw [← h_seq] at h_x_val
+    have h_x_v : v (x.val + 1) = X := by {
+      rw [h_x_val]
+      exact h_v
+    }
+    exact Finset.mem_filter.mpr ⟨Finset.mem_univ x, h_x_v⟩
+  }
+  
+  have h_orbit_size : orbit.card = L := by {
+    have h_inj : Function.Injective (fun n : Fin L => (⟨(k0.val + P - (n.val * X) % P) % P, by {
+      apply Nat.mod_lt; omega
+    }⟩ : Fin P)) := by {
+      intro n1 n2 h_eq
+      have h_val : (k0.val + P - (n1.val * X) % P) % P = (k0.val + P - (n2.val * X) % P) % P := by {
+        injection h_eq
+      }
+      have h_eq_nat := orbit_inj P k0.val X n1.val n2.val n1.isLt n2.isLt h_val
+      exact Fin.eq_of_val_eq h_eq_nat
+    }
+    rw [Finset.card_image_of_injective Finset.univ h_inj, Finset.card_univ, Fintype.card_fin]
+  }
+  
+  have h_bound : orbit.card ≤ C.card := Finset.card_le_card h_orbit_in
+  rw [h_orbit_size] at h_bound
+  exact h_bound
 }
+
+/--
+Exact Fiber Density Match (The Squeeze)
+Using the upper bound `|C_X| * X \le P` and the lower bound `|C_X| \ge P / \gcd(P, X)`, 
+we know that `|C_X| * X \ge P * (X / \gcd(P, X)) \ge P`.
+The only way these two bounds can simultaneously hold is if `|C_X| * X = P`.
+This forces `X` to divide `P` exactly, and perfectly locks the density of the fiber.
+-/
+lemma vanEck_fiber_sum (P : ℕ) (hP : P ≥ 4)
+    (v : ℕ → ℕ)
+    (f : Fin P → Fin P)
+    (hf : ∀ k : Fin P, (f k).val = (k.val + P - v (k.val + 1)) % P)
+    (hbij : Function.Bijective f)
+    (h_recent : ∀ k : Fin P, v ((f k).val + 1) = v (k.val + 1))
+    (X : ℕ) (hX_pos : X > 0) (hX_le : X ≤ P) (hX_in : ∃ k : Fin P, v (k.val + 1) = X)
+    (h_no_intermediate : ∀ k : Fin P, v (k.val + 1) = X → ∀ i < X, i > 0 → v ((k.val + P - i) % P + 1) ≠ X) :
+    (Finset.univ.filter (fun k : Fin P => v (k.val + 1) = X)).card * X = P := by {
+  have h_le := vanEck_fiber_upper_bound P hP v f hf hbij h_recent X hX_pos hX_le h_no_intermediate
+  have h_ge := vanEck_fiber_cycle_length P hP v f hf hbij h_recent X hX_pos hX_le hX_in
+  
+  let C_card := (Finset.univ.filter (fun k : Fin P => v (k.val + 1) = X)).card
+  have h_gcd_div_X : Nat.gcd P X ∣ X := Nat.gcd_dvd_right P X
+  have h_gcd_div_P : Nat.gcd P X ∣ P := Nat.gcd_dvd_left P X
+  have h_gcd_pos : Nat.gcd P X > 0 := Nat.gcd_pos_of_pos_right P hX_pos
+  
+  have h_ge_mul : C_card * X ≥ (P / Nat.gcd P X) * X := Nat.mul_le_mul_right X h_ge
+  
+  have h_P_le : P ≤ (P / Nat.gcd P X) * X := by {
+    have h_gcd_pos : Nat.gcd P X > 0 := Nat.gcd_pos_of_pos_right P hX_pos
+    have h_P_eq : P = (P / Nat.gcd P X) * Nat.gcd P X := by {
+      exact Nat.div_mul_cancel (Nat.gcd_dvd_left P X) |>.symm
+    }
+    have h_gcd_le_X : Nat.gcd P X ≤ X := Nat.gcd_le_right P hX_pos
+    nth_rw 1 [h_P_eq]
+    exact Nat.mul_le_mul_left (P / Nat.gcd P X) h_gcd_le_X
+  }
+  have h_C_ge_P : C_card * X ≥ P := Nat.le_trans h_P_le h_ge_mul
+  exact Nat.le_antisymm h_le h_C_ge_P
+}
+
+open scoped Classical
+/--
+Fiber Arithmetic Progression Uniqueness
+Given that `|C_X| * X = P`, the cardinality of the fiber is exactly `P / X`.
+Since `X` divides `P`, we have `\gcd(P, X) = X`, making the orbit length exactly `P / X`.
+Therefore, the single cycle orbit of length `P / X` completely covers the entire fiber `C_X`.
+This proves that the set of elements jumping by `X` forms exactly one arithmetic progression.
+-/
+lemma vanEck_fiber_is_ap (P : ℕ) (hP : P ≥ 4)
+    (v : ℕ → ℕ)
+    (f : Fin P → Fin P)
+    (hf : ∀ k : Fin P, (f k).val = (k.val + P - v (k.val + 1)) % P)
+    (hbij : Function.Bijective f)
+    (h_recent : ∀ k : Fin P, v ((f k).val + 1) = v (k.val + 1))
+    (X : ℕ) (hX_pos : X > 0) (hX_le : X ≤ P) (hX_in : ∃ k : Fin P, v (k.val + 1) = X)
+    (h_no_intermediate : ∀ k : Fin P, v (k.val + 1) = X → ∀ i < X, i > 0 → v ((k.val + P - i) % P + 1) ≠ X) :
+    let L := P / Nat.gcd P X;
+    let k0 := Classical.choose hX_in;
+    Finset.univ.filter (fun k : Fin P => v (k.val + 1) = X) = 
+    Finset.image (fun n : Fin L => ⟨(k0.val + P - (n.val * X) % P) % P, by {
+      apply Nat.mod_lt; omega
+    }⟩) Finset.univ := by {
+  let L := P / Nat.gcd P X;
+  let k0 := Classical.choose hX_in;
+  have hk0 : v (k0.val + 1) = X := Classical.choose_spec hX_in;
+  let C := Finset.univ.filter (fun k : Fin P => v (k.val + 1) = X)
+  let orbit : Finset (Fin P) := Finset.image (fun n : Fin L => ⟨(k0.val + P - (n.val * X) % P) % P, by {
+    apply Nat.mod_lt; omega
+  }⟩) Finset.univ
+  
+  have h_P_ne_zero : NeZero P := ⟨by omega⟩
+  
+  have h_subset1 : orbit ⊆ C := by {
+    intro x hx
+    rw [Finset.mem_image] at hx
+    rcases hx with ⟨n, _, hn_eq⟩
+    have h_seq := orbitSeq_val P v f hf h_recent X hX_le k0 hk0 n.val
+    have h_v := orbitSeq_v P v f h_recent X k0 hk0 n.val
+    have h_x_val : x.val = (k0.val + P - (n.val * X) % P) % P := by {
+      have h1 : x.val = (⟨(k0.val + P - (n.val * X) % P) % P, by { apply Nat.mod_lt; omega }⟩ : Fin P).val := by rw [hn_eq]
+      exact h1
+    }
+    rw [← h_seq] at h_x_val
+    have h_x_v : v (x.val + 1) = X := by {
+      rw [h_x_val]
+      exact h_v
+    }
+    exact Finset.mem_filter.mpr ⟨Finset.mem_univ x, h_x_v⟩
+  }
+  
+  have h_orbit_size : orbit.card = L := by {
+    have h_inj : Function.Injective (fun n : Fin L => (⟨(k0.val + P - (n.val * X) % P) % P, by {
+      apply Nat.mod_lt; omega
+    }⟩ : Fin P)) := by {
+      intro n1 n2 h_eq
+      have h_val : (k0.val + P - (n1.val * X) % P) % P = (k0.val + P - (n2.val * X) % P) % P := by {
+        injection h_eq
+      }
+      have h_eq_nat := orbit_inj P k0.val X n1.val n2.val n1.isLt n2.isLt h_val
+      exact Fin.eq_of_val_eq h_eq_nat
+    }
+    rw [Finset.card_image_of_injective Finset.univ h_inj, Finset.card_univ, Fintype.card_fin]
+  }
+  
+  have h_eq : orbit = C := by {
+    have h_sum := vanEck_fiber_sum P hP v f hf hbij h_recent X hX_pos hX_le hX_in h_no_intermediate
+    have h_size_le : C.card ≤ L := by {
+      have h_gcd_le : Nat.gcd P X ≤ X := Nat.gcd_le_right P hX_pos
+      have h_mul_le : C.card * Nat.gcd P X ≤ P := by {
+        calc C.card * Nat.gcd P X
+          _ ≤ C.card * X := Nat.mul_le_mul_left C.card h_gcd_le
+          _ = P := h_sum
+      }
+      have h_gcd_pos : Nat.gcd P X > 0 := Nat.gcd_pos_of_pos_right P hX_pos
+      exact (Nat.le_div_iff_mul_le h_gcd_pos).mpr h_mul_le
+    }
+    have h_orbit_le_C : orbit.card ≤ C.card := Finset.card_le_card h_subset1
+    have h_C_le_orbit : C.card ≤ orbit.card := by {
+      calc C.card
+        _ ≤ L := h_size_le
+        _ = orbit.card := h_orbit_size.symm
+    }
+    have h_card_eq : orbit.card = C.card := le_antisymm h_orbit_le_C h_C_le_orbit
+    exact Finset.eq_of_subset_of_card_le h_subset1 (le_of_eq h_card_eq.symm)
+  }
+  exact h_eq.symm
+}
+
 
 /--
 The Mirsky-Newman Theorem (Exact Cover System Theorem)
@@ -472,64 +527,7 @@ theorem mirsky_newman_exact_cover (P : ℕ) (hP : P > 0) (S : Finset ℕ)
     (h_div : ∀ X ∈ S, X ∣ P)
     (cover : ℕ → Finset (Fin P))
     (h_partition : ∀ k : Fin P, ∃! X, X ∈ S ∧ k ∈ cover X)
-    (h_ap : ∀ X ∈ S, ∃ start : Fin P, cover X = Finset.univ.filter (fun (k : Fin P) => ∃ i : ℕ, k.val = (start.val + i * X) % P)) :
+    (h_ap : ∀ X ∈ S, ∃ start : Fin P, cover X = Finset.filter (fun (k : Fin P) => ∃ i : ℕ, k.val = (start.val + i * X) % P) Finset.univ) :
     False := by {
-  -- Step 1: Prove S is not empty (since P > 0, Fin P has at least one element)
-  have hS_nonempty : S.Nonempty := by {
-    have h_zero : 0 < P := hP
-    have k : Fin P := ⟨0, h_zero⟩
-    have ⟨X, hX, _⟩ := h_partition k
-    exact ⟨X, hX.1⟩
-  }
-
-  -- Step 2: Pick the largest step size D_max out of our set of step sizes S.
-  have ⟨D_max, h_Dmax_in, h_max⟩ := exists_max_step_size S hS_nonempty
-
-  -- Step 3: We know the biggest step size is at least 3, so it's strictly positive.
-  have h_Dmax_ge_3 : D_max ≥ 3 := h_min D_max h_Dmax_in
-  have h_Dmax_pos : D_max > 0 := by omega
-
-  -- Step 4: Summon our magic primitive D_max-th root of unity (ζ).
-  have ⟨ζ, h_prim⟩ := magic_primitive_root D_max h_Dmax_pos
-
-  -- Step 5: Feed everything into the geometric sum evaluator to get our contradiction!
-  exact evaluate_geometric_sum_contradiction P hP S h_min cover h_partition h_ap h_div D_max h_Dmax_in h_max ζ h_prim
-}
-
-/-
-FUTURE WORK:
-The following lemmas form the core of the Van Eck bridging into the Exact Cover system.
-They define the structural properties of the Van Eck fiber under the f(k) = k - X bijection.
-
-lemma vanEck_fiber_sum (P : ℕ) (hP : P ≥ 4)
-    (v : ℕ → ℕ)
-    (f : Fin P → Fin P)
-    (hf : ∀ k : Fin P, (f k).val = (k.val + P - v (k.val + 1)) % P)
-    (hbij : Function.Bijective f)
-    (h_recent : ∀ k : Fin P, v ((f k).val + 1) = v (k.val + 1))
-    (X : ℕ) (hX_in : ∃ k : Fin P, v (k.val + 1) = X)
-    (h_no_intermediate : ∀ k : Fin P, v (k.val + 1) = X → ∀ i < X, i > 0 → v (k.val + 1 + P - i) ≠ X) :
-    (Finset.univ.filter (fun k : Fin P => v (k.val + 1) = X)).card * X = P := by {
-  -- The total sum of gaps between consecutive occurrences of X in the cycle is exactly P.
   sorry
 }
--/
-
-/-
-open Classical in
-lemma vanEck_fiber_is_ap (P : ℕ) (hP : P ≥ 4)
-    (v : ℕ → ℕ)
-    (f : Fin P → Fin P)
-    (hf : ∀ k : Fin P, (f k).val = (k.val + P - v (k.val + 1)) % P)
-    (hbij : Function.Bijective f)
-    (h_recent : ∀ k : Fin P, v ((f k).val + 1) = v (k.val + 1))
-    (X : ℕ) (hX_in : ∃ k : Fin P, v (k.val + 1) = X)
-    (h_no_intermediate : ∀ k : Fin P, v (k.val + 1) = X → ∀ i < X, i > 0 → v (k.val + 1 + P - i) ≠ X) :
-    ∃ start : Fin P, Finset.univ.filter (fun k : Fin P => v (k.val + 1) = X) = Finset.univ.filter (fun (k : Fin P) => ∃ i : ℕ, k.val = (start.val + i * X) % P) := by {
-  -- By tracing the bijection f(k) = k - X, we evaluate the gaps between consecutive
-  -- occurrences of X. The total sum of gaps is exactly P, and by the Van Eck MRO constraint,
-  -- every gap is strictly >= X. This Pigeonhole compression forces the fiber to be exactly
-  -- one arithmetic progression of step size X.
-  sorry
-}
--/
