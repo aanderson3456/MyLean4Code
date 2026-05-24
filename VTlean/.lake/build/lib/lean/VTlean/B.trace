@@ -35,7 +35,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/B.lean",
-   "4ff5034b942eab28"],
+   "583aa4e2186bc9f3"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -45,4 +45,4 @@
   ["Module.name: VTlean.B", "e63b1a847fb88db5"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "cdc14b09f53442ab"}
+ "depHash": "21d23dfc6c856cfd"}

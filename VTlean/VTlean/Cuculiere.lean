@@ -185,8 +185,8 @@ lemma cuculiere_get_successor (n c : Nat) :
 
 lemma vector_card_split (n : Nat) (P : List.Vector B (n + 1) → Prop) [DecidablePred P] :
   Finset.card (Finset.filter P univ) = 
-  Finset.card (Finset.filter (fun v => P (List.Vector.push v O)) univ) + 
-  Finset.card (Finset.filter (fun v => P (List.Vector.push v I)) univ) := by {
+  Finset.card (Finset.filter (fun v => P (List.Vector.push v B.O)) univ) + 
+  Finset.card (Finset.filter (fun v => P (List.Vector.push v B.I)) univ) := by {
   sorry
 }
 

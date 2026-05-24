@@ -241,7 +241,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/InsDel.lean",
-   "3a8da1c412790b57"],
+   "a88c86295e6cda19"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -251,4 +251,4 @@
   ["Module.name: VTlean.InsDel", "1858484b967c1c72"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "86ab7adf049dcd03"}
+ "depHash": "7f137c0baf387d16"}

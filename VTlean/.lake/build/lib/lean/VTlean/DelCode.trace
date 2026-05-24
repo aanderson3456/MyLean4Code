@@ -180,7 +180,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/DelCode.lean",
-   "7832434c17518118"],
+   "c70aa425a73a6d13"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -190,4 +190,4 @@
   ["Module.name: VTlean.DelCode", "3c06143abab00f7d"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "627d33f5c7a48b74"}
+ "depHash": "f71a9b0d07543469"}
