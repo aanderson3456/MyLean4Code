@@ -7,3 +7,5 @@ import VTlean.DelCode
 import VTlean.Optimal
 import VTlean.Homomorphism
 import VTlean.Cuculiere
+import VTlean.FractalSlice
+

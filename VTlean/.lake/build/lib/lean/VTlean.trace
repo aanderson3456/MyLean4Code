@@ -1,9 +1,9 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["1eb5c0290b317f5b.olean"],
-  "i": "17a7eb1f133fb134.ilean",
-  "c": "bff35ab26606bbc0.c"},
+ {"o": ["ec6911080879bc40.olean"],
+  "i": "4f864e725874d8a9.ilean",
+  "c": "6a10daac6365f58e.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean.setup.json --json",
@@ -30,7 +30,9 @@
         ["VTlean.Homomorphism transitive imports (legacy)", "2e27fed48d92c23a"],
         ["VTlean.Homomorphism:importAllArts", "11b769c41ea34285"],
         ["VTlean.Cuculiere transitive imports (legacy)", "4265da5511d8474f"],
-        ["VTlean.Cuculiere:importAllArts", "557237de57a96e6c"]]]]],
+        ["VTlean.Cuculiere:importAllArts", "557237de57a96e6c"],
+        ["VTlean.FractalSlice transitive imports (legacy)", "b35edcaf7aa59dff"],
+        ["VTlean.FractalSlice:importAllArts", "a5145974d53a19f1"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -39,7 +41,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean.lean",
-   "cb03b6bd3e2f59cf"],
+   "793df02a730b28d2"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -49,4 +51,4 @@
   ["Module.name: VTlean", "f527ba05211ad81a"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "9f3f877d01784d6e"}
+ "depHash": "c60c58c769157003"}
