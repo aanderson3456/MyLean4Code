@@ -1,20 +1,118 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["1003c66b746fa0cc.olean"],
-  "i": "f52ee954d1ad9928.ilean",
-  "c": "118e0001ba2d4369.c"},
+ {"o": ["2319f9d0ec0447a1.olean"],
+  "i": "9653df8ee362ab73.ilean",
+  "c": "3e29545646c8e8d9.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/NumOsNumIs.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/NumOsNumIs.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/NumOsNumIs.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/NumOsNumIs.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/NumOsNumIs.setup.json --json",
-   "level": "trace"}],
+   "level": "trace"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:346:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:373:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:379:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:413:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:463:33: unused variable `i`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:522:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:526:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:549:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:567:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:585:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:591:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:729:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:742:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:750:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:856:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:864:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:869:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:880:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:904:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:911:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:938:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:941:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:948:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:953:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:991:34: remove line break in the source\n\nThis part of the code\n  'not_mem_filter_Icc_wt_of_lt \n  (C'\nshould be written as\n  'not_mem_filter_Icc_wt_of_lt (C :'\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:999:34: remove line break in the source\n\nThis part of the code\n  'not_mem_filter_Icc_wt_of_gt \n  (C'\nshould be written as\n  'not_mem_filter_Icc_wt_of_gt (C :'\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:1008:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:1104:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:1126:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:1148:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/NumOsNumIs.lean:1189:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"}],
  "inputs":
  [["VTlean.NumOsNumIs:deps",
    [["deps",
      [["VTlean/VTlean:extraDep", [["@VTlean:extraDep", "00000000000006bb"]]],
       ["imports",
        [["VTlean.B transitive imports (legacy)", "416edac6ab7889ca"],
-        ["VTlean.B:importAllArts", "31504c077e29bbbf"]]]]],
+        ["VTlean.B:importAllArts", "31504c077e29bbbf"],
+        ["VTlean.InsDel transitive imports (legacy)", "dee97a4c7aab712b"],
+        ["VTlean.InsDel:importAllArts", "b2933e2e4d2fa56f"],
+        ["Mathlib.Data.Finset.Basic transitive imports (legacy)",
+         "f45156902b3bef6c"],
+        ["Mathlib.Data.Finset.Basic:importAllArts", "19dc6347cf1c7240"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -23,7 +121,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/NumOsNumIs.lean",
-   "b3d19b2eb21beea8"],
+   "6362183ffd52420f"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -33,4 +131,4 @@
   ["Module.name: VTlean.NumOsNumIs", "e08513977db7f014"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "afaf2f5a5a3d8a12"}
+ "depHash": "eb9e635f1746ab7a"}

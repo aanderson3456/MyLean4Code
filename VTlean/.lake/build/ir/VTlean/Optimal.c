@@ -40,8 +40,8 @@ LEAN_EXPORT lean_object* lp_VTlean_B_List_Vector_mkOIOI___redArg(lean_object*, l
 LEAN_EXPORT lean_object* lp_VTlean_B_List_Vector_mkOIOI___redArg___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_List_Vector_mkOIOI(lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_B_List_Vector_mkOIOI___boxed(lean_object*, lean_object*, lean_object*);
-LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_Optimal_0__List_num__Is_match__1_splitter___redArg(lean_object*, lean_object*, lean_object*, lean_object*);
-LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_Optimal_0__List_num__Is_match__1_splitter(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_Optimal_0__List_num__Os_match__1_splitter___redArg(lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_Optimal_0__List_num__Os_match__1_splitter(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 lean_object* lp_VTlean_instDecidableEqB___boxed(lean_object*, lean_object*);
 uint8_t l_instDecidableEqList___redArg(lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_VTlean_B_Finset_Repl__sub___lam__0(lean_object*, lean_object*);
@@ -326,7 +326,7 @@ lean_dec(x_1);
 return x_4;
 }
 }
-LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_Optimal_0__List_num__Is_match__1_splitter___redArg(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_Optimal_0__List_num__Os_match__1_splitter___redArg(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4) {
 _start:
 {
 if (lean_obj_tag(x_1) == 0)
@@ -367,7 +367,7 @@ return x_12;
 }
 }
 }
-LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_Optimal_0__List_num__Is_match__1_splitter(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
+LEAN_EXPORT lean_object* lp_VTlean___private_VTlean_Optimal_0__List_num__Os_match__1_splitter(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
 _start:
 {
 if (lean_obj_tag(x_2) == 0)

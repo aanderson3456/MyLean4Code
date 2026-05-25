@@ -391,7 +391,7 @@ lemma list_sDel_of_le_wt : ∀ (X : List B) (hx : List.num_Os X ≤ 1),
 
 lemma vector_sDel_of_le_wt {n : Nat} (X : List.Vector B n) (HX : n - 1 ≤ wt X) :
   ∃ i, List.Vector.sDel X i = List.Vector.replicate (n - 1) I := by
-  have h1 := List.num_Os_add_num_Is_eq_length X.val
+  have h1 := List.num_Os_add_num_Is X.val
   have h2 : X.val.length = n := X.property
   rw [h2] at h1
   have h3 : List.num_Os X.val ≤ 1 := by
@@ -578,14 +578,14 @@ lemma num_Os_IO (n k : Nat) :
   List.num_Is (mkIO n k) = k :=
 by {
   unfold mkIO
-  rw [List.num_Is_append, List.num_Is_replicate_I, List.num_Is_replicate_O]
+  rw [List.num_Is_append, List.num_Is_repI, List.num_Is_repO]
   exact Nat.add_zero k
 }
 lemma num_Is_IO (n k : Nat) :
   List.num_Is (mkIO n k) = k :=
 by {
   unfold mkIO
-  rw [List.num_Is_append, List.num_Is_replicate_I, List.num_Is_replicate_O]
+  rw [List.num_Is_append, List.num_Is_repI, List.num_Is_repO]
   exact Nat.add_zero k
 }
 def mkIOIO (n k : Nat) : List B :=
@@ -604,17 +604,17 @@ lemma length_IOIO (n k : Nat) (Hk : k + 2 ≤ n) :
 lemma num_Os_IOIO (n k : Nat) :
   List.num_Os (mkIOIO n k) = n - k - 2 + 1 := by
   unfold mkIOIO
-  rw [List.num_Os_append, List.num_Os_replicate_I, Nat.zero_add]
+  rw [List.num_Os_append, List.num_Os_repI, Nat.zero_add]
   change List.num_Os (I :: List.replicate (n - k - 2) O) + 1 = _
   change List.num_Os (List.replicate (n - k - 2) O) + 1 = _
-  rw [List.num_Os_replicate_O]
+  rw [List.num_Os_repO]
 lemma num_Is_IOIO (n k : Nat) :
   List.num_Is (mkIOIO n k) = k + 1 := by
   unfold mkIOIO
-  rw [List.num_Is_append, List.num_Is_replicate_I]
+  rw [List.num_Is_append, List.num_Is_repI]
   change k + List.num_Is (I :: List.replicate (n - k - 2) O) = _
   change k + (List.num_Is (List.replicate (n - k - 2) O) + 1) = _
-  rw [List.num_Is_replicate_O, Nat.zero_add]
+  rw [List.num_Is_repO, Nat.zero_add]
 lemma length_IOIO' (n k : Nat) (Hk : n ≤ k + 2) :
     List.length (mkIOIO n k) = k + 2 := by
   unfold mkIOIO
@@ -700,11 +700,11 @@ lemma length_OI' (n k : Nat) :
 lemma num_Os_OI (n k : Nat) :
   List.num_Os (mkOI n k) = k := by
   unfold mkOI
-  rw [List.num_Os_append, List.num_Os_replicate_O, List.num_Os_replicate_I, Nat.add_zero]
+  rw [List.num_Os_append, List.num_Os_repO, List.num_Os_repI, Nat.add_zero]
 lemma num_Is_OI (n k : Nat) :
   List.num_Is (mkOI n k) = n - k := by
   unfold mkOI
-  rw [List.num_Is_append, List.num_Is_replicate_O, List.num_Is_replicate_I, Nat.zero_add]
+  rw [List.num_Is_append, List.num_Is_repO, List.num_Is_repI, Nat.zero_add]
 def mkOIOI (n k : Nat) : List B :=
   List.replicate k O ++ I::O::List.replicate (n - k - 2) I
 
@@ -729,17 +729,17 @@ lemma length_OIOI' (n k : Nat) (Hk : n ≤ k + 2) :
 lemma num_Os_OIOI (n k : Nat) :
   List.num_Os (mkOIOI n k) = k + 1 := by
   unfold mkOIOI
-  rw [List.num_Os_append, List.num_Os_replicate_O]
+  rw [List.num_Os_append, List.num_Os_repO]
   change k + List.num_Os (O :: List.replicate (n - k - 2) I) = _
   change k + (List.num_Os (List.replicate (n - k - 2) I) + 1) = _
-  rw [List.num_Os_replicate_I, Nat.zero_add]
+  rw [List.num_Os_repI, Nat.zero_add]
 lemma num_Is_OIOI (n k : Nat) :
   List.num_Is (mkOIOI n k) = n - k - 2 + 1 := by
   unfold mkOIOI
-  rw [List.num_Is_append, List.num_Is_replicate_O, Nat.zero_add]
+  rw [List.num_Is_append, List.num_Is_repO, Nat.zero_add]
   change List.num_Is (O :: List.replicate (n - k - 2) I) + 1 = _
   change List.num_Is (List.replicate (n - k - 2) I) + 1 = _
-  rw [List.num_Is_replicate_I]
+  rw [List.num_Is_repI]
 lemma drop_replicate_append {α : Type} (k : Nat) (a : α) (L : List α) :
   List.drop k (List.replicate k a ++ L) = L := by
   induction k with
@@ -883,7 +883,7 @@ lemma OI_ne_IOIO (n k₁ k₂ : Nat) (H : 3 ≤ n) :
                     List.num_Os (I :: List.replicate (n - 2) O) := by exact congrArg List.num_Os h_drop
         rw [hk1_eq_1] at h_os
         change List.num_Os (List.replicate (n - k₁) I) = List.num_Os (List.replicate (n - 2) O) at h_os
-        rw [List.num_Os_replicate_I, List.num_Os_replicate_O] at h_os
+        rw [List.num_Os_repI, List.num_Os_repO] at h_os
         have h_n_2 : n - 2 = 0 := h_os.symm
         have h_n_le_2 : n ≤ 2 := Nat.le_of_sub_eq_zero h_n_2
         have h_contra : 3 ≤ 2 := Nat.le_trans H h_n_le_2
@@ -953,7 +953,7 @@ lemma IO_ne_OIOI (n k₁ k₂ : Nat) (H : 3 ≤ n) :
                     List.num_Is (O :: List.replicate (n - 2) I) := by exact congrArg List.num_Is h_drop
         rw [hk1_eq_1] at h_is
         change List.num_Is (List.replicate (n - k₁) O) = List.num_Is (List.replicate (n - 2) I) at h_is
-        rw [List.num_Is_replicate_O, List.num_Is_replicate_I] at h_is
+        rw [List.num_Is_repO, List.num_Is_repI] at h_is
         have h_n_2 : n - 2 = 0 := h_is.symm
         have h_n_le_2 : n ≤ 2 := Nat.le_of_sub_eq_zero h_n_2
         have h_contra : 3 ≤ 2 := Nat.le_trans H h_n_le_2
@@ -1379,7 +1379,7 @@ lemma repO_not_mem (C : Finset (List.Vector B n)):
   have h_wt := h.right
   unfold Ici_wt at h_wt
   change 2 ≤ List.num_Is (List.replicate n O) at h_wt
-  rw [List.num_Is_replicate_O] at h_wt
+  rw [List.num_Is_repO] at h_wt
   contradiction
 lemma list_num_Is_sDel_le (X : List B) (i : Nat) :
   List.num_Is X ≤ List.num_Is (List.sDel X i) + 1 := by
@@ -1446,7 +1446,7 @@ lemma DelCode_insert_repO
       rw [hx_eq_O, wt]
       change List.num_Is (List.sDel (List.replicate n B.O) i) = 0
       rw [List.sDel_replicate i B.O n]
-      exact List.num_Is_replicate_O (n - 1)
+      exact List.num_Is_repO (n - 1)
     have h_wt_x_c : 1 ≤ wt x := by
       rw [hx_eq_c, wt]
       have h1 : List.num_Is c.val ≤ List.num_Is (List.sDel c.val j) + 1 := list_num_Is_sDel_le c.val j
@@ -1465,7 +1465,7 @@ lemma repI_not_mem (Hn : 2 ≤ n) (C : Finset (List.Vector B n)):
   have h_wt := h.right
   unfold Iic_wt at h_wt
   change List.num_Is (List.replicate n I) ≤ n - 2 at h_wt
-  rw [List.num_Is_replicate_I] at h_wt
+  rw [List.num_Is_repI] at h_wt
   have h_contra : ¬ (n ≤ n - 2) := by
     intro hn
     have hn_pos : 0 < n := Nat.lt_of_lt_of_le (by decide) Hn
@@ -1491,7 +1491,7 @@ lemma DelCode_insert_repI (Hn : 2 ≤ n)
       have h_val : x.val = List.sDel (List.replicate n B.I) i := congrArg Subtype.val hx_eq_I
       rw [h_val]
       rw [List.sDel_replicate i B.I n]
-      exact List.num_Os_replicate_I (n - 1)
+      exact List.num_Os_repI (n - 1)
     have h_wt_x_c : 1 ≤ List.num_Os x.val := by
       have h_val : x.val = List.sDel c.val j := congrArg Subtype.val hx_eq_c
       rw [h_val]
@@ -1500,7 +1500,7 @@ lemma DelCode_insert_repI (Hn : 2 ≤ n)
         have hc_wt_val : List.num_Is c.val ≤ n - 2 := hc_wt
         have h_add : List.num_Is c.val + 2 ≤ n - 2 + 2 := Nat.add_le_add_right hc_wt_val 2
         have h_len : List.num_Is c.val + List.num_Os c.val = n := by
-          have hl := List.num_Os_add_num_Is_eq_length c.val
+          have hl := List.num_Os_add_num_Is c.val
           have hc_prop : c.val.length = n := c.property
           rw [hc_prop] at hl
           rw [Nat.add_comm] at hl
@@ -1539,7 +1539,7 @@ lemma card_insert_repI_repO (Hn : 2 ≤ n)
     have h_if : Iic_wt (n - 2) (List.Vector.replicate n B.O) := by
       unfold Iic_wt
       change List.num_Is (List.replicate n B.O) ≤ n - 2
-      rw [List.num_Is_replicate_O]
+      rw [List.num_Is_repO]
       exact Nat.zero_le _
     rw [if_pos h_if]
     rw [Finset.card_insert_of_notMem]

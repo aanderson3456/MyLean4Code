@@ -1,9 +1,9 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["86fcf2c832188e25.olean"],
-  "i": "ca958fcef1dd5a62.ilean",
-  "c": "6d5e6495371717ce.c"},
+ {"o": ["54c4a87e9e64fbee.olean"],
+  "i": "94e4fe89a1397b62.ilean",
+  "c": "e2b4926364d15791.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Optimal.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/Optimal.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/Optimal.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/Optimal.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/Optimal.setup.json --json",
@@ -331,8 +331,8 @@
    [["deps",
      [["VTlean/VTlean:extraDep", [["@VTlean:extraDep", "00000000000006bb"]]],
       ["imports",
-       [["VTlean.DelCode transitive imports (legacy)", "18d6993812f87413"],
-        ["VTlean.DelCode:importAllArts", "802227a548ca5127"]]]]],
+       [["VTlean.DelCode transitive imports (legacy)", "9fec8551c4006b6f"],
+        ["VTlean.DelCode:importAllArts", "d98e0f91d47d0e2c"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -341,7 +341,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Optimal.lean",
-   "7bd2ef1d1cb6c3cb"],
+   "c16d30328bb53655"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -351,4 +351,4 @@
   ["Module.name: VTlean.Optimal", "2a0e311968f9ad7d"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "f7fa549d9c709e9d"}
+ "depHash": "9ccf5cb27f703e97"}

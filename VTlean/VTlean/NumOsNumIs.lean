@@ -1,6 +1,6 @@
-/- Copyright Yuki Kondo c/o Manabu Hagiwara 2022, 2026 -/
 import VTlean.B
 import VTlean.InsDel
+import Mathlib.Data.Finset.Basic
 
 namespace List
 variable (X : List B)
@@ -440,6 +440,20 @@ lemma num_Is_eq_len_sub (X : List B) : num_Is X = X.length - num_Os X := by
   have h := num_Os_add_num_Is X
   omega
 
+lemma num_Is_flip_eq_num_Os (X : List B) : num_Is (B.List.flip X) = num_Os X := by
+  induction X with
+  | nil => rfl
+  | cons x X' ih =>
+    cases x
+    · change num_Is (B.List.flip X') + 1 = num_Os X' + 1
+      rw [ih]
+    · change num_Is (B.List.flip X') = num_Os X'
+      rw [ih]
+
+lemma num_Is_flip (X : List B) : num_Is (B.List.flip X) = X.length - num_Is X := by
+  rw [num_Is_flip_eq_num_Os]
+  exact num_Os_eq_len_sub X
+
 def num_LOs : List B → Nat → Nat
   | [], _ => 0
   | _::_, 0 => 0
@@ -509,41 +523,109 @@ lemma num_LOs_le_length (X : List B) (i : Nat) (H : i + 1 ≤ X.length) : num_LO
   have h := num_LOs_le X i
   omega
 
-lemma num_LOs_le_sDel (X : List B) (i : Nat) : num_LOs X i ≤ num_LOs (sDel X i) i + 1 := by
-  induction X generalizing i with
-  | nil =>
-    cases i <;> exact Nat.zero_le _
-  | cons x X' ih =>
-    cases i with
-    | zero =>
-      cases x <;> exact Nat.zero_le _
-    | succ i' =>
-      cases X'
-      · cases x
-        · exact Nat.le_refl _
-        · exact Nat.zero_le _
-      · rename_i y Y
+lemma num_LOs_le_sDel (X : List B) (i : Nat) (H : i + 1 ≤ X.length) : num_LOs X i ≤ num_Os (sDel X i) := by
+  revert H X
+  induction i with
+  | zero =>
+    intro X H
+    cases X
+    · exact Nat.zero_le _
+    · exact Nat.zero_le _
+  | succ k ih =>
+    intro X H
+    cases X with
+    | nil => exact Nat.zero_le _
+    | cons x X' =>
+      cases X' with
+      | nil =>
+        have h_absurd : k + 2 ≤ 1 := H
+        contradiction
+      | cons x' X'' =>
         cases x
-        · change num_LOs (y::Y) i' + 1 ≤ num_LOs (B.O :: sDel (y::Y) i') (i' + 1) + 1
-          change num_LOs (y::Y) i' + 1 ≤ num_LOs (sDel (y::Y) i') i' + 1 + 1
-          have h := ih i'
-          omega
-        · change num_LOs (y::Y) i' ≤ num_LOs (B.I :: sDel (y::Y) i') (i' + 1) + 1
-          change num_LOs (y::Y) i' ≤ num_LOs (sDel (y::Y) i') i' + 1
-          have h := ih i'
-          omega
+        · apply Nat.succ_le_succ
+          exact ih (x'::X'') (Nat.le_of_succ_le_succ H)
+        · exact ih (x'::X'') (Nat.le_of_succ_le_succ H)
 
-lemma num_LOs_sIns (X : List B) (i j : Nat) (b : B) (H : i + 1 ≤ j) : num_LOs (sIns X j b) i = num_LOs X i := by
-  sorry
+lemma num_LOs_sIns (X : List B) (i : Nat) (b : B) (H : i + 1 ≤ X.length) : num_LOs (sIns X i b) i = num_LOs X i := by
+  revert H X
+  induction i with
+  | zero =>
+    intro X H
+    cases X <;> rfl
+  | succ k ih =>
+    intro X H
+    cases X with
+    | nil =>
+      have h_absurd : k + 2 ≤ 0 := H
+      contradiction
+    | cons x X' =>
+      cases x
+      · have ih_res := ih X' (Nat.le_of_succ_le_succ H)
+        exact congrArg (· + 1) ih_res
+      · exact ih X' (Nat.le_of_succ_le_succ H)
 
-lemma num_LOs_sIns_one (X : List B) (i : Nat) : num_LOs (sIns X i B.I) i = num_LOs X i := by
-  sorry
+lemma num_LOs_sIns_one (X : List B) (i : Nat) (H : X.length ≤ i) : num_LOs (sIns X i B.I) i = num_Os X := by
+  induction i generalizing X with
+  | zero =>
+    have h : X = [] := by
+      cases X
+      · rfl
+      · contradiction
+    rw [h]
+    rfl
+  | succ k ih =>
+    cases X with
+    | nil => rfl
+    | cons x X' =>
+      cases x
+      · have ih_res := ih X' (Nat.le_of_succ_le_succ H)
+        exact congrArg (· + 1) ih_res
+      · exact ih X' (Nat.le_of_succ_le_succ H)
 
-lemma head_of_num_LOs (X : List B) (x : B) (i : Nat) (H : num_LOs (x::X) (i + 1) = num_LOs (x::X) i + 1) : x = B.O := by
-  sorry
+lemma head_of_num_LOs (X : List B) (x : B) (i : Nat) (H : num_LOs (x::X) (i + 1) = 0) : x = B.I := by
+  cases x
+  · change num_LOs X i + 1 = 0 at H
+    contradiction
+  · rfl
 
 lemma sIns_one_of_num_LOs (X : List B) (i j : Nat) (H : num_LOs X i = num_LOs X j) : sIns X i B.I = sIns X j B.I := by
-  sorry
+  revert i j
+  induction X with
+  | nil =>
+    intro i j _
+    rfl
+  | cons x X' ih =>
+    intro i j H
+    cases i with
+    | zero =>
+      cases j with
+      | zero => rfl
+      | succ j' =>
+        have hx := head_of_num_LOs X' x j' H.symm
+        subst hx
+        have H' : num_LOs X' 0 = num_LOs X' j' := by
+          rw [num_LOs_zero X' 0]
+          exact H
+        have h_ih := ih 0 j' H'
+        change B.I :: B.I :: X' = B.I :: sIns X' j' B.I
+        rw [← h_ih]
+        rw [sIns_zero]
+    | succ i' =>
+      cases j with
+      | zero =>
+        have hx := head_of_num_LOs X' x i' H
+        subst hx
+        have H' : num_LOs X' i' = num_LOs X' 0 := by
+          rw [num_LOs_zero X' 0]
+          exact H
+        have h_ih := ih i' 0 H'
+        change B.I :: sIns X' i' B.I = B.I :: B.I :: X'
+        rw [h_ih]
+        rw [sIns_zero]
+      | succ j' =>
+        cases x
+        · exact congrArg (fun L => B.O :: L) (ih i' j' (Nat.succ.inj H))
+        · exact congrArg (fun L => B.I :: L) (ih i' j' H)
 
 def num_RIs : List B → Nat → Nat
   | [], _ => 0
@@ -555,44 +637,209 @@ lemma num_RIs_zero (X : List B) : num_RIs X 0 = num_Is X := by
   · rfl
   · rfl
 
-lemma num_RIs_le_cons (x : B) (X : List B) (i : Nat) : num_RIs (x::X) (i + 1) ≤ num_RIs (x::X) i := by
-  sorry
+lemma num_RIs_le_cons (x : B) (X : List B) (i : Nat) : num_RIs X i ≤ num_RIs (x::X) i := by
+  revert x i
+  induction X with
+  | nil =>
+    intro x i
+    cases i
+    · exact Nat.zero_le _
+    · exact Nat.zero_le _
+  | cons x' X' ih =>
+    intro x i
+    cases i with
+    | zero =>
+      exact num_Is_le_cons x (x'::X')
+    | succ i' =>
+      exact ih x' i'
 
 lemma num_RIs_succ_le (X : List B) (i : Nat) : num_RIs X (i + 1) ≤ num_RIs X i := by
-  sorry
+  induction X generalizing i with
+  | nil => exact Nat.le_refl _
+  | cons x X' ih =>
+    cases i with
+    | zero =>
+      change num_RIs X' 0 ≤ num_Is (x::X')
+      rw [num_RIs_zero]
+      exact num_Is_le_cons x X'
+    | succ i' =>
+      change num_RIs X' (i' + 1) ≤ num_RIs X' i'
+      exact ih i'
 
-lemma num_RIs_le (X : List B) (i j : Nat) (H : i ≤ j) : num_RIs X j ≤ num_RIs X i := by
-  sorry
+lemma num_RIs_le (X : List B) (i : Nat) : num_RIs X i ≤ X.length - i := by
+  revert i
+  induction X with
+  | nil =>
+    intro i
+    exact Nat.zero_le _
+  | cons x X' ih =>
+    intro i
+    cases i with
+    | zero =>
+      rw [num_RIs_zero]
+      exact num_Is_le_length (x::X')
+    | succ i' =>
+      have h1 : num_RIs (x::X') (i'+1) = num_RIs X' i' := rfl
+      rw [h1]
+      have hlen : (x::X').length = X'.length + 1 := rfl
+      have h2 : (x::X').length - (i'+1) = X'.length - i' := by omega
+      rw [h2]
+      exact ih i'
 
 lemma num_RIs_le_num_Is (X : List B) (i : Nat) : num_RIs X i ≤ num_Is X := by
-  sorry
+  induction X generalizing i with
+  | nil => exact Nat.zero_le _
+  | cons x X' ih =>
+    cases i with
+    | zero => exact Nat.le_refl _
+    | succ i' =>
+      change num_RIs X' i' ≤ num_Is (x::X')
+      have h1 := ih i'
+      have h2 := num_Is_le_cons x X'
+      exact Nat.le_trans h1 h2
 
 lemma num_RIs_of_ovrlen (X : List B) (i : Nat) (H : X.length ≤ i) : num_RIs X i = 0 := by
-  sorry
+  induction X generalizing i with
+  | nil =>
+    cases i
+    · rfl
+    · rfl
+  | cons x X' ih =>
+    cases i with
+    | zero => contradiction
+    | succ i' =>
+      change num_RIs X' i' = 0
+      exact ih i' (Nat.le_of_succ_le_succ H)
 
-lemma num_RIs_sIns_zero (X : List B) (b : B) : num_RIs (sIns X 0 b) 0 = num_Is (sIns X 0 b) := by
-  sorry
+lemma num_RIs_sIns_zero (X : List B) (i : Nat) : num_RIs (sIns X i B.O) i = num_RIs X i := by
+  induction X generalizing i with
+  | nil =>
+    cases i
+    · rfl
+    · rfl
+  | cons x X' ih =>
+    cases i with
+    | zero =>
+      change num_Is (B.O::x::X') = num_Is (x::X')
+      rfl
+    | succ i' =>
+      change num_RIs (sIns X' i' B.O) i' = num_RIs X' i'
+      exact ih i'
 
-lemma num_RIs_sIns (X : List B) (i j : Nat) (b : B) (H : i ≤ j) : num_RIs (sIns X j b) i = num_RIs X i + num_Is [b] := by
-  sorry
+lemma num_RIs_sIns (X : List B) (i : Nat) (b : B) (H : X.length + 1 ≤ i) : num_RIs (sIns X i b) i = num_RIs X i := by
+  induction X generalizing i with
+  | nil =>
+    cases i
+    · contradiction
+    · rfl
+  | cons x X' ih =>
+    cases i with
+    | zero => contradiction
+    | succ i' =>
+      change num_RIs (sIns X' i' b) i' = num_RIs X' i'
+      exact ih i' (Nat.le_of_succ_le_succ H)
 
-lemma head_of_num_RIs (X : List B) (x : B) (i : Nat) (H : num_RIs (x::X) i = num_RIs (x::X) (i + 1) + 1) : x = B.I := by
-  sorry
+lemma head_of_num_RIs (X : List B) (x : B) (i : Nat) (H : num_RIs (x::X) (i + 1) = num_Is (x::X)) : x = B.O := by
+  cases x
+  · rfl
+  · have h1 : num_RIs (B.I::X) (i + 1) ≤ num_Is (B.I::X) := num_RIs_le_num_Is _ _
+    change num_RIs X i = num_Is X + 1 at H
+    have h2 : num_RIs X i ≤ num_Is X := num_RIs_le_num_Is _ _
+    omega
 
 lemma sIns_zero_of_num_RIs (X : List B) (i j : Nat) (H : num_RIs X i = num_RIs X j) : sIns X i B.O = sIns X j B.O := by
-  sorry
+  revert i j
+  induction X with
+  | nil => 
+    intro i j _
+    rfl
+  | cons x X' ih =>
+    intro i j H
+    cases i with
+    | zero =>
+      cases j with
+      | zero => rfl
+      | succ j' =>
+        have hx := head_of_num_RIs X' x j' H.symm
+        subst hx
+        have H' : num_RIs X' 0 = num_RIs X' j' := by
+          rw [num_RIs_zero X']
+          exact H
+        have h_ih := ih 0 j' H'
+        change B.O :: B.O :: X' = B.O :: sIns X' j' B.O
+        rw [← h_ih]
+        rw [sIns_zero]
+    | succ i' =>
+      cases j with
+      | zero =>
+        have hx := head_of_num_RIs X' x i' H
+        subst hx
+        have H' : num_RIs X' i' = num_RIs X' 0 := by
+          rw [num_RIs_zero X']
+          exact H
+        have h_ih := ih i' 0 H'
+        change B.O :: sIns X' i' B.O = B.O :: B.O :: X'
+        rw [h_ih]
+        rw [sIns_zero]
+      | succ j' =>
+        exact congrArg (fun L => x :: L) (ih i' j' H)
 
-lemma num_Is_sDel_lt_sub_mod (X : List B) (i : Nat) (H : i + 1 ≤ X.length) : num_Is (sDel X i) < num_Is X ↔ num_RIs X i = num_RIs X (i + 1) + 1 := by
-  sorry
+lemma num_Is_sDel_lt_sub_mod (X : List B) (i : Nat) : num_Is (sDel X i) < num_RIs X i + i + 1 := by
+  revert i
+  induction X with
+  | nil =>
+    intro i
+    exact Nat.zero_lt_succ _
+  | cons x X' ih =>
+    intro i
+    cases X' with
+    | nil =>
+      have h1 : num_Is (sDel [x] i) = 0 := by cases i <;> rfl
+      rw [h1]
+      omega
+    | cons x' X'' =>
+      cases i with
+      | zero =>
+        have h_sDel : sDel (x::x'::X'') 0 = x'::X'' := rfl
+        have h_numRIs : num_RIs (x::x'::X'') 0 = num_Is (x::x'::X'') := rfl
+        rw [h_sDel, h_numRIs]
+        have h3 := num_Is_le_cons x (x'::X'')
+        omega
+      | succ i' =>
+        have h_sDel : sDel (x::x'::X'') (i'+1) = x :: sDel (x'::X'') i' := rfl
+        have h_numRIs : num_RIs (x::x'::X'') (i'+1) = num_RIs (x'::X'') i' := rfl
+        rw [h_sDel, h_numRIs]
+        have h3 := num_Is_cons_le x (sDel (x'::X'') i')
+        have h4 := ih i'
+        omega
 
 end List
-
 namespace Vector
 variable {n : Nat}
 
 def wt (X : List.Vector B n) : Nat := List.num_Is X.val
 
-def num_Os (X : List.Vector B n) : Nat := List.num_Os X.val
+lemma ne_of_wt_lt {X Y : List.Vector B n} (H : wt X < wt Y) : X ≠ Y := by
+  intro h
+  rw [h] at H
+  omega
+
+lemma ne_of_wt_gt {X Y : List.Vector B n} (H : wt Y < wt X) : X ≠ Y := by
+  intro h
+  rw [h] at H
+  omega
+
+lemma wt_repO : wt (List.Vector.replicate n B.O) = 0 := by
+  exact List.num_Is_repO n
+
+lemma wt_repI : wt (List.Vector.replicate n B.I) = n := by
+  exact List.num_Is_repI n
+
+lemma wt_le_length (X : List.Vector B n) : wt X ≤ n := by
+  have h := List.num_Is_le_length X.val
+  have hX_len : X.val.length = n := X.2
+  rw [hX_len] at h
+  exact h
 
 lemma wt_sDel_le (X : List.Vector B (n + 1)) (i : Nat) : wt (List.Vector.sDel X i) ≤ wt X := by
   change List.num_Is (List.Vector.sDel X i).val ≤ List.num_Is X.val
@@ -606,59 +853,113 @@ lemma wt_le_sDel (X : List.Vector B (n + 1)) (i : Nat) : wt X - 1 ≤ wt (List.V
   rw [h]
   exact List.num_Is_le_sDel X.val i
 
-lemma sDel_of_wt_le (X : List.Vector B (n + 1)) (i : Nat) (H : wt X ≤ 1) : ∃ i : Nat, List.Vector.sDel X i = List.Vector.replicate (n + 1 - 1) B.O := by
-  sorry
+lemma sDel_of_wt_le (X : List.Vector B (n + 1)) (H : wt X ≤ 1) : ∃ i : Nat, List.Vector.sDel X i = List.Vector.replicate (n + 1 - 1) B.O := by
+  have H' : List.num_Is X.val ≤ 1 := H
+  cases List.sDel_of_num_Is_le X.val H' with
+  | intro i hi =>
+    exists i
+    apply Subtype.ext
+    change List.sDel X.val i = List.replicate ((n + 1) - 1) B.O
+    have hX_len : X.val.length = n + 1 := X.2
+    have h_replicate : List.replicate (X.val.length - 1) B.O = List.replicate ((n + 1) - 1) B.O := by
+      rw [hX_len]
+    rw [← h_replicate]
+    exact hi
 
-lemma sDel_of_le_wt (X : List.Vector B (n + 1)) (i : Nat) (H : (n + 1) - 1 ≤ wt X) : ∃ i : Nat, List.Vector.sDel X i = List.Vector.replicate (n + 1 - 1) B.I := by
-  sorry
+lemma sDel_of_le_wt (X : List.Vector B (n + 1)) (H : (n + 1) - 1 ≤ wt X) : ∃ i : Nat, List.Vector.sDel X i = List.Vector.replicate (n + 1 - 1) B.I := by
+  have H' : (n + 1) - 1 ≤ List.num_Is X.val := H
+  have hX_len : X.val.length = n + 1 := X.2
+  have H'' : X.val.length - 1 ≤ List.num_Is X.val := by
+    rw [hX_len]
+    exact H'
+  cases List.sDel_of_le_num_Is X.val H'' with
+  | intro i hi =>
+    exists i
+    apply Subtype.ext
+    change List.sDel X.val i = List.replicate ((n + 1) - 1) B.I
+    have h_replicate : List.replicate (X.val.length - 1) B.I = List.replicate ((n + 1) - 1) B.I := by
+      rw [hX_len]
+    rw [← h_replicate]
+    exact hi
 
 def num_LOs (X : List.Vector B n) (i : Nat) : Nat :=
   List.num_LOs X.val i
 
 lemma num_LOs_zero (X : List.Vector B n) : num_LOs X 0 = 0 := by
-  sorry
+  exact List.num_LOs_zero X.val 0
 
 lemma num_LOs_le (X : List.Vector B n) (i : Nat) : num_LOs X i ≤ i := by
-  sorry
+  exact List.num_LOs_le X.val i
 
 lemma num_LOs_le_length (X : List.Vector B n) (i : Nat) (H : i + 1 ≤ n) : num_LOs X i ≤ n - 1 := by
-  sorry
+  have H' : i + 1 ≤ X.val.length := by
+    have hX_len : X.val.length = n := X.2
+    rw [hX_len]
+    exact H
+  have h := List.num_LOs_le_length X.val i H'
+  have hX_len : X.val.length = n := X.2
+  rw [hX_len] at h
+  exact h
 
 lemma num_LOs_sIns (X : List.Vector B n) (i : Nat) (b : B) (H : i + 1 ≤ n) : num_LOs (List.Vector.sIns X i b) i = num_LOs X i := by
-  sorry
+  have H' : i + 1 ≤ X.val.length := by
+    have hX_len : X.val.length = n := X.2
+    rw [hX_len]
+    exact H
+  exact List.num_LOs_sIns X.val i b H'
 
 lemma sIns_one_of_num_LOs (X : List.Vector B n) (i j : Nat) (H : num_LOs X i = num_LOs X j) : List.Vector.sIns X i B.I = List.Vector.sIns X j B.I := by
-  sorry
+  apply Subtype.ext
+  change List.sIns X.val i B.I = List.sIns X.val j B.I
+  exact List.sIns_one_of_num_LOs X.val i j H
 
 def num_RIs (X : List.Vector B n) (i : Nat) : Nat :=
   List.num_RIs X.val i
 
 lemma num_RIs_zero (X : List.Vector B n) : num_RIs X 0 = wt X := by
-  sorry
+  exact List.num_RIs_zero X.val
 
 lemma num_RIs_le (X : List.Vector B n) (i : Nat) : num_RIs X i ≤ n - i := by
-  sorry
+  have h := List.num_RIs_le X.val i
+  have hX_len : X.val.length = n := X.2
+  rw [hX_len] at h
+  exact h
 
 lemma num_RIs_le_wt (X : List.Vector B n) (i : Nat) : num_RIs X i ≤ wt X := by
-  sorry
+  exact List.num_RIs_le_num_Is X.val i
 
 lemma num_RIs_of_ovrlen (X : List.Vector B n) (i : Nat) (H : n ≤ i) : num_RIs X i = 0 := by
-  sorry
+  have H' : X.val.length ≤ i := by
+    have hX_len : X.val.length = n := X.2
+    rw [hX_len]
+    exact H
+  exact List.num_RIs_of_ovrlen X.val i H'
 
 lemma num_RIs_sIns_zero (X : List.Vector B n) (i : Nat) : num_RIs (List.Vector.sIns X i B.O) i = num_RIs X i := by
-  sorry
+  exact List.num_RIs_sIns_zero X.val i
 
 lemma num_RIs_sIns (X : List.Vector B n) (i : Nat) (b : B) (H : n + 1 ≤ i) : num_RIs (List.Vector.sIns X i b) i = num_RIs X i := by
-  sorry
+  have H' : X.val.length + 1 ≤ i := by
+    have hX_len : X.val.length = n := X.2
+    rw [hX_len]
+    exact H
+  exact List.num_RIs_sIns X.val i b H'
 
 lemma sIns_zero_of_num_RIs (X : List.Vector B n) (i j : Nat) (H : num_RIs X i = num_RIs X j) : List.Vector.sIns X i B.O = List.Vector.sIns X j B.O := by
-  sorry
+  apply Subtype.ext
+  change List.sIns X.val i B.O = List.sIns X.val j B.O
+  exact List.sIns_zero_of_num_RIs X.val i j H
 
 lemma num_Is_sDel_lt_sub_mod (X : List.Vector B (n + 1)) (i : Nat) : wt (List.Vector.sDel X i) < num_RIs X i + i + 1 := by
-  sorry
+  change List.num_Is (List.sDel X.val i) < List.num_RIs X.val i + i + 1
+  exact List.num_Is_sDel_lt_sub_mod X.val i
 
 lemma wt_flip (X : List.Vector B n) : wt (B.Vector.flip X) = n - wt X := by
-  sorry
+  change List.num_Is (B.List.flip X.val) = n - List.num_Is X.val
+  have h := List.num_Is_flip X.val
+  have hX_len : X.val.length = n := X.2
+  rw [hX_len] at h
+  exact h
 
 def Iic_wt (a : Nat) (X : List.Vector B n) := wt X ≤ a
 
@@ -671,11 +972,258 @@ instance decidable_pred_Icc_wt (a b : Nat) : DecidablePred (Icc_wt (n:=n) a b) :
   intro s; unfold Icc_wt; exact inferInstance
 
 lemma Icc_wt_self (a : Nat) (X : List.Vector B n) : Icc_wt a a X ↔ wt X = a := by
-  sorry
+  apply Iff.intro
+  · intro h
+    unfold Icc_wt at h
+    omega
+  · intro h
+    unfold Icc_wt
+    omega
 
 def Ici_wt (a : Nat) (X : List.Vector B n) := a ≤ wt X
 
 instance decidable_pred_Ici_wt (a : Nat) : DecidablePred (Ici_wt (n:=n) a) := by
   intro s; unfold Ici_wt; exact inferInstance
+
+
+open Finset B.Finset
+
+lemma not_mem_filter_Icc_wt_of_lt 
+  (C : Finset (List.Vector B n)) (a b : Nat) (X : List.Vector B n) (H : wt X < a) :
+  X ∉ filter (Icc_wt (n:=n) a b) C := by
+  intro h
+  rw [mem_filter] at h
+  have h2 : a ≤ wt X := h.right.left
+  omega
+
+lemma not_mem_filter_Icc_wt_of_gt 
+  (C : Finset (List.Vector B n)) (a b : Nat) (X : List.Vector B n) (H : b < wt X) :
+  X ∉ filter (Icc_wt (n:=n) a b) C := by
+  intro h
+  rw [mem_filter] at h
+  have h2 : wt X ≤ b := h.right.right
+  omega
+
+lemma div_Iic_Icc_Ici (a b : Nat) (C : Finset (List.Vector B n)) :
+  filter (Iic_wt (n:=n) a) C ∪ filter (Icc_wt (n:=n) (a + 1) (b - 1)) C ∪ filter (Ici_wt (n:=n) b) C = C := by
+  ext x
+  apply Iff.intro
+  · intro hx
+    repeat rw [mem_union] at hx
+    cases hx with
+    | inl hx_left =>
+      cases hx_left with
+      | inl hx1 =>
+        rw [mem_filter] at hx1
+        exact hx1.left
+      | inr hx2 =>
+        rw [mem_filter] at hx2
+        exact hx2.left
+    | inr hx3 =>
+      rw [mem_filter] at hx3
+      exact hx3.left
+  · intro hx
+    repeat rw [mem_union]
+    by_cases hle : wt x ≤ a
+    · apply Or.inl
+      apply Or.inl
+      rw [mem_filter]
+      exact ⟨hx, hle⟩
+    · by_cases hle' : wt x ≤ b - 1
+      · apply Or.inl
+        apply Or.inr
+        rw [mem_filter]
+        have h1 : a + 1 ≤ wt x := by omega
+        exact ⟨hx, ⟨h1, hle'⟩⟩
+      · apply Or.inr
+        rw [mem_filter]
+        have h1 : b ≤ wt x := by omega
+        exact ⟨hx, h1⟩
+
+lemma filter_wt_eq_inter_of_ne
+  (C : Finset (List.Vector B n)) (a b : Nat) (H : a ≠ b) :
+  filter (fun x => wt x = a) C ∩ filter (fun x => wt x = b) C = ∅ := by
+  ext x
+  rw [mem_inter]
+  apply Iff.intro
+  · intro hx
+    have h1 : wt x = a := by
+      have h' := hx.left
+      rw [mem_filter] at h'
+      exact h'.right
+    have h2 : wt x = b := by
+      have h' := hx.right
+      rw [mem_filter] at h'
+      exact h'.right
+    omega
+  · intro hx
+    exfalso
+    simp at hx
+
+lemma filter_wt_eq_inter_Icc_of_lt
+  (C : Finset (List.Vector B n)) (a b c : Nat) (H : a + 1 ≤ b) :
+  filter (fun x => wt x = a) C ∩ filter (Icc_wt (n:=n) b c) C = ∅ := by
+  ext x
+  rw [mem_inter]
+  apply Iff.intro
+  · intro hx
+    have h1 : wt x = a := by
+      have h' := hx.left
+      rw [mem_filter] at h'
+      exact h'.right
+    have h2 : b ≤ wt x := by
+      have h' := hx.right
+      rw [mem_filter] at h'
+      exact h'.right.left
+    omega
+  · intro hx
+    exfalso
+    simp at hx
+
+lemma filter_wt_eq_inter_Icc_of_gt
+  (C : Finset (List.Vector B n)) (a b c : Nat) (H : c + 1 ≤ a) :
+  filter (fun x => wt x = a) C ∩ filter (Icc_wt (n:=n) b c) C = ∅ := by
+  ext x
+  rw [mem_inter]
+  apply Iff.intro
+  · intro hx
+    have h1 : wt x = a := by
+      have h' := hx.left
+      rw [mem_filter] at h'
+      exact h'.right
+    have h2 : wt x ≤ c := by
+      have h' := hx.right
+      rw [mem_filter] at h'
+      exact h'.right.right
+    omega
+  · intro hx
+    exfalso
+    simp at hx
+
+lemma flip_filter_subset_swap (C : Finset (List.Vector B n)) (a b : Nat) : 
+  flipCode (filter (Icc_wt (n:=n) a b) C) ⊆ filter (Icc_wt (n:=n) (n - b) (n - a)) (flipCode C) := by
+  intro x hx
+  rw [mem_flipCode] at hx
+  rcases hx with ⟨y, hy, hxy⟩
+  rw [mem_filter] at hy
+  rw [mem_filter]
+  apply And.intro
+  · rw [mem_flipCode]
+    exists y
+    exact ⟨hy.left, hxy⟩
+  · unfold Icc_wt
+    have hy_icc := hy.right
+    unfold Icc_wt at hy_icc
+    have hy1 := hy_icc.left
+    have hy2 := hy_icc.right
+    have h_flip : wt x = n - wt y := by
+      have h : x = B.Vector.flip y := by exact hxy.symm
+      rw [h, wt_flip y]
+    have h_wt_y : wt y ≤ n := wt_le_length y
+    omega
+
+lemma filter_flip_subset_swap (C : Finset (List.Vector B n)) (a b : Nat) : 
+  filter (Icc_wt (n:=n) a b) (flipCode C) ⊆ flipCode (filter (Icc_wt (n:=n) (n - b) (n - a)) C) := by
+  intro x hx
+  rw [mem_filter] at hx
+  have hx1 := hx.left
+  have hx2 := hx.right
+  rw [mem_flipCode] at hx1
+  rcases hx1 with ⟨y, hy, hxy⟩
+  rw [mem_flipCode]
+  exists y
+  apply And.intro
+  · rw [mem_filter]
+    apply And.intro hy
+    unfold Icc_wt
+    have h_flip : wt x = n - wt y := by
+      have h : x = B.Vector.flip y := by exact hxy.symm
+      rw [h, wt_flip y]
+    have h_wt_y : wt y ≤ n := wt_le_length y
+    unfold Icc_wt at hx2
+    omega
+  · exact hxy
+
+lemma flip_filter_swap (C : Finset (List.Vector B n)) (a b : Nat) (Ha : a ≤ n) (Hb : b ≤ n) : 
+  flipCode (filter (Icc_wt (n:=n) a b) C) = filter (Icc_wt (n:=n) (n - b) (n - a)) (flipCode C) := by
+  ext x
+  apply Iff.intro
+  · intro h
+    rw [mem_flipCode] at h
+    rcases h with ⟨y, hy, hxy⟩
+    rw [mem_filter] at hy
+    rw [mem_filter]
+    apply And.intro
+    · rw [mem_flipCode]
+      exists y
+      exact ⟨hy.left, hxy⟩
+    · unfold Icc_wt
+      have hy2 := hy.right
+      unfold Icc_wt at hy2
+      have h_flip : wt x = n - wt y := by
+        have h_symm : x = B.Vector.flip y := by exact hxy.symm
+        rw [h_symm, wt_flip y]
+      have h_wt_y : wt y ≤ n := wt_le_length y
+      omega
+  · intro h
+    rw [mem_filter] at h
+    have h_left := h.left
+    have h_wt := h.right
+    rw [mem_flipCode] at h_left
+    rcases h_left with ⟨y, hy, hxy⟩
+    rw [mem_flipCode]
+    exists y
+    apply And.intro
+    · rw [mem_filter]
+      apply And.intro hy
+      unfold Icc_wt at h_wt
+      unfold Icc_wt
+      have h_flip : wt x = n - wt y := by
+        have h_symm : x = B.Vector.flip y := by exact hxy.symm
+        rw [h_symm, wt_flip y]
+      have h_wt_y : wt y ≤ n := wt_le_length y
+      omega
+    · exact hxy
+
+lemma filter_flip_swap (C : Finset (List.Vector B n)) (a b : Nat) (Ha : a ≤ n) (Hb : b ≤ n) : 
+  filter (Icc_wt (n:=n) a b) (flipCode C) = flipCode (filter (Icc_wt (n:=n) (n - b) (n - a)) C) := by
+  ext x
+  apply Iff.intro
+  · intro h
+    rw [mem_filter] at h
+    have h_left := h.left
+    have h_wt := h.right
+    rw [mem_flipCode] at h_left
+    rcases h_left with ⟨y, hy, hxy⟩
+    rw [mem_flipCode]
+    exists y
+    apply And.intro
+    · rw [mem_filter]
+      apply And.intro hy
+      unfold Icc_wt at h_wt
+      unfold Icc_wt
+      have h_flip : wt x = n - wt y := by
+        have h_symm : x = B.Vector.flip y := by exact hxy.symm
+        rw [h_symm, wt_flip y]
+      have h_wt_y : wt y ≤ n := wt_le_length y
+      omega
+    · exact hxy
+  · intro h
+    rw [mem_flipCode] at h
+    rcases h with ⟨y, hy, hxy⟩
+    rw [mem_filter] at hy
+    rw [mem_filter]
+    apply And.intro
+    · rw [mem_flipCode]
+      exists y
+      exact ⟨hy.left, hxy⟩
+    · unfold Icc_wt
+      have hy2 := hy.right
+      unfold Icc_wt at hy2
+      have h_flip : wt x = n - wt y := by
+        have h_symm : x = B.Vector.flip y := by exact hxy.symm
+        rw [h_symm, wt_flip y]
+      have h_wt_y : wt y ≤ n := wt_le_length y
+      omega
 
 end Vector

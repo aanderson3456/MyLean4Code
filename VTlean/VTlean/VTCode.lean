@@ -164,31 +164,29 @@ lemma moment_sIns_zero :
   | nil =>
     intro i
     change moment [B.O] = moment [] + num_RIs [] i
-    rw [moment_zero, moment_nil, num_RIs]
-    change 0 = 0 + num_Is (List.drop i [])
-    have h_drop : List.drop i ([] : List B) = [] := by cases i <;> rfl
-    rw [h_drop, num_Is]
+    rw [moment_zero, moment_nil]
+    rfl
   | cons x X' IHX =>
     intro i
     cases i with
     | zero =>
       change moment (B.O :: x :: X') = moment (x :: X') + num_RIs (x :: X') 0
-      rw [moment_cons, moment_cons, num_RIs, List.drop_zero]
+      rw [moment_cons, moment_cons, num_RIs_zero]
       rfl
     | succ i =>
-      change moment (x :: sIns X' i B.O) = moment (x :: X') + num_Is (List.drop (i + 1) (x :: X'))
-      have h_drop : List.drop (i + 1) (x :: X') = List.drop i X' := rfl
-      rw [h_drop, moment_cons, moment_cons, IHX i]
+      change moment (x :: sIns X' i B.O) = moment (x :: X') + num_RIs (x :: X') (i + 1)
+      have h_RIs : num_RIs (x :: X') (i + 1) = num_RIs X' i := rfl
+      rw [h_RIs, moment_cons, moment_cons, IHX i]
       cases x with
       | O =>
         have h_num_Is : num_Is (B.O :: sIns X' i B.O) = num_Is (sIns X' i B.O) := rfl
         have h_num_Is_O : num_Is (B.O :: X') = num_Is X' := rfl
-        rw [h_num_Is, num_Is_sIns_zero X' i, h_num_Is_O, num_RIs]
+        rw [h_num_Is, num_Is_sIns_zero X' i, h_num_Is_O]
         ac_rfl
       | I =>
         have h_num_Is : num_Is (B.I :: sIns X' i B.O) = num_Is (sIns X' i B.O) + 1 := rfl
         have h_num_Is_I : num_Is (B.I :: X') = num_Is X' + 1 := rfl
-        rw [h_num_Is, num_Is_sIns_zero X' i, h_num_Is_I, num_RIs]
+        rw [h_num_Is, num_Is_sIns_zero X' i, h_num_Is_I]
         ac_rfl
 }
 
@@ -200,13 +198,13 @@ lemma moment_sIns_one :
     intro i
     change moment [B.I] = moment [] + num_LOs [] i + num_Is [] + 1
     rw [moment_one, moment_nil, num_Is]
-    cases i <;> rfl
+    rfl
   | cons x X' IHX =>
     intro i
     cases i with
     | zero =>
       change moment (B.I :: x :: X') = moment (x :: X') + num_LOs (x :: X') 0 + num_Is (x :: X') + 1
-      rw [moment_cons, moment_cons, num_LOs, List.take_zero, num_Os]
+      rw [moment_cons, moment_cons, num_LOs_zero (x::X') 0]
       ac_rfl
     | succ i =>
       change moment (x :: sIns X' i B.I) = moment (x :: X') + num_LOs (x :: X') (i + 1) + num_Is (x :: X') + 1
@@ -257,22 +255,6 @@ lemma sIns_sDel_eq_or (X : List B) (i : Nat) (H : 1 ≤ length X) :
   | I => exact Or.inr hb
 }
 
-lemma num_RIs_le_num_Is (X : List B) (i : Nat) : num_RIs X i ≤ num_Is X := by {
-  rw [num_RIs]
-  have h : X = X.take i ++ X.drop i := (List.take_append_drop i X).symm
-  conv => rhs; rw [h]
-  rw [num_Is_append]
-  exact Nat.le_add_left _ _
-}
-
-lemma num_LOs_le_num_Os (X : List B) (i : Nat) : num_LOs X i ≤ num_Os X := by {
-  rw [num_LOs]
-  have h : X = X.take i ++ X.drop i := (List.take_append_drop i X).symm
-  conv => rhs; rw [h]
-  rw [num_Os_append]
-  exact Nat.le_add_right _ _
-}
-
 
 lemma sDel_length_le (X : List B) (i : Nat) : length (sDel X i) ≤ length X := by {
   rw [length_sDel]
@@ -302,7 +284,7 @@ lemma moment_sub_sDel_le :
       apply Nat.le_trans
       · apply Nat.add_le_add_right
         exact num_LOs_le_num_Os _ _
-      · have h3 := num_Os_add_num_Is_eq_length (sDel (x :: X') i)
+      · have h3 := num_Os_add_num_Is (sDel (x :: X') i)
         rw [h3]
         rw [length_sDel]
         exact Nat.le_refl _
@@ -793,110 +775,7 @@ lemma num_RIs_max_num_RIs (X : List B) (i : Nat)
       rw [IHX _ hle2]
 }
 
-lemma head_of_num_RIs
-    (x : B) (X : List B) (i : Nat)
-    (H : num_RIs (x::X) (i + 1) = num_Is (x::X)) :
-    x = B.O := by {
-  cases x with
-  | O => rfl
-  | I =>
-    have h1 : num_RIs X i = num_RIs (B.I :: X) (i + 1) := rfl
-    have h2 : num_Is X + 1 = num_Is (B.I :: X) := rfl
-    rw [← h1, ← h2] at H
-    apply absurd H
-    apply Nat.ne_of_lt
-    apply Nat.lt_succ_of_le
-    exact num_RIs_le_num_Is X i
-}
 
-lemma sIns_zero_of_num_RIs (X : List B) (i j : Nat) (H : num_RIs X i = num_RIs X j) :
-  sIns X i B.O = sIns X j B.O := by {
-  revert i j
-  induction X with
-  | nil =>
-    intros i j H; rfl
-  | cons x X' IHX =>
-    intros i j H
-    cases i with
-    | zero =>
-      cases j with
-      | zero => rfl
-      | succ j =>
-        change num_Is (x :: X') = num_RIs X' j at H
-        have h : x = B.O := head_of_num_RIs x X' j H.symm
-        subst h
-        have h_ih := IHX 0 j H
-        unfold sIns
-        rw [← sIns_zero X' B.O]
-        rw [h_ih]
-    | succ i =>
-      cases j with
-      | zero =>
-        change num_RIs X' i = num_Is (x :: X') at H
-        have h : x = B.O := head_of_num_RIs x X' i H
-        subst h
-        have h_ih := IHX i 0 H
-        unfold sIns
-        rw [← sIns_zero X' B.O]
-        rw [h_ih]
-      | succ j =>
-        have h_ih := IHX i j H
-        exact congrArg (fun L => x :: L) h_ih
-}
-
-lemma head_of_num_LOs
-    (x : B) (X : List B) (i : Nat)
-    (H : num_LOs (x::X) (i + 1) = 0) :
-    x = B.I := by {
-  cases x with
-  | I => rfl
-  | O =>
-    apply absurd H
-    apply Nat.ne_of_gt
-    unfold num_LOs
-    change 0 < num_Os (X.take i) + 1
-    exact Nat.zero_lt_succ _
-}
-
-lemma sIns_one_of_num_LOs (X : List B) (i j : Nat) (H : num_LOs X i = num_LOs X j) :
-  sIns X i B.I = sIns X j B.I := by {
-  revert i j
-  induction X with
-  | nil =>
-    intros i j H; rfl
-  | cons x X' IHX =>
-    intros i j H
-    cases i with
-    | zero =>
-      cases j with
-      | zero => rfl
-      | succ j =>
-        change 0 = num_LOs (x :: X') (j + 1) at H
-        have h : x = B.I := head_of_num_LOs x X' j H.symm
-        subst h
-        have h_ih := IHX 0 j H
-        unfold sIns
-        rw [← sIns_zero X' B.I]
-        rw [h_ih]
-    | succ i =>
-      cases j with
-      | zero =>
-        change num_LOs (x :: X') (i + 1) = 0 at H
-        have h : x = B.I := head_of_num_LOs x X' i H
-        subst h
-        have h_ih := IHX i 0 H
-        unfold sIns
-        rw [← sIns_zero X' B.I]
-        rw [h_ih]
-      | succ j =>
-        cases x with
-        | O =>
-          change num_LOs X' i + 1 = num_LOs X' j + 1 at H
-          have H' := Nat.succ.inj H
-          exact congrArg (fun L => B.O :: L) (IHX i j H')
-        | I =>
-          exact congrArg (fun L => B.I :: L) (IHX i j H)
-}
 
 def decoding_alg (n a : Nat) (X : List B) : List B :=
   if length X = n then X
@@ -1134,7 +1013,7 @@ lemma num_LOs_min_num_LOs (i : Nat) (H : i ≤ n - wt X) :
   unfold num_LOs min_num_LOs
   apply List.num_LOs_min_num_LOs
   have h_sum : List.num_Os X.val + List.num_Is X.val = n := by {
-    have h1 := num_Os_add_num_Is_eq_length X.val
+    have h1 := num_Os_add_num_Is X.val
     rw [X.property] at h1
     exact h1
   }
@@ -1196,7 +1075,7 @@ lemma sDelErr_correctable_of_nil
     have h : List.length X.val = 0 := X.property
     match hx : X.val with
     | [] => rfl
-    | head :: tail => 
+    | head :: tail =>
       rw [hx] at h
       revert h
       simp
@@ -1212,7 +1091,7 @@ lemma sDelErr_correctable_of_pos
     decoding_alg (n + 1) a ((sDel X i)) = X := by {
   apply Subtype.ext
   change (decoding_alg (n + 1) a (sDel X i)).toList = X.toList
-  
+
   apply List.sDelErr_correctable_of_pos
   · rw [X.property]; apply Nat.succ_le_succ; apply Nat.zero_le
   · rw [X.property]
@@ -1226,7 +1105,7 @@ lemma sDelErr_correctable_of_neg
     decoding_alg (n + 1) a ((sDel X i)) = X := by {
   apply Subtype.ext
   change (decoding_alg (n + 1) a (sDel X i)).toList = X.toList
-  
+
   apply List.sDelErr_correctable_of_neg
   · rw [X.property]; apply Nat.succ_le_succ; apply Nat.zero_le
   · rw [X.property]

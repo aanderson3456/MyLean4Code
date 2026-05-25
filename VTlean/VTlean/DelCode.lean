@@ -214,8 +214,8 @@ by {
 }
 
 lemma wt_flip {n : Nat} (X : List.Vector B n) : wt (B.Vector.flip X) = n - wt X := by {
-  have h_flip : List.num_Is (B.List.flip X.val) = List.num_Os X.val := List.num_Is_flip X.val
-  have h_len : List.num_Os X.val + List.num_Is X.val = n := Eq.trans (List.num_Os_add_num_Is_eq_length X.val) X.property
+  have h_flip : List.num_Is (B.List.flip X.val) = List.num_Os X.val := List.num_Is_flip_eq_num_Os X.val
+  have h_len : List.num_Os X.val + List.num_Is X.val = n := Eq.trans (List.num_Os_add_num_Is X.val) X.property
   have h_sub : List.num_Os X.val = n - List.num_Is X.val := (Nat.sub_eq_of_eq_add h_len.symm).symm
   exact Eq.trans h_flip h_sub
 }

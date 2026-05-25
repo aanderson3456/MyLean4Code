@@ -1,8 +1,8 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["68902b46283a9ed7.olean"],
-  "i": "83e4f3b7a0f635b6.ilean",
+ {"o": ["b67732a9e8e96f02.olean"],
+  "i": "d0a8e105bd8df8d5.ilean",
   "c": "97de477c946dbe7d.c"},
  "log":
  [{"message":
@@ -10,6 +10,9 @@
    "level": "trace"},
   {"message":
    "VTlean/DelCode.lean:73:53: missing space in the source\n\nThis part of the code\n  '∅):\n  is_DelCode'\nshould be written as\n  '∅) : is_DelCode'\n\n\nNote: This linter can be disabled with `set_option linter.style.whitespace false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/DelCode.lean:217:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
    "VTlean/DelCode.lean:218:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
@@ -164,8 +167,8 @@
         ["VTlean.InsDel:importAllArts", "b2933e2e4d2fa56f"],
         ["VTlean.B transitive imports (legacy)", "416edac6ab7889ca"],
         ["VTlean.B:importAllArts", "31504c077e29bbbf"],
-        ["VTlean.NumOsNumIs transitive imports (legacy)", "dd09be30f3fc2da1"],
-        ["VTlean.NumOsNumIs:importAllArts", "c8f11f832a043496"],
+        ["VTlean.NumOsNumIs transitive imports (legacy)", "30d511dfe57bb210"],
+        ["VTlean.NumOsNumIs:importAllArts", "280869b61bde48ce"],
         ["Mathlib.Data.Fintype.EquivFin transitive imports (legacy)",
          "5936ae7a7c6931be"],
         ["Mathlib.Data.Fintype.EquivFin:importAllArts", "53fa4353e88b6ab9"],
@@ -180,7 +183,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/DelCode.lean",
-   "c70aa425a73a6d13"],
+   "0535f808ad11421f"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -190,4 +193,4 @@
   ["Module.name: VTlean.DelCode", "3c06143abab00f7d"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "f71a9b0d07543469"}
+ "depHash": "5c8b1f55aa321f45"}
