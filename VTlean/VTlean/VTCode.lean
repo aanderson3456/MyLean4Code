@@ -33,10 +33,6 @@ def moment (X : List B) : Nat := moment_sub X 1
 
 /-! We use macroscopic lemmas mapped correctly to List native forms. -/
 
-
-def num_RIs (X : List B) (i : Nat) : Nat := num_Is (X.drop i)
-def num_LOs (X : List B) (i : Nat) : Nat := num_Os (X.take i)
-
 lemma moment_nil : moment ([] : List B) = 0 := rfl
 
 lemma moment_zero : moment [B.O] = 0 := rfl
@@ -109,86 +105,6 @@ lemma moment_append_I (X : List B) :
   ac_rfl
 }
 
-lemma num_Is_sDel_le (X : List B) (i : Nat) : num_Is (sDel X i) ≤ num_Is X := by {
-  revert i
-  induction X with
-  | nil => intro i; exact Nat.le_refl _
-  | cons x X' IHX =>
-    intro i
-    cases X' with
-    | nil => exact Nat.zero_le _
-    | cons x' X'' =>
-      cases i with
-      | zero =>
-        change num_Is (x' :: X'') ≤ num_Is (x :: x' :: X'')
-        cases x with
-        | O => exact Nat.le_refl _
-        | I => exact Nat.le_add_right _ _
-      | succ i =>
-        change num_Is (x :: sDel (x' :: X'') i) ≤ num_Is (x :: x' :: X'')
-        cases x with
-        | O => exact IHX i
-        | I =>
-          apply Nat.succ_le_succ
-          exact IHX i
-}
-
-lemma num_Is_le_sIns (X : List B) (i : Nat) (b : B) : num_Is X ≤ num_Is (sIns X i b) := by {
-  revert i
-  induction X with
-  | nil =>
-    intro i
-    exact Nat.zero_le _
-  | cons x X' IHX =>
-    intro i
-    cases i with
-    | zero =>
-      change num_Is (x :: X') ≤ num_Is (b :: x :: X')
-      cases b with
-      | O => exact Nat.le_refl _
-      | I => exact Nat.le_add_right _ _
-    | succ i =>
-      change num_Is (x :: X') ≤ num_Is (x :: sIns X' i b)
-      cases x with
-      | O => exact IHX i
-      | I =>
-        apply Nat.succ_le_succ
-        exact IHX i
-}
-
-lemma num_Is_sIns_zero (X : List B) (i : Nat) : num_Is (sIns X i B.O) = num_Is X := by {
-  revert i
-  induction X with
-  | nil => intro i; rfl
-  | cons x X' IHX =>
-    intro i
-    cases i with
-    | zero => rfl
-    | succ i =>
-      change num_Is (x :: sIns X' i B.O) = num_Is (x :: X')
-      cases x with
-      | O => exact IHX i
-      | I =>
-        change num_Is (sIns X' i B.O) + 1 = num_Is X' + 1
-        rw [IHX i]
-}
-
-lemma num_Is_sIns_one (X : List B) (i : Nat) : num_Is (sIns X i B.I) = num_Is X + 1 := by {
-  revert i
-  induction X with
-  | nil => intro i; rfl
-  | cons x X' IHX =>
-    intro i
-    cases i with
-    | zero => rfl
-    | succ i =>
-      change num_Is (x :: sIns X' i B.I) = num_Is (x :: X') + 1
-      cases x with
-      | O => exact IHX i
-      | I =>
-        change num_Is (sIns X' i B.I) + 1 = (num_Is X' + 1) + 1
-        rw [IHX i]
-}
 
 lemma moment_sDel_le :
   moment (sDel X i) ≤ moment X := by {
@@ -357,11 +273,6 @@ lemma num_LOs_le_num_Os (X : List B) (i : Nat) : num_LOs X i ≤ num_Os X := by 
   exact Nat.le_add_right _ _
 }
 
-lemma num_Is_le_length (X : List B) : num_Is X ≤ length X := by {
-  have h := num_Os_add_num_Is_eq_length X
-  rw [← h]
-  exact Nat.le_add_left _ _
-}
 
 lemma sDel_length_le (X : List B) (i : Nat) : length (sDel X i) ≤ length X := by {
   rw [length_sDel]
@@ -808,17 +719,6 @@ lemma num_LOs_min_num_LOs (X : List B) (i : Nat)
         rw [IHX _ H]
 }
 
-lemma num_Is_le_cons (x : B) (X : List B) : num_Is X ≤ num_Is (x::X) := by {
-  cases x with
-  | O => exact Nat.le_refl _
-  | I => exact Nat.le_succ _
-}
-
-lemma num_Is_cons_le (x : B) (X : List B) : num_Is (x::X) ≤ num_Is X + 1 := by {
-  cases x with
-  | O => exact Nat.le_succ _
-  | I => exact Nat.le_refl _
-}
 
 def max_num_RIs : List B → Nat → Nat
 | [], _ => 0

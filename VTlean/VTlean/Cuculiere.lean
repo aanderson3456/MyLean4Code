@@ -258,6 +258,22 @@ theorem card_VTCode_eq_cuculiere (n a : Nat) :
   sorry
 }
 
+/-- Tidbits from OEIS A053632 to formalize later:
+    1. Row sums give A000079 (powers of 2).
+    2. Sum_{k>=0} k * T(n,k) = A001788(n).
+    3. T(n,k) is the number of strict partitions of k into parts <= n.
+    4. max_{k>=0} T(n,k) = A025591(n). -/
+
+lemma cuculiere_sum (n : Nat) : (cuculiere n).sum = 2^n := by {
+  sorry
+}
+
+lemma cuculiere_weighted_sum (n : Nat) :
+  Finset.sum (Finset.range (max_vt_checksum n + 1)) (fun k => k * cuculiere_get n k) = 
+  if n < 2 then (if n = 0 then 0 else 1) else n * (n + 1) * 2^(n - 2) := by {
+  sorry
+}
+
 -- Computations for verification:
 #eval cuculiere 3
 -- Expected: [1, 1, 1, 2, 1, 1, 1]
