@@ -452,14 +452,290 @@ lemma cuculiere_mod_sum_gen_zero (m a : Nat) :
 
 
 
+lemma sum_powers_eq {m : Nat} (hm : 0 < m) {ω : ℂ} (hω : IsPrimitiveRoot ω m) (d : ℤ) :
+  ∑ j ∈ Finset.range m, (ω ^ d) ^ j = if (m : ℤ) ∣ d then (m : ℂ) else 0 := by {
+  split_ifs with h
+  · have h1 : ω ^ d = 1 := by {
+      rw [hω.zpow_eq_one_iff_dvd]
+      exact h
+    }
+    have h2 : ∀ j ∈ Finset.range m, (ω ^ d) ^ j = 1 := by {
+      intro j _
+      rw [h1, one_pow]
+    }
+    rw [Finset.sum_congr rfl h2]
+    simp
+  · have h1 : ω ^ d ≠ 1 := by {
+      rw [Ne, hω.zpow_eq_one_iff_dvd]
+      exact h
+    }
+    rw [geom_sum_eq h1]
+    have h2 : (ω ^ d) ^ m = 1 := by {
+      rw [← zpow_natCast, ← zpow_mul, mul_comm, zpow_mul, zpow_natCast]
+      rw [hω.pow_eq_one, one_zpow]
+    }
+    rw [h2]
+    simp
+}
+
+lemma nat_mod_eq_iff_dvd (c a m : Nat) (hm : 0 < m) :
+  c % m = a % m ↔ (m : ℤ) ∣ ((c : ℤ) - a) := by {
+  have h1 : Nat.ModEq m c a ↔ c % m = a % m := Iff.rfl
+  rw [← h1]
+  rw [Nat.modEq_iff_dvd]
+  have h2 : (c : ℤ) - a = -((a : ℤ) - c) := by ring
+  rw [h2, dvd_neg]
+}
+
 noncomputable def poly_P (n : Nat) : Polynomial ℂ :=
   (Finset.Iic (max_vt_checksum n)).sum (fun c => Polynomial.C (cuculiere_get n c : ℂ) * Polynomial.X ^ c)
+
+lemma coeff_poly_P (n : Nat) (c : Nat) : Polynomial.coeff (poly_P n) c = (cuculiere_get n c : ℂ) := by {
+  unfold poly_P
+  rw [Polynomial.finset_sum_coeff]
+  by_cases hc : c ≤ max_vt_checksum n
+  · rw [Finset.sum_eq_single c]
+    · simp
+    · intro x _ hne
+      rw [Polynomial.coeff_C_mul_X_pow, if_neg hne.symm]
+    · intro hc2
+      have : c ∈ Finset.Iic (max_vt_checksum n) := by rwa [Finset.mem_Iic]
+      contradiction
+  · rw [cuculiere_get_out_of_bounds n c (by omega)]
+    simp only [Nat.cast_zero]
+    rw [Finset.sum_eq_zero]
+    intro x hx
+    rw [Finset.mem_Iic] at hx
+    have hne : x ≠ c := by omega
+    rw [Polynomial.coeff_C_mul_X_pow, if_neg hne.symm]
+}
+
+lemma poly_P_succ (n : Nat) : poly_P (n + 1) = (1 + Polynomial.X ^ (n + 1)) * poly_P n := by {
+  apply Polynomial.ext
+  intro c
+  rw [coeff_poly_P, cuculiere_get_successor]
+  rw [mul_comm, mul_add, mul_one]
+  rw [Polynomial.coeff_add, Polynomial.coeff_mul_X_pow', coeff_poly_P, coeff_poly_P]
+  split_ifs with h1 h2
+  · omega
+  · simp
+  · simp
+  · omega
+}
+
+lemma poly_P_eval_eq_prod (n : Nat) (y : ℂ) :
+  Polynomial.eval y (poly_P n) = ∏ k ∈ Finset.range n, (1 + y ^ (k + 1)) := by {
+  induction n with
+  | zero =>
+    unfold poly_P max_vt_checksum
+    have h_Iic : Finset.Iic 0 = {0} := rfl
+    rw [h_Iic]
+    simp [cuculiere_get_zero_eq_one]
+  | succ n ih =>
+    rw [poly_P_succ, Polynomial.eval_mul, Polynomial.eval_add, Polynomial.eval_one, Polynomial.eval_pow, Polynomial.eval_X]
+    rw [ih, Finset.prod_range_succ]
+    ring
+}
 
 /-- Evaluating the generating polynomial P_n(x) at any root of unity gives a real,
     non-negative complex number. This corresponds to page 6 of Sloane's paper. -/
 lemma poly_P_eval_real_nonneg (n : Nat) (j : Nat) (ω : ℂ) (hω : IsPrimitiveRoot ω (n + 1)) :
   0 ≤ (Polynomial.eval (ω ^ j) (poly_P n)).re ∧ (Polynomial.eval (ω ^ j) (poly_P n)).im = 0 := by {
-  sorry
+  have h_prod : Polynomial.eval (ω ^ j) (poly_P n) = ∏ k ∈ range n, (1 + (ω ^ j) ^ (k + 1)) := by {
+    exact poly_P_eval_eq_prod n (ω ^ j)
+  }
+  rw [h_prod]
+  let y := ω ^ j
+  have h_norm_y : ‖y‖ = 1 := by {
+    dsimp [y]
+    rw [norm_pow]
+    have h_norm_ω : ‖ω‖ = 1 := hω.norm'_eq_one (by omega)
+    rw [h_norm_ω, one_pow]
+  }
+  have h_star_y : star y = y⁻¹ := by {
+    have h_sq2 : ‖y‖ ^ 2 = (1 : ℝ) ^ 2 := by rw [h_norm_y, one_pow]
+    change (Real.sqrt (Complex.normSq y)) ^ 2 = (1 : ℝ) ^ 2 at h_sq2
+    rw [Real.sq_sqrt (Complex.normSq_nonneg y)] at h_sq2
+    simp only [one_pow] at h_sq2
+    have h_mul : star y * y = 1 := by {
+      apply Complex.ext
+      · simp
+        exact h_sq2
+      · simp
+        ring
+    }
+    exact eq_inv_of_mul_eq_one_left h_mul
+  }
+  have h_star_term (k : Nat) : star (1 + y ^ (k + 1)) = 1 + (star y) ^ (k + 1) := by {
+    have h_ring : star (1 + y ^ (k + 1)) = starRingEnd ℂ (1 + y ^ (k + 1)) := rfl
+    rw [h_ring]
+    rw [map_add, map_one, map_pow]
+    rfl
+  }
+  have h_eq_term (k : Nat) (hk : k < n) : star (1 + y ^ (k + 1)) = 1 + y ^ (n - k) := by {
+    rw [h_star_term, h_star_y]
+    congr 1
+    rw [inv_pow]
+    have h_prod_one : y ^ (n - k) * y ^ (k + 1) = 1 := by {
+      rw [← pow_add]
+      have : n - k + (k + 1) = n + 1 := by omega
+      rw [this]
+      dsimp [y]
+      rw [← pow_mul, mul_comm, pow_mul]
+      have : ω ^ (n + 1) = 1 := hω.pow_eq_one
+      rw [this, one_pow]
+    }
+    exact (eq_inv_of_mul_eq_one_left h_prod_one).symm
+  }
+  
+  let m := n / 2
+  let s1 := filter (fun k => k < m) (range n)
+  let s2 := filter (fun k => k > n - 1 - m) (range n)
+  let s3 := filter (fun k => k >= m ∧ k <= n - 1 - m) (range n)
+  
+  have h_union : range n = s1 ∪ s2 ∪ s3 := by {
+    ext k
+    simp only [mem_range, mem_union, mem_filter, s1, s2, s3]
+    omega
+  }
+  have h_disj1 : Disjoint s1 s2 := by {
+    rw [disjoint_filter]
+    intro k hk
+    omega
+  }
+  have h_disj2 : Disjoint (s1 ∪ s2) s3 := by {
+    rw [disjoint_union_left]
+    constructor
+    · rw [disjoint_filter]
+      intro k hk
+      omega
+    · rw [disjoint_filter]
+      intro k hk
+      omega
+  }
+  have h_prod_split : (∏ k ∈ range n, (1 + y ^ (k + 1))) =
+    (∏ k ∈ s1, (1 + y ^ (k + 1))) * (∏ k ∈ s2, (1 + y ^ (k + 1))) * (∏ k ∈ s3, (1 + y ^ (k + 1))) := by {
+    rw [h_union]
+    rw [prod_union h_disj2]
+    rw [prod_union h_disj1]
+  }
+  
+  have h_s2_prod : (∏ k ∈ s2, (1 + y ^ (k + 1))) = star (∏ k ∈ s1, (1 + y ^ (k + 1))) := by {
+    have h_ring : star (∏ k ∈ s1, (1 + y ^ (k + 1))) = starRingEnd ℂ (∏ k ∈ s1, (1 + y ^ (k + 1))) := rfl
+    rw [h_ring]
+    rw [map_prod (starRingEnd ℂ)]
+    apply prod_bij (fun k _ => n - 1 - k)
+    · -- hi
+      intro a ha
+      rw [mem_filter, mem_range] at ha ⊢
+      dsimp only [s1, s2, m] at ha ⊢
+      constructor
+      · omega
+      · omega
+    · -- i_inj
+      intro a1 ha1 a2 ha2 h_eq
+      rw [mem_filter, mem_range] at ha1 ha2
+      omega
+    · -- i_surj
+      intro b hb
+      rw [mem_filter, mem_range] at hb
+      use n - 1 - b
+      have ha2 : n - 1 - b ∈ s2 := by {
+        dsimp only [s2, m]
+        rw [mem_filter, mem_range]
+        omega
+      }
+      use ha2
+      omega
+    · -- h
+      intro a ha
+      rw [mem_filter, mem_range] at ha
+      have h_lt : a < n := ha.1
+      change 1 + y ^ (a + 1) = star (1 + y ^ (n - 1 - a + 1))
+      rw [h_eq_term (n - 1 - a) (by omega)]
+      congr 2
+      omega
+  }
+  
+  have h_prod_main : (∏ k ∈ s1, (1 + y ^ (k + 1))) * (∏ k ∈ s2, (1 + y ^ (k + 1))) =
+    (Complex.normSq (∏ k ∈ s1, (1 + y ^ (k + 1))) : ℂ) := by {
+    rw [h_s2_prod]
+    exact Complex.mul_conj (∏ k ∈ s1, (1 + y ^ (k + 1)))
+  }
+  
+  have h_s3_val : (∏ k ∈ s3, (1 + y ^ (k + 1))) = if n % 2 = 1 then (1 + y ^ ((n - 1) / 2 + 1)) else 1 := by {
+    by_cases hn : n % 2 = 1
+    · rw [if_pos hn]
+      have h_s3_eq : s3 = {m} := by {
+        ext k
+        simp only [mem_filter, mem_range, s3, mem_singleton]
+        omega
+      }
+      rw [h_s3_eq]
+      rw [prod_singleton]
+      have : (n - 1) / 2 = m := by omega
+      rw [this]
+    · rw [if_neg hn]
+      have h_s3_empty : s3 = ∅ := by {
+        rw [Finset.eq_empty_iff_forall_notMem]
+        intro k
+        simp only [s3, m, mem_filter, mem_range, not_and]
+        intro hk hk2 hk3
+        have h_mod : n % 2 = 0 := by omega
+        have h_div : n = 2 * (n / 2) := by {
+          have h_div_mod := Nat.div_add_mod n 2
+          omega
+        }
+        omega
+      }
+      rw [h_s3_empty]
+      rw [prod_empty]
+  }
+  
+  have h_s3_nonneg : 0 ≤ (∏ k ∈ s3, (1 + y ^ (k + 1))).re ∧ (∏ k ∈ s3, (1 + y ^ (k + 1))).im = 0 := by {
+    rw [h_s3_val]
+    split_ifs with hn
+    · -- hn : n % 2 = 1
+      have h_y_pow : (y ^ ((n - 1) / 2 + 1)) ^ 2 = 1 := by {
+        rw [← pow_mul]
+        have : ((n - 1) / 2 + 1) * 2 = n + 1 := by omega
+        rw [this]
+        dsimp [y]
+        rw [← pow_mul, mul_comm, pow_mul]
+        have : ω ^ (n + 1) = 1 := hω.pow_eq_one
+        rw [this, one_pow]
+      }
+      have h_y_val : y ^ ((n - 1) / 2 + 1) = 1 ∨ y ^ ((n - 1) / 2 + 1) = -1 := by {
+        exact sq_eq_one_iff.mp h_y_pow
+      }
+      rcases h_y_val with h_one | h_neg_one
+      · rw [h_one]
+        simp
+      · rw [h_neg_one]
+        simp
+    · simp
+  }
+  
+  have h_final : (∏ k ∈ range n, (1 + y ^ (k + 1))) =
+    (Complex.normSq (∏ k ∈ s1, (1 + y ^ (k + 1))) : ℂ) * (∏ k ∈ s3, (1 + y ^ (k + 1))) := by {
+    rw [h_prod_split, h_prod_main]
+  }
+  
+  have h_normSq_re : (Complex.normSq (∏ k ∈ s1, (1 + y ^ (k + 1))) : ℂ).re =
+    Complex.normSq (∏ k ∈ s1, (1 + y ^ (k + 1))) := Complex.ofReal_re _
+  have h_normSq_im : (Complex.normSq (∏ k ∈ s1, (1 + y ^ (k + 1))) : ℂ).im = 0 := Complex.ofReal_im _
+  
+  constructor
+  · rw [h_final]
+    rw [Complex.mul_re]
+    rw [h_normSq_re, h_normSq_im, h_s3_nonneg.2]
+    simp only [mul_zero, sub_zero]
+    have h_norm_nonneg := Complex.normSq_nonneg (∏ k ∈ s1, (1 + y ^ (k + 1)))
+    exact mul_nonneg h_norm_nonneg h_s3_nonneg.1
+  · rw [h_final]
+    rw [Complex.mul_im]
+    rw [h_normSq_re, h_normSq_im, h_s3_nonneg.2]
+    ring
 }
 
 /-- The roots of unity filter identity (Discrete Fourier Transform orthogonality).
@@ -467,7 +743,101 @@ lemma poly_P_eval_real_nonneg (n : Nat) (j : Nat) (ω : ℂ) (hω : IsPrimitiveR
 lemma roots_unity_filter (n : Nat) (a : Nat) (ω : ℂ) (hω : IsPrimitiveRoot ω (n + 1)) :
   (cuculiere_mod_sum_gen n (n + 1) a : ℂ) =
     (1 / (n + 1 : ℂ)) * (Finset.range (n + 1)).sum (fun j => ω ^ (-(a : ℤ) * (j : ℤ)) * Polynomial.eval (ω ^ j) (poly_P n)) := by {
-  sorry
+  have h_eval (j : Nat) : Polynomial.eval (ω ^ j) (poly_P n) = ∑ c ∈ Iic (max_vt_checksum n), (cuculiere_get n c : ℂ) * (ω ^ j) ^ c := by {
+    unfold poly_P
+    rw [Polynomial.eval_finset_sum]
+    apply sum_congr rfl
+    intro c hc
+    simp
+  }
+  have h_sum : (∑ j ∈ range (n + 1), ω ^ (-(a : ℤ) * (j : ℤ)) * Polynomial.eval (ω ^ j) (poly_P n)) =
+    ∑ j ∈ range (n + 1), ∑ c ∈ Iic (max_vt_checksum n), ω ^ (-(a : ℤ) * (j : ℤ)) * ((cuculiere_get n c : ℂ) * (ω ^ j) ^ c) := by {
+    apply sum_congr rfl
+    intro j hj
+    rw [h_eval j, mul_sum]
+  }
+  have h_term (c : Nat) (j : Nat) :
+    ω ^ (-(a : ℤ) * (j : ℤ)) * ((cuculiere_get n c : ℂ) * (ω ^ j) ^ c) =
+    (cuculiere_get n c : ℂ) * (ω ^ ((c : ℤ) - a)) ^ j := by {
+    have h_pow2 : ((ω ^ j) ^ c : ℂ) = ω ^ ((c : ℤ) * (j : ℤ)) := by {
+      rw [← pow_mul]
+      rw [← zpow_natCast]
+      congr 1
+      push_cast
+      ring
+    }
+    rw [h_pow2]
+    have h_assoc : ω ^ (-(a : ℤ) * (j : ℤ)) * ((cuculiere_get n c : ℂ) * ω ^ ((c : ℤ) * (j : ℤ))) =
+      (cuculiere_get n c : ℂ) * (ω ^ (-(a : ℤ) * (j : ℤ)) * ω ^ ((c : ℤ) * (j : ℤ))) := by {
+      ring
+    }
+    rw [h_assoc]
+    rw [← zpow_add₀ (hω.ne_zero (by omega))]
+    · congr 1
+      rw [← zpow_natCast, ← zpow_mul]
+      congr 1
+      ring
+  }
+  have h_inner (c : Nat) :
+    (∑ j ∈ range (n + 1), ω ^ (-(a : ℤ) * (j : ℤ)) * ((cuculiere_get n c : ℂ) * (ω ^ j) ^ c)) =
+    (cuculiere_get n c : ℂ) * if c % (n + 1) = a % (n + 1) then (n + 1 : ℂ) else 0 := by {
+    have h_congr : (∑ j ∈ range (n + 1), ω ^ (-(a : ℤ) * (j : ℤ)) * ((cuculiere_get n c : ℂ) * (ω ^ j) ^ c)) =
+      ∑ j ∈ range (n + 1), (cuculiere_get n c : ℂ) * (ω ^ ((c : ℤ) - a)) ^ j := by {
+      apply sum_congr rfl
+      intro j _
+      exact h_term c j
+    }
+    rw [h_congr, ← mul_sum]
+    rw [sum_powers_eq (by omega) hω ((c : ℤ) - a)]
+    simp only [← nat_mod_eq_iff_dvd c a (n + 1) (by omega)]
+    rw [Nat.cast_add_one]
+  }
+  have h_ite (c : Nat) :
+    (cuculiere_get n c : ℂ) * (if c % (n + 1) = a % (n + 1) then (n + 1 : ℂ) else 0) =
+    if c % (n + 1) = a % (n + 1) then (cuculiere_get n c : ℂ) * (n + 1 : ℂ) else 0 := by {
+    split_ifs <;> simp
+  }
+  have h_final_sum :
+    (∑ c ∈ Iic (max_vt_checksum n), (cuculiere_get n c : ℂ) * if c % (n + 1) = a % (n + 1) then (n + 1 : ℂ) else 0) =
+    (n + 1 : ℂ) * (cuculiere_mod_sum_gen n (n + 1) a : ℂ) := by {
+    have h_rw : (∑ c ∈ Iic (max_vt_checksum n), (cuculiere_get n c : ℂ) * if c % (n + 1) = a % (n + 1) then (n + 1 : ℂ) else 0) =
+      ∑ c ∈ Iic (max_vt_checksum n), if c % (n + 1) = a % (n + 1) then (cuculiere_get n c : ℂ) * (n + 1 : ℂ) else 0 := by {
+      apply sum_congr rfl
+      intro c _
+      exact h_ite c
+    }
+    rw [h_rw, sum_ite]
+    have h_zero : (∑ x ∈ filter (fun c => ¬c % (n + 1) = a % (n + 1)) (Iic (max_vt_checksum n)), (0 : ℂ)) = 0 := by simp
+    rw [h_zero, add_zero, ← sum_mul]
+    have h_cast : (cuculiere_mod_sum_gen n (n + 1) a : ℂ) = ∑ c ∈ filter (fun c => c % (n + 1) = a % (n + 1)) (Iic (max_vt_checksum n)), (cuculiere_get n c : ℂ) := by {
+      unfold cuculiere_mod_sum_gen
+      push_cast
+      rfl
+    }
+    rw [h_cast]
+    ring
+  }
+  rw [h_sum, sum_comm]
+  have h_congr_outer :
+    (∑ c ∈ Iic (max_vt_checksum n), ∑ j ∈ range (n + 1), ω ^ (-(a : ℤ) * (j : ℤ)) * ((cuculiere_get n c : ℂ) * (ω ^ j) ^ c)) =
+    ∑ c ∈ Iic (max_vt_checksum n), (cuculiere_get n c : ℂ) * if c % (n + 1) = a % (n + 1) then (n + 1 : ℂ) else 0 := by {
+    apply sum_congr rfl
+    intro c _
+    exact h_inner c
+  }
+  rw [h_congr_outer, h_final_sum]
+  have h_cancel : (1 / (n + 1 : ℂ)) * ((n + 1 : ℂ) * (cuculiere_mod_sum_gen n (n + 1) a : ℂ)) =
+    (1 / (n + 1 : ℂ) * (n + 1 : ℂ)) * (cuculiere_mod_sum_gen n (n + 1) a : ℂ) := by ring
+  rw [h_cancel]
+  have h_div_self : (1 / (n + 1 : ℂ)) * (n + 1 : ℂ) = 1 := by {
+    have h_nz : (n + 1 : ℂ) ≠ 0 := by {
+      have : (n + 1 : ℂ) = ((n + 1 : Nat) : ℂ) := by rw [Nat.cast_add_one]
+      rw [this]
+      exact Nat.cast_ne_zero.mpr (by omega)
+    }
+    exact one_div_mul_cancel h_nz
+  }
+  rw [h_div_self, one_mul]
 }
 
 /-- Elementary real-complex inequality: multiplying a non-negative real by a complex number
@@ -485,12 +855,15 @@ lemma complex_re_im_le (z : ℂ) (hz : ‖z‖ ≤ 1) (y : ℂ) (hy_re : (0 : �
 /-- The complex exponent zpow is bounded by 1 in absolute value since omega is a root of unity. -/
 lemma ω_pow_abs_le (n : Nat) (ω : ℂ) (h : IsPrimitiveRoot ω (n + 1)) (a : Nat) (j : Nat) :
   ‖ω ^ (-(a : ℤ) * (j : ℤ))‖ ≤ 1 := by {
-  sorry
+  rw [Complex.norm_zpow]
+  have h_norm : ‖ω‖ = 1 := h.norm'_eq_one (by omega)
+  rw [h_norm, one_zpow]
 }
 
 /-- Existence of primitive roots of unity in Complex numbers for any positive order. -/
 lemma exists_primitive_root (n : Nat) : ∃ ω : ℂ, IsPrimitiveRoot ω (n + 1) := by {
-  sorry
+  use Complex.exp (2 * Real.pi * Complex.I / ((n + 1 : Nat) : ℂ))
+  exact Complex.isPrimitiveRoot_exp (n + 1) (by omega)
 }
 
 /-- The core theorem proving that the 0-th residue class is maximal in Cuculiere's triangle mod n+1.
