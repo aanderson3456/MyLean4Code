@@ -30,7 +30,7 @@
         ["VTlean.Homomorphism transitive imports (legacy)", "2e27fed48d92c23a"],
         ["VTlean.Homomorphism:importAllArts", "11b769c41ea34285"],
         ["VTlean.Cuculiere transitive imports (legacy)", "4265da5511d8474f"],
-        ["VTlean.Cuculiere:importAllArts", "3fade98eeeb6c5a2"]]]]],
+        ["VTlean.Cuculiere:importAllArts", "e1ca946b1324b3cd"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -49,4 +49,4 @@
   ["Module.name: VTlean", "f527ba05211ad81a"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "18cceec35f87e5bb"}
+ "depHash": "b3341ad55f6820ad"}

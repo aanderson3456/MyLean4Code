@@ -1,85 +1,125 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["2613853f538799ed.olean"],
-  "i": "eaebaeca24187c0b.ilean",
+ {"o": ["4535ccceb92f7fdf.olean"],
+  "i": "116c5a0308660253.ilean",
   "c": "139b4ab3adc41041.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Cuculiere.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/Cuculiere.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/Cuculiere.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/Cuculiere.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/Cuculiere.setup.json --json",
    "level": "trace"},
-  {"message": "VTlean/Cuculiere.lean:200:6: declaration uses `sorry`",
+  {"message":
+   "VTlean/Cuculiere.lean:224:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:244:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n            ↓\n  ⏎  rw [h1]⏎⏎  -- Step 2: Distribute the sum over addition⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "VTlean/Cuculiere.lean:254:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n            ↓\n  ⏎  rw [h1]⏎⏎  -- Step 2: Distribute the sum over addition⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:247:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                         ↓\n  ⏎  rw [sum_add_distrib]⏎⏎  -- Step 3: The first half of the sum reduces to the sum over the n domain,⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "VTlean/Cuculiere.lean:257:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                         ↓\n  ⏎  rw [sum_add_distrib]⏎⏎  -- Step 3: The first half of the sum reduces to the sum over the n domain,⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:276:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n            ↓\n  ⏎  rw [h2]⏎⏎  -- Step 4: The second half of the sum evaluates to the shifted a residue class.⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "VTlean/Cuculiere.lean:286:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n            ↓\n  ⏎  rw [h2]⏎⏎  -- Step 4: The second half of the sum evaluates to the shifted a residue class.⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:298:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                        ↓\n  ⏎    rw [← sum_filter]⏎⏎    apply sum_bij (fun c _ => c - (n + 1))⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "VTlean/Cuculiere.lean:308:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                        ↓\n  ⏎    rw [← sum_filter]⏎⏎    apply sum_bij (fun c _ => c - (n + 1))⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:234:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Cuculiere.lean:244:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:237:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Cuculiere.lean:247:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:238:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Cuculiere.lean:248:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:250:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Cuculiere.lean:260:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:251:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Cuculiere.lean:261:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:267:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
-   "level": "warning"},
-  {"message":
-   "VTlean/Cuculiere.lean:280:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
-   "level": "warning"},
-  {"message":
-   "VTlean/Cuculiere.lean:282:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Cuculiere.lean:277:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
    "VTlean/Cuculiere.lean:290:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:291:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Cuculiere.lean:292:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:355:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Cuculiere.lean:300:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:356:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Cuculiere.lean:301:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:357:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Cuculiere.lean:365:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:373:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Cuculiere.lean:366:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:387:4: 'simp [h]' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.\n\nNote: This linter can be disabled with `set_option linter.flexible false`",
+   "VTlean/Cuculiere.lean:367:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:387:4: Try this:\n  [apply] simp only [lt_add_iff_pos_left, Order.lt_add_one_iff, _root_.zero_le, ↓reduceIte, add_zero]",
+   "VTlean/Cuculiere.lean:383:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:397:4: 'simp [h]' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.\n\nNote: This linter can be disabled with `set_option linter.flexible false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:397:4: Try this:\n  [apply] simp only [lt_add_iff_pos_left, Order.lt_add_one_iff, _root_.zero_le, ↓reduceIte, add_zero]",
    "level": "info"},
-  {"message": "VTlean/Cuculiere.lean:388:4: 'exact ih' uses '⊢'!",
+  {"message": "VTlean/Cuculiere.lean:398:4: 'exact ih' uses '⊢'!",
    "level": "info"},
-  {"message": "VTlean/Cuculiere.lean:403:6: declaration uses `sorry`",
+  {"message":
+   "VTlean/Cuculiere.lean:456:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message": "VTlean/Cuculiere.lean:460:6: declaration uses `sorry`",
+   "level": "warning"},
+  {"message": "VTlean/Cuculiere.lean:467:6: declaration uses `sorry`",
    "level": "warning"},
   {"message":
-   "VTlean/Cuculiere.lean:402:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Cuculiere.lean:469:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
-  {"message": "VTlean/Cuculiere.lean:678:0: [1, 1, 1, 2, 1, 1, 1]",
+  {"message": "VTlean/Cuculiere.lean:486:6: declaration uses `sorry`",
+   "level": "warning"},
+  {"message": "VTlean/Cuculiere.lean:492:6: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:497:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:501:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:502:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:508:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:512:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:517:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:518:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:527:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:538:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:539:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message": "VTlean/Cuculiere.lean:825:0: [1, 1, 1, 2, 1, 1, 1]",
    "level": "info"},
-  {"message": "VTlean/Cuculiere.lean:681:0: [1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1]",
+  {"message": "VTlean/Cuculiere.lean:828:0: [1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1]",
    "level": "info"}],
  "inputs":
  [["VTlean.Cuculiere:deps",
@@ -98,7 +138,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Cuculiere.lean",
-   "a2aa4bc5ba1e6fae"],
+   "752eacffc644cbc6"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -108,4 +148,4 @@
   ["Module.name: VTlean.Cuculiere", "db960e5489a46051"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "987236b922d48588"}
+ "depHash": "6a5cfd685406e175"}
