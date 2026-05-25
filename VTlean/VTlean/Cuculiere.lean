@@ -116,6 +116,21 @@ def cuculiere : Nat → List Nat
 def max_vt_checksum (n : Nat) : Nat :=
   n * (n + 1) / 2
 
+lemma max_vt_checksum_mono (n : Nat) : max_vt_checksum n ≤ max_vt_checksum (n + 1) := by {
+  unfold max_vt_checksum
+  apply Nat.div_le_div_right
+  nlinarith
+}
+
+lemma max_vt_checksum_succ (n : Nat) : max_vt_checksum (n + 1) = max_vt_checksum n + n + 1 := by {
+  unfold max_vt_checksum
+  have h1 : (n + 1) * (n + 1 + 1) = n * (n + 1) + (n + 1) * 2 := by ring
+  rw [h1]
+  rw [Nat.add_mul_div_right]
+  · omega
+  · omega
+}
+
 /-- A helper to safely access elements from the cuculiere list, 
     returning 0 if out of bounds. -/
 def cuculiere_get (n c : Nat) : Nat :=
@@ -199,8 +214,18 @@ lemma cuculiere_get_successor (n c : Nat) :
 
 lemma cuculiere_length (n : Nat) :
   (cuculiere n).length = max_vt_checksum n + 1 := by {
-  -- Follows from max_vt_checksum (n+1) = max_vt_checksum n + n + 1
-  sorry
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    unfold cuculiere
+    dsimp
+    rw [List.length_zipWith]
+    rw [List.length_append, List.length_append, List.length_replicate, ih]
+    have h_comm : n + 1 + (max_vt_checksum n + 1) = max_vt_checksum n + 1 + (n + 1) := Nat.add_comm _ _
+    rw [h_comm]
+    rw [Nat.min_self]
+    rw [max_vt_checksum_succ]
+    omega
 }
 
 lemma cuculiere_get_out_of_bounds (n c : Nat) (h : max_vt_checksum n < c) : 
@@ -209,21 +234,6 @@ lemma cuculiere_get_out_of_bounds (n c : Nat) (h : max_vt_checksum n < c) :
   have h_len : (cuculiere n).length = max_vt_checksum n + 1 := cuculiere_length n
   have h_le : (cuculiere n).length ≤ c := by omega
   exact List.getD_eq_default _ _ h_le
-}
-
-lemma max_vt_checksum_mono (n : Nat) : max_vt_checksum n ≤ max_vt_checksum (n + 1) := by {
-  unfold max_vt_checksum
-  apply Nat.div_le_div_right
-  nlinarith
-}
-
-lemma max_vt_checksum_succ (n : Nat) : max_vt_checksum (n + 1) = max_vt_checksum n + n + 1 := by {
-  unfold max_vt_checksum
-  have h1 : (n + 1) * (n + 1 + 1) = n * (n + 1) + (n + 1) * 2 := by ring
-  rw [h1]
-  rw [Nat.add_mul_div_right]
-  · omega
-  · omega
 }
 
 lemma cuculiere_mod_sum_gen_successor (n m a : Nat) :
@@ -395,6 +405,52 @@ lemma cuculiere_get_max_eq_one (n : Nat) :
   rw [h_sub]
   exact cuculiere_get_zero_eq_one n
 }
+lemma cuculiere_mod_sum_gen_zero (m a : Nat) :
+  cuculiere_mod_sum_gen 0 m a ≤ cuculiere_mod_sum_gen 0 m 0 := by {
+  unfold cuculiere_mod_sum_gen max_vt_checksum
+  dsimp
+  have h_Iic : Finset.Iic 0 = {0} := rfl
+  simp only [h_Iic]
+  cases Decidable.em (0 % m = a % m) with
+  | inl h =>
+    have h_filt1 : (Finset.filter (fun c => c % m = a % m) {0}) = {0} := by {
+      ext x
+      simp only [Finset.mem_filter, Finset.mem_singleton]
+      constructor
+      · rintro ⟨rfl, _⟩; rfl
+      · rintro rfl; exact ⟨rfl, h⟩
+    }
+    have h_filt2 : (Finset.filter (fun c => c % m = 0) {0}) = {0} := by {
+      ext x
+      simp only [Finset.mem_filter, Finset.mem_singleton]
+      constructor
+      · rintro ⟨rfl, _⟩; rfl
+      · rintro rfl; exact ⟨rfl, Nat.zero_mod _⟩
+    }
+    rw [h_filt1, h_filt2]
+  | inr h =>
+    have h_filt1 : (Finset.filter (fun c => c % m = a % m) {0}) = ∅ := by {
+      ext x
+      simp only [Finset.mem_filter, Finset.mem_singleton]
+      constructor
+      · rintro ⟨rfl, h_eq⟩
+        exact False.elim (h h_eq)
+      · intro h_in
+        simp at h_in
+    }
+    have h_filt2 : (Finset.filter (fun c => c % m = 0) {0}) = {0} := by {
+      ext x
+      simp only [Finset.mem_filter, Finset.mem_singleton]
+      constructor
+      · rintro ⟨rfl, _⟩; rfl
+      · rintro rfl; exact ⟨rfl, Nat.zero_mod _⟩
+    }
+    rw [h_filt1, h_filt2]
+    dsimp
+    exact Nat.zero_le _
+}
+
+
 
 /-- The core inductive inequality proving that the 0-th residue class is maximal.
     This works by fixing the modulus `m = n + 1`, and performing induction on the
@@ -402,9 +458,12 @@ lemma cuculiere_get_max_eq_one (n : Nat) :
     to show that the combination of `S(k, m, a) + S(k, m, a - (k+1))` preserves the maximality at 0. -/
 lemma cuculiere_mod_sum_gen_max (n : Nat) (k : Nat) (a : Nat) (hk : k ≤ n) :
   cuculiere_mod_sum_gen k (n + 1) a ≤ cuculiere_mod_sum_gen k (n + 1) 0 := by {
-  -- Base cases: k = 0, k = 1, etc.
-  -- Inductive step uses cuculiere_mod_sum_gen_successor and unimodality.
-  sorry
+  induction k with
+  | zero =>
+    exact cuculiere_mod_sum_gen_zero (n + 1) a
+  | succ k' ih =>
+    -- Inductive step
+    sorry
 }
 
 lemma vector_card_split (n : Nat) (P : List.Vector B (n + 1) → Prop) [DecidablePred P] :
@@ -721,3 +780,7 @@ theorem VTCode_zero_is_max (n a : Nat) :
   rw [cuculiere_mod_sum_eq_gen n 0]
   exact cuculiere_mod_sum_gen_max n n a (Nat.le_refl n)
 }
+
+/- Note: An alternative, purely combinatorial proof of VTCode_zero_is_max 
+   is formalized in Burnside.lean using cyclic shift orbits and Burnside's Lemma. -/
+
