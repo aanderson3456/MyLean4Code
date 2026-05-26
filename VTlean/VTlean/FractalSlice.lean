@@ -340,3 +340,30 @@ theorem vt0_dels_disjoint
   have h_inter := h_delcode x1 hx1 x2 hx2 h_ne
   rw [Finset.disjoint_iff_inter_eq_empty]
   exact h_inter
+
+lemma moment_sIns {n : Nat} (X : List.Vector B n) (i : Nat) (b : B) :
+  moment (sIns X i b) = moment X + match b with
+    | B.O => num_RIs X i
+    | B.I => num_LOs X i + wt X + 1 := by
+  cases b
+  · have h := moment_sIns_zero X (i:=i)
+    exact h
+  · have h := moment_sIns_one X (i:=i)
+    dsimp
+    omega
+
+lemma moment_sloaneInsertion {n : Nat} (y : List.Vector B (n - 1)) (k : Nat) (hk : k < n) :
+  moment (sloaneInsertion y k hk) = moment y + match B.flip (y.val.getD (k - 1) B.O) with
+    | B.O => num_RIs y k
+    | B.I => num_LOs y k + wt y + 1 := by
+  have h_val : (sloaneInsertion y k hk).val = (sIns y k (B.flip (y.val.getD (k - 1) B.O))).val := by
+    have h_len : k ≤ y.val.length := by {
+      have h_ylen : y.val.length = n - 1 := y.2
+      omega
+    }
+    exact (sIns_eq_take_drop y.val k (B.flip (y.val.getD (k - 1) B.O)) h_len).symm
+  change List.moment (sloaneInsertion y k hk).val = _
+  rw [h_val]
+  have h_moment_sIns := moment_sIns y k (B.flip (y.val.getD (k - 1) B.O))
+  change List.moment (sIns y k (B.flip (y.val.getD (k - 1) B.O))).val = _ at h_moment_sIns
+  exact h_moment_sIns

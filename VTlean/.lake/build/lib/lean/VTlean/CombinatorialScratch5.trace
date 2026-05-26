@@ -1,0 +1,48 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["e65c789198d224d1.olean"],
+  "i": "de3f6216570491e0.ilean",
+  "c": "e59e612593662911.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/CombinatorialScratch5.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/CombinatorialScratch5.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/CombinatorialScratch5.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/CombinatorialScratch5.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/CombinatorialScratch5.setup.json --json",
+   "level": "trace"},
+  {"message":
+   "VTlean/CombinatorialScratch5.lean:43:2: The `induction'` tactic is discouraged: please strongly consider using `induction` instead.\n\nNote: This linter can be disabled with `set_option linter.style.induction false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/CombinatorialScratch5.lean:44:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/CombinatorialScratch5.lean:47:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"}],
+ "inputs":
+ [["VTlean.CombinatorialScratch5:deps",
+   [["deps",
+     [["VTlean/VTlean:extraDep", [["@VTlean:extraDep", "00000000000006bb"]]],
+      ["imports",
+       [["Mathlib transitive imports (legacy)", "bf567ce5aae7f8c3"],
+        ["Mathlib:importAllArts", "1f979cbc8a135c61"],
+        ["VTlean.CuculiereCombinatorial transitive imports (legacy)",
+         "4265da5511d8474f"],
+        ["VTlean.CuculiereCombinatorial:importAllArts", "92a23c8702ab0596"]]]]],
+    ["libs",
+     [["import dynlibs", "00000000000006bb"],
+      ["package external libraries", "00000000000006bb"],
+      ["module dynlibs", "00000000000006bb"],
+      ["module plugins", "00000000000006bb"]]]]],
+  ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
+   "fa77a35a41db35c0"],
+  ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/CombinatorialScratch5.lean",
+   "1b766c953fefddfe"],
+  ["options",
+   [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
+    ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
+    ["-DrelaxedAutoImplicit=false", "74a2b5546b55be80"],
+    ["-Dpp.unicode.fun=true", "9b94070140457fab"]]],
+  ["isModule: false", "feefd2a0d3a1847e"],
+  ["Module.name: VTlean.CombinatorialScratch5", "6429b4546791ce4b"],
+  ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "36d73f40b32543e5"}

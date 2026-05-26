@@ -32,7 +32,7 @@
         ["VTlean.Cuculiere transitive imports (legacy)", "4265da5511d8474f"],
         ["VTlean.Cuculiere:importAllArts", "557237de57a96e6c"],
         ["VTlean.FractalSlice transitive imports (legacy)", "b35edcaf7aa59dff"],
-        ["VTlean.FractalSlice:importAllArts", "a5145974d53a19f1"]]]]],
+        ["VTlean.FractalSlice:importAllArts", "7d5707a0a04e2c8b"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -51,4 +51,4 @@
   ["Module.name: VTlean", "f527ba05211ad81a"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "c60c58c769157003"}
+ "depHash": "9fc34835aeab5563"}

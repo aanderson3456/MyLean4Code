@@ -1,16 +1,73 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["4081e64f8b83752f.olean"],
-  "i": "5947fca85181fd95.ilean",
-  "c": "3ffcd9fcd133094a.c"},
+ {"o": ["375e486ccec4be81.olean"],
+  "i": "4ad6b51d50864842.ilean",
+  "c": "ef5be060146d0f99.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/FractalSlice.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/FractalSlice.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/FractalSlice.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/FractalSlice.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/FractalSlice.setup.json --json",
    "level": "trace"},
-  {"message": "VTlean/FractalSlice.lean:26:8: declaration uses `sorry`",
+  {"message":
+   "VTlean/FractalSlice.lean:21:0: cumulativeDels v_example 1 : Finset (List.Vector B (3 - 1))",
+   "level": "info"},
+  {"message": "VTlean/FractalSlice.lean:22:0: ∅", "level": "info"},
+  {"message": "VTlean/FractalSlice.lean:23:0: {[B.I, B.O]}", "level": "info"},
+  {"message": "VTlean/FractalSlice.lean:24:0: {[B.O, B.O], [B.I, B.O]}",
+   "level": "info"},
+  {"message":
+   "VTlean/FractalSlice.lean:25:0: {[B.O, B.I], [B.O, B.O], [B.I, B.O]}",
+   "level": "info"},
+  {"message":
+   "VTlean/FractalSlice.lean:37:0: `sDel_eq_sDel_of_getD_eq` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
    "level": "warning"},
-  {"message": "VTlean/FractalSlice.lean:68:4: declaration uses `sorry`",
+  {"message":
+   "VTlean/FractalSlice.lean:37:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:171:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:182:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:211:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:232:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:250:6: 'change List.sIns (List.sDel (x :: X') 0) 0 ((x :: X').getD 0 default) = x :: X'' tactic does nothing\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:260:8: 'change\n  List.sIns (List.sDel (x :: x' :: X'') (k' + 1)) (k' + 1) ((x :: x' :: X'').getD (k' + 1) default) =\n    x :: x' :: X''' tactic does nothing\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:240:0: `sIns_sDel_eq_self` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:260:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:263:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:284:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                              ↓\n  ⏎    exact sDel_getD x.val k hk_pos h_lt B.O⏎⏎  rw [h_sdel_getD]⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:288:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                ↓\n  ⏎  rw [h_flip]⏎⏎  have h_sins : (sDel x k).val.take k ++ [x.val.getD k B.O] ++ (sDel x k).val.drop k = List.sIns (sDel x k).val k (x.val.getD k B.O) := by⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:296:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                                               ↓\n  ⏎    exact (sIns_eq_take_drop (sDel x k).val k (x.val.getD k B.O) h_len).symm⏎⏎  rw [h_sins]⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:271:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:275:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:289:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"}],
  "inputs":
  [["VTlean.FractalSlice:deps",
@@ -33,7 +90,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/FractalSlice.lean",
-   "2dd3606415992588"],
+   "6e157956e1339666"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -43,4 +100,4 @@
   ["Module.name: VTlean.FractalSlice", "82cdaebd4f595e0d"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "e41f72c68d97c989"}
+ "depHash": "e08b7c930e1b4bf1"}
