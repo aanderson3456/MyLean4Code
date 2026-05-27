@@ -389,7 +389,11 @@ lemma vt_size_partition_by_wt (n a : Nat) :
       exact hX
   }
   have h_disj : Set.PairwiseDisjoint (↑(Finset.Iic n)) (fun k => Finset.filter (fun X => wt X = k) (Finset.VTCode n a)) := by {
-    sorry
+    intro k1 _ k2 _ h_neq
+    simp only [Function.onFun, disjoint_left, mem_filter]
+    intro X ⟨_, h1⟩ ⟨_, h2⟩
+    rw [h1] at h2
+    exact h_neq h2
   }
   nth_rw 1 [h_bUnion]
   exact Finset.card_biUnion h_disj
@@ -405,14 +409,207 @@ def subset_to_vector (n : Nat) (s : Finset (Fin (n + 1))) : List.Vector B n :=
 
 #eval vector_to_subset 5 ⟨[B.O, B.I, B.O, B.I, B.I], rfl⟩
 -- Evaluates to {2, 4, 5}
-
 #eval subset_to_vector 5 {2, 4, 5}
 -- Evaluates to ⟨[B.O, B.I, B.O, B.I, B.I], rfl⟩
 
 
+def list_to_subset : List B → Finset Nat
+| [] => ∅
+| B.O :: X => (list_to_subset X).image (· + 1)
+| B.I :: X => insert 1 ((list_to_subset X).image (· + 1))
+
+lemma list_to_subset_not_zero (X : List B) :
+  0 ∉ list_to_subset X := by {
+  induction X with
+  | nil =>
+    exact Finset.not_mem_empty 0
+  | cons x X' ih =>
+    cases x
+    · simp only [list_to_subset, mem_image, not_exists, not_and]
+      intro a _ h_eq
+      omega
+    · simp only [list_to_subset, mem_insert, not_or, mem_image, not_exists, not_and]
+      apply And.intro
+      · omega
+      · intro a _ h_eq
+        omega
+}
+
+lemma list_to_subset_sum (X : List B) :
+  ∑ i ∈ list_to_subset X, i = List.moment X := by {
+  induction X with
+  | nil => rfl
+  | cons x X' ih =>
+    have h_inj : Set.InjOn (· + 1) ↑(list_to_subset X') := by {
+      intro a _ b _ hab
+      exact Nat.add_right_cancel hab
+    }
+    have h_sum_add : ∑ i ∈ (list_to_subset X').image (· + 1), i = (∑ i ∈ list_to_subset X', i) + (list_to_subset X').card := by {
+      rw [Finset.sum_image h_inj]
+      simp only [sum_add_distrib, sum_const, nsmul_eq_mul, mul_one]
+    }
+    cases x
+    · change ∑ i ∈ (list_to_subset X').image (· + 1), i = List.moment (B.O :: X')
+      rw [h_sum_add, ih, list_to_subset_card X']
+      have h_mom := moment_cons B.O X'
+      have h_num : num_Is (B.O :: X') = num_Is X' := rfl
+      rw [h_num] at h_mom
+      exact h_mom.symm
+    · change (∑ i ∈ insert 1 ((list_to_subset X').image (· + 1)), i) = List.moment (B.I :: X')
+      have h_not_mem : 1 ∉ (list_to_subset X').image (· + 1) := by {
+        simp only [mem_image, not_exists, not_and]
+        intro a ha h_eq
+        have ha_zero : a = 0 := by omega
+        rw [ha_zero] at ha
+        have hz := list_to_subset_not_zero X'
+        exact hz ha
+      }
+      rw [Finset.sum_insert h_not_mem]
+      rw [h_sum_add, ih, list_to_subset_card X']
+      have h_mom := moment_cons B.I X'
+      have h_num : num_Is (B.I :: X') = num_Is X' + 1 := rfl
+      rw [h_num] at h_mom
+      omega
+}
+
+lemma vector_to_subset_sum (n : Nat) (X : List.Vector B n) :
+  (∑ x ∈ vector_to_subset n X, x.val) % (n + 1) = (moment X) % (n + 1) := by {
+  have h_inj : Set.InjOn (@Fin.val (n + 1)) ↑(vector_to_subset n X) := by {
+    intro a _ b _ hab
+    exact Fin.ext hab
+  }
+  have h_sum := Finset.sum_image h_inj (g := id)
+  simp only [id_eq] at h_sum
+  have h_sum_eq : ∑ x ∈ vector_to_subset n X, x.val = ∑ x ∈ (vector_to_subset n X).image Fin.val, x := by {
+    exact h_sum.symm
+  }
+  rw [h_sum_eq, vector_to_subset_eq_list_subset n X]
+  rw [list_to_subset_sum X.val]
+  rfl
+}
+
+lemma list_to_subset_card (X : List B) :
+  (list_to_subset X).card = List.num_Is X := by {
+  induction X with
+  | nil => rfl
+  | cons x X' ih =>
+    cases x
+    · change ((list_to_subset X').image (· + 1)).card = List.num_Is X'
+      have h_inj : Set.InjOn (· + 1) ↑(list_to_subset X') := by {
+        intro a _ b _ hab
+        exact Nat.add_right_cancel hab
+      }
+      rw [Finset.card_image_of_injOn h_inj, ih]
+    · change (insert 1 ((list_to_subset X').image (· + 1))).card = List.num_Is X' + 1
+      have h_not_mem : 1 ∉ (list_to_subset X').image (· + 1) := by {
+        simp only [mem_image, not_exists, not_and]
+        intro a ha h_eq
+        have ha_zero : a = 0 := by omega
+        rw [ha_zero] at ha
+        have hz := list_to_subset_not_zero X'
+        exact hz ha
+      }
+      rw [Finset.card_insert_of_notMem h_not_mem]
+      have h_inj : Set.InjOn (· + 1) ↑(list_to_subset X') := by {
+        intro a _ b _ hab
+        exact Nat.add_right_cancel hab
+      }
+      rw [Finset.card_image_of_injOn h_inj, ih]
+}
+
+lemma mem_list_to_subset (X : List B) (i : Nat) :
+  i ∈ list_to_subset X ↔ i ≠ 0 ∧ i ≤ X.length ∧ X.getD (i - 1) B.O = B.I := by {
+  induction X generalizing i with
+  | nil =>
+    simp only [list_to_subset, List.length_nil, nonpos_iff_eq_zero, false_and, and_false]
+    exact Iff.intro (fun h => (Finset.not_mem_empty i h).elim) (fun h => h.1.elim)
+  | cons x X' ih =>
+    cases x
+    · apply Iff.intro
+      · intro h
+        rw [list_to_subset] at h
+        simp only [mem_image] at h
+        rcases h with ⟨a, ha, rfl⟩
+        rw [ih a] at ha
+        refine ⟨by omega, by omega, ?_⟩
+        have ha_sub : a + 1 - 1 = a := by omega
+        rw [ha_sub]
+        cases a
+        · omega
+        · exact ha.2.2
+      · intro ⟨h1, h2, h3⟩
+        rw [list_to_subset]
+        simp only [mem_image]
+        use i - 1
+        have hi_sub : i - 1 + 1 = i := by omega
+        refine ⟨?_, hi_sub⟩
+        rw [ih (i - 1)]
+        refine ⟨by omega, by omega, ?_⟩
+        cases i
+        · omega
+        case succ k =>
+          have hk_sub : k + 1 - 1 = k := by omega
+          rw [hk_sub] at h3
+          exact h3
+    · apply Iff.intro
+      · intro h
+        rw [list_to_subset] at h
+        simp only [mem_insert, mem_image] at h
+        cases h with
+        | inl heq =>
+          rw [heq]
+          refine ⟨by omega, by omega, rfl⟩
+        | inr h_img =>
+          rcases h_img with ⟨a, ha, rfl⟩
+          rw [ih a] at ha
+          refine ⟨by omega, by omega, ?_⟩
+          cases a
+          · omega
+          · exact ha.2.2
+      · intro ⟨h1, h2, h3⟩
+        rw [list_to_subset]
+        simp only [mem_insert, mem_image]
+        cases i
+        · omega
+        case succ k =>
+          cases k
+          · left; rfl
+          · right
+            use k + 1
+            have hk_sub : k + 1 + 1 = k + 2 := by omega
+            refine ⟨?_, hk_sub⟩
+            rw [ih (k + 1)]
+            refine ⟨by omega, by omega, ?_⟩
+            exact h3
+}
+
+lemma vector_to_subset_eq_list_subset (n : Nat) (X : List.Vector B n) :
+  (vector_to_subset n X).image Fin.val = list_to_subset X.val := by {
+  ext i
+  simp only [vector_to_subset, mem_image, mem_filter, mem_univ, true_and]
+  rw [mem_list_to_subset]
+  apply Iff.intro
+  · rintro ⟨a, ⟨ha1, ha2⟩, rfl⟩
+    have ha_lt := a.isLt
+    have hX_len := X.property
+    refine ⟨ha1, by omega, ha2⟩
+  · rintro ⟨h1, h2, h3⟩
+    have hX_len := X.property
+    have hi_lt : i < n + 1 := by omega
+    use ⟨i, hi_lt⟩
+    refine ⟨⟨h1, h3⟩, rfl⟩
+}
+
 lemma vector_to_subset_card (n : Nat) (X : List.Vector B n) :
   (vector_to_subset n X).card = wt X := by {
-  sorry
+  have h_inj : Set.InjOn (@Fin.val (n + 1)) ↑(vector_to_subset n X) := by {
+    intro a _ b _ hab
+    exact Fin.ext hab
+  }
+  have h_card := Finset.card_image_of_injOn h_inj
+  rw [vector_to_subset_eq_list_subset n X] at h_card
+  rw [← h_card, list_to_subset_card]
+  rfl
 }
 
 lemma vector_to_subset_sum (n : Nat) (X : List.Vector B n) :
@@ -429,7 +626,7 @@ lemma vt_wt_eq_T (n a k : Nat) :
   · intro X hX
     simp only [mem_filter, Finset.mem_VTCode, _root_.mem_VTCode] at hX
     have h_wt : wt X = k := hX.2
-    have h_mom : Vector.moment X % (n + 1) = a % (n + 1) := hX.1
+    have h_mom : List.Vector.moment X % (n + 1) = a % (n + 1) := hX.1
     simp only [T_set, mem_filter, mem_univ, true_and]
     refine ⟨?_, ?_, ?_⟩
     · rw [vector_to_subset_card]
@@ -487,7 +684,72 @@ lemma vt_wt_eq_T (n a k : Nat) :
         contradiction
       · rfl
   · -- Surjectivity
-    sorry
+    intro s hs
+    simp only [T_set, mem_filter, mem_univ, true_and] at hs
+    use subset_to_vector n s
+    have hs_card : s.card = k := hs.1
+    have hs_not_zero : (0 : Fin (n + 1)) ∉ s := hs.2.1
+    have hs_sum : (∑ x ∈ s, x.val) % (n + 1) = a % (n + 1) := hs.2.2
+    
+    have h_eq : vector_to_subset n (subset_to_vector n s) = s := by {
+      ext i
+      simp only [vector_to_subset, subset_to_vector, mem_filter, mem_univ, true_and]
+      apply Iff.intro
+      · rintro ⟨hi_not_zero, hi_get⟩
+        have hi_sub : i.val - 1 < n := by {
+          have h_lt : i.val < n + 1 := i.isLt
+          omega
+        }
+        have hi_sub_eq : i.val - 1 + 1 = i.val := by omega
+        have h_len : (List.ofFn fun (i_1 : Fin n) => if (Fin.mk (i_1.val + 1) (by omega) : Fin (n + 1)) ∈ s then B.I else B.O).length = n := by simp
+        have h_idx : i.val - 1 < (List.ofFn fun (i_1 : Fin n) => if (Fin.mk (i_1.val + 1) (by omega) : Fin (n + 1)) ∈ s then B.I else B.O).length := by {
+          rw [h_len]
+          exact hi_sub
+        }
+        have h_get := hi_get
+        rw [List.getD_eq_getElem _ _ h_idx] at h_get
+        rw [List.getElem_ofFn] at h_get
+        dsimp at h_get
+        have h_idx_eq : (Fin.mk (i.val - 1 + 1) (by omega) : Fin (n + 1)).val = i.val := hi_sub_eq
+        have h_fin_eq : (Fin.mk (i.val - 1 + 1) (by omega) : Fin (n + 1)) = i := Fin.ext h_idx_eq
+        rw [h_fin_eq] at h_get
+        split at h_get
+        · assumption
+        · contradiction
+      · intro hi
+        have hi_not_zero : i.val ≠ 0 := by {
+          intro h_zero
+          have h_eq : i = 0 := Fin.ext h_zero
+          rw [h_eq] at hi
+          exact hs_not_zero hi
+        }
+        refine ⟨hi_not_zero, ?_⟩
+        have hi_sub : i.val - 1 < n := by {
+          have h_lt : i.val < n + 1 := i.isLt
+          omega
+        }
+        have hi_sub_eq : i.val - 1 + 1 = i.val := by omega
+        have h_len : (List.ofFn fun (i_1 : Fin n) => if (Fin.mk (i_1.val + 1) (by omega) : Fin (n + 1)) ∈ s then B.I else B.O).length = n := by simp
+        have h_idx : i.val - 1 < (List.ofFn fun (i_1 : Fin n) => if (Fin.mk (i_1.val + 1) (by omega) : Fin (n + 1)) ∈ s then B.I else B.O).length := by {
+          rw [h_len]
+          exact hi_sub
+        }
+        rw [List.getD_eq_getElem _ _ h_idx]
+        rw [List.getElem_ofFn]
+        dsimp
+        have h_idx_eq : (Fin.mk (i.val - 1 + 1) (by omega) : Fin (n + 1)).val = i.val := hi_sub_eq
+        have h_fin_eq : (Fin.mk (i.val - 1 + 1) (by omega) : Fin (n + 1)) = i := Fin.ext h_idx_eq
+        rw [h_fin_eq]
+        rw [if_pos hi]
+    }
+    
+    refine ⟨?_, h_eq⟩
+    simp only [mem_filter, Finset.mem_VTCode, _root_.mem_VTCode]
+    refine ⟨?_, ?_⟩
+    · rw [← vector_to_subset_sum, h_eq]
+      exact hs_sum
+    · rw [← vector_to_subset_card, h_eq]
+      exact hs_card
 }
 
 /-- Helper for Conjecture 4: The total size of the VT code is exactly the sum of

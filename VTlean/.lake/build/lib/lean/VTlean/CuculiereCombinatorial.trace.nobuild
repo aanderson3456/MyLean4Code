@@ -25,7 +25,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/CuculiereCombinatorial.lean",
-   "f0b1f3b4d2290b78"],
+   "ea2d06566b9e7c14"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -35,4 +35,4 @@
   ["Module.name: VTlean.CuculiereCombinatorial", "9a305c7f1c4446d8"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "ebb3ea10d358e494"}
+ "depHash": "a32d7769b280ec9b"}
