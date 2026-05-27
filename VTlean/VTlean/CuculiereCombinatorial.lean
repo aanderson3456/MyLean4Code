@@ -441,7 +441,51 @@ lemma vt_wt_eq_T (n a k : Nat) :
     · rw [vector_to_subset_sum]
       exact h_mom
   · -- Injectivity
-    sorry
+    intro X hX Y hY h_eq
+    apply Subtype.ext
+    have hX_len := X.property
+    have hY_len := Y.property
+    apply List.ext_get
+    · rw [hX_len, hY_len]
+    · intro i h1 h2
+      have hin : i < n := by omega
+      have h_fin : (Fin.mk (i + 1) (by omega) : Fin (n + 1)) ∈ vector_to_subset n X ↔ (Fin.mk (i + 1) (by omega) : Fin (n + 1)) ∈ vector_to_subset n Y := by {
+        rw [h_eq]
+      }
+      unfold vector_to_subset at h_fin
+      simp only [mem_filter, mem_univ, true_and] at h_fin
+      have hi_neq : i + 1 ≠ 0 := by omega
+      have hi_sub : i + 1 - 1 = i := by omega
+      have hX_eq : X.val.getD i B.O = X.val.get ⟨i, h1⟩ := by {
+        have h := List.getD_eq_getElem X.val (d := B.O) h1
+        exact h
+      }
+      have hY_eq : Y.val.getD i B.O = Y.val.get ⟨i, h2⟩ := by {
+        have h := List.getD_eq_getElem Y.val (d := B.O) h2
+        exact h
+      }
+      have h_fin2 : ((i + 1 ≠ 0) ∧ X.val.getD i B.O = B.I) ↔ ((i + 1 ≠ 0) ∧ Y.val.getD i B.O = B.I) := by {
+        have h_subX : (Fin.mk (i + 1) (by omega) : Fin (n + 1)).val - 1 = i := hi_sub
+        rw [h_subX] at h_fin
+        exact h_fin
+      }
+      rw [hX_eq, hY_eq] at h_fin2
+      have h_iff : X.val.get ⟨i, h1⟩ = B.I ↔ Y.val.get ⟨i, h2⟩ = B.I := by {
+        apply Iff.intro
+        · intro hX
+          exact (h_fin2.mp ⟨hi_neq, hX⟩).right
+        · intro hY
+          exact (h_fin2.mpr ⟨hi_neq, hY⟩).right
+      }
+      cases hX_val : X.val.get ⟨i, h1⟩ <;> cases hY_val : Y.val.get ⟨i, h2⟩
+      · rfl
+      · have h_false := h_iff.mpr hY_val
+        rw [hX_val] at h_false
+        contradiction
+      · have h_false := h_iff.mp hX_val
+        rw [hY_val] at h_false
+        contradiction
+      · rfl
   · -- Surjectivity
     sorry
 }
