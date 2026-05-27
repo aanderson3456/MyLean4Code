@@ -1,8 +1,8 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["408cf10a3f150d48.olean"],
-  "i": "e37ce89d13230066.ilean",
+ {"o": ["1e911707cf01fcfb.olean"],
+  "i": "8884ab03e5126c7a.ilean",
   "c": "41a3e8a01ae95702.c"},
  "log":
  [{"message":
@@ -61,7 +61,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Dream.lean",
-   "a184698149c2be4d"],
+   "8fa4b10491bc8945"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -71,4 +71,4 @@
   ["Module.name: VTlean.Dream", "eb374cfd84ea6756"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "da81d8dbe281bf07"}
+ "depHash": "12b67c0c913e0e05"}

@@ -227,6 +227,6 @@ theorem run_length_domination (C : Finset (List.Vector B n)) (hC : is_OptimalCod
 
 /-- Conjecture 4: THE BIG DREAM - Absolute Optimality.
 No single-deletion correcting code can have a strictly larger size than VT_0. -/
-theorem absolute_optimality (C : Finset (List.Vector B n)) (hC : is_OptimalCodeCandidate C) :
+theorem absolute_optimality_dream (C : Finset (List.Vector B n)) (hC : is_OptimalCodeCandidate C) :
   C.card ≤ (Finset.VTCode n 0).card := by
   sorry

@@ -1,6 +1,7 @@
 import Mathlib
 import VTlean.VTCode
 import VTlean.Cuculiere
+import VTlean.NumOsNumIs
 
 open Nat Finset
 
@@ -8,13 +9,13 @@ open Nat Finset
 # Cuculiere's Combinatorial Approach
 
 This file formalizes the combinatorial "necklace" approach to proving Cuculiere's Theorem,
-which avoids complex analysis and polynomials by mapping binary VT codewords to 
+which avoids complex analysis and polynomials by mapping binary VT codewords to
 mathematical subset sums.
 
-Let `S(n, k, a)` be the number of `k`-element subsets of the cyclic group `Z_{n+1}` 
+Let `S(n, k, a)` be the number of `k`-element subsets of the cyclic group `Z_{n+1}`
 whose sum modulo `n+1` is exactly `a`.
 
-Let `T(n, k, a)` be the number of `k`-element subsets of the non-zero elements `{1, ..., n}` 
+Let `T(n, k, a)` be the number of `k`-element subsets of the non-zero elements `{1, ..., n}`
 whose sum modulo `n+1` is exactly `a`.
 -/
 
@@ -88,7 +89,7 @@ lemma S_set_filter_mem_zero_card (n k a : Nat) (hk : k > 0) :
     · exact Finset.erase_insert ht_not_mem
 
 /-- Conjecture 1: The Inclusion-Exclusion Property
-A subset of Z_{n+1} either contains 0 or it doesn't. 
+A subset of Z_{n+1} either contains 0 or it doesn't.
 Since adding 0 to a subset doesn't change its sum modulo n+1, we get a perfect recurrence relation. -/
 theorem inclusion_exclusion (n k a : Nat) (hk : k > 0) :
   S n k a = T n k a + T n (k - 1) a := by
@@ -178,7 +179,7 @@ lemma shift_subset_sum {n : Nat} (s : Finset (Fin (n + 1))) :
   rw [Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul, mul_one]
 
 /-- Conjecture 2: The Cyclic Shift Bijection
-If you take a subset of Z_{n+1} of size k and cyclically shift every element by +1, 
+If you take a subset of Z_{n+1} of size k and cyclically shift every element by +1,
 the total sum of the subset strictly increases by exactly k modulo n+1. -/
 theorem cyclic_shift_bijection (n k a : Nat) :
   S n k a = S n k (a + k) := by
@@ -256,8 +257,8 @@ lemma coprime_exists_mul_add_eq (n k a b : Nat) (h_coprime : k.Coprime (n + 1)) 
   exact (ZMod.natCast_eq_natCast_iff _ _ _).mp h_zmod
 
 /-- Conjecture 3: Uniformity of Coprimes
-Because of the cyclic shift bijection, the values of S(k, a) trace out orbits of step size k. 
-If the subset size k is coprime to n+1, the orbit covers all possible residues, 
+Because of the cyclic shift bijection, the values of S(k, a) trace out orbits of step size k.
+If the subset size k is coprime to n+1, the orbit covers all possible residues,
 so the subsets are perfectly uniformly distributed. -/
 theorem uniformity_of_coprimes (n k a b : Nat) (h_coprime : k.Coprime (n + 1)) :
   S n k a = S n k b := by
@@ -335,16 +336,49 @@ lemma S_zero_eq_T_zero (n a : Nat) : S n 0 a = T n 0 a := by
   · intro h
     exact ⟨h.1, h.2.2⟩
 
-/-- Helper for Conjecture 4: The total size of the VT code is exactly the sum of 
-all subsets of non-zero elements that sum to `a` (which is T). 
+/-- Any binary string can be partitioned into subsets by its weight. -/
+lemma vt_size_partition_by_wt (n a : Nat) :
+  (Finset.VTCode n a).card = ∑ k ∈ Finset.Iic n, (Finset.filter (fun X => wt X = k) (Finset.VTCode n a)).card := by
+  have h_bUnion : Finset.VTCode n a = Finset.biUnion (Finset.Iic n) (fun k => Finset.filter (fun X => wt X = k) (Finset.VTCode n a)) := by
+    ext X
+    simp only [mem_biUnion, mem_Iic, mem_filter]
+    apply Iff.intro
+    · intro hX
+      use wt X
+      refine ⟨wt_le_length X, hX, rfl⟩
+    · intro h
+      rcases h with ⟨k, _, hX, _⟩
+      exact hX
+  have h_disj : Set.PairwiseDisjoint (↑(Finset.Iic n)) (fun k => Finset.filter (fun X => wt X = k) (Finset.VTCode n a)) := by
+    intro i _ j _ hij
+    unfold disjoint
+    simp only [Set.bot_eq_empty, le_eq_subset]
+    intro X hX
+    simp only [Set.mem_empty_iff_false]
+    -- wt X cannot be both i and j since i ≠ j
+    sorry
+  rw [h_bUnion]
+  exact Finset.card_biUnion h_disj
+
+/-- The number of VT codewords of weight k exactly equals the number of subsets of {1..n}
+    of size k that sum to a (which is T_set). -/
+lemma vt_wt_eq_T (n a k : Nat) :
+  (Finset.filter (fun X => wt X = k) (Finset.VTCode n a)).card = T n k a := by
+  sorry
+
+/-- Helper for Conjecture 4: The total size of the VT code is exactly the sum of
+all subsets of non-zero elements that sum to `a` (which is T).
 This maps binary VT strings of weight k to subsets of size k. -/
 theorem vt_size_eq_sum_T (n a : Nat) :
   (Finset.VTCode n a).card = ∑ k ∈ Finset.Iic n, T n k a := by
-  sorry
+  rw [vt_size_partition_by_wt]
+  apply sum_congr rfl
+  intro k _
+  exact vt_wt_eq_T n a k
 
 /-- Conjecture 4: Telescoping to VT Size
 Using the relation T(k, a) = S(k, a) - T(k-1, a), we can expand the VT size summation.
-The entire size of the VT code telescopes down to depending strictly on the subsets 
+The entire size of the VT code telescopes down to depending strictly on the subsets
 of Z_{n+1}, specifically where the size has the same parity as n. -/
 theorem vt_size_telescoping (n a : Nat) :
   (Finset.VTCode n a).card = ∑ j ∈ (Finset.Iic n).filter (fun j => j % 2 = n % 2), S n j a := by
@@ -359,10 +393,10 @@ theorem vt_size_telescoping (n a : Nat) :
     exact inclusion_exclusion n k a hk
   · exact S_zero_eq_T_zero n a
 
-/-- Absolute Optimality via the Hybrid Path 
+/-- Absolute Optimality via the Hybrid Path
 We established that `|VTCode|` decomposes purely into subset sums `S n j a` (Conjecture 4).
 However, for `gcd(j, n+1) > 1`, the combinatorial counting of orbits is severely entangled.
-Therefore, we hybridize: we import the Complex Polynomial evaluation of the overall sizes 
+Therefore, we hybridize: we import the Complex Polynomial evaluation of the overall sizes
 from `Cuculiere.lean` which rigorously proves `cuculiere_mod_sum_gen_max`, yielding this result. -/
 theorem absolute_optimality (n a : Nat) :
   (Finset.VTCode n a).card ≤ (Finset.VTCode n 0).card := by {
