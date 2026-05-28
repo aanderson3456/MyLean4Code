@@ -7,7 +7,7 @@ import VTlean.DelCode
 open Nat Finset
 
 /-!
-# Cuculiere's Combinatorial Approach
+# Combinatorial Approach to VT Code Size
 
 This file formalizes the combinatorial "necklace" approach to proving Cuculiere's Theorem,
 which avoids complex analysis and polynomials by mapping binary VT codewords to
@@ -422,7 +422,8 @@ lemma list_to_subset_not_zero (X : List B) :
   0 ∉ list_to_subset X := by {
   induction X with
   | nil =>
-    exact Finset.not_mem_empty 0
+    intro h
+    cases h
   | cons x X' ih =>
     cases x
     · simp only [list_to_subset, mem_image, not_exists, not_and]
@@ -433,59 +434,6 @@ lemma list_to_subset_not_zero (X : List B) :
       · omega
       · intro a _ h_eq
         omega
-}
-
-lemma list_to_subset_sum (X : List B) :
-  ∑ i ∈ list_to_subset X, i = List.moment X := by {
-  induction X with
-  | nil => rfl
-  | cons x X' ih =>
-    have h_inj : Set.InjOn (· + 1) ↑(list_to_subset X') := by {
-      intro a _ b _ hab
-      exact Nat.add_right_cancel hab
-    }
-    have h_sum_add : ∑ i ∈ (list_to_subset X').image (· + 1), i = (∑ i ∈ list_to_subset X', i) + (list_to_subset X').card := by {
-      rw [Finset.sum_image h_inj]
-      simp only [sum_add_distrib, sum_const, nsmul_eq_mul, mul_one]
-    }
-    cases x
-    · change ∑ i ∈ (list_to_subset X').image (· + 1), i = List.moment (B.O :: X')
-      rw [h_sum_add, ih, list_to_subset_card X']
-      have h_mom := moment_cons B.O X'
-      have h_num : num_Is (B.O :: X') = num_Is X' := rfl
-      rw [h_num] at h_mom
-      exact h_mom.symm
-    · change (∑ i ∈ insert 1 ((list_to_subset X').image (· + 1)), i) = List.moment (B.I :: X')
-      have h_not_mem : 1 ∉ (list_to_subset X').image (· + 1) := by {
-        simp only [mem_image, not_exists, not_and]
-        intro a ha h_eq
-        have ha_zero : a = 0 := by omega
-        rw [ha_zero] at ha
-        have hz := list_to_subset_not_zero X'
-        exact hz ha
-      }
-      rw [Finset.sum_insert h_not_mem]
-      rw [h_sum_add, ih, list_to_subset_card X']
-      have h_mom := moment_cons B.I X'
-      have h_num : num_Is (B.I :: X') = num_Is X' + 1 := rfl
-      rw [h_num] at h_mom
-      omega
-}
-
-lemma vector_to_subset_sum (n : Nat) (X : List.Vector B n) :
-  (∑ x ∈ vector_to_subset n X, x.val) % (n + 1) = (moment X) % (n + 1) := by {
-  have h_inj : Set.InjOn (@Fin.val (n + 1)) ↑(vector_to_subset n X) := by {
-    intro a _ b _ hab
-    exact Fin.ext hab
-  }
-  have h_sum := Finset.sum_image h_inj (g := id)
-  simp only [id_eq] at h_sum
-  have h_sum_eq : ∑ x ∈ vector_to_subset n X, x.val = ∑ x ∈ (vector_to_subset n X).image Fin.val, x := by {
-    exact h_sum.symm
-  }
-  rw [h_sum_eq, vector_to_subset_eq_list_subset n X]
-  rw [list_to_subset_sum X.val]
-  rfl
 }
 
 lemma list_to_subset_card (X : List B) :
@@ -506,8 +454,7 @@ lemma list_to_subset_card (X : List B) :
         intro a ha h_eq
         have ha_zero : a = 0 := by omega
         rw [ha_zero] at ha
-        have hz := list_to_subset_not_zero X'
-        exact hz ha
+        exact list_to_subset_not_zero X' ha
       }
       rw [Finset.card_insert_of_notMem h_not_mem]
       have h_inj : Set.InjOn (· + 1) ↑(list_to_subset X') := by {
@@ -517,12 +464,53 @@ lemma list_to_subset_card (X : List B) :
       rw [Finset.card_image_of_injOn h_inj, ih]
 }
 
+lemma list_to_subset_sum (X : List B) :
+  ∑ i ∈ list_to_subset X, i = List.moment X := by {
+  induction X with
+  | nil => rfl
+  | cons x X' ih =>
+    have h_inj : Set.InjOn (· + 1) ↑(list_to_subset X') := by {
+      intro a _ b _ hab
+      exact Nat.add_right_cancel hab
+    }
+    have h_sum_add : ∑ i ∈ (list_to_subset X').image (· + 1), i = (∑ i ∈ list_to_subset X', i) + (list_to_subset X').card := by {
+      rw [Finset.sum_image h_inj, Finset.sum_add_distrib]
+      have h_const : (∑ i ∈ list_to_subset X', 1) = (list_to_subset X').card := by {
+        simp only [Finset.sum_const, nsmul_eq_mul, mul_one, Nat.cast_id]
+      }
+      rw [h_const]
+    }
+    cases x
+    · change ∑ i ∈ (list_to_subset X').image (· + 1), i = List.moment (B.O :: X')
+      rw [h_sum_add, ih, list_to_subset_card X']
+      have h_mom := List.moment_cons B.O X'
+      have h_num : List.num_Is (B.O :: X') = List.num_Is X' := rfl
+      rw [h_num] at h_mom
+      exact h_mom.symm
+    · change (∑ i ∈ insert 1 ((list_to_subset X').image (· + 1)), i) = List.moment (B.I :: X')
+      have h_not_mem : 1 ∉ (list_to_subset X').image (· + 1) := by {
+        simp only [mem_image, not_exists, not_and]
+        intro a ha h_eq
+        have ha_zero : a = 0 := by omega
+        rw [ha_zero] at ha
+        exact list_to_subset_not_zero X' ha
+      }
+      rw [Finset.sum_insert h_not_mem, h_sum_add, ih, list_to_subset_card X']
+      have h_mom := List.moment_cons B.I X'
+      have h_num : List.num_Is (B.I :: X') = List.num_Is X' + 1 := rfl
+      rw [h_num] at h_mom
+      omega
+}
+
 lemma mem_list_to_subset (X : List B) (i : Nat) :
   i ∈ list_to_subset X ↔ i ≠ 0 ∧ i ≤ X.length ∧ X.getD (i - 1) B.O = B.I := by {
   induction X generalizing i with
   | nil =>
-    simp only [list_to_subset, List.length_nil, nonpos_iff_eq_zero, false_and, and_false]
-    exact Iff.intro (fun h => (Finset.not_mem_empty i h).elim) (fun h => h.1.elim)
+    simp only [list_to_subset, List.length_nil, nonpos_iff_eq_zero]
+    apply Iff.intro
+    · intro h; cases h
+    · intro ⟨h1, h2, _⟩
+      omega
   | cons x X' ih =>
     cases x
     · apply Iff.intro
@@ -531,6 +519,7 @@ lemma mem_list_to_subset (X : List B) (i : Nat) :
         simp only [mem_image] at h
         rcases h with ⟨a, ha, rfl⟩
         rw [ih a] at ha
+        simp only [List.length_cons]
         refine ⟨by omega, by omega, ?_⟩
         have ha_sub : a + 1 - 1 = a := by omega
         rw [ha_sub]
@@ -540,17 +529,26 @@ lemma mem_list_to_subset (X : List B) (i : Nat) :
       · intro ⟨h1, h2, h3⟩
         rw [list_to_subset]
         simp only [mem_image]
-        use i - 1
-        have hi_sub : i - 1 + 1 = i := by omega
-        refine ⟨?_, hi_sub⟩
-        rw [ih (i - 1)]
-        refine ⟨by omega, by omega, ?_⟩
+        simp only [List.length_cons] at h2
         cases i
-        · omega
+        · contradiction
         case succ k =>
-          have hk_sub : k + 1 - 1 = k := by omega
-          rw [hk_sub] at h3
-          exact h3
+          cases k with
+          | zero =>
+            change B.O = B.I at h3
+            contradiction
+          | succ k' =>
+            use k' + 1
+            refine ⟨?_, by omega⟩
+            rw [ih (k' + 1)]
+            have hk_len : k' + 1 ≤ X'.length := by omega
+            have hk_neq : k' + 1 ≠ 0 := by omega
+            refine ⟨hk_neq, hk_len, ?_⟩
+            have hk_sub : k' + 1 - 1 = k' := by omega
+            rw [hk_sub]
+            change (B.O :: X').getD (k' + 2 - 1) B.O = B.I at h3
+            have h3_simp : X'.getD k' B.O = B.I := h3
+            exact h3_simp
     · apply Iff.intro
       · intro h
         rw [list_to_subset] at h
@@ -558,10 +556,12 @@ lemma mem_list_to_subset (X : List B) (i : Nat) :
         cases h with
         | inl heq =>
           rw [heq]
+          simp only [List.length_cons]
           refine ⟨by omega, by omega, rfl⟩
         | inr h_img =>
           rcases h_img with ⟨a, ha, rfl⟩
           rw [ih a] at ha
+          simp only [List.length_cons]
           refine ⟨by omega, by omega, ?_⟩
           cases a
           · omega
@@ -569,18 +569,26 @@ lemma mem_list_to_subset (X : List B) (i : Nat) :
       · intro ⟨h1, h2, h3⟩
         rw [list_to_subset]
         simp only [mem_insert, mem_image]
+        simp only [List.length_cons] at h2
         cases i
-        · omega
+        · contradiction
         case succ k =>
-          cases k
-          · left; rfl
-          · right
-            use k + 1
-            have hk_sub : k + 1 + 1 = k + 2 := by omega
-            refine ⟨?_, hk_sub⟩
-            rw [ih (k + 1)]
-            refine ⟨by omega, by omega, ?_⟩
-            exact h3
+          cases k with
+          | zero =>
+            left; rfl
+          | succ k' =>
+            right
+            use k' + 1
+            refine ⟨?_, by omega⟩
+            rw [ih (k' + 1)]
+            have hk_len : k' + 1 ≤ X'.length := by omega
+            have hk_neq : k' + 1 ≠ 0 := by omega
+            refine ⟨hk_neq, hk_len, ?_⟩
+            have hk_sub : k' + 1 - 1 = k' := by omega
+            rw [hk_sub]
+            change (B.I :: X').getD (k' + 2 - 1) B.O = B.I at h3
+            have h3_simp : X'.getD k' B.O = B.I := h3
+            exact h3_simp
 }
 
 lemma vector_to_subset_eq_list_subset (n : Nat) (X : List.Vector B n) :
@@ -596,8 +604,7 @@ lemma vector_to_subset_eq_list_subset (n : Nat) (X : List.Vector B n) :
   · rintro ⟨h1, h2, h3⟩
     have hX_len := X.property
     have hi_lt : i < n + 1 := by omega
-    use ⟨i, hi_lt⟩
-    refine ⟨⟨h1, h3⟩, rfl⟩
+    exact ⟨⟨i, hi_lt⟩, ⟨h1, h3⟩, rfl⟩
 }
 
 lemma vector_to_subset_card (n : Nat) (X : List.Vector B n) :
@@ -613,8 +620,18 @@ lemma vector_to_subset_card (n : Nat) (X : List.Vector B n) :
 }
 
 lemma vector_to_subset_sum (n : Nat) (X : List.Vector B n) :
-  (vector_to_subset n X).sum (fun i => i.val) = List.Vector.moment X := by {
-  sorry
+  (∑ x ∈ vector_to_subset n X, x.val) % (n + 1) = (moment X) % (n + 1) := by {
+  have h_inj : Set.InjOn (@Fin.val (n + 1)) ↑(vector_to_subset n X) := by {
+    intro a _ b _ hab
+    exact Fin.ext hab
+  }
+  have h_sum : ∑ i ∈ (vector_to_subset n X).image Fin.val, id i = ∑ x ∈ vector_to_subset n X, id (Fin.val x) :=
+    Finset.sum_image h_inj
+  simp only [id_eq] at h_sum
+  have h_sum_eq : ∑ x ∈ vector_to_subset n X, x.val = ∑ x ∈ (vector_to_subset n X).image Fin.val, x := h_sum.symm
+  rw [h_sum_eq, vector_to_subset_eq_list_subset n X]
+  rw [list_to_subset_sum X.val]
+  rfl
 }
 
 /-- The number of VT codewords of weight k exactly equals the number of subsets of {1..n}
@@ -690,7 +707,6 @@ lemma vt_wt_eq_T (n a k : Nat) :
     have hs_card : s.card = k := hs.1
     have hs_not_zero : (0 : Fin (n + 1)) ∉ s := hs.2.1
     have hs_sum : (∑ x ∈ s, x.val) % (n + 1) = a % (n + 1) := hs.2.2
-    
     have h_eq : vector_to_subset n (subset_to_vector n s) = s := by {
       ext i
       simp only [vector_to_subset, subset_to_vector, mem_filter, mem_univ, true_and]
@@ -742,7 +758,6 @@ lemma vt_wt_eq_T (n a k : Nat) :
         rw [h_fin_eq]
         rw [if_pos hi]
     }
-    
     refine ⟨?_, h_eq⟩
     simp only [mem_filter, Finset.mem_VTCode, _root_.mem_VTCode]
     refine ⟨?_, ?_⟩
@@ -787,7 +802,7 @@ We established that `|VTCode|` decomposes purely into subset sums `S n j a` (Con
 However, for `gcd(j, n+1) > 1`, the combinatorial counting of orbits is severely entangled.
 Therefore, we hybridize: we import the Complex Polynomial evaluation of the overall sizes
 from `Cuculiere.lean` which rigorously proves `cuculiere_mod_sum_gen_max`, yielding this result. -/
-theorem absolute_optimality (n a : Nat) :
+theorem absolute_optimality_VT0_over_VTa (n a : Nat) :
   (Finset.VTCode n a).card ≤ (Finset.VTCode n 0).card := by {
   exact VTCode_zero_is_max n a
 }

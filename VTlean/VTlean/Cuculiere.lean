@@ -18,7 +18,7 @@ lemma getD_zipWith_add_of_length_eq (l1 l2 : List Nat) (hl : l1.length = l2.leng
   induction k generalizing l1 l2 with
   | zero =>
     cases l1 with
-    | nil => 
+    | nil =>
       cases l2 with
       | nil => rfl
       | cons _ _ => contradiction
@@ -28,7 +28,7 @@ lemma getD_zipWith_add_of_length_eq (l1 l2 : List Nat) (hl : l1.length = l2.leng
       | cons h2 t2 => rfl
   | succ k ih =>
     cases l1 with
-    | nil => 
+    | nil =>
       cases l2 with
       | nil => rfl
       | cons _ _ => contradiction
@@ -49,12 +49,12 @@ lemma pascal_get_zero (n : Nat) : pascal_get n 0 = 1 := by
   | succ n ih =>
     unfold pascal_get pascal
     cases h : pascal n with
-    | nil => 
+    | nil =>
       have h1 : pascal_get n 0 = 0 := by rw [pascal_get, h]; rfl
       rw [h1] at ih
       contradiction
     | cons hd tl =>
-      have h_ih : hd = 1 := by 
+      have h_ih : hd = 1 := by
         have h_get : pascal_get n 0 = hd := by rw [pascal_get, h]; rfl
         rw [←ih]
         exact Eq.symm h_get
@@ -90,7 +90,7 @@ lemma pascal_get_successor (n k : Nat) :
 theorem pascal_eq_choose (n k : Nat) :
   pascal_get n k = Nat.choose n k := by {
   induction n generalizing k with
-  | zero => 
+  | zero =>
     cases k
     · rfl
     · rfl
@@ -131,7 +131,7 @@ lemma max_vt_checksum_succ (n : Nat) : max_vt_checksum (n + 1) = max_vt_checksum
   · omega
 }
 
-/-- A helper to safely access elements from the cuculiere list, 
+/-- A helper to safely access elements from the cuculiere list,
     returning 0 if out of bounds. -/
 def cuculiere_get (n c : Nat) : Nat :=
   (cuculiere n).getD c 0
@@ -177,7 +177,7 @@ lemma getD_append_replicate (n c : Nat) (prev : List Nat) :
 lemma getD_replicate_append (n c : Nat) (prev : List Nat) :
   (List.replicate n 0 ++ prev).getD c 0 = if c < n then 0 else prev.getD (c - n) 0 := by {
   induction n generalizing c with
-  | zero => 
+  | zero =>
     have h : c - 0 = c := Nat.sub_zero c
     rw [h]
     have h2 : ¬ (c < 0) := Nat.not_lt_zero c
@@ -228,7 +228,7 @@ lemma cuculiere_length (n : Nat) :
     omega
 }
 
-lemma cuculiere_get_out_of_bounds (n c : Nat) (h : max_vt_checksum n < c) : 
+lemma cuculiere_get_out_of_bounds (n c : Nat) (h : max_vt_checksum n < c) :
   cuculiere_get n c = 0 := by {
   unfold cuculiere_get
   have h_len : (cuculiere n).length = max_vt_checksum n + 1 := cuculiere_length n
@@ -242,7 +242,7 @@ lemma cuculiere_mod_sum_gen_successor (n m a : Nat) :
   unfold cuculiere_mod_sum_gen
   have h_succ : ∀ c, cuculiere_get (n + 1) c =
     cuculiere_get n c + if c < n + 1 then 0 else cuculiere_get n (c - (n + 1)) := cuculiere_get_successor n
-  
+
   -- Step 1: Substitute the recurrence into the sum over the (n+1) domain
   have h1 : (∑ c ∈ (Iic (max_vt_checksum (n + 1))).filter (fun c => c % m = (a + n + 1) % m), cuculiere_get (n + 1) c) =
     (∑ c ∈ (Iic (max_vt_checksum (n + 1))).filter (fun c => c % m = (a + n + 1) % m), (cuculiere_get n c + if c < n + 1 then 0 else cuculiere_get n (c - (n + 1)))) := by {
@@ -251,10 +251,8 @@ lemma cuculiere_mod_sum_gen_successor (n m a : Nat) :
       rw [h_succ c]
     }
   rw [h1]
-
   -- Step 2: Distribute the sum over addition
   rw [sum_add_distrib]
-
   -- Step 3: The first half of the sum reduces to the sum over the n domain,
   -- because cuculiere_get n c = 0 for c > max_vt_checksum n.
   have h2 : (∑ c ∈ (Iic (max_vt_checksum (n + 1))).filter (fun c => c % m = (a + n + 1) % m), cuculiere_get n c) =
@@ -283,7 +281,6 @@ lemma cuculiere_mod_sum_gen_successor (n m a : Nat) :
       exact cuculiere_get_out_of_bounds n x h_gt
   }
   rw [h2]
-
   -- Step 4: The second half of the sum evaluates to the shifted a residue class.
   -- The index shift `k = c - (n + 1)` exactly maps the condition `c % m = (a + n + 1) % m`
   -- to `k % m = a % m`.
@@ -305,7 +302,6 @@ lemma cuculiere_mod_sum_gen_successor (n m a : Nat) :
     }
     rw [h1]
     rw [← sum_filter]
-
     apply sum_bij (fun c _ => c - (n + 1))
     · -- 1. hi: c - (n + 1) ∈ t
       intro c hc
@@ -405,6 +401,7 @@ lemma cuculiere_get_max_eq_one (n : Nat) :
   rw [h_sub]
   exact cuculiere_get_zero_eq_one n
 }
+
 lemma cuculiere_mod_sum_gen_zero (m a : Nat) :
   cuculiere_mod_sum_gen 0 m a ≤ cuculiere_mod_sum_gen 0 m 0 := by {
   unfold cuculiere_mod_sum_gen max_vt_checksum
@@ -449,8 +446,6 @@ lemma cuculiere_mod_sum_gen_zero (m a : Nat) :
     dsimp
     exact Nat.zero_le _
 }
-
-
 
 lemma sum_powers_eq {m : Nat} (hm : 0 < m) {ω : ℂ} (hω : IsPrimitiveRoot ω m) (d : ℤ) :
   ∑ j ∈ Finset.range m, (ω ^ d) ^ j = if (m : ℤ) ∣ d then (m : ℂ) else 0 := by {
@@ -587,12 +582,12 @@ lemma poly_P_eval_real_nonneg (n : Nat) (j : Nat) (ω : ℂ) (hω : IsPrimitiveR
     }
     exact (eq_inv_of_mul_eq_one_left h_prod_one).symm
   }
-  
+
   let m := n / 2
   let s1 := filter (fun k => k < m) (range n)
   let s2 := filter (fun k => k > n - 1 - m) (range n)
   let s3 := filter (fun k => k >= m ∧ k <= n - 1 - m) (range n)
-  
+
   have h_union : range n = s1 ∪ s2 ∪ s3 := by {
     ext k
     simp only [mem_range, mem_union, mem_filter, s1, s2, s3]
@@ -619,7 +614,7 @@ lemma poly_P_eval_real_nonneg (n : Nat) (j : Nat) (ω : ℂ) (hω : IsPrimitiveR
     rw [prod_union h_disj2]
     rw [prod_union h_disj1]
   }
-  
+
   have h_s2_prod : (∏ k ∈ s2, (1 + y ^ (k + 1))) = star (∏ k ∈ s1, (1 + y ^ (k + 1))) := by {
     have h_ring : star (∏ k ∈ s1, (1 + y ^ (k + 1))) = starRingEnd ℂ (∏ k ∈ s1, (1 + y ^ (k + 1))) := rfl
     rw [h_ring]
@@ -656,13 +651,13 @@ lemma poly_P_eval_real_nonneg (n : Nat) (j : Nat) (ω : ℂ) (hω : IsPrimitiveR
       congr 2
       omega
   }
-  
+
   have h_prod_main : (∏ k ∈ s1, (1 + y ^ (k + 1))) * (∏ k ∈ s2, (1 + y ^ (k + 1))) =
     (Complex.normSq (∏ k ∈ s1, (1 + y ^ (k + 1))) : ℂ) := by {
     rw [h_s2_prod]
     exact Complex.mul_conj (∏ k ∈ s1, (1 + y ^ (k + 1)))
   }
-  
+
   have h_s3_val : (∏ k ∈ s3, (1 + y ^ (k + 1))) = if n % 2 = 1 then (1 + y ^ ((n - 1) / 2 + 1)) else 1 := by {
     by_cases hn : n % 2 = 1
     · rw [if_pos hn]
@@ -691,7 +686,7 @@ lemma poly_P_eval_real_nonneg (n : Nat) (j : Nat) (ω : ℂ) (hω : IsPrimitiveR
       rw [h_s3_empty]
       rw [prod_empty]
   }
-  
+
   have h_s3_nonneg : 0 ≤ (∏ k ∈ s3, (1 + y ^ (k + 1))).re ∧ (∏ k ∈ s3, (1 + y ^ (k + 1))).im = 0 := by {
     rw [h_s3_val]
     split_ifs with hn
@@ -715,16 +710,16 @@ lemma poly_P_eval_real_nonneg (n : Nat) (j : Nat) (ω : ℂ) (hω : IsPrimitiveR
         simp
     · simp
   }
-  
+
   have h_final : (∏ k ∈ range n, (1 + y ^ (k + 1))) =
     (Complex.normSq (∏ k ∈ s1, (1 + y ^ (k + 1))) : ℂ) * (∏ k ∈ s3, (1 + y ^ (k + 1))) := by {
     rw [h_prod_split, h_prod_main]
   }
-  
+
   have h_normSq_re : (Complex.normSq (∏ k ∈ s1, (1 + y ^ (k + 1))) : ℂ).re =
     Complex.normSq (∏ k ∈ s1, (1 + y ^ (k + 1))) := Complex.ofReal_re _
   have h_normSq_im : (Complex.normSq (∏ k ∈ s1, (1 + y ^ (k + 1))) : ℂ).im = 0 := Complex.ofReal_im _
-  
+
   constructor
   · rw [h_final]
     rw [Complex.mul_re]
@@ -873,20 +868,20 @@ lemma cuculiere_mod_sum_gen_max (n : Nat) (a : Nat) :
   rcases exists_primitive_root n with ⟨ω, hω⟩
   have h_cast_a : (cuculiere_mod_sum_gen n (n + 1) a : ℂ) = (cuculiere_mod_sum_gen n (n + 1) a : Nat) := by simp
   have h_cast_0 : (cuculiere_mod_sum_gen n (n + 1) 0 : ℂ) = (cuculiere_mod_sum_gen n (n + 1) 0 : Nat) := by simp
-  
+
   have h_filter_a := roots_unity_filter n a ω hω
   have h_filter_0 := roots_unity_filter n 0 ω hω
-  
-  have h_re_a : ((cuculiere_mod_sum_gen n (n + 1) a : ℂ)).re = 
+
+  have h_re_a : ((cuculiere_mod_sum_gen n (n + 1) a : ℂ)).re =
     ((1 / (n + 1 : ℂ)) * (Finset.range (n + 1)).sum (fun j => ω ^ (-(a : ℤ) * (j : ℤ)) * Polynomial.eval (ω ^ j) (poly_P n))).re := by {
     rw [← h_filter_a]
   }
-  have h_re_0 : ((cuculiere_mod_sum_gen n (n + 1) 0 : ℂ)).re = 
+  have h_re_0 : ((cuculiere_mod_sum_gen n (n + 1) 0 : ℂ)).re =
     ((1 / (n + 1 : ℂ)) * (Finset.range (n + 1)).sum (fun j => ω ^ (-((0 : ℕ) : ℤ) * (j : ℤ)) * Polynomial.eval (ω ^ j) (poly_P n))).re := by {
     rw [← h_filter_0]
   }
-  
-  have h_sum_le : 
+
+  have h_sum_le :
     ((Finset.range (n + 1)).sum (fun j => ω ^ (-(a : ℤ) * (j : ℤ)) * Polynomial.eval (ω ^ j) (poly_P n))).re ≤
     ((Finset.range (n + 1)).sum (fun j => ω ^ (-((0 : ℕ) : ℤ) * (j : ℤ)) * Polynomial.eval (ω ^ j) (poly_P n))).re := by {
     have h_re_dist (s : Finset ℕ) (f : ℕ → ℂ) : (∑ x ∈ s, f x).re = ∑ x ∈ s, (f x).re := by {
@@ -898,7 +893,7 @@ lemma cuculiere_mod_sum_gen_max (n : Nat) (a : Nat) :
     have h_nonneg := poly_P_eval_real_nonneg n j ω hω
     have h_abs := ω_pow_abs_le n ω hω a j
     have h_le := complex_re_im_le (ω ^ (-(a : ℤ) * (j : ℤ))) h_abs (Polynomial.eval (ω ^ j) (poly_P n)) h_nonneg.1 h_nonneg.2
-    
+
     have h_zero : ω ^ (-((0 : ℕ) : ℤ) * (j : ℤ)) = 1 := by {
       have h_zero_exp : -((0 : ℕ) : ℤ) * (j : ℤ) = 0 := by ring
       rw [h_zero_exp, zpow_zero]
@@ -906,7 +901,7 @@ lemma cuculiere_mod_sum_gen_max (n : Nat) (a : Nat) :
     rw [h_zero, one_mul]
     exact h_le
   }
-  
+
   have h_div_le :
     ((1 / (n + 1 : ℂ)) * (Finset.range (n + 1)).sum (fun j => ω ^ (-(a : ℤ) * (j : ℤ)) * Polynomial.eval (ω ^ j) (poly_P n))).re ≤
     ((1 / (n + 1 : ℂ)) * (Finset.range (n + 1)).sum (fun j => ω ^ (-((0 : ℕ) : ℤ) * (j : ℤ)) * Polynomial.eval (ω ^ j) (poly_P n))).re := by {
@@ -922,14 +917,14 @@ lemma cuculiere_mod_sum_gen_max (n : Nat) (a : Nat) :
     }
     exact mul_le_mul_of_nonneg_left h_sum_le h_div_pos
   }
-  
+
   rw [← h_re_a, ← h_re_0] at h_div_le
   exact Nat.cast_le.mp h_div_le
 }
 
 lemma vector_card_split (n : Nat) (P : List.Vector B (n + 1) → Prop) [DecidablePred P] :
-  Finset.card (Finset.filter P univ) = 
-  Finset.card (Finset.filter (fun v => P (List.Vector.push v B.O)) univ) + 
+  Finset.card (Finset.filter P univ) =
+  Finset.card (Finset.filter (fun v => P (List.Vector.push v B.O)) univ) +
   Finset.card (Finset.filter (fun v => P (List.Vector.push v B.I)) univ) := by {
   let f0 (v : List.Vector B n) : List.Vector B (n + 1) := List.Vector.push v B.O
   let f1 (v : List.Vector B n) : List.Vector B (n + 1) := List.Vector.push v B.I
@@ -986,28 +981,28 @@ lemma vector_card_split (n : Nat) (P : List.Vector B (n + 1) → Prop) [Decidabl
         have h_l_copy := h_l
         rw [h_b] at h_l_copy
         exact h_l_copy.symm)
-  
+
   have h_filter : Finset.filter P univ = (Finset.filter P (univ.image f0)) ∪
     (Finset.filter P (univ.image f1)) := by
     rw [h_cov]
     exact Finset.filter_union _ _ _
-    
+
   have h_filter_disj : Disjoint (Finset.filter P (univ.image f0))
     (Finset.filter P (univ.image f1)) := by
     exact Finset.disjoint_filter_filter h_disj
-    
+
   rw [h_filter, Finset.card_union_of_disjoint h_filter_disj]
-  
+
   have h_eq0 : Finset.card (Finset.filter P (univ.image f0)) =
     Finset.card (Finset.filter (fun v => P (f0 v)) univ) := by
     rw [Finset.filter_image]
     exact Finset.card_image_of_injective _ h_inj0
-    
+
   have h_eq1 : Finset.card (Finset.filter P (univ.image f1)) =
     Finset.card (Finset.filter (fun v => P (f1 v)) univ) := by
     rw [Finset.filter_image]
     exact Finset.card_image_of_injective _ h_inj1
-    
+
   rw [h_eq0, h_eq1]
 }
 
@@ -1042,7 +1037,7 @@ lemma moment_eq_cuculiere (n c : Nat) :
     rw [vector_card_split n (fun x => List.Vector.moment x = c)]
     have h1 : Finset.card (Finset.filter
                 (fun (v : List.Vector B n) => List.Vector.moment (List.Vector.push v B.O) =
-                  c) univ) = 
+                  c) univ) =
               Finset.card (Finset.filter
                 (fun (v : List.Vector B n) => List.Vector.moment v = c) univ) := by {
       congr 1
@@ -1050,7 +1045,7 @@ lemma moment_eq_cuculiere (n c : Nat) :
       simp only [Finset.mem_filter, Finset.mem_univ, true_and]
       rw [List.Vector.moment_push_O]
     }
-    
+
     have h2 : Finset.card (Finset.filter
                 (fun (v : List.Vector B n) => List.Vector.moment (List.Vector.push v B.I) =
                   c) univ) =
@@ -1068,7 +1063,7 @@ lemma moment_eq_cuculiere (n c : Nat) :
         rfl
       · have h_eq : Finset.card (Finset.filter
                       (fun (v : List.Vector B n) => List.Vector.moment (List.Vector.push v B.I) =
-                        c) univ) = 
+                        c) univ) =
                     Finset.card (Finset.filter
                       (fun (v : List.Vector B n) => List.Vector.moment v = c - (n + 1)) univ) :=
                         by {
@@ -1135,7 +1130,7 @@ theorem card_VTCode_eq_cuculiere (n a : Nat) :
     have h_partition : Finset.filter
                          (fun (v : List.Vector B n) => List.Vector.moment v % (n + 1) =
                            a % (n + 1))
-                         (univ : Finset (List.Vector B n)) = 
+                         (univ : Finset (List.Vector B n)) =
       Finset.biUnion (Finset.filter (fun c => c % (n + 1) = a % (n + 1))
         (Finset.Iic (max_vt_checksum n)))
         (fun c => Finset.filter (fun (v : List.Vector B n) => List.Vector.moment v = c)
@@ -1158,7 +1153,7 @@ theorem card_VTCode_eq_cuculiere (n a : Nat) :
     intro v _ h1 h2
     rw [h1] at h2
     exact h_neq h2
-  
+
   have h_eq2 : (fun c => Finset.card (Finset.filter
                  (fun (v : List.Vector B n) => List.Vector.moment v = c) univ)) =
                (fun c => cuculiere_get n c) := by
@@ -1189,7 +1184,7 @@ lemma cuculiere_sum (n : Nat) : (cuculiere n).sum = 2^n := by {
 }
 
 -- lemma cuculiere_weighted_sum (n : Nat) :
---   Finset.sum (Finset.range (max_vt_checksum n + 1)) (fun k => k * cuculiere_get n k) = 
+--   Finset.sum (Finset.range (max_vt_checksum n + 1)) (fun k => k * cuculiere_get n k) =
 --   if n < 2 then (if n = 0 then 0 else 1) else n * (n + 1) * 2^(n - 2) := by {
 --   sorry
 -- }
@@ -1203,16 +1198,16 @@ lemma cuculiere_sum (n : Nat) : (cuculiere n).sum = 2^n := by {
 
 /-- Theorem: VT(0) has the maximum cardinality among all VT codes of length n.
     This corresponds to the sum of the 0-th residue class mod n+1 being strictly
-    maximal in Cuculiere's triangle. 
+    maximal in Cuculiere's triangle.
 
-    FUTURE WORK: The `cuculiere_mod_sum_gen_max` roadblock must be proven. 
+    FUTURE WORK: The `cuculiere_mod_sum_gen_max` roadblock must be proven.
     There are two primary pathways to formally prove it:
 
     1. The Complex Analysis Route (Elegant but requires Complex Polynomials):
-       Evaluating the generating function P_n(x) = \prod_{k=1}^n (1+x^k) at the 
+       Evaluating the generating function P_n(x) = \prod_{k=1}^n (1+x^k) at the
        (n+1)-th roots of unity \omega^j. The sum over residue class a is:
        S_a = \frac{1}{n+1} \sum_{j=0}^n \omega^{-aj} P_n(\omega^j)
-       Since \omega^j are roots of z^{n+1}-1 = 0, P_n(\omega^j) remarkably evaluates 
+       Since \omega^j are roots of z^{n+1}-1 = 0, P_n(\omega^j) remarkably evaluates
        to 1 if n is even, and 0 if n is odd (for j \neq 0).
        This instantly evaluates the sizes:
        - If n is odd, S_a = 2^n / (n+1) for ALL a. (Perfectly equal!)
@@ -1220,17 +1215,17 @@ lemma cuculiere_sum (n : Nat) : (cuculiere n).sum = 2^n := by {
        This immediately proves S_0 is maximal, without bounding or bijections.
 
     2. The Combinatorial Route (The "Necklace" Weeds):
-       Proving S_0 \ge S_a combinatorially requires understanding how shifting 
+       Proving S_0 \ge S_a combinatorially requires understanding how shifting
        bits changes the checksum. If you cyclically shift a binary string of weight k
        by 1 position, its moment (checksum) changes by exactly +k \pmod{n+1}.
        Therefore, the cyclic group Z_{n+1} acts on the strings.
-       - If \gcd(k, n+1) = 1, the cyclic shifts perfectly distribute the strings 
+       - If \gcd(k, n+1) = 1, the cyclic shifts perfectly distribute the strings
          of weight k across ALL n+1 residue classes equally.
-       - The roadblock arises when \gcd(k, n+1) > 1 (which always happens for 
-         some k if n+1 is not prime). We must use Burnside's Lemma to track the 
-         sizes of the fixed-point stabilizers of these orbits, and meticulously 
-         count the excess to show that the 0-th class always absorbs the positive 
-         excess when n is even. 
+       - The roadblock arises when \gcd(k, n+1) > 1 (which always happens for
+         some k if n+1 is not prime). We must use Burnside's Lemma to track the
+         sizes of the fixed-point stabilizers of these orbits, and meticulously
+         count the excess to show that the 0-th class always absorbs the positive
+         excess when n is even.
        This requires formalizing cyclic group actions on Lists, orbit stabilizers,
        and gcd constraints, making the combinatorial route deeply entangled. -/
 theorem VTCode_zero_is_max (n a : Nat) :
@@ -1242,6 +1237,5 @@ theorem VTCode_zero_is_max (n a : Nat) :
   exact cuculiere_mod_sum_gen_max n a
 }
 
-/- Note: An alternative, purely combinatorial proof of VTCode_zero_is_max 
+/- Note: An alternative, purely combinatorial proof of VTCode_zero_is_max
    is formalized in Burnside.lean using cyclic shift orbits and Burnside's Lemma. -/
-
