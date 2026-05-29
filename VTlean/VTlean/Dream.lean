@@ -5,7 +5,9 @@ import VTlean.InsDel
 import VTlean.DelCode
 import VTlean.VTCode
 import VTlean.FractalSlice
-import VTlean.MixedChecksum
+-- import VTlean.MixedChecksum
+import VTlean.Networkx
+
 
 open B List.Vector Finset
 
@@ -26,9 +28,9 @@ The ultimate dream is to prove that VT_0 forms the maximum possible matching.
 
 variable {n : Nat}
 
-/-- A single-deletion correcting code is a set of words whose deletion spheres are disjoint. -/
-def is_OptimalCodeCandidate (C : Finset (List.Vector B n)) : Prop :=
-  ∀ x ∈ C, ∀ y ∈ C, x ≠ y → Disjoint (dS x) (dS y)
+
+
+
 
 lemma mod_helper {A m : Nat} (hm : 0 < m) : (A + m - A % m) % m = 0 := by {
   have h_div : A = m * (A / m) + A % m := (Nat.div_add_mod A m).symm
@@ -53,7 +55,7 @@ lemma sub_mod_add_moment_helper {A a m : Nat} (hm : 0 < m) :
 }
 
 lemma sub_mod_add_moment_eq_a_mod (m a : Nat) (hm : 0 < m) (X : List B) :
-  (List.moment X + List.sub_mod m a X) % m = a % m := by {
+  (List.moment X + List.sub_mod m a X) % m = a % m := by
   unfold List.sub_mod
   cases Decidable.em (List.moment X < a) with
   | inl hlt =>
@@ -62,12 +64,11 @@ lemma sub_mod_add_moment_eq_a_mod (m a : Nat) (hm : 0 < m) (X : List B) :
     rw [Nat.add_sub_of_le (Nat.le_of_lt hlt)]
   | inr hnlt =>
     rw [if_neg hnlt]
-    have h_sub : List.moment X = List.moment X - a + a := by {
+    have h_sub : List.moment X = List.moment X - a + a := by
       exact (Nat.sub_add_cancel (Nat.ge_of_not_lt hnlt)).symm
     nth_rewrite 1 [h_sub]
     rw [Nat.add_assoc]
-    exact sub_mod_add_moment_helper hm}
-  }
+    exact sub_mod_add_moment_helper hm
 
 lemma sub_mod_lt (m a : Nat) (X : List B) (hm : 0 < m) : List.sub_mod m a X < m := by {
   unfold List.sub_mod
@@ -153,6 +154,7 @@ lemma decoding_alg_is_insertion (n a : Nat) (y : List.Vector B (n - 1)) (hn : 0 
         exact (List.sDel_sIns_id _ _ _).symm
 }
 
+
 lemma moment_decoding_alg (n a : Nat) (y : List.Vector B (n - 1)) (hn : 0 < n) :
   moment (decoding_alg n a y) % (n + 1) = a % (n + 1) := by {
   unfold decoding_alg moment
@@ -178,12 +180,12 @@ lemma moment_decoding_alg (n a : Nat) (y : List.Vector B (n - 1)) (hn : 0 < n) :
         have h_num_Os : List.num_Os y.val = n - 1 - List.num_Is y.val := by {
           have h1 : List.num_Os y.val + List.num_Is y.val = List.length y.val := List.num_Os_add_num_Is y.val
           have h2 : List.length y.val = n - 1 := y.property
-          omega
-        omega
+          omega }
+        omega }
       rw [List.num_LOs_min_num_LOs y.val _ h_bound]
       have h_eq : List.moment y.val + (List.sub_mod (n + 1) a y.val - List.num_Is y.val - 1) + List.num_Is y.val + 1 = List.moment y.val + List.sub_mod (n + 1) a y.val := by {
         have h_gt : List.num_Is y.val < List.sub_mod (n + 1) a y.val := Nat.lt_of_not_ge hnle
-        omega
+        omega }
       rw [h_eq]
       apply sub_mod_add_moment_eq_a_mod (n + 1) a (by omega)
 }
@@ -255,3 +257,20 @@ theorem absolute_optimality_dream (C : Finset (List.Vector B n)) (hC : is_Optima
   C.card ≤ (Finset.VTCode n 0).card := by {
   sorry
 }
+
+/-- A single-deletion correcting code is perfect if its deletion spheres perfectly 
+partition the entire space of deletion strings (univ). -/
+def is_PerfectCodeCandidate (C : Finset (List.Vector B n)) : Prop :=
+  is_OptimalCodeCandidate C ∧ C.biUnion dS = Finset.univ
+
+/-- Conjecture 5: VT Absolute Optimality among PERFECT Codes.
+For any perfect single-deletion correcting code C, the size of C is bounded by 
+the cardinality of the VT_0 code. This represents a highly tractable intermediate 
+bridge toward absolute optimality since perfect codes partition the space exactly. -/
+theorem perfect_code_optimality (C : Finset (List.Vector B n)) (hC : is_PerfectCodeCandidate C) :
+  C.card ≤ (Finset.VTCode n 0).card := by {
+  sorry
+}
+
+
+

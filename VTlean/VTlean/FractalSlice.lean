@@ -142,8 +142,212 @@ theorem sloane_insertion_is_del {n : Nat} (y : List.Vector B (n - 1)) (k : Nat) 
   rw [List.sDel_zero]
   exact List.take_append_drop k y.val
 
+/-- Predicate expressing that index `k` is a transition point of `y` (bits differ at k‑1 and k). -/
+def isTransitionIndex {n : Nat} (y : List.Vector B (n - 1)) (k : Nat) : Prop :=
+  k < n ∧ y.val.getD (k - 1) B.O ≠ y.val.getD k B.O
+/-- The moment change incurred by performing Sloane insertion at index `k`. -/
+def sloaneInsertionChange {n : Nat} (y : List.Vector B (n - 1)) (k : Nat) : Nat :=
+  match B.flip (y.val.getD (k - 1) B.O) with
+  | B.O => num_RIs y k
+  | B.I => num_LOs y k + wt y + 1
+
+lemma sloaneInsertionChange_le_n {n : Nat} (hn : 0 < n) (y : List.Vector B (n - 1)) (k : Nat) :
+    sloaneInsertionChange y k ≤ n := by {
+  unfold sloaneInsertionChange
+  change (match B.flip (y.toList.getD (k - 1) B.O) with
+    | B.O => List.num_RIs y.toList k
+    | B.I => List.num_LOs y.toList k + List.num_Is y.toList + 1) ≤ n
+  split
+  · have h_le := List.num_RIs_le_num_Is y.toList k
+    have h_wt := List.num_Is_le_length y.toList
+    have h_ylen : y.toList.length = n - 1 := y.2
+    omega
+  · have h_lo := List.num_LOs_le_num_Os y.toList k
+    have h_os := List.num_Os_add_num_Is y.toList
+    have h_ylen : y.toList.length = n - 1 := y.2
+    have h_sum : List.num_LOs y.toList k + List.num_Is y.toList ≤ List.num_Os y.toList + List.num_Is y.toList := by omega
+    rw [h_os] at h_sum
+    rw [h_ylen] at h_sum
+    have h_final : List.num_LOs y.toList k + List.num_Is y.toList + 1 ≤ n := by omega
+    exact h_final
+}
+
+
+lemma List_getD_eq_getD_of_lt {α : Type} (l : List α) (i : Nat) (d₁ d₂ : α) (h : i < l.length) :
+    l.getD i d₁ = l.getD i d₂ := by {
+  revert i
+  induction l with
+  | nil => intro i h; contradiction
+  | cons x xs ih =>
+    intro i h
+    cases i with
+    | zero => rfl
+    | succ i' =>
+      change xs.getD i' d₁ = xs.getD i' d₂
+      have h_len : i' < xs.length := by {
+        dsimp [List.length] at h
+        omega
+      }
+      exact ih i' h_len
+}
+
+lemma num_LOs_add_one (X : List B) (i : Nat) :
+    List.num_LOs X (i + 1) = List.num_LOs X i + match X.getD i B.I with | B.O => 1 | B.I => 0 := by {
+  revert i
+  induction X with
+  | nil =>
+    intro i; rfl
+  | cons x X' ih =>
+    intro i
+    cases i with
+    | zero =>
+      cases x with
+      | O =>
+        dsimp [List.num_LOs, List.getD]
+        rw [List.num_LOs_zero X' 0]
+        rfl
+      | I =>
+        dsimp [List.num_LOs, List.getD]
+        rw [List.num_LOs_zero X' 0]
+        rfl
+    | succ i' =>
+      cases x with
+      | O =>
+        dsimp [List.num_LOs, List.getD]
+        rw [ih i']
+        have h_eq : X'.getD i' B.I = X'[i']?.getD B.I := rfl
+        rw [h_eq]
+        omega
+      | I =>
+        dsimp [List.num_LOs, List.getD]
+        rw [ih i']
+        have h_eq : X'.getD i' B.I = X'[i']?.getD B.I := rfl
+        rw [h_eq]
+}
+
+lemma num_LOs_monotone (X : List B) (k₁ k₂ : Nat) (h : k₁ ≤ k₂) :
+    List.num_LOs X k₁ ≤ List.num_LOs X k₂ := by {
+  induction h with
+  | refl => exact Nat.le_refl _
+  | step h_le ih =>
+    rename_i m
+    rw [num_LOs_add_one X m]
+    omega
+}
+
+lemma num_LOs_strict_monotone {n : Nat} (y : List.Vector B (n - 1))
+    (k₁ k₂ : Nat) (hk₂ : k₂ < n) (hkt : k₁ < k₂) (h_bit : y.toList.getD (k₂ - 1) B.O = B.O) :
+    List.num_LOs y.toList k₁ < List.num_LOs y.toList k₂ := by {
+  have h_le : k₁ ≤ k₂ - 1 := by omega
+  have h_mon := num_LOs_monotone y.toList k₁ (k₂ - 1) h_le
+  have h_eq_succ : k₂ = (k₂ - 1) + 1 := by omega
+  rw [h_eq_succ]
+  rw [num_LOs_add_one]
+  have h_getD : y.toList.getD (k₂ - 1) B.I = B.O := by {
+    have h_in_bounds : k₂ - 1 < y.toList.length := by {
+      have h_len : y.toList.length = n - 1 := y.2
+      omega
+    }
+    rw [List_getD_eq_getD_of_lt _ _ _ _ h_in_bounds]
+    exact h_bit
+  }
+  rw [h_getD]
+  dsimp
+  omega
+}
+
+lemma num_RIs_add_one (X : List B) (i : Nat) :
+    List.num_RIs X i = List.num_RIs X (i + 1) + match X.getD i B.O with | B.I => 1 | B.O => 0 := by {
+  revert i
+  induction X with
+  | nil =>
+    intro i; rfl
+  | cons x X' ih =>
+    intro i
+    cases i with
+    | zero =>
+      cases x with
+      | O =>
+        dsimp [List.num_RIs, List.getD]
+        rw [List.num_RIs_zero]
+        rfl
+      | I =>
+        dsimp [List.num_RIs, List.getD]
+        rw [List.num_RIs_zero]
+        rfl
+    | succ i' =>
+      dsimp [List.num_RIs, List.getD]
+      rw [ih i']
+      rfl
+}
+
+lemma num_RIs_monotone (X : List B) (k₁ k₂ : Nat) (h : k₁ ≤ k₂) :
+    List.num_RIs X k₂ ≤ List.num_RIs X k₁ := by {
+  induction h with
+  | refl => exact Nat.le_refl _
+  | step h_le ih =>
+    rename_i m
+    have h_next : List.num_RIs X (m + 1) ≤ List.num_RIs X m := by {
+      rw [num_RIs_add_one X m]
+      omega
+    }
+    have h_eq : m.succ = m + 1 := rfl
+    rw [h_eq]
+    omega
+}
+
+lemma num_RIs_strict_monotone {n : Nat} (y : List.Vector B (n - 1))
+    (k₁ k₂ : Nat) (_hk₂ : k₂ < n) (hkt : k₁ < k₂) (h_bit : y.toList.getD (k₂ - 1) B.O = B.I) :
+    List.num_RIs y.toList k₂ < List.num_RIs y.toList k₁ := by {
+  have h_le : k₁ ≤ k₂ - 1 := by omega
+  have h_mon := num_RIs_monotone y.toList k₁ (k₂ - 1) h_le
+  have h_rec := num_RIs_add_one y.toList (k₂ - 1)
+  have h_eq_succ : k₂ = (k₂ - 1) + 1 := by omega
+  rw [← h_eq_succ] at h_rec
+  rw [h_rec] at h_mon
+  rw [h_bit] at h_mon
+  dsimp at h_mon
+  omega
+}
+
+lemma sloaneInsertionChange_inj {n : Nat} (y : List.Vector B (n - 1))
+    (k₁ k₂ : Nat) (hk₁ : k₁ < n) (hk₂ : k₂ < n) (hkt : k₁ < k₂) :
+    sloaneInsertionChange y k₁ ≠ sloaneInsertionChange y k₂ := by {
+  unfold sloaneInsertionChange
+  change (match B.flip (y.toList.getD (k₁ - 1) B.O) with
+    | B.O => List.num_RIs y.toList k₁
+    | B.I => List.num_LOs y.toList k₁ + List.num_Is y.toList + 1) ≠
+         (match B.flip (y.toList.getD (k₂ - 1) B.O) with
+    | B.O => List.num_RIs y.toList k₂
+    | B.I => List.num_LOs y.toList k₂ + List.num_Is y.toList + 1)
+  generalize h₁ : B.flip (y.toList.getD (k₁ - 1) B.O) = b₁
+  generalize h₂ : B.flip (y.toList.getD (k₂ - 1) B.O) = b₂
+  cases b₁ <;> cases b₂
+  · -- Case: b₁ = B.O, b₂ = B.O
+    have h_bit : y.toList.getD (k₂ - 1) B.O = B.I := by { apply B.eq_of_flip_eq; rw [h₂]; rfl }
+    have h_lt := num_RIs_strict_monotone y k₁ k₂ hk₂ hkt h_bit
+    exact (ne_of_lt h_lt).symm
+  · -- Case: b₁ = B.O, b₂ = B.I
+    intro h_eq
+    have h_le := List.num_RIs_le_num_Is y.toList k₁
+    have h_lt : List.num_RIs y.toList k₁ < List.num_LOs y.toList k₂ + List.num_Is y.toList + 1 := by linarith
+    exact (ne_of_lt h_lt) h_eq
+  · -- Case: b₁ = B.I, b₂ = B.O
+    intro h_eq
+    have h_le := List.num_RIs_le_num_Is y.toList k₂
+    have h_lt : List.num_RIs y.toList k₂ < List.num_LOs y.toList k₁ + List.num_Is y.toList + 1 := by linarith
+    exact (ne_of_lt h_lt) h_eq.symm
+  · -- Case: b₁ = B.I, b₂ = B.I
+    have h_bit : y.toList.getD (k₂ - 1) B.O = B.O := by { apply B.eq_of_flip_eq; rw [h₂]; rfl }
+    have h_lt := num_LOs_strict_monotone y k₁ k₂ hk₂ hkt h_bit
+    intro h_eq
+    have h_lt_eq : List.num_LOs y.toList k₁ + List.num_Is y.toList + 1 < List.num_LOs y.toList k₂ + List.num_Is y.toList + 1 := by linarith
+    exact (ne_of_lt h_lt_eq) h_eq
+}
+
+
 lemma List_getD_take {α : Type} (l : List α) (n m : Nat) (d : α) (h : m < n) :
-  (l.take n).getD m d = l.getD m d := by
+    (l.take n).getD m d = l.getD m d := by {
   revert m
   induction n generalizing l with
   | zero => intro m h; contradiction
@@ -158,6 +362,7 @@ lemma List_getD_take {α : Type} (l : List α) (n m : Nat) (d : α) (h : m < n) 
         change (xs.take n').getD m' d = xs.getD m' d
         apply ih
         omega
+}
 
 lemma getD_sloaneInsertion {n k : Nat} (hk : k < n) (hk_pos : 0 < k) (y : List.Vector B (n - 1)) :
   (sloaneInsertion y k hk).val.getD (k - 1) B.O = y.val.getD (k - 1) B.O ∧
@@ -274,7 +479,7 @@ lemma sloaneInsertion_sDel_eq_self {n : Nat} (x : List.Vector B n) (k : Nat) (hk
   apply Subtype.ext
   have h1 : (sloaneInsertion (sDel x k) k hk).val = (sDel x k).val.take k ++ [B.flip ((sDel x k).val.getD (k - 1) B.O)] ++ (sDel x k).val.drop k := rfl
   rw [h1]
-  
+
   have h_sdel_getD : (sDel x k).val.getD (k - 1) B.O = x.val.getD (k - 1) B.O := by
     change (List.sDel x.val k).getD (k - 1) B.O = x.val.getD (k - 1) B.O
     have h_lt : k < x.val.length := by
@@ -355,7 +560,7 @@ lemma moment_sIns {n : Nat} (X : List.Vector B n) (i : Nat) (b : B) :
 lemma moment_sloaneInsertion {n : Nat} (y : List.Vector B (n - 1)) (k : Nat) (hk : k < n) :
   moment (sloaneInsertion y k hk) = moment y + match B.flip (y.val.getD (k - 1) B.O) with
     | B.O => num_RIs y k
-    | B.I => num_LOs y k + wt y + 1 := by
+    | B.I => num_LOs y k + wt y + 1 := by {
   have h_val : (sloaneInsertion y k hk).val = (sIns y k (B.flip (y.val.getD (k - 1) B.O))).val := by
     have h_len : k ≤ y.val.length := by {
       have h_ylen : y.val.length = n - 1 := y.2
@@ -367,3 +572,81 @@ lemma moment_sloaneInsertion {n : Nat} (y : List.Vector B (n - 1)) (k : Nat) (hk
   have h_moment_sIns := moment_sIns y k (B.flip (y.val.getD (k - 1) B.O))
   change List.moment (sIns y k (B.flip (y.val.getD (k - 1) B.O))).val = _ at h_moment_sIns
   exact h_moment_sIns
+}
+
+
+lemma moment_sloaneInsertion_eq_change {n : Nat} (y : List.Vector B (n - 1)) (k : Nat) (hk : k < n) :
+    moment (sloaneInsertion y k hk) = moment y + sloaneInsertionChange y k := by {
+  unfold sloaneInsertionChange
+  exact moment_sloaneInsertion y k hk
+}
+
+lemma mod_add_ne_mod {A D m : Nat} (hD_pos : 0 < D) (hD_lt : D < m) :
+    A % m ≠ (A + D) % m := by {
+  intro h_eq
+  have h_modeq : Nat.ModEq m A (A + D) := h_eq
+  have h_modeq2 : Nat.ModEq m (0 + A) (D + A) := by {
+    rw [Nat.zero_add, Nat.add_comm D A]
+    exact h_modeq
+  }
+  have h_d : Nat.ModEq m 0 D := Nat.ModEq.add_right_cancel' A h_modeq2
+  have h_d2 : 0 % m = D % m := h_d
+  have hm_pos : 0 < m := by omega
+  rw [Nat.zero_mod m, Nat.mod_eq_of_lt hD_lt] at h_d2
+  omega
+}
+
+/-- Injectivity of the moment modulo n + 1 under `sloaneInsertion`. For any `y` and distinct
+indices `k₁ ≠ k₂`, their moments are distinct modulo `n + 1`. -/
+lemma moment_sloaneInsertion_inj {n : Nat} (y : List.Vector B (n - 1))
+    (k₁ k₂ : Nat) (hk₁ : k₁ < n) (hk₂ : k₂ < n) (h_ne : k₁ ≠ k₂) :
+    moment (sloaneInsertion y k₁ hk₁) % (n + 1) ≠ moment (sloaneInsertion y k₂ hk₂) % (n + 1) := by {
+  have hn_pos : 0 < n := by omega
+  rcases Nat.lt_or_gt_of_ne h_ne with hkt | hkt
+  · -- Case 1: k₁ < k₂
+    have h_ch_inj := sloaneInsertionChange_inj y k₁ k₂ hk₁ hk₂ hkt
+    rw [moment_sloaneInsertion_eq_change y k₁ hk₁, moment_sloaneInsertion_eq_change y k₂ hk₂]
+    have hC₁_le := sloaneInsertionChange_le_n hn_pos y k₁
+    have hC₂_le := sloaneInsertionChange_le_n hn_pos y k₂
+    generalize hC₁ : sloaneInsertionChange y k₁ = C₁ at *
+    generalize hC₂ : sloaneInsertionChange y k₂ = C₂ at *
+    rcases Nat.lt_or_gt_of_ne h_ch_inj with h_ch_lt | h_ch_lt
+    · -- Sub-case 1.1: C₁ < C₂
+      let D := C₂ - C₁
+      have hD_pos : 0 < D := by omega
+      have hC₂_eq : C₂ = C₁ + D := by omega
+      have hD_lt : D < n + 1 := by omega
+      rw [hC₂_eq, ← Nat.add_assoc]
+      exact mod_add_ne_mod hD_pos hD_lt
+    · -- Sub-case 1.2: C₂ < C₁
+      let D := C₁ - C₂
+      have hD_pos : 0 < D := by omega
+      have hC₁_eq : C₁ = C₂ + D := by omega
+      have hD_lt : D < n + 1 := by omega
+      rw [hC₁_eq, ← Nat.add_assoc]
+      intro h_eq
+      exact mod_add_ne_mod hD_pos hD_lt h_eq.symm
+  · -- Case 2: k₂ < k₁
+    have h_ch_inj := sloaneInsertionChange_inj y k₂ k₁ hk₂ hk₁ hkt
+    rw [moment_sloaneInsertion_eq_change y k₁ hk₁, moment_sloaneInsertion_eq_change y k₂ hk₂]
+    have hC₁_le := sloaneInsertionChange_le_n hn_pos y k₁
+    have hC₂_le := sloaneInsertionChange_le_n hn_pos y k₂
+    generalize hC₁ : sloaneInsertionChange y k₁ = C₁ at *
+    generalize hC₂ : sloaneInsertionChange y k₂ = C₂ at *
+    rcases Nat.lt_or_gt_of_ne h_ch_inj.symm with h_ch_lt | h_ch_lt
+    · -- Sub-case 2.1: C₁ < C₂
+      let D := C₂ - C₁
+      have hD_pos : 0 < D := by omega
+      have hC₂_eq : C₂ = C₁ + D := by omega
+      have hD_lt : D < n + 1 := by omega
+      rw [hC₂_eq, ← Nat.add_assoc]
+      exact mod_add_ne_mod hD_pos hD_lt
+    · -- Sub-case 2.2: C₂ < C₁
+      let D := C₁ - C₂
+      have hD_pos : 0 < D := by omega
+      have hC₁_eq : C₁ = C₂ + D := by omega
+      have hD_lt : D < n + 1 := by omega
+      rw [hC₁_eq, ← Nat.add_assoc]
+      intro h_eq
+      exact mod_add_ne_mod hD_pos hD_lt h_eq.symm
+}

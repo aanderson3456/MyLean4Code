@@ -31,6 +31,8 @@ lemma moment_sub_succ (X : List B) (n : Nat) :
 
 def moment (X : List B) : Nat := moment_sub X 1
 
+#eval moment [B.I, B.O, B.O] -- 1
+
 /-! We use macroscopic lemmas mapped correctly to List native forms. -/
 
 lemma moment_nil : moment ([] : List B) = 0 := rfl
@@ -43,14 +45,14 @@ lemma moment_singleton (x : B) : moment [x] = num_Is [x] := by
   cases x <;> rfl
 
 lemma moment_cons (x : B) (X : List B) :
-  moment (x :: X) = moment X + num_Is (x :: X) := by
+  moment (x :: X) = moment X + num_Is (x :: X) := by {
   cases x
   · change moment_sub X 2 = moment_sub X 1 + num_Is X
     exact moment_sub_succ X 1
   · change moment_sub X 2 + 1 = moment_sub X 1 + (num_Is X + 1)
     rw [moment_sub_succ X 1]
     ac_rfl
-
+}
 
 lemma moment_le_cons (x : B) (X : List B) :
   moment X ≤ moment (x :: X) := by {

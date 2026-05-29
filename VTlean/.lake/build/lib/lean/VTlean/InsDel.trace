@@ -228,7 +228,7 @@
         ["Mathlib.Data.Fintype.Basic:importAllArts", "523c32c867a8165c"],
         ["VTlean.Lemma transitive imports (legacy)", "84e9a473599909aa"],
         ["VTlean.Lemma:importAllArts", "c36a5ca69b62754f"],
-        ["VTlean.B transitive imports (legacy)", "416edac6ab7889ca"],
+        ["VTlean.B transitive imports (legacy)", "a71f54a5960e0c46"],
         ["VTlean.B:importAllArts", "31504c077e29bbbf"],
         ["Mathlib.Data.Fintype.EquivFin transitive imports (legacy)",
          "5936ae7a7c6931be"],
@@ -251,4 +251,4 @@
   ["Module.name: VTlean.InsDel", "1858484b967c1c72"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "7f137c0baf387d16"}
+ "depHash": "54021b2d728f22d8"}

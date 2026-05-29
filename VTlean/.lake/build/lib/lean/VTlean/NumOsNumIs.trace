@@ -106,9 +106,9 @@
    [["deps",
      [["VTlean/VTlean:extraDep", [["@VTlean:extraDep", "00000000000006bb"]]],
       ["imports",
-       [["VTlean.B transitive imports (legacy)", "416edac6ab7889ca"],
+       [["VTlean.B transitive imports (legacy)", "a71f54a5960e0c46"],
         ["VTlean.B:importAllArts", "31504c077e29bbbf"],
-        ["VTlean.InsDel transitive imports (legacy)", "dee97a4c7aab712b"],
+        ["VTlean.InsDel transitive imports (legacy)", "6f70bda0d3abdbb0"],
         ["VTlean.InsDel:importAllArts", "b2933e2e4d2fa56f"],
         ["Mathlib.Data.Finset.Basic transitive imports (legacy)",
          "f45156902b3bef6c"],
@@ -131,4 +131,4 @@
   ["Module.name: VTlean.NumOsNumIs", "e08513977db7f014"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "eb9e635f1746ab7a"}
+ "depHash": "7300d7daf1301e69"}

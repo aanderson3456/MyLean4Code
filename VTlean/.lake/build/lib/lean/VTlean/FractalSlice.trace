@@ -1,9 +1,9 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["375e486ccec4be81.olean"],
-  "i": "4ad6b51d50864842.ilean",
-  "c": "ef5be060146d0f99.c"},
+ {"o": ["bb3a617799310941.olean"],
+  "i": "ca82d6291aac528a.ilean",
+  "c": "80f86bcb1f3f3fba.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/FractalSlice.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/FractalSlice.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/FractalSlice.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/FractalSlice.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/FractalSlice.setup.json --json",
@@ -25,63 +25,93 @@
    "VTlean/FractalSlice.lean:37:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/FractalSlice.lean:171:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/FractalSlice.lean:168:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/FractalSlice.lean:182:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
-   "level": "warning"},
-  {"message":
-   "VTlean/FractalSlice.lean:211:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
-   "level": "warning"},
-  {"message":
-   "VTlean/FractalSlice.lean:232:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
-   "level": "warning"},
-  {"message":
-   "VTlean/FractalSlice.lean:250:6: 'change List.sIns (List.sDel (x :: X') 0) 0 ((x :: X').getD 0 default) = x :: X'' tactic does nothing\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
-   "level": "warning"},
-  {"message":
-   "VTlean/FractalSlice.lean:260:8: 'change\n  List.sIns (List.sDel (x :: x' :: X'') (k' + 1)) (k' + 1) ((x :: x' :: X'').getD (k' + 1) default) =\n    x :: x' :: X''' tactic does nothing\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
-   "level": "warning"},
-  {"message":
-   "VTlean/FractalSlice.lean:240:0: `sIns_sDel_eq_self` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "VTlean/FractalSlice.lean:195:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
    "VTlean/FractalSlice.lean:260:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/FractalSlice.lean:263:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/FractalSlice.lean:314:19: unused variable `hk₁`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
    "level": "warning"},
   {"message":
-   "VTlean/FractalSlice.lean:284:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                              ↓\n  ⏎    exact sDel_getD x.val k hk_pos h_lt B.O⏎⏎  rw [h_sdel_getD]⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "VTlean/FractalSlice.lean:333:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/FractalSlice.lean:288:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                ↓\n  ⏎  rw [h_flip]⏎⏎  have h_sins : (sDel x k).val.take k ++ [x.val.getD k B.O] ++ (sDel x k).val.drop k = List.sIns (sDel x k).val k (x.val.getD k B.O) := by⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "VTlean/FractalSlice.lean:338:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/FractalSlice.lean:296:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                                               ↓\n  ⏎    exact (sIns_eq_take_drop (sDel x k).val k (x.val.getD k B.O) h_len).symm⏎⏎  rw [h_sins]⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "VTlean/FractalSlice.lean:344:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/FractalSlice.lean:271:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/FractalSlice.lean:376:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/FractalSlice.lean:275:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/FractalSlice.lean:387:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/FractalSlice.lean:289:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/FractalSlice.lean:416:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:437:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:455:6: 'change List.sIns (List.sDel (x :: X') 0) 0 ((x :: X').getD 0 default) = x :: X'' tactic does nothing\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:465:8: 'change\n  List.sIns (List.sDel (x :: x' :: X'') (k' + 1)) (k' + 1) ((x :: x' :: X'').getD (k' + 1) default) =\n    x :: x' :: X''' tactic does nothing\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:445:0: `sIns_sDel_eq_self` does not use the following hypothesis in its type:\n  • [DecidableEq α] (#2)\n\nConsider removing this hypothesis and using `classical` in the proof instead. For terms, consider using `open scoped Classical in` at the term level (not the command level).\n\nNote: This linter can be disabled with `set_option linter.unusedDecidableInType false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:465:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:468:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:482:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n            ↓\n  ⏎  rw [h1]⏎⏎  have h_sdel_getD : (sDel x k).val.getD (k - 1) B.O = x.val.getD (k - 1) B.O := by⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:489:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                              ↓\n  ⏎    exact sDel_getD x.val k hk_pos h_lt B.O⏎⏎  rw [h_sdel_getD]⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:493:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                ↓\n  ⏎  rw [h_flip]⏎⏎  have h_sins : (sDel x k).val.take k ++ [x.val.getD k B.O] ++ (sDel x k).val.drop k = List.sIns (sDel x k).val k (x.val.getD k B.O) := by⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:501:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                                               ↓\n  ⏎    exact (sIns_eq_take_drop (sDel x k).val k (x.val.getD k B.O) h_len).symm⏎⏎  rw [h_sins]⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:476:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:480:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:494:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:578:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/FractalSlice.lean:603:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"}],
  "inputs":
  [["VTlean.FractalSlice:deps",
    [["deps",
      [["VTlean/VTlean:extraDep", [["@VTlean:extraDep", "00000000000006bb"]]],
       ["imports",
-       [["VTlean.B transitive imports (legacy)", "416edac6ab7889ca"],
+       [["VTlean.B transitive imports (legacy)", "a71f54a5960e0c46"],
         ["VTlean.B:importAllArts", "31504c077e29bbbf"],
-        ["VTlean.InsDel transitive imports (legacy)", "dee97a4c7aab712b"],
+        ["VTlean.InsDel transitive imports (legacy)", "6f70bda0d3abdbb0"],
         ["VTlean.InsDel:importAllArts", "b2933e2e4d2fa56f"],
-        ["VTlean.DelCode transitive imports (legacy)", "9fec8551c4006b6f"],
+        ["VTlean.DelCode transitive imports (legacy)", "fa81a26ce8a103d0"],
         ["VTlean.DelCode:importAllArts", "d98e0f91d47d0e2c"],
-        ["VTlean.VTCode transitive imports (legacy)", "968f05b1c85a7aef"],
-        ["VTlean.VTCode:importAllArts", "c87f611f058c5a0d"]]]]],
+        ["VTlean.VTCode transitive imports (legacy)", "8859d14acef156ed"],
+        ["VTlean.VTCode:importAllArts", "45f87c7bea3bef99"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -90,7 +120,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/FractalSlice.lean",
-   "6e157956e1339666"],
+   "4f7d5bd6fafc9f0a"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -100,4 +130,4 @@
   ["Module.name: VTlean.FractalSlice", "82cdaebd4f595e0d"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "e08b7c930e1b4bf1"}
+ "depHash": "64ef82b8da9c617e"}
