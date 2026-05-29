@@ -168,9 +168,9 @@ lemma vt0_card_one : (Finset.VTCode 1 0).card = 1 := by {
   decide
 }
 
-lemma perfect_card_le_one_of_length_one (C : Finset (List.Vector B 1))
+lemma perfect_card_eq_one_of_length_one (C : Finset (List.Vector B 1))
     (hC : is_PerfectCodeCandidate C) :
-    C.card ≤ 1 := by {
+    C.card = 1 := by {
   have h_univ : (Finset.univ : Finset (List.Vector B 0)).card = 1 := by decide
   have h_biUnion : (C.biUnion dS).card = 1 := by {
     rw [hC.right, h_univ]
@@ -200,7 +200,7 @@ lemma perfect_card_le_one_of_length_one (C : Finset (List.Vector B 1))
 
 lemma vt0_is_optimal_perfect_one (C : Finset (List.Vector B 1)) (hC : is_PerfectCodeCandidate C) :
     C.card ≤ (Finset.VTCode 1 0).card := by {
-  have h1 := perfect_card_le_one_of_length_one C hC
+  have h1 := perfect_card_eq_one_of_length_one C hC
   have h2 := vt0_card_one
   omega
 }
@@ -233,7 +233,7 @@ lemma perfect_code_card_eq_vt_card (C : Finset (List.Vector B n)) (hC : is_Perfe
           rw [hi0]
         · intro hy
           rw [hy]
-          exact ⟨0, by omega, rfl⟩
+          use 0
       }
       rw [h_eq, card_singleton]
     }
@@ -241,25 +241,31 @@ lemma perfect_code_card_eq_vt_card (C : Finset (List.Vector B n)) (hC : is_Perfe
     rw [h_sum, sum_const, smul_eq_mul, mul_one] at h_card_eq
     omega
   | succ n' =>
-    have h_k : ∀ x : List.Vector B (n' + 1), ∀ k ≤ n' + 1, (cumulativeDels x k).card ≤ k := by {
-      intro x k hk
-      induction k with
-      | zero =>
-        rfl
-      | succ k' ih =>
-        have hk' : k' ≤ n' + 1 := by omega
-        have ih' := ih hk'
-        rw [cumulativeDels_succ]
-        have h_card_le := card_insert_le (sDel x k') (cumulativeDels x k')
-        omega
-    }
-    have h_ds_le : ∀ x : List.Vector B (n' + 1), (dS x).card ≤ n' + 1 := by {
-      intro x
-      have h_eq : dS x = cumulativeDels x (n' + 1) := rfl
-      rw [h_eq]
-      exact h_k x (n' + 1) (by omega)
-    }
-    sorry
+    cases n' with
+    | zero =>
+      use 0
+      rw [vt0_card_one]
+      exact perfect_card_eq_one_of_length_one C hC
+    | succ n'' =>
+      have h_k : ∀ x : List.Vector B (n'' + 2), ∀ k ≤ n'' + 2, (cumulativeDels x k).card ≤ k := by {
+        intro x k hk
+        induction k with
+        | zero =>
+          rfl
+        | succ k' ih =>
+          have hk' : k' ≤ n'' + 2 := by omega
+          have ih' := ih hk'
+          rw [cumulativeDels_succ]
+          have h_card_le := card_insert_le (sDel x k') (cumulativeDels x k')
+          omega
+      }
+      have h_ds_le : ∀ x : List.Vector B (n'' + 2), (dS x).card ≤ n'' + 2 := by {
+        intro x
+        have h_eq : dS x = cumulativeDels x (n'' + 2) := rfl
+        rw [h_eq]
+        exact h_k x (n'' + 2) (by omega)
+      }
+      sorry
 }
 
 /-- Theorem: VT_0 is optimal among all perfect single-deletion correcting codes.
@@ -285,4 +291,3 @@ theorem vt0_is_optimal_perfect (C : Finset (List.Vector B n)) (hC : is_PerfectCo
       rw [h_eq]
       exact VTCode_zero_is_max (n'' + 2) a
 }
-

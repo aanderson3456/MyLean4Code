@@ -1,8 +1,8 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["b8e8cf22990bb9d4.olean"],
-  "i": "89dc14fafb8c8665.ilean",
+ {"o": ["3ce72556b7fba9a0.olean"],
+  "i": "e3f27ff950ed5c73.ilean",
   "c": "064272407171b031.c"},
  "log":
  [{"message":
@@ -37,7 +37,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Progressive.lean",
-   "10ef9014debea74b"],
+   "60c58dc7e3e1733c"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -47,4 +47,4 @@
   ["Module.name: VTlean.Progressive", "b7d999ced0a92618"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "3cb9a878731cfa0f"}
+ "depHash": "b494d861dcfc80e5"}
