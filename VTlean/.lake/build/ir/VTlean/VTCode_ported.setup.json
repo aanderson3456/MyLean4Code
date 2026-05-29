@@ -1,0 +1,11 @@
+{"plugins": [],
+ "package": "VTlean",
+ "options":
+ {"weak.linter.mathlibStandardSet": true,
+  "relaxedAutoImplicit": false,
+  "pp.unicode.fun": true,
+  "maxSynthPendingDepth": 3},
+ "name": "VTlean.VTCode_ported",
+ "isModule": false,
+ "importArts": {},
+ "dynlibs": []}

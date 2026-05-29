@@ -1,0 +1,271 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["809c35f6370d741e.olean"],
+  "i": "839f0ed8ccc4f1c5.ilean",
+  "c": "139b4ab3adc41041.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Cuculiere.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/Cuculiere.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/Cuculiere.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/Cuculiere.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/Cuculiere.setup.json --json",
+   "level": "trace"},
+  {"message":
+   "VTlean/Cuculiere.lean:224:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:245:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                                                                              ↓\n  ⏎    cuculiere_get n c + if c < n + 1 then 0 else cuculiere_get n (c - (n + 1)) := cuculiere_get_successor n⏎⏎  -- Step 1: Substitute the recurrence into the sum over the (n+1) domain⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:244:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:247:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:248:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:258:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:259:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:275:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:287:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:289:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:297:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:298:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:361:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:362:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:363:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:379:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:393:4: 'simp [h]' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.\n\nNote: This linter can be disabled with `set_option linter.flexible false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:393:4: Try this:\n  [apply] simp only [lt_add_iff_pos_left, Order.lt_add_one_iff, _root_.zero_le, ↓reduceIte, add_zero]",
+   "level": "info"},
+  {"message": "VTlean/Cuculiere.lean:394:4: 'exact ih' uses '⊢'!",
+   "level": "info"},
+  {"message":
+   "VTlean/Cuculiere.lean:450:31: unused variable `hm`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:476:40: unused variable `hm`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:486:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:488:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:530:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:585:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n      ↓\n  ⏎  }⏎⏎  let m := n / 2⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:590:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                                  ↓\n  ⏎  let s3 := filter (fun k => k >= m ∧ k <= n - 1 - m) (range n)⏎⏎  have h_union : range n = s1 ∪ s2 ∪ s3 := by {⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:617:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n      ↓\n  ⏎  }⏎⏎  have h_s2_prod : (∏ k ∈ s2, (1 + y ^ (k + 1))) = star (∏ k ∈ s1, (1 + y ^ (k + 1))) := by {⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:654:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n      ↓\n  ⏎  }⏎⏎  have h_prod_main : (∏ k ∈ s1, (1 + y ^ (k + 1))) * (∏ k ∈ s2, (1 + y ^ (k + 1))) =⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:660:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n      ↓\n  ⏎  }⏎⏎  have h_s3_val : (∏ k ∈ s3, (1 + y ^ (k + 1))) = if n % 2 = 1 then (1 + y ^ ((n - 1) / 2 + 1)) else 1 := by {⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:689:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n      ↓\n  ⏎  }⏎⏎  have h_s3_nonneg : 0 ≤ (∏ k ∈ s3, (1 + y ^ (k + 1))).re ∧ (∏ k ∈ s3, (1 + y ^ (k + 1))).im = 0 := by {⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:713:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n      ↓\n  ⏎  }⏎⏎  have h_final : (∏ k ∈ range n, (1 + y ^ (k + 1))) =⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:718:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n      ↓\n  ⏎  }⏎⏎  have h_normSq_re : (Complex.normSq (∏ k ∈ s1, (1 + y ^ (k + 1))) : ℂ).re =⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:722:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                                                                        ↓\n  ⏎  have h_normSq_im : (Complex.normSq (∏ k ∈ s1, (1 + y ^ (k + 1))) : ℂ).im = 0 := Complex.ofReal_im _⏎⏎  constructor⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:557:8: 'simp' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.\n\nNote: This linter can be disabled with `set_option linter.flexible false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:557:8: Try this:\n  [apply] simp only [RCLike.star_def, Complex.mul_re, Complex.conj_re, Complex.conj_im, neg_mul, sub_neg_eq_add,\n    Complex.one_re]",
+   "level": "info"},
+  {"message": "VTlean/Cuculiere.lean:558:8: 'exact h_sq2' uses '⊢'!",
+   "level": "info"},
+  {"message":
+   "VTlean/Cuculiere.lean:612:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:619:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:661:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:690:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:721:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:740:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:741:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:748:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:749:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:779:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:796:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:798:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:799:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:805:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:807:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:817:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:818:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:871:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                                                                                   ↓\n  ⏎  have h_cast_0 : (cuculiere_mod_sum_gen n (n + 1) 0 : ℂ) = (cuculiere_mod_sum_gen n (n + 1) 0 : Nat) := by simp⏎⏎  have h_filter_a := roots_unity_filter n a ω hω⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:874:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                   ↓\n  ⏎  have h_filter_0 := roots_unity_filter n 0 ω hω⏎⏎  have h_re_a : ((cuculiere_mod_sum_gen n (n + 1) a : ℂ)).re =⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:883:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n      ↓\n  ⏎  }⏎⏎  have h_sum_le :⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:896:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                                                                                                ↓\n  ⏎    have h_le := complex_re_im_le (ω ^ (-(a : ℤ) * (j : ℤ))) h_abs (Polynomial.eval (ω ^ j) (poly_P n)) h_nonneg.1 h_nonneg.2⏎⏎    have h_zero : ω ^ (-((0 : ℕ) : ℤ) * (j : ℤ)) = 1 := by {⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:904:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n      ↓\n  ⏎  }⏎⏎  have h_div_le :⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:920:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n      ↓\n  ⏎  }⏎⏎  rw [← h_re_a, ← h_re_0] at h_div_le⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:865:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:869:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:870:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:876:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:880:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:885:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:886:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:895:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:906:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:907:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:984:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                               ↓\n  ⏎        exact h_l_copy.symm)⏎⏎  have h_filter : Finset.filter P univ = (Finset.filter P (univ.image f0)) ∪⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:989:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                      ↓\n  ⏎    exact Finset.filter_union _ _ _⏎⏎  have h_filter_disj : Disjoint (Finset.filter P (univ.image f0))⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:993:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                 ↓\n  ⏎    exact Finset.disjoint_filter_filter h_disj⏎⏎  rw [h_filter, Finset.card_union_of_disjoint h_filter_disj]⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:995:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                               ↓\n  ⏎  rw [h_filter, Finset.card_union_of_disjoint h_filter_disj]⏎⏎  have h_eq0 : Finset.card (Finset.filter P (univ.image f0)) =⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:1000:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                    ↓\n  ⏎    exact Finset.card_image_of_injective _ h_inj0⏎⏎  have h_eq1 : Finset.card (Finset.filter P (univ.image f1)) =⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:1005:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                                                    ↓\n  ⏎    exact Finset.card_image_of_injective _ h_inj1⏎⏎  rw [h_eq0, h_eq1]⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:1048:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n        ↓\n  ⏎    }⏎⏎    have h2 : Finset.card (Finset.filter⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/Cuculiere.lean:1156:0: Please, write a comment here or remove this line, but do not place empty lines within commands!\nContext:\n                     ↓\n  ⏎    exact h_neq h2⏎⏎  have h_eq2 : (fun c => Finset.card (Finset.filter⏎\n\nNote: This linter can be disabled with `set_option linter.style.emptyLine false`",
+   "level": "warning"},
+  {"message": "VTlean/Cuculiere.lean:1193:0: [1, 1, 1, 2, 1, 1, 1]",
+   "level": "info"},
+  {"message": "VTlean/Cuculiere.lean:1196:0: [1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1]",
+   "level": "info"}],
+ "inputs":
+ [["VTlean.Cuculiere:deps",
+   [["deps",
+     [["VTlean/VTlean:extraDep", [["@VTlean:extraDep", "00000000000006bb"]]],
+      ["imports",
+       [["Mathlib transitive imports (legacy)", "8cfe4116a07021e9"],
+        ["Mathlib:importAllArts", "1f979cbc8a135c61"],
+        ["VTlean.VTCode transitive imports (legacy)", "8859d14acef156ed"],
+        ["VTlean.VTCode:importAllArts", "45f87c7bea3bef99"]]]]],
+    ["libs",
+     [["import dynlibs", "00000000000006bb"],
+      ["package external libraries", "00000000000006bb"],
+      ["module dynlibs", "00000000000006bb"],
+      ["module plugins", "00000000000006bb"]]]]],
+  ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
+   "fa77a35a41db35c0"],
+  ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Cuculiere.lean",
+   "db67fe2ba1caf767"],
+  ["options",
+   [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
+    ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
+    ["-DrelaxedAutoImplicit=false", "74a2b5546b55be80"],
+    ["-Dpp.unicode.fun=true", "9b94070140457fab"]]],
+  ["isModule: false", "feefd2a0d3a1847e"],
+  ["Module.name: VTlean.Cuculiere", "db960e5489a46051"],
+  ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "2d1a05d3b4fbced1"}

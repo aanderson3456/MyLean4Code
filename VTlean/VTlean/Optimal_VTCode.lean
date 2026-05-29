@@ -11099,7 +11099,7 @@ by sorry
 lemma card_VTCode_7_0 : Finset.card (Finset.VTCode 7 0) = 16 := by sorry
 
 lemma optimal_VTCode_7_0 : 
-  is_optimal (Finset.VTCode 7 0) (DelCode_VTCode 7 0) := 
+  is_optimal (Finset.VTCode 7 0) (Finset.DelCode_VTCode 7 0) := 
 by sorry
 end length7
 

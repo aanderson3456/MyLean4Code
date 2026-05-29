@@ -1,20 +1,21 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["76c8d5394813456e.olean"],
-  "i": "48fc630cc46bbd3c.ilean",
-  "c": "707f7c44e9fc62af.c"},
+ {"o": ["f15cffdd14fe1bb1.olean"],
+  "i": "09d7d2e99ebec388.ilean",
+  "c": "2293598f10b4e651.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Networkx.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/Networkx.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/Networkx.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/Networkx.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/Networkx.setup.json --json",
    "level": "trace"},
   {"message":
-   "VTlean/Networkx.lean:30:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Networkx.lean:145:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
   {"message":
-   "VTlean/Networkx.lean:35:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "VTlean/Networkx.lean:146:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"},
-  {"message": "VTlean/Networkx.lean:60:8: declaration uses `sorry`",
+  {"message":
+   "VTlean/Networkx.lean:161:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
    "level": "warning"}],
  "inputs":
  [["VTlean.Networkx:deps",
@@ -36,7 +37,10 @@
         ["VTlean.VTCode transitive imports (legacy)", "8859d14acef156ed"],
         ["VTlean.VTCode:importAllArts", "45f87c7bea3bef99"],
         ["VTlean.FractalSlice transitive imports (legacy)", "e4fd8ef972dff0ed"],
-        ["VTlean.FractalSlice:importAllArts", "99a0445ded14cc3e"]]]]],
+        ["VTlean.FractalSlice:importAllArts", "99a0445ded14cc3e"],
+        ["Mathlib.Tactic.ApplyFun transitive imports (legacy)",
+         "718b221c24fd13c7"],
+        ["Mathlib.Tactic.ApplyFun:importAllArts", "2d96025178112f2c"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -45,7 +49,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Networkx.lean",
-   "1384953ca86ae37b"],
+   "f7f242620ae05d8f"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -55,4 +59,4 @@
   ["Module.name: VTlean.Networkx", "7a02ee7c5ff6dbe6"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "a48550791b5019ef"}
+ "depHash": "c473eae6f42aec11"}

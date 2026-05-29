@@ -1,3 +1,4 @@
+/- Copyright Austin Anderson aided by Gemini 2026 -/
 import VTlean.B
 import VTlean.Boolean
 import VTlean.Burnside

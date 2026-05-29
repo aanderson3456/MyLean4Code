@@ -1,15 +1,14 @@
 {"synthetic": false,
  "schemaVersion": "2025-09-10",
  "outputs":
- {"o": ["9d2280eefa65717f.olean"],
-  "i": "4ab8479384dfa68e.ilean",
-  "c": "656cd7341f4c8c9b.c"},
+ {"o": ["b8e8cf22990bb9d4.olean"],
+  "i": "89dc14fafb8c8665.ilean",
+  "c": "064272407171b031.c"},
  "log":
  [{"message":
    ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Progressive.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/Progressive.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/Progressive.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/Progressive.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/Progressive.setup.json --json",
    "level": "trace"},
-  {"message":
-   "VTlean/Progressive.lean:41:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+  {"message": "VTlean/Progressive.lean:208:6: declaration uses `sorry`",
    "level": "warning"}],
  "inputs":
  [["VTlean.Progressive:deps",
@@ -26,8 +25,10 @@
         ["VTlean.VTCode:importAllArts", "45f87c7bea3bef99"],
         ["VTlean.FractalSlice transitive imports (legacy)", "e4fd8ef972dff0ed"],
         ["VTlean.FractalSlice:importAllArts", "99a0445ded14cc3e"],
-        ["VTlean.Networkx transitive imports (legacy)", "aae8a718ab9eb793"],
-        ["VTlean.Networkx:importAllArts", "2e421c84af1dd2eb"]]]]],
+        ["VTlean.Networkx transitive imports (legacy)", "eabd63adf65d131f"],
+        ["VTlean.Networkx:importAllArts", "35aac313cc86fb7c"],
+        ["VTlean.Cuculiere transitive imports (legacy)", "597374253cf50937"],
+        ["VTlean.Cuculiere:importAllArts", "206ba7c7738e7614"]]]]],
     ["libs",
      [["import dynlibs", "00000000000006bb"],
       ["package external libraries", "00000000000006bb"],
@@ -36,7 +37,7 @@
   ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
    "fa77a35a41db35c0"],
   ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/Progressive.lean",
-   "b38ebf0e7f35ef87"],
+   "10ef9014debea74b"],
   ["options",
    [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
     ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
@@ -46,4 +47,4 @@
   ["Module.name: VTlean.Progressive", "b7d999ced0a92618"],
   ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
   ["Module.leanArgs: #[]", "00000000000006bb"]],
- "depHash": "ca65a95c190b35da"}
+ "depHash": "3cb9a878731cfa0f"}

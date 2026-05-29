@@ -1,3 +1,4 @@
+/- Copyright Austin Anderson aided by Gemini 2026 -/
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Fintype.Basic
 import VTlean.B

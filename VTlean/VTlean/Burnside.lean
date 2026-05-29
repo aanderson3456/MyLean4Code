@@ -470,8 +470,110 @@ lemma card_fixedBy_eq_binom {n k d : Nat} [NeZero n] [Fintype (weight_subspace n
   -- Follows from fixed_by_iff_block_repeat by counting the possible blocks.
   sorry
 }
+def syndrome_slice (n a k : Nat) :=
+  { w : weight_subspace n k // List.Vector.moment w.val ≡ a [MOD n] }
 
+def shift_equiv (n a k : Nat) (hn : 0 < n) :
+    Equiv (syndrome_slice n a k) (syndrome_slice n (a + k) k) where
+  toFun := fun ⟨w, hw⟩ => ⟨⟨cyclicShift w.val, by {
+    rw [num_Is_cyclicShift]
+    exact w.property
+  }⟩, by {
+    have h_shift := moment_cyclicShift w.val
+    have hw_val := w.property
+    rw [hw_val] at h_shift
+    have h_add := Nat.ModEq.add_right k hw
+    exact Nat.ModEq.trans h_shift h_add
+  }⟩
+  invFun := fun ⟨w, hw⟩ => ⟨⟨cyclicShiftPow (n - 1) w.val, by {
+    rw [num_Is_cyclicShiftPow]
+    exact w.property
+  }⟩, by {
+    have h_shift := moment_cyclicShiftPow (n - 1) w.val
+    have hw_val := w.property
+    rw [hw_val] at h_shift
+    have h_trans := Nat.ModEq.add_right ((n - 1) * k) hw
+    have h_arith : a + k + (n - 1) * k = a + n * k := by {
+      rw [Nat.mul_comm (n - 1)]
+      rw [Nat.mul_comm n]
+      have h1 : k * (n - 1) = k * n - k := by {
+        rw [Nat.mul_sub_left_distrib]
+        simp
+      }
+      rw [h1]
+      have h2 : k ≤ k * n := by {
+        exact Nat.le_mul_of_pos_right k hn
+      }
+      omega
+    }
+    rw [h_arith] at h_trans
+    have h_mod : a + n * k ≡ a [MOD n] := by {
+      rw [Nat.ModEq]
+      rw [Nat.add_mul_mod_self_left]
+    }
+    have h_trans2 := Nat.ModEq.trans h_shift h_trans
+    exact Nat.ModEq.trans h_trans2 h_mod
+  }⟩
+  left_inv := fun ⟨w, hw⟩ => by {
+    apply Subtype.ext
+    apply Subtype.ext
+    change cyclicShiftPow (n - 1) (cyclicShift w.val) = w.val
+    have h_pow := cyclicShiftPow_add (n - 1) 1 w.val
+    change cyclicShiftPow (n - 1) (cyclicShiftPow 1 w.val) = w.val
+    rw [h_pow]
+    have h_add : n - 1 + 1 = n := by omega
+    rw [h_add]
+    exact cyclicShiftPow_length w.val
+  }
+  right_inv := fun ⟨w, hw⟩ => by {
+    apply Subtype.ext
+    apply Subtype.ext
+    change cyclicShift (cyclicShiftPow (n - 1) w.val) = w.val
+    have h_pow := cyclicShiftPow_add 1 (n - 1) w.val
+    change cyclicShiftPow 1 (cyclicShiftPow (n - 1) w.val) = w.val
+    rw [h_pow]
+    have h_add : 1 + (n - 1) = n := by omega
+    rw [h_add]
+    exact cyclicShiftPow_length w.val
+  }
 
+def syndrome_slice_congr (n A B k : Nat) (h : A ≡ B [MOD n]) :
+    Equiv (syndrome_slice n A k) (syndrome_slice n B k) where
+  toFun := fun ⟨w, hw⟩ => ⟨w, Nat.ModEq.trans hw h⟩
+  invFun := fun ⟨w, hw⟩ => ⟨w, Nat.ModEq.trans hw (Nat.ModEq.symm h)⟩
+  left_inv := fun _ => rfl
+  right_inv := fun _ => rfl
 
+def shift_equiv_pow (n a k : Nat) (hn : 0 < n) (j : Nat) :
+    Equiv (syndrome_slice n a k) (syndrome_slice n (a + j * k) k) :=
+  match j with
+  | 0 => 
+    have heq : a + 0 * k = a := by ring
+    syndrome_slice_congr n a (a + 0 * k) k (by rw [heq])
+  | j' + 1 =>
+    have ih := shift_equiv_pow n a k hn j'
+    have h_step := shift_equiv n (a + j' * k) k hn
+    have h_trans := Equiv.trans ih h_step
+    have heq : a + j' * k + k = a + (j' + 1) * k := by ring
+    Equiv.trans h_trans (syndrome_slice_congr n (a + j' * k + k)
+      (a + (j' + 1) * k) k (by rw [heq]))
+
+def coprime_syndrome_slice_equiv_exists (n _a _a' k : Nat) (_hn : 0 < n)
+    (_h_coprime : Nat.Coprime k n) : Nat :=
+  0
+
+lemma coprime_syndrome_slice_equiv_exists_proof (n a a' k : Nat) (hn : 0 < n)
+    (h_coprime : Nat.Coprime k n) :
+    a + coprime_syndrome_slice_equiv_exists n a a' k hn h_coprime * k ≡ a' [MOD n] := by
+  sorry
+
+def coprime_syndrome_slice_equiv (n a a' k : Nat) (hn : 0 < n)
+    (h_coprime : Nat.Coprime k n) :
+    Equiv (syndrome_slice n a k) (syndrome_slice n a' k) :=
+  let j := coprime_syndrome_slice_equiv_exists n a a' k hn h_coprime
+  have hj := coprime_syndrome_slice_equiv_exists_proof n a a' k hn h_coprime
+  Equiv.trans (shift_equiv_pow n a k hn j) (syndrome_slice_congr n (a + j * k) a' k hj)
+
+end Burnside
 
 
