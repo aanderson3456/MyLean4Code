@@ -1,0 +1,96 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["ff6d1baf288d64b6.olean"],
+  "i": "ff39e007b99f6fe9.ilean",
+  "c": "4f3e72d8824cc27c.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Cli/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/batteries/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/Qq/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/aesop/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/importGraph/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/plausible/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/packages/mathlib/.lake/build/lib/lean:/Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean /Users/austinanderson/.elan/toolchains/leanprover--lean4---v4.29.1/bin/lean /Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/AlgebraicFractal.lean -o /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/AlgebraicFractal.olean -i /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/lib/lean/VTlean/AlgebraicFractal.ilean -c /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/AlgebraicFractal.c --setup /Users/austinanderson/GitHub/MyLean4Code/VTlean/.lake/build/ir/VTlean/AlgebraicFractal.setup.json --json",
+   "level": "trace"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:17:2: The `induction'` tactic is discouraged: please strongly consider using `induction` instead.\n\nNote: This linter can be disabled with `set_option linter.style.induction false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:38:6: The `cases'` tactic is discouraged: please strongly consider using `obtain`, `rcases` or `cases` instead.\n\nNote: This linter can be disabled with `set_option linter.style.cases false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:62:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:68:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:77:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:78:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:125:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:126:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:129:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:133:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:144:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:155:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message": "VTlean/AlgebraicFractal.lean:175:6: declaration uses `sorry`",
+   "level": "warning"},
+  {"message": "VTlean/AlgebraicFractal.lean:184:6: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:186:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:187:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"},
+  {"message": "VTlean/AlgebraicFractal.lean:191:6: declaration uses `sorry`",
+   "level": "warning"},
+  {"message":
+   "VTlean/AlgebraicFractal.lean:191:100: This line exceeds the 100 character limit, please shorten it!\n\nNote: This linter can be disabled with `set_option linter.style.longLine false`",
+   "level": "warning"}],
+ "inputs":
+ [["VTlean.AlgebraicFractal:deps",
+   [["deps",
+     [["VTlean/VTlean:extraDep", [["@VTlean:extraDep", "00000000000006bb"]]],
+      ["imports",
+       [["Mathlib.Data.Matrix.Basic transitive imports (legacy)",
+         "edc3eb55606d3671"],
+        ["Mathlib.Data.Matrix.Basic:importAllArts", "d915ee567d70b5ba"],
+        ["Mathlib.Data.Vector.Basic transitive imports (legacy)",
+         "8eea481cea8f8a2e"],
+        ["Mathlib.Data.Vector.Basic:importAllArts", "55dd24a5c4d4dcf2"],
+        ["VTlean.FractalSlice transitive imports (legacy)", "e4fd8ef972dff0ed"],
+        ["VTlean.FractalSlice:importAllArts", "99a0445ded14cc3e"],
+        ["VTlean.CuculiereCombinatorial transitive imports (legacy)",
+         "11bde007ae17b4b4"],
+        ["VTlean.CuculiereCombinatorial:importAllArts", "92426e1bd7c568d7"]]]]],
+    ["libs",
+     [["import dynlibs", "00000000000006bb"],
+      ["package external libraries", "00000000000006bb"],
+      ["module dynlibs", "00000000000006bb"],
+      ["module plugins", "00000000000006bb"]]]]],
+  ["Lean 4.29.1, commit f72c35b3f637c8c6571d353742168ab66cc22c00",
+   "fa77a35a41db35c0"],
+  ["/Users/austinanderson/GitHub/MyLean4Code/VTlean/VTlean/AlgebraicFractal.lean",
+   "abd7a46f0ecab54b"],
+  ["options",
+   [["-DmaxSynthPendingDepth=3", "c78e353d34de85d4"],
+    ["-Dweak.linter.mathlibStandardSet=true", "8a155799906f2b42"],
+    ["-DrelaxedAutoImplicit=false", "74a2b5546b55be80"],
+    ["-Dpp.unicode.fun=true", "9b94070140457fab"]]],
+  ["isModule: false", "feefd2a0d3a1847e"],
+  ["Module.name: VTlean.AlgebraicFractal", "a36e57973dfebe7b"],
+  ["Package.id?: (some VTlean)", "75d4fb52343132bb"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "9b935c2bae0a18cc"}

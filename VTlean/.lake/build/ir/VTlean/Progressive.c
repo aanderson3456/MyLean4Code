@@ -1,6 +1,6 @@
 // Lean compiler output
 // Module: VTlean.Progressive
-// Imports: public import Init public import VTlean.B public import VTlean.InsDel public import VTlean.DelCode public import VTlean.VTCode public import VTlean.FractalSlice public import VTlean.Networkx public import VTlean.Cuculiere
+// Imports: public import Init public import VTlean.B public import VTlean.InsDel public import VTlean.DelCode public import VTlean.VTCode public import VTlean.FractalSlice public import VTlean.AlgebraicFractal public import VTlean.Networkx public import VTlean.Cuculiere
 #include <lean/lean.h>
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -53,6 +53,7 @@ lean_object* initialize_VTlean_VTlean_InsDel(uint8_t builtin);
 lean_object* initialize_VTlean_VTlean_DelCode(uint8_t builtin);
 lean_object* initialize_VTlean_VTlean_VTCode(uint8_t builtin);
 lean_object* initialize_VTlean_VTlean_FractalSlice(uint8_t builtin);
+lean_object* initialize_VTlean_VTlean_AlgebraicFractal(uint8_t builtin);
 lean_object* initialize_VTlean_VTlean_Networkx(uint8_t builtin);
 lean_object* initialize_VTlean_VTlean_Cuculiere(uint8_t builtin);
 static bool _G_initialized = false;
@@ -76,6 +77,9 @@ res = initialize_VTlean_VTlean_VTCode(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_VTlean_VTlean_FractalSlice(builtin);
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_VTlean_VTlean_AlgebraicFractal(builtin);
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_VTlean_VTlean_Networkx(builtin);

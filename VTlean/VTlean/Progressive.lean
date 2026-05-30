@@ -4,6 +4,7 @@ import VTlean.InsDel
 import VTlean.DelCode
 import VTlean.VTCode
 import VTlean.FractalSlice
+import VTlean.AlgebraicFractal
 import VTlean.Networkx
 import VTlean.Cuculiere
 
@@ -265,7 +266,75 @@ lemma perfect_code_card_eq_vt_card (C : Finset (List.Vector B n)) (hC : is_Perfe
         rw [h_eq]
         exact h_k x (n'' + 2) (by omega)
       }
-      sorry
+      -- Algebraic formulation to close the sorry:
+      
+      let c : List.Vector B (n'' + 2) → Nat := fun x => if x ∈ C then 1 else 0
+      
+      have hc : is_perfect_algebraic (n'' + 2) c := by {
+        intro y
+        have h_sum : (∑ x : List.Vector B (n'' + 2), A_mat (n'' + 2) (n'' + 2) x y * c x) = 
+          (C.filter (fun x => y ∈ dS x)).card := by {
+          dsimp [c]
+          have h_mul : ∀ x, A_mat (n'' + 2) (n'' + 2) x y * (if x ∈ C then 1 else 0) =
+            if x ∈ C ∧ y ∈ dS x then 1 else 0 := by {
+            intro x
+            dsimp [A_mat]
+            have h_ds_eq : cumulativeDels x (n'' + 2) = dS x := rfl
+            rw [h_ds_eq]
+            by_cases hC_in : x ∈ C <;> by_cases hy : y ∈ dS x <;> simp [hC_in]
+          }
+          rw [Finset.sum_congr rfl (fun x _ => h_mul x)]
+          have h_sum_boole : (∑ x : List.Vector B (n'' + 2), if x ∈ C ∧ y ∈ dS x then 1 else 0) =
+            (univ.filter (fun x => x ∈ C ∧ y ∈ dS x)).card := by simp [Finset.sum_boole]
+          have h_eq : univ.filter (fun x => x ∈ C ∧ y ∈ dS x) = C.filter (fun x => y ∈ dS x) := by {
+            ext x
+            simp
+          }
+          rw [h_sum_boole]
+          exact congrArg Finset.card h_eq
+        }
+        rw [h_sum]
+        rcases hC with ⟨h_disj, h_univ⟩
+        have hy_univ : y ∈ C.biUnion dS := by {
+          rw [h_univ]
+          exact Finset.mem_univ y
+        }
+        rw [Finset.mem_biUnion] at hy_univ
+        rcases hy_univ with ⟨x, hx, hyx⟩
+        have h_eq : C.filter (fun z => y ∈ dS z) = {x} := by {
+          ext z
+          simp only [Finset.mem_filter, Finset.mem_singleton]
+          constructor
+          · rintro ⟨hzC, hyz⟩
+            by_contra h_neq
+            have h_disj_xz := h_disj x hx z hzC (Ne.symm h_neq)
+            exact Finset.disjoint_left.mp h_disj_xz hyx hyz
+          · rintro rfl
+            exact ⟨hx, hyx⟩
+        }
+        rw [h_eq, Finset.card_singleton]
+      }
+      
+      have h_card_T := perfect_code_card_eq_sum_T c hc
+      
+      rcases h_card_T with ⟨a, ha⟩
+      
+      have hC_sum : C.card = ∑ x : List.Vector B (n'' + 2), c x := by {
+        dsimp [c]
+        have h_sum_boole : (∑ x : List.Vector B (n'' + 2), if x ∈ C then 1 else 0) = (univ.filter (fun x => x ∈ C)).card := by simp
+        have h_eq : univ.filter (fun x => x ∈ C) = C := by {
+          ext x
+          simp
+        }
+        rw [h_sum_boole]
+        exact (congrArg Finset.card h_eq).symm
+      }
+      
+      use a
+      rw [hC_sum, ha]
+      
+      -- VTCode_card_eq_sum_T provides the exact bridge to the VT code cardinality!
+      exact (vt_size_eq_sum_T (n'' + 2) a).symm
 }
 
 /-- Theorem: VT_0 is optimal among all perfect single-deletion correcting codes.
