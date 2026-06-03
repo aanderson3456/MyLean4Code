@@ -758,9 +758,6 @@ lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
   have h_sum_1P : ∑ k : Fin P, (k.val + P) = ∑ k : Fin P, k.val + P * P := by {
     have h1 : ∑ k : Fin P, (k.val + P) = ∑ k : Fin P, k.val + ∑ k : Fin P, P := by
       rw [← Finset.sum_add_distrib]
-      apply Finset.sum_congr rfl
-      intro x _
-      exact rfl
     rw [h1]
     have h2 : ∑ k : Fin P, P = P * P := by
       have hz : ∑ k : Fin P, P = (Finset.card (Finset.univ : Finset (Fin P))) * P := by
@@ -806,7 +803,36 @@ lemma fin_sum_mod_P_multiple (P : ℕ) (hP : P > 0) (v : Fin P → ℕ)
   }
   --
   exact ⟨(P - ∑ k : Fin P, d k), h_eq6⟩
-}lemma fin_sum_three {n : ℕ} (hn : n = 3) (f : Fin n → ℕ) :
+}
+
+lemma periodic_mod_eq (n_1 n_2 K P : ℕ)
+    (h_P : P = n_2 - n_1)
+    (hn1_lt_n2 : n_1 < n_2)
+    (h_per : ∀ k ≤ K, vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_2 + k))
+    (m : ℕ) (hm : m ≤ P + K) :
+    vanEckNthTerm (n_1 + m) = vanEckNthTerm (n_1 + m % P) := by {
+  induction m using Nat.strong_induction_on with
+  | h m ih =>
+    by_cases hlt : m < P
+    · rw [Nat.mod_eq_of_lt hlt]
+    · have h_ge : m ≥ P := Nat.le_of_not_lt hlt
+      have h_sub : n_1 + m = n_2 + (m - P) := by omega
+      rw [h_sub]
+      have hmK : m - P ≤ K := by omega
+      rw [← h_per (m - P) hmK]
+      have h_lt : m - P < m := by omega
+      have h_ih := ih (m - P) h_lt (by omega)
+      rw [h_ih]
+      congr 2
+      have h_mod : (m - P) % P = m % P := by {
+        have h_eq : m = m - P + P := (Nat.sub_add_cancel h_ge).symm
+        nth_rw 2 [h_eq]
+        rw [Nat.add_mod_right]
+      }
+      exact h_mod
+}
+
+lemma fin_sum_three {n : ℕ} (hn : n = 3) (f : Fin n → ℕ) :
   ∑ k : Fin n, f k = f ⟨0, by omega⟩ + f ⟨1, by omega⟩ + f ⟨2, by omega⟩ := by {
   subst hn
   exact Fin.sum_univ_three f
@@ -1110,11 +1136,33 @@ lemma combinatorial_squeeze (P : ℕ) (hP : P ≥ 4)
     have hX_ne_1 : X ≠ 1 := by {
       intro hX_1
       have ⟨k_no1, hk_no1⟩ := h_no1
-      -- By vanEck_fiber_sum with X = 1, we get |C| * 1 = P, so |C| = P.
-      -- Since C is a subset of Fin P and has size P, C = Fin P.
-      -- Thus every k in Fin P must have v(k+1) = 1.
-      -- This directly contradicts hk_no1, which states there is some k where v(k+1) ≠ 1.
-      sorry
+      have h1_in : ∃ k : Fin P, v (k.val + 1) = 1 := by {
+        use k
+        rw [hk_eq, hX_1]
+      }
+      have h_no_int : ∀ k_inner : Fin P, v (k_inner.val + 1) = 1 → ∀ i < 1, i > 0 → v ((k_inner.val + P - i) % P + 1) ≠ 1 := by {
+        intro k_inner _ i hi hi_pos
+        omega
+      }
+      have h_fib_sum := vanEck_fiber_sum P hP v f hf hbij h_recent 1 (by omega) (by omega) h1_in h_no_int
+      rw [mul_one] at h_fib_sum
+      have h_card_eq : (Finset.univ.filter (fun k : Fin P => v (k.val + 1) = 1)).card = Fintype.card (Fin P) := by {
+        rw [Fintype.card_fin]
+        exact h_fib_sum
+      }
+      have h_eq_univ : Finset.univ.filter (fun k : Fin P => v (k.val + 1) = 1) = Finset.univ := by {
+        apply Finset.eq_of_subset_of_card_le (Finset.filter_subset _ _)
+        rw [h_card_eq, Finset.card_univ]
+      }
+      have h_mem : k_no1 ∈ Finset.univ.filter (fun k : Fin P => v (k.val + 1) = 1) := by {
+        rw [h_eq_univ]
+        exact Finset.mem_univ k_no1
+      }
+      have h_v1 : v (k_no1.val + 1) = 1 := by {
+        have h_mem_filter := Finset.mem_filter.mp h_mem
+        exact h_mem_filter.right
+      }
+      exact hk_no1 h_v1
     }
     have hX_ge_1 : X ≥ 1 := by rw [← hk_eq]; exact hv1 k
     omega
@@ -1160,9 +1208,108 @@ lemma combinatorial_squeeze (P : ℕ) (hP : P ≥ 4)
       exact hc
     }
     have h_is_ap := vanEck_fiber_is_ap P hP v f hf hbij h_recent X (by { have hk := hv1 k; rw [hk_eq] at hk; omega }) (by { have hk := hvP k; rw [hk_eq] at hk; exact hk }) h_in h_no_int
-    -- The Finset isomorphism between the backward orbit and the forward arithmetic progression
-    -- is mathematically trivial but tedious in Lean. We defer it to focus on the combinatorial squeeze.
-    sorry
+    let k0 := Classical.choose h_in
+    use k0
+    have h_div_X : X ∣ P := h_div X hX
+    have h_L : P / Nat.gcd P X = P / X := by {
+      congr 1
+      exact Nat.gcd_eq_right h_div_X
+    }
+    have h_L_pos : P / Nat.gcd P X > 0 := by {
+      rw [h_L]
+      exact Nat.div_pos (by { have hk := hvP k; rw [hk_eq] at hk; exact hk }) (by { have hk := hv1 k; rw [hk_eq] at hk; omega })
+    }
+    let L := P / Nat.gcd P X
+    let orbit := Finset.image (fun n : Fin L => (⟨(k0.val + P - (n.val * X) % P) % P, Nat.mod_lt _ hP_pos⟩ : Fin P)) Finset.univ
+    have h_cov_eq_orb : cover X = orbit := h_is_ap
+    have h_orb_sub_filter : orbit ⊆ Finset.filter (fun (k : Fin P) => ∃ i : ℕ, k.val = (k0.val + i * X) % P) Finset.univ := by {
+      intro y hy
+      rw [Finset.mem_image] at hy
+      rcases hy with ⟨n, _, hn_eq⟩
+      rw [Finset.mem_filter]
+      constructor
+      · exact Finset.mem_univ y
+      · use L - n.val
+        have hn_lt : n.val * X < L * X := by {
+          have h_lt_L : n.val < L := n.isLt
+          have hX_pos : X > 0 := by { have hk := hv1 k; rw [hk_eq] at hk; omega }
+          exact Nat.mul_lt_mul_of_pos_right h_lt_L hX_pos
+        }
+        have h_LX_eq_P : L * X = P := by {
+          change P / P.gcd X * X = P
+          rw [h_L]
+          exact Nat.div_mul_cancel h_div_X
+        }
+        have h_mod_val : (n.val * X) % P = n.val * X := by {
+          rw [h_LX_eq_P] at hn_lt
+          exact Nat.mod_eq_of_lt hn_lt
+        }
+        have h_val : y.val = (k0.val + P - n.val * X) % P := by {
+          rw [← hn_eq]
+          dsimp
+          rw [h_mod_val]
+        }
+        rw [h_val]
+        congr 1
+        have h_sub_X : (L - n.val) * X = P - n.val * X := by {
+          rw [Nat.sub_mul, h_LX_eq_P]
+        }
+        rw [h_sub_X]
+        omega
+    }
+    have h_filter_sub_img : Finset.filter (fun (k : Fin P) => ∃ i : ℕ, k.val = (k0.val + i * X) % P) Finset.univ ⊆
+        Finset.image (fun r : Fin L => (⟨(k0.val + r.val * X) % P, Nat.mod_lt _ hP_pos⟩ : Fin P)) Finset.univ := by {
+      intro y hy
+      rw [Finset.mem_filter] at hy
+      rcases hy.2 with ⟨i, hi_eq⟩
+      rw [Finset.mem_image]
+      let r_val := i % L
+      have hr_lt : r_val < L := Nat.mod_lt _ h_L_pos
+      let r : Fin L := ⟨r_val, hr_lt⟩
+      use r
+      constructor
+      · exact Finset.mem_univ r
+      · apply Fin.eq_of_val_eq
+        rw [hi_eq]
+        have h_LX_eq_P : L * X = P := by {
+          change P / P.gcd X * X = P
+          rw [h_L]
+          exact Nat.div_mul_cancel h_div_X
+        }
+        have h_eq_mod : (i * X) % P = (r.val * X) % P := by {
+          rw [← h_LX_eq_P]
+          change (i * X) % (L * X) = (r_val * X) % (L * X)
+          rw [Nat.mul_mod_mul_right, Nat.mul_mod_mul_right]
+          dsimp [r_val]
+          rw [Nat.mod_mod]
+        }
+        have h_add : (k0.val + r.val * X) % P = (k0.val + i * X) % P := by {
+          rw [Nat.add_mod, ← h_eq_mod, ← Nat.add_mod]
+        }
+        exact h_add
+    }
+    have h_card_le : (Finset.filter (fun (k : Fin P) => ∃ i : ℕ, k.val = (k0.val + i * X) % P) Finset.univ).card ≤ (cover X).card := by {
+      have h1 : (Finset.filter (fun (k : Fin P) => ∃ i : ℕ, k.val = (k0.val + i * X) % P) Finset.univ).card ≤
+          (Finset.image (fun r : Fin L => (⟨(k0.val + r.val * X) % P, Nat.mod_lt _ hP_pos⟩ : Fin P)) Finset.univ).card := Finset.card_le_card h_filter_sub_img
+      have h2 : (Finset.image (fun r : Fin L => (⟨(k0.val + r.val * X) % P, Nat.mod_lt _ hP_pos⟩ : Fin P)) Finset.univ).card ≤ L := by {
+        have h_le := Finset.card_image_le (f := fun r : Fin L => (⟨(k0.val + r.val * X) % P, Nat.mod_lt _ hP_pos⟩ : Fin P)) (s := Finset.univ)
+        rw [Finset.card_univ, Fintype.card_fin] at h_le
+        exact h_le
+      }
+      have h3 : L = orbit.card := by {
+        have h_inj : Function.Injective (fun n : Fin L => (⟨(k0.val + P - (n.val * X) % P) % P, Nat.mod_lt _ hP_pos⟩ : Fin P)) := by {
+          intro n1 n2 heq
+          have h_val : (k0.val + P - (n1.val * X) % P) % P = (k0.val + P - (n2.val * X) % P) % P := by injection heq
+          haveI : NeZero P := ⟨by omega⟩
+          have h_eq_nat := orbit_inj P k0.val X n1.val n2.val n1.isLt n2.isLt h_val
+          exact Fin.eq_of_val_eq h_eq_nat
+        }
+        rw [Finset.card_image_of_injective Finset.univ h_inj, Finset.card_univ, Fintype.card_fin]
+      }
+      rw [h_cov_eq_orb]
+      omega
+    }
+    exact Finset.eq_of_subset_of_card_le (by { rw [h_cov_eq_orb]; exact h_orb_sub_filter }) h_card_le
   }
   --
   exact mirsky_newman_exact_cover P hP_pos S h_min h_div cover h_partition h_ap
@@ -1565,11 +1712,42 @@ lemma finite_cycle_gap_collapse (n_1 n_2 K : ℕ)
         have hf_nat : ∀ k : Fin P, (f k).val = (k.val + P - v_nat (k.val + 1)) % P := fun k => h_mod_eq k
         have h_recent_nat : ∀ k : Fin P, v_nat ((f k).val + 1) = v_nat (k.val + 1) := by {
           intro k
-          -- The function f(k) evaluates to k - v(k+1) mod P.
-          -- This represents tracing backwards from index k exactly the gap size v(k+1).
-          -- By the Van Eck sequence definition, the previous occurrence of the number v(k+1)
-          -- is exactly at index k - v(k+1). Thus the value at f(k) must equal the value at k.
-          -- Therefore v_nat((f k).val + 1) = v_nat(k.val + 1).
+          dsimp [v_nat]
+          let X := vanEckNthTerm (n_2 + k.val + 1)
+          let y := (f k).val
+          have h_y_lt : y < P := (f k).isLt
+          have h_P_pos : P > 0 := by omega
+          have hX_le : X ≤ P := h_val_le_P (k.val + 1) (by omega) (by omega)
+          have h_mod_add : (P + k.val + 1 - X) % P = (y + 1) % P := by {
+            have h_eq : P + k.val + 1 - X = (k.val + P - X) + 1 := by omega
+            rw [h_eq]
+            have h_mod1 := Nat.add_mod (k.val + P - X) 1 P
+            have h_mod2 := Nat.add_mod y 1 P
+            have h_1_mod : 1 % P = 1 := Nat.mod_eq_of_lt (by omega)
+            rw [h_1_mod] at h_mod1 h_mod2
+            have h_y_mod : y % P = y := Nat.mod_eq_of_lt h_y_lt
+            rw [h_y_mod] at h_mod2
+            have h_def : (k.val + P - X) % P = y := rfl
+            rw [h_def] at h_mod1
+            rw [h_mod1, h_mod2]
+          }
+          have h_eq_mod : vanEckNthTerm (n_2 + y + 1) = vanEckNthTerm (n_2 + k.val + 1 - X) := by {
+            have h_per_y : vanEckNthTerm (n_2 + y + 1) = vanEckNthTerm (n_1 + y + 1) := by {
+              have h_y_le_K : y + 1 ≤ K := by omega
+              exact (h_per (y + 1) h_y_le_K).symm
+            }
+            have h_per_y_mod : vanEckNthTerm (n_1 + y + 1) = vanEckNthTerm (n_1 + (y + 1) % P) := by {
+              apply periodic_mod_eq n_1 n_2 K P rfl hn1_lt_n2 h_per (y + 1) (by omega)
+            }
+            have h_per_x_mod : vanEckNthTerm (n_1 + (P + k.val + 1 - X) % P) = vanEckNthTerm (n_1 + (P + k.val + 1 - X)) := by {
+              apply (periodic_mod_eq n_1 n_2 K P rfl hn1_lt_n2 h_per (P + k.val + 1 - X) (by omega)).symm
+            }
+            have h_assoc : n_1 + P + k.val + 1 - X = n_1 + (P + k.val + 1 - X) := by omega
+            have h_eq_idx : n_1 + P + k.val + 1 - X = n_2 + k.val + 1 - X := by omega
+            rw [h_per_y, h_per_y_mod, h_mod_add.symm, h_per_x_mod, h_assoc.symm, h_eq_idx]
+          }
+          change vanEckNthTerm (n_2 + y + 1) = vanEckNthTerm (n_2 + k.val + 1)
+          rw [h_eq_mod]
           sorry
         }
         have h_no_intermediate_nat : ∀ k : Fin P, ∀ i < v_nat (k.val + 1), i > 0 → v_nat ((k.val + P - i) % P + 1) ≠ v_nat (k.val + 1) := by {
