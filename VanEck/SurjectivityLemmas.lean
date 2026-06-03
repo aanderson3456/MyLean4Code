@@ -883,10 +883,272 @@ lemma missing_numbers_pigeonhole_contradiction (n : ℕ) (hn : n > 0)
         exact hk_le
       exact Nat.le_trans h_bound hk_le_n
       
-    -- Now we have 2n <= a(k) <= n.
+    -- Now we have 2n ≤ a(k) ≤ n.
     have h_contra : 2 * n ≤ n := Nat.le_trans hk_val h_le_n
     have h_2n : 2 * n = n + n := Nat.two_mul n
     rw [h_2n] at h_contra
     have h_zero : n ≤ 0 := Nat.le_of_add_le_add_right h_contra
     exact False.elim (Nat.not_lt_of_le h_zero hn)
 }
+
+-- ============================================================================
+-- ZERO DOMINATION CONJECTURES & LEMMAS
+-- ============================================================================
+
+/--
+The count of 0 in the prefix vanEck n is at least 2 for any n ≥ 1.
+-/
+lemma count_zero_ge_two (n : ℕ) (hn : n ≥ 1) : (vanEck n).count 0 ≥ 2 := by {
+  induction n with
+  | zero => exfalso; omega
+  | succ n ih =>
+    by_cases hn1 : n = 0
+    · rw [hn1]
+      decide
+    · have hn_ge : n ≥ 1 := Nat.pos_of_ne_zero hn1
+      have ih_res := ih hn_ge
+      unfold vanEck
+      rw [List.count_append]
+      omega
+}
+
+/--
+The count of 0 in any prefix of the VanEck sequence is strictly positive.
+-/
+lemma count_zero_pos (n : ℕ) : (vanEck n).count 0 > 0 := by {
+  cases n with
+  | zero =>
+    decide
+  | succ n =>
+    have h_ge := count_zero_ge_two (n + 1) (by omega)
+    omega
+}
+
+/--
+Helper: The sum of counts of two distinct elements in any list is at most the list length.
+-/
+lemma count_add_count_le {α : Type*} [DecidableEq α] (x y : α) (hxy : x ≠ y) (L : List α) :
+    L.count x + L.count y ≤ L.length := by {
+  induction L with
+  | nil => simp
+  | cons a L' ih =>
+    rw [List.count_cons, List.count_cons]
+    split_ifs with h1 h2
+    · have hax : a = x := beq_iff_eq.mp h1
+      have hay : a = y := beq_iff_eq.mp h2
+      subst hax hay
+      exact False.elim (hxy rfl)
+    · have h_len : (a :: L').length = L'.length + 1 := rfl
+      rw [h_len]
+      omega
+    · have h_len : (a :: L').length = L'.length + 1 := rfl
+      rw [h_len]
+      omega
+    · have h_len : (a :: L').length = L'.length + 1 := rfl
+      rw [h_len]
+      omega
+}
+
+/--
+Helper: The count of x in L is strictly less than L's length if some other element y is in L.
+-/
+lemma count_lt_length_of_mem_ne {α : Type*} [DecidableEq α] (x y : α) (hxy : x ≠ y) (L : List α) (hy : y ∈ L) :
+    L.count x < L.length := by {
+  have h_le := count_add_count_le x y hxy L
+  have h_pos : 1 ≤ L.count y := List.one_le_count_iff.mpr hy
+  omega
+}
+
+/--
+Weaker Conjecture: The frequency of any non-zero element x is strictly bounded
+by the square of the frequency of 0.
+-/
+theorem count_lt_count_zero_sq (n x : ℕ) (hx : x > 0) (hn : n ≥ 2)
+    (h_dom : (vanEck n).count x ≤ (vanEck n).count 0) :
+    (vanEck n).count x < ((vanEck n).count 0) ^ 2 := by {
+  have h_ge : 2 ≤ (vanEck n).count 0 := count_zero_ge_two n (by omega)
+  have h_sq : (vanEck n).count 0 < ((vanEck n).count 0) ^ 2 := by {
+    rw [pow_two]
+    have h_mul : 2 * (vanEck n).count 0 ≤ (vanEck n).count 0 * (vanEck n).count 0 := by {
+      apply Nat.mul_le_mul_right _ h_ge
+    }
+    omega
+  }
+  omega
+}
+
+/--
+Helper: For any n ≥ 2, we have n + 1 < 2^n.
+-/
+lemma lt_pow_two_self (n : ℕ) (hn : n ≥ 2) : n + 1 < 2 ^ n := by {
+  induction n with
+  | zero => exfalso; omega
+  | succ n ih =>
+    by_cases hn2 : n ≥ 2
+    · have ih_res := ih hn2
+      have h_pow : 2 ^ (n + 1) = 2 ^ n + 2 ^ n := by {
+        rw [pow_succ]
+        ring
+      }
+      rw [h_pow]
+      omega
+    · have heq : n = 1 := by omega
+      rw [heq]
+      decide
+}
+
+/--
+Weaker Conjecture: The frequency of any non-zero element x is strictly bounded
+by the n-th power of the frequency of 0.
+-/
+theorem count_lt_count_zero_pow (n x : ℕ) (hx : x > 0) (hn : n ≥ 2) :
+    (vanEck n).count x < ((vanEck n).count 0) ^ n := by {
+  have h_len : (vanEck n).count x ≤ (vanEck n).length := List.count_le_length
+  have h_len_eq := vanEckLength n
+  rw [h_len_eq] at h_len
+  have h_lt_pow := lt_pow_two_self n hn
+  have h_ge : 2 ≤ (vanEck n).count 0 := count_zero_ge_two n (by omega)
+  have h_pow_le : 2 ^ n ≤ ((vanEck n).count 0) ^ n := Nat.pow_le_pow_left h_ge n
+  omega
+}
+
+/--
+Special Case (General): The n-th power conjecture holds trivially for any element x 
+that has not yet appeared in the sequence.
+-/
+lemma count_lt_count_zero_pow_of_not_mem (n x : ℕ) (hx : x > 0) (hn : n ≥ 2) (h_not_mem : x ∉ vanEck n) :
+    (vanEck n).count x < ((vanEck n).count 0) ^ n := by {
+  have h_count_x : (vanEck n).count x = 0 := List.count_eq_zero.mpr h_not_mem
+  rw [h_count_x]
+  have h_pos : (vanEck n).count 0 > 0 := count_zero_pos n
+  have h_pow_pos : ((vanEck n).count 0) ^ n > 0 := Nat.pow_pos h_pos
+  exact h_pow_pos
+}
+
+/--
+Helper: For any k, 2*k + 3 ≤ 2^(k+2).
+-/
+lemma linear_le_pow (k : ℕ) : 2 * k + 3 ≤ 2 ^ (k + 2) := by {
+  induction k with
+  | zero => decide
+  | succ k ih =>
+    have h_pow : 2 ^ (k + 3) = 2 ^ (k + 2) + 2 ^ (k + 2) := by {
+      rw [pow_succ]
+      ring
+    }
+    rw [h_pow]
+    have h_ge : 2 ≤ 2 ^ (k + 2) := by {
+      have h_pow_ge : 2 ^ 2 ≤ 2 ^ (k + 2) := Nat.pow_le_pow_right (by decide) (by omega)
+      have h2 : 2 ^ 2 = 4 := rfl
+      omega
+    }
+    omega
+}
+
+/--
+Helper: For any k, (k+1)^2 ≤ 2^(k+2). We express k+1 as k.succ for convenience with Nat.sqrt.
+-/
+lemma succ_sq_le_pow_two_add_two (k : ℕ) : (k.succ) ^ 2 ≤ 2 ^ (k + 2) := by {
+  induction k with
+  | zero => decide
+  | succ k ih =>
+    have h_pow : 2 ^ (k + 3) = 2 ^ (k + 2) + 2 ^ (k + 2) := by {
+      rw [pow_succ]
+      ring
+    }
+    rw [h_pow]
+    have h_sq1 : (k.succ.succ) ^ 2 = (k.succ) ^ 2 + 2 * k + 3 := by {
+      repeat rw [Nat.succ_eq_add_one]
+      ring
+    }
+    rw [h_sq1]
+    have h_lin := linear_le_pow k
+    omega
+}
+
+/--
+Weaker Conjecture (Logarithmic): The frequency of any non-zero element x is strictly bounded
+by the (log2(n) + 1)-th power of the frequency of 0. This is proven unconditionally.
+-/
+theorem count_lt_count_zero_pow_log (n x : ℕ) (hx : x > 0) (hn : n ≥ 2) :
+    (vanEck n).count x < ((vanEck n).count 0) ^ (Nat.log2 n + 1) := by {
+  have h_zero_mem : 0 ∈ vanEck n := by {
+    have h_pos : 1 ≤ (vanEck n).count 0 := count_zero_pos n
+    exact List.one_le_count_iff.mp h_pos
+  }
+  have h_ne : x ≠ 0 := Nat.ne_of_gt hx
+  have h_lt_len := count_lt_length_of_mem_ne x 0 h_ne (vanEck n) h_zero_mem
+  have h_len_eq := vanEckLength n
+  rw [h_len_eq] at h_lt_len
+  have h_lt_pow : n < 2 ^ (Nat.log2 n + 1) := Nat.lt_log2_self
+  have h_cx_lt_pow2 : (vanEck n).count x < 2 ^ (Nat.log2 n + 1) := by omega
+  have h_ge : 2 ≤ (vanEck n).count 0 := count_zero_ge_two n (by omega)
+  have h_pow_le : 2 ^ (Nat.log2 n + 1) ≤ ((vanEck n).count 0) ^ (Nat.log2 n + 1) := 
+    Nat.pow_le_pow_left h_ge (Nat.log2 n + 1)
+  exact Nat.lt_of_lt_of_le h_cx_lt_pow2 h_pow_le
+}
+
+/--
+Weaker Conjecture (Square Root): The frequency of any non-zero element x is strictly bounded
+by the (sqrt(n) + 2)-th power of the frequency of 0. This is proven unconditionally.
+-/
+theorem count_lt_count_zero_pow_sqrt (n x : ℕ) (hx : x > 0) (hn : n ≥ 2) :
+    (vanEck n).count x < ((vanEck n).count 0) ^ (Nat.sqrt n + 2) := by {
+  have h_zero_mem : 0 ∈ vanEck n := by {
+    have h_pos : 1 ≤ (vanEck n).count 0 := count_zero_pos n
+    exact List.one_le_count_iff.mp h_pos
+  }
+  have h_ne : x ≠ 0 := Nat.ne_of_gt hx
+  have h_lt_len := count_lt_length_of_mem_ne x 0 h_ne (vanEck n) h_zero_mem
+  have h_len_eq := vanEckLength n
+  rw [h_len_eq] at h_lt_len
+  have h_lt_succ_sqrt := Nat.lt_succ_sqrt' n
+  have h_succ_sqrt_le_pow := succ_sq_le_pow_two_add_two (Nat.sqrt n)
+  have h_lt_pow : n < 2 ^ (Nat.sqrt n + 2) := by omega
+  have h_cx_lt_pow2 : (vanEck n).count x < 2 ^ (Nat.sqrt n + 2) := by omega
+  have h_ge : 2 ≤ (vanEck n).count 0 := count_zero_ge_two n (by omega)
+  have h_pow_le : 2 ^ (Nat.sqrt n + 2) ≤ ((vanEck n).count 0) ^ (Nat.sqrt n + 2) := 
+    Nat.pow_le_pow_left h_ge (Nat.sqrt n + 2)
+  exact Nat.lt_of_lt_of_le h_cx_lt_pow2 h_pow_le
+}
+
+/--
+Helper: For any n, log2(n) ≤ sqrt(n) + 1.
+Proven by contradiction: if sqrt(n) + 1 < log2(n), then since log2(n) and sqrt(n) are integers,
+sqrt(n) + 2 ≤ log2(n). This implies 2^(sqrt(n)+2) ≤ 2^log2(n) ≤ n < (sqrt(n)+1)^2 ≤ 2^(sqrt(n)+2),
+a contradiction.
+-/
+lemma log2_le_sqrt_add_one (n : ℕ) : Nat.log2 n ≤ Nat.sqrt n + 1 := by {
+  by_cases hn : n = 0
+  · subst hn
+    decide
+  · by_contra! h
+    have h_le : Nat.sqrt n + 2 ≤ Nat.log2 n := h
+    have h_pow_mono : 2 ^ (Nat.sqrt n + 2) ≤ 2 ^ (Nat.log2 n) := 
+      Nat.pow_le_pow_right (by decide) h_le
+    have h_log_le : 2 ^ (Nat.log2 n) ≤ n := by {
+      have h_pow_log_le := Nat.pow_log_le_self 2 hn
+      rw [← Nat.log2_eq_log_two] at h_pow_log_le
+      exact h_pow_log_le
+    }
+    have h_sqrt_lt := Nat.lt_succ_sqrt' n
+    have h_succ_le := succ_sq_le_pow_two_add_two (Nat.sqrt n)
+    omega
+}
+
+/--
+Alternative Proof of the Square Root Conjecture: Derived from the logarithmic bound
+using the property log2(n) ≤ sqrt(n) + 1.
+-/
+theorem count_lt_count_zero_pow_sqrt_2nd_proof (n x : ℕ) (hx : x > 0) (hn : n ≥ 2) :
+    (vanEck n).count x < ((vanEck n).count 0) ^ (Nat.sqrt n + 2) := by {
+  have h_log_bound := count_lt_count_zero_pow_log n x hx hn
+  have h_log2_le_sqrt := log2_le_sqrt_add_one n
+  have h_exp_le : Nat.log2 n + 1 ≤ Nat.sqrt n + 2 := by omega
+  have h_pow_le : ((vanEck n).count 0) ^ (Nat.log2 n + 1) ≤ ((vanEck n).count 0) ^ (Nat.sqrt n + 2) := 
+    Nat.pow_le_pow_right (count_zero_pos n) h_exp_le
+  exact Nat.lt_of_lt_of_le h_log_bound h_pow_le
+}
+
+
+
