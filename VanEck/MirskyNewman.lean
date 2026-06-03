@@ -517,6 +517,101 @@ lemma vanEck_fiber_is_ap (P : ℕ) (hP : P ≥ 4)
 }
 
 
+open Complex
+
+noncomputable def evalAP (X start P : ℕ) (z : ℂ) : ℂ :=
+  z ^ start * ∑ j ∈ Finset.range (P / X), (z ^ X) ^ j
+
+lemma pow_mod_eq_of_pow_eq_one (z : ℂ) (P : ℕ) (A : ℕ) (hz : z ^ P = 1) :
+    z ^ (A % P) = z ^ A := by {
+  have hA : A = P * (A / P) + A % P := Nat.div_add_mod A P |>.symm
+  nth_rw 2 [hA]
+  rw [pow_add, pow_mul, hz, one_pow, one_mul]
+}
+
+lemma evalAP_eq_sum_cover (X start P : ℕ) (z : ℂ) (hzP : z ^ P = 1) :
+    evalAP X start P z = ∑ i ∈ Finset.range (P / X), z ^ ((start + i * X) % P) := by {
+  unfold evalAP
+  rw [Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [pow_mod_eq_of_pow_eq_one z P _ hzP]
+  rw [pow_add]
+  congr 1
+  rw [← pow_mul]
+  congr 1
+  exact Nat.mul_comm _ _
+}
+
+lemma geom_sum_zero_of_pow_eq_one (x : ℂ) (n : ℕ) (hx : x ^ n = 1) (hx1 : x ≠ 1) :
+    ∑ j ∈ Finset.range n, x ^ j = 0 := by {
+  have h1 : (∑ j ∈ Finset.range n, x ^ j) * (x - 1) = x ^ n - 1 := geom_sum_mul x n
+  rw [hx, sub_self] at h1
+  cases mul_eq_zero.mp h1 with
+  | inl h => exact h
+  | inr h =>
+    have h_contra : x = 1 := by exact sub_eq_zero.mp h
+    exact False.elim (hx1 h_contra)
+}
+
+lemma evalAP_of_lt (X P Xmax : ℕ) (start : ℕ) (z : ℂ) (hz : IsPrimitiveRoot z Xmax)
+    (h_lt : X < Xmax) (h_divX : X ∣ P) (h_divXmax : Xmax ∣ P) (h_pos : 0 < X) :
+    evalAP X start P z = 0 := by {
+  unfold evalAP
+  have h_pow : (z ^ X) ^ (P / X) = 1 := by {
+    rw [← pow_mul]
+    have h_mul_comm : X * (P / X) = (P / X) * X := Nat.mul_comm _ _
+    rw [h_mul_comm]
+    have h_mul : P / X * X = P := Nat.div_mul_cancel h_divX
+    rw [h_mul]
+    have h_p : P = Xmax * (P / Xmax) := by {
+      have h1 := (Nat.div_mul_cancel h_divXmax).symm
+      rw [Nat.mul_comm] at h1
+      exact h1
+    }
+    rw [h_p, pow_mul, hz.pow_eq_one, one_pow]
+  }
+  have h_ne : z ^ X ≠ 1 := by {
+    intro h
+    have h_dvd : Xmax ∣ X := hz.dvd_of_pow_eq_one X h
+    have h_le : Xmax ≤ X := Nat.le_of_dvd h_pos h_dvd
+    omega
+  }
+  have h_sum := geom_sum_zero_of_pow_eq_one (z ^ X) (P / X) h_pow h_ne
+  rw [h_sum, mul_zero]
+}
+
+lemma evalAP_of_eq (X P : ℕ) (start : ℕ) (z : ℂ) (hz : IsPrimitiveRoot z X) (h_pos : 0 < X) (h_divX : X ∣ P) :
+    evalAP X start P z = ((P / X : ℕ) : ℂ) * z ^ start := by {
+  unfold evalAP
+  have h_pow : z ^ X = 1 := hz.pow_eq_one
+  rw [h_pow]
+  have h_sum : ∑ j ∈ Finset.range (P / X), (1 : ℂ) ^ j = ((P / X : ℕ) : ℂ) := by {
+    have h1 : ∀ j ∈ Finset.range (P / X), (1 : ℂ) ^ j = 1 := fun j _ => one_pow j
+    rw [Finset.sum_congr rfl h1]
+    rw [Finset.sum_const, Finset.card_range, nsmul_one]
+  }
+  rw [h_sum]
+  exact mul_comm _ _
+}
+
+lemma root_of_unity_exists (n : ℕ) (hn : n ≠ 0) : IsPrimitiveRoot (Complex.exp (2 * Real.pi * Complex.I / n)) n := by {
+  exact Complex.isPrimitiveRoot_exp n hn
+}
+
+lemma total_sum_eq_zero (P Xmax : ℕ) (z : ℂ) (hP : P > 0) (hz : IsPrimitiveRoot z Xmax) (h_div : Xmax ∣ P) (hXmax_ge_3 : Xmax ≥ 3) :
+    ∑ k ∈ Finset.univ (α := Fin P), z ^ k.val = 0 := by sorry
+
+lemma sum_cover_eq_evalAP (P X : ℕ) (start : Fin P) (z : ℂ) (hzP : z ^ P = 1)
+    (coverX : Finset (Fin P))
+    (h_ap : coverX = Finset.filter (fun (k : Fin P) => ∃ i : ℕ, k.val = (start.val + i * X) % P) Finset.univ)
+    (h_div : X ∣ P) :
+    ∑ k ∈ coverX, z ^ k.val = evalAP X start.val P z := by sorry
+
+lemma total_sum_eq_sum_cover (P : ℕ) (S : Finset ℕ) (cover : ℕ → Finset (Fin P)) (z : ℂ)
+    (h_partition : ∀ k : Fin P, ∃! X, X ∈ S ∧ k ∈ cover X) :
+    ∑ k ∈ Finset.univ (α := Fin P), z ^ k.val = ∑ X ∈ S, ∑ k ∈ cover X, z ^ k.val := by sorry
+
 /--
 The Mirsky-Newman Theorem (Exact Cover System Theorem)
 It is impossible to partition a finite cyclic group into arithmetic
@@ -529,5 +624,102 @@ theorem mirsky_newman_exact_cover (P : ℕ) (hP : P > 0) (S : Finset ℕ)
     (h_partition : ∀ k : Fin P, ∃! X, X ∈ S ∧ k ∈ cover X)
     (h_ap : ∀ X ∈ S, ∃ start : Fin P, cover X = Finset.filter (fun (k : Fin P) => ∃ i : ℕ, k.val = (start.val + i * X) % P) Finset.univ) :
     False := by {
-  sorry
+  have h_S_nonempty : S.Nonempty := by {
+    have h_0 : (⟨0, hP⟩ : Fin P) ∈ Finset.univ := Finset.mem_univ _
+    have h_ex := h_partition ⟨0, hP⟩
+    rcases h_ex with ⟨X, ⟨hX_in, _⟩, _⟩
+    exact ⟨X, hX_in⟩
+  }
+  
+  let Xmax := S.max' h_S_nonempty
+  have hXmax_in : Xmax ∈ S := Finset.max'_mem S h_S_nonempty
+  have hXmax_ge_3 : Xmax ≥ 3 := h_min Xmax hXmax_in
+  have h_div_Xmax : Xmax ∣ P := h_div Xmax hXmax_in
+  
+  have hXmax_pos : Xmax ≠ 0 := by omega
+  have h_exists_root := root_of_unity_exists Xmax hXmax_pos
+  let ζ := Complex.exp (2 * Real.pi * Complex.I / Xmax)
+  have hz : IsPrimitiveRoot ζ Xmax := h_exists_root
+  
+  have hzP : ζ ^ P = 1 := by {
+    have h_p : P = Xmax * (P / Xmax) := by {
+      have h1 := (Nat.div_mul_cancel h_div_Xmax).symm
+      rw [Nat.mul_comm] at h1
+      exact h1
+    }
+    rw [h_p, pow_mul, hz.pow_eq_one, one_pow]
+  }
+
+  have h_sum1 := total_sum_eq_zero P Xmax ζ hP hz h_div_Xmax hXmax_ge_3
+  have h_sum2 := total_sum_eq_sum_cover P S cover ζ h_partition
+  rw [h_sum1] at h_sum2
+  
+  let start_val (X : ℕ) : ℕ := if h : X ∈ S then (Classical.choose (h_ap X h)).val else 0
+  
+  have h_sum_eval : ∑ X ∈ S, ∑ k ∈ cover X, ζ ^ k.val = ∑ X ∈ S, evalAP X (start_val X) P ζ := by {
+    apply Finset.sum_congr rfl
+    intro X hX
+    have h_start := Classical.choose_spec (h_ap X hX)
+    have h_sv : start_val X = (Classical.choose (h_ap X hX)).val := dif_pos hX
+    rw [h_sv]
+    exact sum_cover_eq_evalAP P X (Classical.choose (h_ap X hX)) ζ hzP (cover X) h_start (h_div X hX)
+  }
+  rw [h_sum_eval] at h_sum2
+  
+  have h_sum_split : ∑ X ∈ S, evalAP X (start_val X) P ζ = 
+      evalAP Xmax (start_val Xmax) P ζ + 
+      ∑ X ∈ (S.erase Xmax), evalAP X (start_val X) P ζ := by {
+    have h1 := Finset.add_sum_erase S (fun X => evalAP X (start_val X) P ζ) hXmax_in
+    exact h1.symm
+  }
+  rw [h_sum_split] at h_sum2
+  
+  have h_other_zero : ∑ X ∈ (S.erase Xmax), evalAP X (start_val X) P ζ = 0 := by {
+    apply Finset.sum_eq_zero
+    intro X hX_erase
+    have hX_in_S := Finset.mem_of_mem_erase hX_erase
+    have h_lt : X < Xmax := by {
+      have h_le := Finset.le_max' S X hX_in_S
+      have hX_ne := Finset.ne_of_mem_erase hX_erase
+      omega
+    }
+    have hX_pos2 : 0 < X := by {
+      have h3 := h_min X hX_in_S
+      omega
+    }
+    exact evalAP_of_lt X P Xmax _ ζ hz h_lt (h_div X hX_in_S) h_div_Xmax hX_pos2
+  }
+  rw [h_other_zero, add_zero] at h_sum2
+  
+  have hXmax_pos2 : 0 < Xmax := by omega
+  have h_eq_term := evalAP_of_eq Xmax P (start_val Xmax) ζ hz hXmax_pos2 (h_div_Xmax)
+  rw [h_eq_term] at h_sum2
+  
+  have h_zero : (0 : ℂ) = ((P / Xmax : ℕ) : ℂ) * ζ ^ (start_val Xmax) := h_sum2
+  
+  have h_fac1 : ((P / Xmax : ℕ) : ℂ) ≠ 0 := by {
+    intro h
+    have h1 : P / Xmax = 0 := by exact Nat.cast_eq_zero.mp h
+    have h2 : P = 0 := by {
+      have hp := Nat.div_mul_cancel h_div_Xmax
+      rw [h1, zero_mul] at hp
+      exact hp.symm
+    }
+    omega
+  }
+  
+  have h_fac2 : ζ ^ (start_val Xmax) ≠ 0 := by {
+    have h_z_ne_zero : ζ ≠ 0 := by {
+      intro h
+      have h_pow_zero : ζ ^ Xmax = 0 := by {
+        rw [h]
+        exact zero_pow hXmax_pos
+      }
+      rw [hz.pow_eq_one] at h_pow_zero
+      exact one_ne_zero h_pow_zero
+    }
+    exact pow_ne_zero _ h_z_ne_zero
+  }
+  
+  exact mul_ne_zero h_fac1 h_fac2 h_zero.symm
 }
