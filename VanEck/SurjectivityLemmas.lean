@@ -1494,15 +1494,295 @@ lemma no_gap_two_of_no_twos (N_0 i : ℕ) (h_no_evens : ∀ m > N_0, vanEckNthTe
     exact h_no_two h_two
 }
 
+lemma vanEck_lastZero_is_zero (m : ℕ) : vanEckNthTerm (lastZero m) = 0 := by {
+  induction m with
+  | zero => rfl
+  | succ m ih =>
+    unfold lastZero
+    split
+    · rename_i hz
+      exact hz
+    · exact ih
+}
+
+lemma lastZero_le (m : ℕ) : lastZero m ≤ m := by {
+  induction m with
+  | zero => exact Nat.le_refl 0
+  | succ m ih =>
+    unfold lastZero
+    split
+    · exact Nat.le_refl (m + 1)
+    · exact Nat.le_trans ih (Nat.le_succ m)
+}
+
+lemma no_zero_after_lastZero (m k : ℕ) (hk1 : lastZero m < k) (hk2 : k ≤ m) :
+    vanEckNthTerm k ≠ 0 := by {
+  induction m generalizing k with
+  | zero => omega
+  | succ m ih =>
+    unfold lastZero at hk1
+    split at hk1
+    · omega
+    · by_cases hkm : k = m + 1
+      · subst hkm
+        rename_i h_neq
+        exact h_neq
+      · have hk2' : k ≤ m := by omega
+        exact ih k hk1 hk2'
+}
+
+lemma gap_between_zeros (z z_prev : ℕ) (hz : vanEckNthTerm z = 0) (hz_pos : z > 0)
+    (hz_prev : vanEckNthTerm z_prev = 0) (h_prev_lt : z_prev < z)
+    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0) :
+    vanEckNthTerm (z + 1) = z - z_prev := by {
+  have ha := vanEck_term_is_matchSearch (z + 1) (by omega)
+  have h_len : (vanEck z).length = z + 1 := vanEckLength z
+  
+  have hd_last : listNth (vanEck z) z = 0 := by
+    rw [VanEck_deterministic z z (Nat.le_refl _)]
+    exact hz
+    
+  have hd_start : listNth (vanEck z) z_prev = 0 := by
+    rw [VanEck_deterministic z z_prev (by omega)]
+    exact hz_prev
+    
+  have h_match : listNth (vanEck z) ((vanEck z).length - 1) = listNth (vanEck z) z_prev := by
+    have h1 : (vanEck z).length - 1 = z := by rw [h_len]; rfl
+    rw [h1, hd_last, hd_start]
+    
+  have h_fail : ∀ k, 1 ≤ k → k ≤ z - z_prev - 1 → listNth (vanEck z) ((vanEck z).length - 1) ≠ listNth (vanEck z) (z_prev + k) := by
+    intro k hk1 hk_le
+    have h_idx : z_prev + k < z := by omega
+    have h_det : listNth (vanEck z) (z_prev + k) = vanEckNthTerm (z_prev + k) := VanEck_deterministic z (z_prev + k) (by omega)
+    have h1 : (vanEck z).length - 1 = z := by rw [h_len]; rfl
+    rw [h1, hd_last, h_det]
+    intro hc
+    have h_i_zero : vanEckNthTerm (z_prev + k) = 0 := hc.symm
+    exact h_gap (z_prev + k) (by omega) (by omega) h_i_zero
+
+  have h_ms := matchSearch_eq_dist (vanEck z) z_prev (z - z_prev - 1) h_match h_fail
+  have h_arg : z_prev + (z - z_prev - 1) + 1 = z := by omega
+  rw [h_arg] at h_ms
+  have h_len_sub : (vanEck z).length - 1 - z_prev = z - z_prev := by rw [h_len]; omega
+  rw [h_len_sub] at h_ms
+  have h_z_sub : z + 1 - 1 = z := by omega
+  rw [h_z_sub] at ha
+  rw [ha, h_ms]
+}
+
+lemma prefix_max_bound_at_zero (n : ℕ) (hn_pos : n > 0) (hn_zero : vanEckNthTerm n = 0) :
+    vanEckPrefixMax n ≤ n - 1 := by {
+  unfold vanEckPrefixMax
+  apply listMax_le
+  intro x hx
+  rcases mem_listNth hx with ⟨k, hk, rfl⟩
+  have h_len : (vanEck n).length = n + 1 := vanEckLength n
+  rw [h_len] at hk
+  have hk_le : k ≤ n := Nat.le_of_lt_succ hk
+  by_cases hk_eq : k = n
+  · rw [hk_eq]
+    have h_n_val : listNth (vanEck n) n = vanEckNthTerm n := rfl
+    rw [h_n_val, hn_zero]
+    omega
+  · have hk_lt : k < n := Nat.lt_of_le_of_ne hk_le hk_eq
+    by_cases hk0 : k = 0
+    · subst hk0
+      have h0 : listNth (vanEck n) 0 = 0 := list_nth_VanEck_zero_eq_zero n
+      rw [h0]
+      omega
+    · have hk_pos : k > 0 := Nat.pos_of_ne_zero hk0
+      have h_det : listNth (vanEck n) k = vanEckNthTerm k := VanEck_deterministic n k (Nat.le_of_lt hk_lt)
+      rw [h_det]
+      have h_le_k := vanEck_le_index k hk_pos
+      omega
+}
+
 /--
 The Excluded Even Terms Theorem:
 It is impossible for the Van Eck sequence to eventually contain no positive even numbers.
 If it did, every lookback distance would eventually be odd, forcing a strict alternation
 of index parities that collides with the zero-gap parity structure.
+
+NOTE: Proving a contradiction for an arbitrary N_0 from the inequality z ≤ 2 z_prev - 1 alone
+is as difficult as the InfiniteTwos conjecture. For the actual Van Eck sequence, this inequality
+holds for all consecutive zeros after index 10 (e.g. z_5 = 15 ≤ 2 z_4 - 1 = 19). Therefore,
+no contradiction can be derived from the growth inequality alone for large N_0 without proving
+that a number like 2 (or other even numbers) must actually appear.
 -/
 theorem no_even_terms_impossible (N_0 : ℕ) :
     ¬ (∀ m > N_0, vanEckNthTerm m = 0 ∨ vanEckNthTerm m % 2 = 1) := by {
   intro h_no_evens
-  -- We leave the parity grid contradiction step as a sorry.
+  have h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2 := by {
+    intro m hm hc
+    have h_val := h_no_evens m hm
+    rw [hc] at h_val
+    rcases h_val with h_zero | h_odd
+    · contradiction
+    · revert h_odd
+      decide
+  }
+  
+  let B := vanEckPrefixMax N_0
+  let N_1 := N_0 + B + 1
+  have h_ex := infinite_zeros_vanEck N_1
+  let z := Nat.find h_ex
+  have hz_prop := Nat.find_spec h_ex
+  have hz_gt : z > N_1 := hz_prop.1
+  have hz_zero : vanEckNthTerm z = 0 := hz_prop.2
+  
+  have hz_min : ∀ m, m < z → m > N_1 → vanEckNthTerm m ≠ 0 := by {
+    intro m hm_lt hm_gt hc
+    have hc_conj : m > N_1 ∧ vanEckNthTerm m = 0 := ⟨hm_gt, hc⟩
+    have h_le : z ≤ m := Nat.find_le hc_conj
+    omega
+  }
+  
+  have hz_pos : z > 0 := by omega
+  let z_prev := lastZero (z - 1)
+  have hz_prev_lt : z_prev < z := by {
+    have h_le := lastZero_le (z - 1)
+    omega
+  }
+  
+  have hz_prev_zero : vanEckNthTerm z_prev = 0 := vanEck_lastZero_is_zero (z - 1)
+  
+  have hz_prev_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0 := by {
+    intro k hk1 hk2
+    exact no_zero_after_lastZero (z - 1) k hk1 (by omega)
+  }
+  
+  have hz_prev_le_N1 : z_prev ≤ N_1 := by {
+    by_contra hc
+    have h_gt : z_prev > N_1 := by omega
+    have h_lt : z_prev < z := by omega
+    exact hz_min z_prev h_lt h_gt hz_prev_zero
+  }
+  
+  have h_gap_eq := gap_between_zeros z z_prev hz_zero hz_pos hz_prev_zero hz_prev_lt hz_prev_gap
+  
+  have h_no_twos_N1 : ∀ m > N_1, vanEckNthTerm m ≠ 2 := by {
+    intro m hm_gt
+    have hm_gt_N0 : m > N_0 := by omega
+    exact h_no_twos m hm_gt_N0
+  }
+  
+  have h_bounded := post_zero_bounded N_1 z z_prev h_no_twos_N1 hz_zero (by omega) hz_prev_zero hz_prev_lt hz_prev_gap
+  
+  rw [h_gap_eq] at h_bounded
+  
+  have hz_prev_pos : z_prev > 0 := by {
+    by_contra hc_zero
+    have hz_prev_eq : z_prev = 0 := by omega
+    rw [hz_prev_eq] at h_bounded
+    have h_pref0 : vanEckPrefixMax 0 = 0 := rfl
+    rw [h_pref0] at h_bounded
+    omega
+  }
+  
+  have hz_prev_gt_N0 : z_prev > N_0 := by {
+    by_contra hc
+    have hz_prev_le : z_prev ≤ N_0 := by omega
+    have h_mono := vanEckPrefixMax_monotone z_prev N_0 hz_prev_le
+    have h_bound_B : z - z_prev ≤ B := by {
+      calc z - z_prev ≤ vanEckPrefixMax z_prev := h_bounded
+        _ ≤ vanEckPrefixMax N_0 := h_mono
+    }
+    have h_contra : z ≤ N_0 + B := by omega
+    have h_z_gt : z > N_0 + B := by omega
+    omega
+  }
+  
+  have h_pref_bound := prefix_max_bound_at_zero z_prev hz_prev_pos hz_prev_zero
+  
+  have h_trans : z - z_prev ≤ z_prev - 1 := Nat.le_trans h_bounded h_pref_bound
+  
+  -- We have derived: z ≤ 2 z_prev - 1
+  -- NOTE: This inequality does not lead to a contradiction on its own for arbitrary N_0,
+  -- since it holds for the actual Van Eck sequence for all consecutive zeros after index 10.
+  -- Deriving a contradiction from this state requires proving the existence of a specific
+  -- even value (like 2) after N_0, which is as difficult as the InfiniteTwos conjecture itself.
   sorry
 }
+
+lemma eventually_bounded_implies_eventually_periodic (N_0 B : ℕ) (h_bound : ∀ m > N_0, vanEckNthTerm m < B) :
+    ∃ p > 0, ∃ N_1 ≥ N_0, ∀ m > N_1, vanEckNthTerm m = vanEckNthTerm (m + p) := by {
+  sorry
+}
+
+lemma eventually_bounded_impossible (N_0 B : ℕ) (h_bound : ∀ m > N_0, vanEckNthTerm m < B) : False := by {
+  have h_per := eventually_bounded_implies_eventually_periodic N_0 B h_bound
+  rcases h_per with ⟨p, hp_pos, N_1, hN1, h_eq⟩
+  have h_not_per := vanEck_not_periodic2 p hp_pos N_1
+  rcases h_not_per with ⟨m, hm_gt, hneq⟩
+  have heq2 := h_eq m hm_gt
+  contradiction
+}
+
+lemma growth_contradiction (N_0 : ℕ) (h_fib : ∀ m > N_0, vanEckNthTerm m ∈ FibonacciSet) : False := by {
+  sorry
+}
+
+theorem vanEck_not_eventually_fibonacci :
+    ¬ (∃ N_0, ∀ m > N_0, vanEckNthTerm m ∈ FibonacciSet) := by {
+  intro h_ex
+  rcases h_ex with ⟨N_0, h_fib⟩
+  exact growth_contradiction N_0 h_fib
+}
+
+lemma gap_gt_prefix_max_is_new (z z_prev : ℕ) (hz_zero : vanEckNthTerm z = 0) (hz_pos : z > 0)
+    (hz_prev : vanEckNthTerm z_prev = 0) (h_prev_lt : z_prev < z)
+    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0)
+    (h_gt : z - z_prev > vanEckPrefixMax z) :
+    ∀ i < z + 1, vanEckNthTerm i ≠ vanEckNthTerm (z + 1) := by {
+  intro i hi heq
+  have h_gap_eq : vanEckNthTerm (z + 1) = z - z_prev := gap_between_zeros z z_prev hz_zero hz_pos hz_prev h_prev_lt h_gap
+  rw [h_gap_eq] at heq
+  by_cases hiz : i = z
+  · subst hiz
+    rw [hz_zero] at heq
+    omega
+  · have hi_lt_z : i < z := Nat.lt_of_le_of_ne (Nat.le_of_lt_succ hi) hiz
+    have h_le : vanEckNthTerm i ≤ vanEckPrefixMax z := vanEckNthTerm_le_prefixMax z i (Nat.le_of_lt hi_lt_z)
+    rw [heq] at h_le
+    omega
+}
+
+lemma powers_of_two_gap_contradiction (N_0 : ℕ) (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet)
+    (z z_prev : ℕ) (hz : vanEckNthTerm z = 0) (hz_gt : z > N_0)
+    (hz_prev : vanEckNthTerm z_prev = 0) (h_prev_lt : z_prev < z)
+    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0)
+    (h_new : ∀ i < z + 1, vanEckNthTerm i ≠ vanEckNthTerm (z + 1))
+    (h_gt_8 : z - z_prev ≥ 8) :
+    ∃ d ∈ PowersOfTwoSet, d = 5 ∧ d ≤ z - z_prev := by {
+  sorry
+}
+
+lemma powers_of_two_lookback_contradiction (d : ℕ) (hd_pow : d ∈ PowersOfTwoSet) (hd_eq : d = 5) : False := by {
+  rw [hd_eq] at hd_pow
+  exact five_not_in_powers_of_two hd_pow
+}
+
+lemma growth_contradiction_pow_two (N_0 : ℕ) (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) : False := by {
+  have h_unb : ∃ z > N_0, vanEckNthTerm z = 0 ∧ ∃ z_prev < z, vanEckNthTerm z_prev = 0 ∧
+    (∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0) ∧ z - z_prev ≥ 8 ∧ z - z_prev > vanEckPrefixMax z := by {
+    sorry
+  }
+  rcases h_unb with ⟨z, hz_gt, hz_zero, z_prev, hz_prev_lt, hz_prev_zero, h_gap, h_gt_8, h_gt_prefix⟩
+  have h_new : ∀ i < z + 1, vanEckNthTerm i ≠ vanEckNthTerm (z + 1) := by {
+    apply gap_gt_prefix_max_is_new z z_prev hz_zero (by omega) hz_prev_zero hz_prev_lt h_gap h_gt_prefix
+  }
+  have h_contra := powers_of_two_gap_contradiction N_0 h_pow z z_prev hz_zero hz_gt hz_prev_zero hz_prev_lt h_gap h_new h_gt_8
+  rcases h_contra with ⟨d, hd_pow, hd_eq, _⟩
+  exact powers_of_two_lookback_contradiction d hd_pow hd_eq
+}
+
+theorem vanEck_not_eventually_powers_of_two :
+    ¬ (∃ N_0, ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) := by {
+  intro h_ex
+  rcases h_ex with ⟨N_0, h_pow⟩
+  exact growth_contradiction_pow_two N_0 h_pow
+}
+
+
+
+

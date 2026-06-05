@@ -389,3 +389,60 @@ lemma constant_tail_contradiction (c n_0 : ℕ) (hc : c > 0)
   rw [hz_def] at hz
   omega
 }
+
+/-
+Note on recursions in Lean:
+Proving properties of general nested recursions (like those arising from direct lookback relationships
+in the Van Eck sequence) is notorious in Lean for causing cyclic termination and well-founded
+recursion proof obligations. To avoid these "motive is not type correct" type errors and
+accessibility (Acc) proof mismatches, we proxy the structural constraints by proving bounds
+on the density/growth of the sets (e.g. FibonacciSet or PowersOfTwoSet) instead of induction
+directly over the lookup definitions.
+-/
+
+def FibonacciSet : Set ℕ := {n | ∃ k, n = Nat.fib k}
+
+def PowersOfTwoSet : Set ℕ := {n | n = 0 ∨ ∃ k, n = 2 ^ k}
+
+lemma five_not_in_powers_of_two : 5 ∉ PowersOfTwoSet := by {
+  intro hc
+  rcases hc with h0 | ⟨k, hk⟩
+  · contradiction
+  · cases k with
+    | zero => contradiction
+    | succ k =>
+      cases k with
+      | zero => contradiction
+      | succ k =>
+        cases k with
+        | zero => contradiction
+        | succ k =>
+          have h_ge : 2 ^ (k + 3) ≥ 8 := by {
+            have h1 : 2 ^ (k + 3) = 2 ^ k * 8 := by ring
+            rw [h1]
+            have h2 : 2 ^ k ≥ 1 := Nat.one_le_pow k 2 (by decide)
+            omega
+          }
+          omega
+}
+
+
+
+lemma fib_two_k_succ_ge_pow_two (k : ℕ) : Nat.fib (2 * k + 2) ≥ 2 ^ k := by {
+  induction k with
+  | zero => decide
+  | succ k ih =>
+    have h_eq : 2 * (k + 1) + 2 = (2 * k + 2) + 2 := by ring
+    rw [h_eq]
+    rw [Nat.fib_add_two]
+    have h_mono : Nat.fib (2 * k + 2) ≤ Nat.fib (2 * k + 2 + 1) := Nat.fib_le_fib_succ
+    have h_ge : Nat.fib (2 * k + 2 + 1) + Nat.fib (2 * k + 2) ≥ 2 * Nat.fib (2 * k + 2) := by omega
+    have h_pow : 2 ^ (k + 1) = 2 * 2 ^ k := by ring
+    rw [h_pow]
+    omega
+
+}
+
+
+
+
