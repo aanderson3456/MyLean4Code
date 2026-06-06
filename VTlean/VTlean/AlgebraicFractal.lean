@@ -532,7 +532,17 @@ lemma perfect_code_1_step_sum {n : Nat} (hn : 0 < n) (c : List.Vector B (n + 1) 
 
 /-- The recursive unrolling of the perfect code equation forces the total cardinality
 to match one of the n+1 combinatorial subset sums T(n, k, a). -/
-lemma perfect_code_card_eq_sum_T {n : Nat} (c : List.Vector B n → Nat) (hc : is_perfect_algebraic n c) :
-  ∃ a, (∑ x, c x) = ∑ k ∈ Finset.Iic n, T n k a := by sorry
+theorem perfect_code_card_eq_sum_T {n : Nat} (c : List.Vector B n → Nat) (hc : is_perfect_algebraic n c) :
+  ∃ a, (∑ x, c x) = ∑ k ∈ Finset.Iic n, T n k a := by {
+  sorry
+}
 
-
+/-!
+### Summary of the Recurrence Failures
+Recursive list-level and vector-level run-count bijections were successfully proven and verified. However,
+the recurrence theorems `weight_slice_recurrence` and `C_slice_recurrence` are false in general for perfect codes
+because they only hold for specific syndrome values (i.e., $a \le 1$) and fail for other syndromes. For instance, the perfect
+code $VT(3, 2) = \{010, 111\}$ has $C\_slice\ c\ 0 = 0$, causing the recurrence to select syndrome $a = 1$ and yielding
+$C\_slice\ c\ 2 + C\_slice\ c\ 1 = S(3, 2, 1) = 2$. However, the actual weight-slice sum of $VT(3, 2)$ is $0 + 1 = 1$,
+which matches $S(3, 2, 2) = 1$. Similarly, `weight_slice_recurrence` assumes a specific syndrome and fails for $VT(2, 1) = \{10\}$.
+-/
