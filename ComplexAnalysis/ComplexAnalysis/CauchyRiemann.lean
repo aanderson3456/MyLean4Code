@@ -1,4 +1,8 @@
-/- formalization copyright Austin Anderson using Gemini 2026 -/
+/-
+  This formalization of complex analysis is spearheaded by Austin Anderson, aided by Gemini.
+  Donald Sarason holds the copyright on his "Notes on Complex Function Theory".
+  Donald Sarason is Austin Anderson's mathematical genealogy grandfather.
+-/
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Pow
