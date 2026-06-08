@@ -1,3 +1,4 @@
+/- formalization copyright Austin Anderson using Gemini 2026 -/
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Pow
