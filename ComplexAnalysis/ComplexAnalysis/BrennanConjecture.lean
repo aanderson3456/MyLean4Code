@@ -85,7 +85,96 @@ noncomputable def koebeInv (w : ℂ) : ℂ :=
 
 --  The principal complex square root has a positive real part on the slit plane.
 theorem csqrt_re_pos (z : ℂ) (hz : z ∈ slitPlane) : 0 < (csqrt z).re := by {
-  sorry
+  unfold csqrt
+  rw [exp_re]
+  apply mul_pos
+  · exact Real.exp_pos _
+  · have h_im : (log z / 2).im = z.arg / 2 := by {
+      rw [div_im, log_im]
+      norm_num
+      ring
+    }
+    rw [h_im]
+    apply Real.cos_pos_of_mem_Ioo
+    constructor
+    · have h_arg := neg_pi_lt_arg z
+      linarith
+    · have h_arg_ne := slitPlane_arg_ne_pi hz
+      have h_arg_le := arg_le_pi z
+      have h_arg_lt : z.arg < Real.pi := lt_of_le_of_ne h_arg_le h_arg_ne
+      linarith
+}
+
+--  For a complex number with positive real part, the square root of its square is itself.
+lemma csqrt_sq_eq_self {A : ℂ} (hA : 0 < A.re) : csqrt (A ^ 2) = A := by {
+  have hA0 : A ≠ 0 := by {
+    intro h
+    subst h
+    simp at hA
+  }
+  have h_arg : -(Real.pi / 2) < A.arg ∧ A.arg < Real.pi / 2 := by {
+    have h_abs := (abs_arg_lt_pi_div_two_iff.mpr (Or.inl hA))
+    exact abs_lt.mp h_abs
+  }
+  have h_arg_double : A.arg + A.arg ∈ Set.Ioc (-Real.pi) Real.pi := by {
+    constructor
+    · linarith [h_arg.1]
+    · linarith [h_arg.2]
+  }
+  have h_log_sq : Complex.log (A ^ 2) = 2 * Complex.log A := by {
+    rw [sq]
+    have h_log_mul := (log_mul_eq_add_log_iff hA0 hA0).mpr h_arg_double
+    rw [h_log_mul]
+    ring
+  }
+  unfold csqrt
+  rw [h_log_sq]
+  have h_div : 2 * Complex.log A / 2 = Complex.log A := by ring
+  rw [h_div]
+  exact Complex.exp_log hA0
+}
+
+--  The real part of (1+z)/(1-z) is positive for z in the unit disk.
+lemma re_one_add_div_one_sub_pos {z : ℂ} (hz : ‖z‖ < 1) : 0 < ((1 + z) / (1 - z)).re := by {
+  rw [div_re]
+  have h_num : (1 + z).re * (1 - z).re + (1 + z).im * (1 - z).im = 1 - ‖z‖ ^ 2 := by {
+    simp only [add_re, one_re, sub_re, add_im, one_im, zero_add, sub_im, zero_sub]
+    rw [← Complex.normSq_eq_norm_sq]
+    rw [Complex.normSq_apply]
+    ring
+  }
+  rw [← add_div, h_num]
+  apply div_pos
+  · have h_norm_sq : ‖z‖ ^ 2 < 1 := by {
+      have hz_nonneg := norm_nonneg z
+      nlinarith
+    }
+    linarith
+  · rw [normSq_pos]
+    intro h_sub
+    have hz1 : z = 1 := (sub_eq_zero.mp h_sub).symm
+    have h_norm : ‖z‖ = 1 := by rw [hz1, norm_one]
+    linarith
+}
+
+--  An algebraic identity matching 4w + 1 to ((1+z)/(1-z))^2 for w = koebe z.
+lemma koebe_algebraic_identity {z : ℂ} (hz : ‖z‖ < 1) : 4 * (z / (1 - z) ^ 2) + 1 = ((1 + z) / (1 - z)) ^ 2 := by {
+  have h_ne : 1 - z ≠ 0 := by {
+    intro h_sub
+    have hz1 : z = 1 := (sub_eq_zero.mp h_sub).symm
+    have h_norm : ‖z‖ = 1 := by rw [hz1, norm_one]
+    linarith
+  }
+  have h_sq_ne : (1 - z) ^ 2 ≠ 0 := pow_ne_zero 2 h_ne
+  rw [div_pow]
+  apply (eq_div_iff h_sq_ne).mpr
+  calc (4 * (z / (1 - z) ^ 2) + 1) * (1 - z) ^ 2
+    _ = (4 * (z / (1 - z) ^ 2)) * (1 - z) ^ 2 + (1 - z) ^ 2 := by ring
+    _ = 4 * (z / (1 - z) ^ 2 * (1 - z) ^ 2) + (1 - z) ^ 2 := by ring
+    _ = 4 * z + (1 - z) ^ 2 := by {
+      rw [div_mul_cancel₀ _ h_sq_ne]
+    }
+    _ = (1 + z) ^ 2 := by ring
 }
 
 --  The inverse Koebe function maps the Koebe slit domain into the open unit disk.
@@ -141,11 +230,70 @@ theorem koebeInv_target_mapping (w : ℂ) (hw : w ∈ KoebeSlitDomain) : ‖koeb
     exact (div_lt_one h_norm_pos).mpr h_norm_lt
 }
 
+--  The algebraic branch simplification for koebeInv (koebe z) when z ≠ 0.
+lemma koebeInv_koebe_nonzero {z : ℂ} (hz : ‖z‖ < 1) (h : koebe z ≠ 0) : koebeInv (koebe z) = z := by {
+  let w := koebe z
+  have h_ne : 1 - z ≠ 0 := by {
+    intro h_sub
+    have hz1 : z = 1 := (sub_eq_zero.mp h_sub).symm
+    have h_norm : ‖z‖ = 1 := by rw [hz1, norm_one]
+    linarith
+  }
+  have h_sq_ne : (1 - z) ^ 2 ≠ 0 := pow_ne_zero 2 h_ne
+  have h_alg := koebe_algebraic_identity hz
+  have h_csqrt : csqrt (4 * w + 1) = (1 + z) / (1 - z) := by {
+    change csqrt (4 * (z / (1 - z) ^ 2) + 1) = (1 + z) / (1 - z)
+    rw [h_alg]
+    exact csqrt_sq_eq_self (re_one_add_div_one_sub_pos hz)
+  }
+  have h_w_eq : 2 * w * (1 - z) = 2 * z / (1 - z) := by {
+    unfold w koebe
+    calc 2 * (z / (1 - z) ^ 2) * (1 - z)
+      _ = 2 * z / (1 - z) ^ 2 * (1 - z) := by ring
+      _ = 2 * z * (1 - z) / (1 - z) ^ 2 := by ring
+      _ = 2 * z * (1 - z) / ((1 - z) * (1 - z)) := by rw [sq]
+      _ = 2 * z / (1 - z) := by {
+        rw [mul_div_mul_right _ _ h_ne]
+      }
+  }
+  have h_alg2 : (2 * w + 1) - (1 + z) / (1 - z) = z * (2 * w) := by {
+    have h_zero : 2 * w * (1 - z) + 1 - (1 + z) / (1 - z) = 0 := by {
+      rw [h_w_eq]
+      calc 2 * z / (1 - z) + 1 - (1 + z) / (1 - z)
+        _ = 2 * z / (1 - z) + (1 - (1 + z) / (1 - z)) := by ring
+        _ = 2 * z / (1 - z) + ((1 - z) - (1 + z)) / (1 - z) := by {
+          have : 1 - (1 + z) / (1 - z) = ((1 - z) - (1 + z)) / (1 - z) := by {
+            rw [sub_div, div_self h_ne]
+          }
+          rw [this]
+        }
+        _ = (2 * z + ((1 - z) - (1 + z))) / (1 - z) := by rw [← add_div]
+        _ = 0 := by {
+          have : 2 * z + ((1 - z) - (1 + z)) = 0 := by ring
+          rw [this, zero_div]
+        }
+    }
+    calc (2 * w + 1) - (1 + z) / (1 - z)
+      _ = 2 * w * (1 - z) + 1 - (1 + z) / (1 - z) + 2 * w * z := by ring
+      _ = 0 + 2 * w * z := by rw [h_zero]
+      _ = z * (2 * w) := by ring
+  }
+  have h_2w_ne : 2 * w ≠ 0 := by {
+    exact mul_ne_zero (by norm_num) h
+  }
+  unfold koebeInv
+  split_ifs with hw
+  · contradiction
+  · rw [h_csqrt]
+    exact (div_eq_iff h_2w_ne).mpr h_alg2
+}
+
 --  The inverse Koebe function is a left inverse of the Koebe function on the unit disk.
 theorem koebeInv_koebe (z : ℂ) (hz : ‖z‖ < 1) : koebeInv (koebe z) = z := by {
-  unfold koebeInv koebe
-  split_ifs with h
-  · have hz0 : z = 0 := by {
+  by_cases h : koebe z = 0
+  · unfold koebeInv
+    rw [if_pos h]
+    have hz0 : z = 0 := by {
       have h_div : z / (1 - z) ^ 2 = 0 := h
       have h_or := div_eq_zero_iff.mp h_div
       rcases h_or with hz0 | h_den
@@ -157,8 +305,7 @@ theorem koebeInv_koebe (z : ℂ) (hz : ‖z‖ < 1) : koebeInv (koebe z) = z := 
     }
     subst hz0
     simp
-  · -- core branch cut selection step: csqrt (4 * w + 1) = (1 + z) / (1 - z)
-    sorry
+  · exact koebeInv_koebe_nonzero hz h
 }
 
 theorem koebe_koebeInv (w : ℂ) (hw : w ∈ KoebeSlitDomain) : koebe (koebeInv w) = w := by {
@@ -245,9 +392,68 @@ theorem koebe_koebeInv (w : ℂ) (hw : w ∈ KoebeSlitDomain) : koebe (koebeInv 
     exact h_div_eq
 }
 
---  The inverse Koebe function is differentiable on the Koebe slit domain.
+--  The inverse Koebe function can be written in a simplified form without piecewise definition.
+lemma koebeInv_eq_simplified (w : ℂ) (hw : w ∈ KoebeSlitDomain) :
+    koebeInv w = (csqrt (4 * w + 1) - 1) / (csqrt (4 * w + 1) + 1) := by {
+  unfold koebeInv
+  split_ifs with h
+  · subst h
+    have h1 : csqrt (4 * 0 + 1) = 1 := by {
+      simp only [mul_zero, zero_add]
+      unfold csqrt
+      rw [Complex.log_one, zero_div, Complex.exp_zero]
+    }
+    rw [h1]
+    simp
+  · let B := csqrt (4 * w + 1)
+    have hB_plane := koebe_domain_mapping w hw
+    have hB_ne_neg1 : B + 1 ≠ 0 := by {
+      intro h_eq
+      have h_re : (B + 1).re = 0 := by rw [h_eq, zero_re]
+      simp only [add_re, one_re] at h_re
+      have hB_re := csqrt_re_pos (4 * w + 1) hB_plane
+      linarith
+    }
+    have hB2 : B ^ 2 = 4 * w + 1 := csqrt_sq (4 * w + 1) hB_plane
+    have h_2w : 2 * w ≠ 0 := mul_ne_zero (by norm_num) h
+    apply (div_eq_div_iff h_2w hB_ne_neg1).mpr
+    calc (2 * w + 1 - B) * (B + 1)
+      _ = 2 * w * B + 2 * w + 1 - B ^ 2 := by ring
+      _ = 2 * w * B + 2 * w + 1 - (4 * w + 1) := by rw [hB2]
+      _ = (B - 1) * (2 * w) := by ring
+}
+
 theorem differentiableOn_koebeInv : DifferentiableOn ℂ koebeInv KoebeSlitDomain := by {
-  sorry
+  have h_eq : EqOn koebeInv (fun w => (csqrt (4 * w + 1) - 1) / (csqrt (4 * w + 1) + 1)) KoebeSlitDomain := by {
+    intro w hw
+    exact koebeInv_eq_simplified w hw
+  }
+  apply DifferentiableOn.congr (f := fun w => (csqrt (4 * w + 1) - 1) / (csqrt (4 * w + 1) + 1)) _ h_eq
+  have h_diff : DifferentiableOn ℂ (fun w => 4 * w + 1) KoebeSlitDomain := by {
+    apply DifferentiableOn.add_const
+    apply DifferentiableOn.const_mul
+    exact differentiableOn_id
+  }
+  have h_map : MapsTo (fun w => 4 * w + 1) KoebeSlitDomain slitPlane := by {
+    intro w hw
+    exact koebe_domain_mapping w hw
+  }
+  have h_diff_csqrt : DifferentiableOn ℂ (csqrt ∘ (fun w => 4 * w + 1)) KoebeSlitDomain := by {
+    exact DifferentiableOn.comp differentiableOn_csqrt h_diff h_map
+  }
+  apply DifferentiableOn.div
+  · apply DifferentiableOn.sub_const
+    exact h_diff_csqrt
+  · apply DifferentiableOn.add_const
+    exact h_diff_csqrt
+  · intro w hw
+    let B := csqrt (4 * w + 1)
+    have hB_plane := koebe_domain_mapping w hw
+    have hB_re := csqrt_re_pos (4 * w + 1) hB_plane
+    intro h_eq2
+    have h_re : (B + 1).re = 0 := by rw [h_eq2, zero_re]
+    simp only [add_re, one_re] at h_re
+    linarith
 }
 
 --  The derivative of the inverse Koebe function is given by (1 - K^-1(w))^3 / (1 + K^-1(w)).
