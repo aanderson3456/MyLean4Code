@@ -227,6 +227,183 @@ theorem chordal_dist_limit (z : ℂ) :
       rw [mul_div_cancel₀ ε hC.ne']
     }
     linarith
+  }
+
+open BigOperators
+
+/--
+  Stereographic projection map Φ from the complex plane ℂ to the Riemann Sphere in ℝ³.
+  Maps z = x + iy to a point (x₁, x₂, x₃) on the unit sphere in ℝ³.
+-/
+noncomputable def Φ (z : ℂ) : EuclideanSpace ℝ (Fin 3) :=
+  WithLp.equiv 2 (Fin 3 → ℝ) |>.symm ![
+    2 * z.re / (‖z‖ ^ 2 + 1),
+    2 * z.im / (‖z‖ ^ 2 + 1),
+    (‖z‖ ^ 2 - 1) / (‖z‖ ^ 2 + 1)
+  ]
+
+--  Component evaluation lemmas for Φ at index 0, 1, and 2.
+lemma Φ_apply_zero (z : ℂ) : Φ z 0 = 2 * z.re / (‖z‖ ^ 2 + 1) := by {
+  unfold Φ
+  simp
+}
+
+lemma Φ_apply_one (z : ℂ) : Φ z 1 = 2 * z.im / (‖z‖ ^ 2 + 1) := by {
+  unfold Φ
+  simp
+}
+
+lemma Φ_apply_two (z : ℂ) : Φ z 2 = (‖z‖ ^ 2 - 1) / (‖z‖ ^ 2 + 1) := by {
+  unfold Φ
+  simp
+}
+
+--  Lemma expressing the norm squared of a complex number in terms of its real and imaginary parts.
+lemma norm_sq_eq_re_im (u : ℂ) : ‖u‖ ^ 2 = u.re ^ 2 + u.im ^ 2 := by {
+  rw [← Complex.normSq_eq_norm_sq]
+  rw [Complex.normSq_apply]
+  ring
+}
+
+--  Lemma expressing the norm squared of a complex difference in terms of real coordinates.
+lemma sub_norm_sq_eq_re_im (z w : ℂ) : ‖z - w‖ ^ 2 = (z.re - w.re) ^ 2 + (z.im - w.im) ^ 2 := by {
+  have := norm_sq_eq_re_im (z - w)
+  simp only [sub_re, sub_im] at this
+  exact this
+}
+
+--  Algebraic identity establishing equality between the Euclidean distance squared in ℝ³ and the chordal metric formula.
+lemma Φ_ident (z w : ℂ) :
+    (Φ z 0 - Φ w 0) ^ 2 + (Φ z 1 - Φ w 1) ^ 2 + (Φ z 2 - Φ w 2) ^ 2 =
+      (4 * ‖z - w‖ ^ 2) / ((‖z‖ ^ 2 + 1) * (‖w‖ ^ 2 + 1)) := by {
+  rw [Φ_apply_zero, Φ_apply_one, Φ_apply_two]
+  rw [Φ_apply_zero, Φ_apply_one, Φ_apply_two]
+  rw [norm_sq_eq_re_im z, norm_sq_eq_re_im w, sub_norm_sq_eq_re_im z w]
+  have hz_den : z.re ^ 2 + z.im ^ 2 + 1 ≠ 0 := by {
+    have : 0 ≤ z.re ^ 2 + z.im ^ 2 := add_nonneg (sq_nonneg _) (sq_nonneg _)
+    linarith
+  }
+  have hw_den : w.re ^ 2 + w.im ^ 2 + 1 ≠ 0 := by {
+    have : 0 ≤ w.re ^ 2 + w.im ^ 2 := add_nonneg (sq_nonneg _) (sq_nonneg _)
+    linarith
+  }
+  field_simp
+  ring
+}
+
+--  Expansion of the Euclidean distance squared of the projected points in ℝ³.
+lemma dist_sq_Φ (z w : ℂ) : dist (Φ z) (Φ w) ^ 2 = (Φ z 0 - Φ w 0) ^ 2 + (Φ z 1 - Φ w 1) ^ 2 + (Φ z 2 - Φ w 2) ^ 2 := by {
+  rw [EuclideanSpace.dist_sq_eq, Fin.sum_univ_three]
+  simp only [Real.dist_eq]
+  have h_sq (a b : ℝ) : |a - b| ^ 2 = (a - b) ^ 2 := sq_abs (a - b)
+  rw [h_sq, h_sq, h_sq]
+}
+
+--  Non-negativity of the chordalMetric function.
+lemma chordalMetric_nonneg (z w : ℂ) : 0 ≤ chordalMetric z w := by {
+  unfold chordalMetric
+  apply div_nonneg
+  · apply mul_nonneg (by norm_num) (norm_nonneg _)
+  · apply mul_nonneg
+    · apply Real.sqrt_nonneg
+    · apply Real.sqrt_nonneg
+}
+
+--  Equality of the squares of the Euclidean distance and the chordalMetric.
+lemma dist_sq_eq_chordalMetric_sq (z w : ℂ) : dist (Φ z) (Φ w) ^ 2 = chordalMetric z w ^ 2 := by {
+  rw [dist_sq_Φ, Φ_ident]
+  unfold chordalMetric
+  rw [div_pow, mul_pow]
+  have h_sq1 : (2 : ℝ) ^ 2 = 4 := by norm_num
+  rw [h_sq1]
+  have h_sqrt_z : Real.sqrt (‖z‖ ^ 2 + 1) ^ 2 = ‖z‖ ^ 2 + 1 := by {
+    apply Real.sq_sqrt
+    have : 0 ≤ ‖z‖ ^ 2 := sq_nonneg ‖z‖
+    linarith
+  }
+  have h_sqrt_w : Real.sqrt (‖w‖ ^ 2 + 1) ^ 2 = ‖w‖ ^ 2 + 1 := by {
+    apply Real.sq_sqrt
+    have : 0 ≤ ‖w‖ ^ 2 := sq_nonneg ‖w‖
+    linarith
+  }
+  rw [mul_pow, h_sqrt_z, h_sqrt_w]
+}
+
+--  Euclidean distance between projected points matches the chordalMetric.
+theorem dist_Φ_eq_chordalMetric (z w : ℂ) : dist (Φ z) (Φ w) = chordalMetric z w := by {
+  have h_sq := dist_sq_eq_chordalMetric_sq z w
+  have h_dist_nonneg : 0 ≤ dist (Φ z) (Φ w) := dist_nonneg
+  have h_chordal_nonneg := chordalMetric_nonneg z w
+  have h_eq : Real.sqrt (dist (Φ z) (Φ w) ^ 2) = Real.sqrt (chordalMetric z w ^ 2) := congrArg Real.sqrt h_sq
+  rw [Real.sqrt_sq h_dist_nonneg, Real.sqrt_sq h_chordal_nonneg] at h_eq
+  exact h_eq
+}
+
+--  Helper establishing equality of norms if two points map to the same point on the sphere.
+lemma norm_eq_of_Φ_eq {z w : ℂ} (h : Φ z = Φ w) : ‖z‖ = ‖w‖ := by {
+  have h2 : Φ z 2 = Φ w 2 := congrArg (fun f => f 2) h
+  rw [Φ_apply_two z, Φ_apply_two w] at h2
+  have hz_den : ‖z‖ ^ 2 + 1 ≠ 0 := by {
+    have : 0 ≤ ‖z‖ ^ 2 := sq_nonneg ‖z‖
+    linarith
+  }
+  have hw_den : ‖w‖ ^ 2 + 1 ≠ 0 := by {
+    have : 0 ≤ ‖w‖ ^ 2 := sq_nonneg ‖w‖
+    linarith
+  }
+  have h_mul := (div_eq_div_iff hz_den hw_den).mp h2
+  have h_ring : ‖z‖ ^ 2 = ‖w‖ ^ 2 := by {
+    linarith [h_mul]
+  }
+  have hz_nonneg := norm_nonneg z
+  have hw_nonneg := norm_nonneg w
+  have h_diff : (‖z‖ - ‖w‖) * (‖z‖ + ‖w‖) = 0 := by {
+    calc (‖z‖ - ‖w‖) * (‖z‖ + ‖w‖) = ‖z‖ ^ 2 - ‖w‖ ^ 2 := by ring
+    _ = 0 := by linarith [h_ring]
+  }
+  cases mul_eq_zero.mp h_diff with
+  | inl h_sub => linarith [h_sub]
+  | inr h_add =>
+    have : ‖z‖ = 0 := by linarith [hz_nonneg, hw_nonneg, h_add]
+    have : ‖w‖ = 0 := by linarith [hz_nonneg, hw_nonneg, h_add]
+    linarith
+}
+
+--  Injectivity of the stereographic projection map Φ.
+lemma Φ_injective : Function.Injective Φ := by {
+  intro z w h
+  have h_norm := norm_eq_of_Φ_eq h
+  have h0 : Φ z 0 = Φ w 0 := congrArg (fun f => f 0) h
+  have h1 : Φ z 1 = Φ w 1 := congrArg (fun f => f 1) h
+  rw [Φ_apply_zero z, Φ_apply_zero w, h_norm] at h0
+  rw [Φ_apply_one z, Φ_apply_one w, h_norm] at h1
+  have hz_den : ‖w‖ ^ 2 + 1 ≠ 0 := by {
+    have : 0 ≤ ‖w‖ ^ 2 := sq_nonneg ‖w‖
+    linarith
+  }
+  have h_re : z.re = w.re := by {
+    have h0' : 2 * z.re = 2 * w.re := (div_left_inj' hz_den).mp h0
+    linarith
+  }
+  have h_im : z.im = w.im := by {
+    have h1' : 2 * z.im = 2 * w.im := (div_left_inj' hz_den).mp h1
+    linarith
+  }
+  apply Complex.ext
+  · exact h_re
+  · exact h_im
+}
+
+/-- Type synonym for ℂ equipped with the chordal metric. -/
+def Chordalℂ : Type := ℂ
+
+--  MetricSpace instance for Chordalℂ induced by stereographic projection.
+noncomputable instance : MetricSpace Chordalℂ :=
+  MetricSpace.induced (fun (z : Chordalℂ) => Φ (z : ℂ)) Φ_injective inferInstance
+
+--  The distance on Chordalℂ matches the chordalMetric function.
+theorem dist_chordalℂ_eq (z w : Chordalℂ) : dist z w = chordalMetric (z : ℂ) (w : ℂ) := by {
+  exact dist_Φ_eq_chordalMetric (z : ℂ) (w : ℂ)
 }
 
 end Sarason.Ch1

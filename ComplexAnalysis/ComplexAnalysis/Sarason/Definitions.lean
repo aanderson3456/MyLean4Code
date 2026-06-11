@@ -34,8 +34,18 @@ def HasDerivAt_eps (f : ℂ → ℂ) (f' : ℂ) (z₀ : ℂ) : Prop :=
 def DifferentiableAt_eps (f : ℂ → ℂ) (z₀ : ℂ) : Prop :=
   ∃ f', HasDerivAt_eps f f' z₀
 
+-- Weierstrass definition of partial derivative with respect to x.
+def HasPartialDerivX_C_to_R_eps (u : ℂ → ℝ) (ux : ℝ) (z₀ : ℂ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ, 0 < |x - z₀.re| ∧ |x - z₀.re| < δ →
+    |(u ((x : ℂ) + (z₀.im : ℂ) * I) - u z₀) / (x - z₀.re) - ux| < ε
+
+-- Weierstrass definition of partial derivative with respect to y.
+def HasPartialDerivY_C_to_R_eps (u : ℂ → ℝ) (uy : ℝ) (z₀ : ℂ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ y : ℝ, 0 < |y - z₀.im| ∧ |y - z₀.im| < δ →
+    |(u ((z₀.re : ℂ) + (y : ℂ) * I) - u z₀) / (y - z₀.im) - uy| < ε
+
 --  Equivalence theorem between Mathlib's limit at a point (using punctured neighborhoods) and Weierstrass epsilon-delta limit.
-theorem tendsto_nhdsNE_iff_eps (f : ℂ → ℂ) (L z₀ : ℂ) :
+theorem tendsto_nhds_iff_eps (f : ℂ → ℂ) (L z₀ : ℂ) :
     Tendsto f (nhdsWithin z₀ {z₀}ᶜ) (nhds L) ↔ HasLimitAt_eps f L z₀ := by {
   rw [Metric.tendsto_nhdsWithin_nhds]
   simp only [Set.mem_compl_iff, Set.mem_singleton_iff, dist_eq_norm]
@@ -84,7 +94,7 @@ theorem tendsto_cobounded_iff_eps (f : ℂ → ℝ) (L : ℝ) :
 theorem hasDerivAt_iff_eps (f : ℂ → ℂ) (f' z₀ : ℂ) :
     _root_.HasDerivAt f f' z₀ ↔ HasDerivAt_eps f f' z₀ := by {
   rw [hasDerivAt_iff_tendsto_slope]
-  rw [tendsto_nhdsNE_iff_eps]
+  rw [tendsto_nhds_iff_eps]
   unfold HasDerivAt_eps
   rw [slope_fun_def_field]
 }
@@ -103,4 +113,48 @@ theorem differentiableAt_iff_eps (f : ℂ → ℂ) (z₀ : ℂ) :
     exact hf'.differentiableAt
 }
 
+-- Equivalence theorem between Mathlib's 1D derivative at a point (using filters) and Weierstrass epsilon-delta limit.
+theorem hasDerivAt_R_iff_eps (f : ℝ → ℝ) (f' x₀ : ℝ) :
+    _root_.HasDerivAt f f' x₀ ↔ ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ, 0 < |x - x₀| ∧ |x - x₀| < δ → |(f x - f x₀) / (x - x₀) - f'| < ε := by {
+  rw [hasDerivAt_iff_tendsto_slope]
+  rw [Metric.tendsto_nhdsWithin_nhds]
+  simp only [Set.mem_compl_iff, Set.mem_singleton_iff, Real.dist_eq]
+  rw [slope_fun_def_field]
+  constructor
+  · intro h ε hε
+    rcases h ε hε with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro x ⟨hx1, hx2⟩
+    have hx_ne : x ≠ x₀ := sub_ne_zero.mp (abs_pos.mp hx1)
+    exact hδ hx_ne hx2
+  · intro h ε hε
+    rcases h ε hε with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro x hx_ne hx2
+    apply hδ
+    refine ⟨?_, hx2⟩
+    exact abs_pos.mpr (sub_ne_zero.mpr hx_ne)
+}
+
+theorem hasPartialDerivX_iff_eps (u : ℂ → ℝ) (ux : ℝ) (z₀ : ℂ) :
+    _root_.HasDerivAt (fun x : ℝ ↦ u ((x : ℂ) + (z₀.im : ℂ) * I)) ux z₀.re ↔ HasPartialDerivX_C_to_R_eps u ux z₀ := by {
+  rw [hasDerivAt_R_iff_eps]
+  unfold HasPartialDerivX_C_to_R_eps
+  have h_eq : ((z₀.re : ℂ) + (z₀.im : ℂ) * I) = z₀ := by {
+    exact Complex.re_add_im z₀
+  }
+  rw [h_eq]
+}
+
+theorem hasPartialDerivY_iff_eps (u : ℂ → ℝ) (uy : ℝ) (z₀ : ℂ) :
+    _root_.HasDerivAt (fun y : ℝ ↦ u ((z₀.re : ℂ) + (y : ℂ) * I)) uy z₀.im ↔ HasPartialDerivY_C_to_R_eps u uy z₀ := by {
+  rw [hasDerivAt_R_iff_eps]
+  unfold HasPartialDerivY_C_to_R_eps
+  have h_eq : ((z₀.re : ℂ) + (z₀.im : ℂ) * I) = z₀ := by {
+    exact Complex.re_add_im z₀
+  }
+  rw [h_eq]
+}
+
 end Sarason
+
