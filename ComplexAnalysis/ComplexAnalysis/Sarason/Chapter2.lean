@@ -407,6 +407,148 @@ theorem II_7 {G : Set ℂ} (hG : IsOpen G)
   rw [h_eval_I]
 }
 
+theorem hasDerivAt_eps_imp_cauchy_riemann {f : ℂ → ℂ} {f' : ℂ} {z₀ : ℂ} (h : HasDerivAt_eps f f' z₀) :
+    HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).re) f'.re z₀ ∧
+    HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).re) (-f'.im) z₀ ∧
+    HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).im) f'.im z₀ ∧
+    HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).im) f'.re z₀ := by {
+  rw [← hasDerivAt_iff_eps] at h
+  have h_eq_point : ((z₀.re : ℂ) + (z₀.im : ℂ) * I) = z₀ := re_add_im z₀
+  
+  have h_gx : HasDerivAt (fun x : ℝ ↦ (x : ℂ) + (z₀.im : ℂ) * I) (1 : ℂ) z₀.re := by {
+    have h_base : HasDerivAt (fun x : ℝ ↦ (x : ℂ)) 1 z₀.re := by {
+      have h_eq : (fun x : ℝ ↦ (x : ℂ)) = ofRealCLM := by { ext x; rfl }
+      rw [h_eq]
+      have h_fderiv : HasFDerivAt ofRealCLM ofRealCLM z₀.re := ofRealCLM.hasFDerivAt
+      rw [hasDerivAt_iff_hasFDerivAt]
+      have h_clm_eq : ofRealCLM = ContinuousLinearMap.toSpanSingleton ℝ (1 : ℂ) := by {
+        apply ContinuousLinearMap.ext
+        intro r
+        simp [ofRealCLM, ContinuousLinearMap.toSpanSingleton_apply]
+      }
+      rw [h_clm_eq] at h_fderiv ⊢
+      exact h_fderiv
+    }
+    exact HasDerivAt.add_const ((z₀.im : ℂ) * I) h_base
+  }
+
+  have h_gy : HasDerivAt (fun y : ℝ ↦ (z₀.re : ℂ) + (y : ℂ) * I) I z₀.im := by {
+    have h_base : HasDerivAt (fun y : ℝ ↦ (y : ℂ)) 1 z₀.im := by {
+      have h_eq : (fun y : ℝ ↦ (y : ℂ)) = ofRealCLM := by { ext y; rfl }
+      rw [h_eq]
+      have h_fderiv : HasFDerivAt ofRealCLM ofRealCLM z₀.im := ofRealCLM.hasFDerivAt
+      rw [hasDerivAt_iff_hasFDerivAt]
+      have h_clm_eq : ofRealCLM = ContinuousLinearMap.toSpanSingleton ℝ (1 : ℂ) := by {
+        apply ContinuousLinearMap.ext
+        intro r
+        simp [ofRealCLM, ContinuousLinearMap.toSpanSingleton_apply]
+      }
+      rw [h_clm_eq] at h_fderiv ⊢
+      exact h_fderiv
+    }
+    have h_mul := HasDerivAt.const_mul I h_base
+    have h_mul_simp : HasDerivAt (fun y : ℝ ↦ I * (y : ℂ)) I z₀.im := by {
+      simpa using h_mul
+    }
+    have h_base_mul : HasDerivAt (fun y : ℝ ↦ (y : ℂ) * I) I z₀.im := by {
+      have h_eq : (fun y : ℝ ↦ (y : ℂ) * I) = (fun y : ℝ ↦ I * (y : ℂ)) := by {
+        ext y
+        rw [mul_comm]
+      }
+      rw [h_eq]
+      exact h_mul_simp
+    }
+    exact HasDerivAt.const_add (z₀.re : ℂ) h_base_mul
+  }
+
+  have h_fderiv_f : HasFDerivAt f (f' • (1 : ℂ →L[ℝ] ℂ)) z₀ := h.complexToReal_fderiv
+  have h_fderiv_f' : HasFDerivAt f (f' • (1 : ℂ →L[ℝ] ℂ)) ((z₀.re : ℂ) + (z₀.im : ℂ) * I) := by {
+    rwa [h_eq_point]
+  }
+
+  have h_comp_x : HasFDerivAt (f ∘ fun x : ℝ ↦ (x : ℂ) + (z₀.im : ℂ) * I) ((f' • (1 : ℂ →L[ℝ] ℂ)).comp (ContinuousLinearMap.toSpanSingleton ℝ 1)) z₀.re := by {
+    have h_fderiv_gx : HasFDerivAt (fun x : ℝ ↦ (x : ℂ) + (z₀.im : ℂ) * I) (ContinuousLinearMap.toSpanSingleton ℝ 1) z₀.re := h_gx.hasFDerivAt
+    have h_comp := HasFDerivAt.comp z₀.re h_fderiv_f' h_fderiv_gx
+    exact h_comp
+  }
+
+  have h_comp_y : HasFDerivAt (f ∘ fun y : ℝ ↦ (z₀.re : ℂ) + (y : ℂ) * I) ((f' • (1 : ℂ →L[ℝ] ℂ)).comp (ContinuousLinearMap.toSpanSingleton ℝ I)) z₀.im := by {
+    have h_fderiv_gy : HasFDerivAt (fun y : ℝ ↦ (z₀.re : ℂ) + (y : ℂ) * I) (ContinuousLinearMap.toSpanSingleton ℝ I) z₀.im := h_gy.hasFDerivAt
+    have h_comp := HasFDerivAt.comp z₀.im h_fderiv_f' h_fderiv_gy
+    exact h_comp
+  }
+
+  have h_re_x : HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).re) f'.re z₀ := by {
+    rw [← hasPartialDerivX_iff_eps]
+    have h_comp_re_x := HasFDerivAt.comp z₀.re (ContinuousLinearMap.hasFDerivAt reCLM : HasFDerivAt reCLM reCLM (f ((z₀.re : ℂ) + (z₀.im : ℂ) * I))) h_comp_x
+    rw [hasDerivAt_iff_hasFDerivAt]
+    have h_clm_eq : reCLM.comp ((f' • (1 : ℂ →L[ℝ] ℂ)).comp (ContinuousLinearMap.toSpanSingleton ℝ 1)) = ContinuousLinearMap.toSpanSingleton ℝ f'.re := by {
+      apply ContinuousLinearMap.ext
+      intro r
+      simp [ContinuousLinearMap.toSpanSingleton_apply]
+      rw [mul_comm]
+    }
+    rw [h_clm_eq] at h_comp_re_x
+    exact h_comp_re_x
+  }
+
+  have h_re_y : HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).re) (-f'.im) z₀ := by {
+    rw [← hasPartialDerivY_iff_eps]
+    have h_comp_re_y := HasFDerivAt.comp z₀.im (ContinuousLinearMap.hasFDerivAt reCLM : HasFDerivAt reCLM reCLM (f ((z₀.re : ℂ) + (z₀.im : ℂ) * I))) h_comp_y
+    rw [hasDerivAt_iff_hasFDerivAt]
+    have h_clm_eq : reCLM.comp ((f' • (1 : ℂ →L[ℝ] ℂ)).comp (ContinuousLinearMap.toSpanSingleton ℝ I)) = ContinuousLinearMap.toSpanSingleton ℝ (-f'.im) := by {
+      apply ContinuousLinearMap.ext
+      intro r
+      simp [ContinuousLinearMap.toSpanSingleton_apply]
+      rw [mul_comm]
+    }
+    rw [h_clm_eq] at h_comp_re_y
+    exact h_comp_re_y
+  }
+
+  have h_im_x : HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).im) f'.im z₀ := by {
+    rw [← hasPartialDerivX_iff_eps]
+    have h_comp_im_x := HasFDerivAt.comp z₀.re (ContinuousLinearMap.hasFDerivAt imCLM : HasFDerivAt imCLM imCLM (f ((z₀.re : ℂ) + (z₀.im : ℂ) * I))) h_comp_x
+    rw [hasDerivAt_iff_hasFDerivAt]
+    have h_clm_eq : imCLM.comp ((f' • (1 : ℂ →L[ℝ] ℂ)).comp (ContinuousLinearMap.toSpanSingleton ℝ 1)) = ContinuousLinearMap.toSpanSingleton ℝ f'.im := by {
+      apply ContinuousLinearMap.ext
+      intro r
+      simp [ContinuousLinearMap.toSpanSingleton_apply]
+      rw [mul_comm]
+    }
+    rw [h_clm_eq] at h_comp_im_x
+    exact h_comp_im_x
+  }
+
+  have h_im_y : HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).im) f'.re z₀ := by {
+    rw [← hasPartialDerivY_iff_eps]
+    have h_comp_im_y := HasFDerivAt.comp z₀.im (ContinuousLinearMap.hasFDerivAt imCLM : HasFDerivAt imCLM imCLM (f ((z₀.re : ℂ) + (z₀.im : ℂ) * I))) h_comp_y
+    rw [hasDerivAt_iff_hasFDerivAt]
+    have h_clm_eq : imCLM.comp ((f' • (1 : ℂ →L[ℝ] ℂ)).comp (ContinuousLinearMap.toSpanSingleton ℝ I)) = ContinuousLinearMap.toSpanSingleton ℝ f'.re := by {
+      apply ContinuousLinearMap.ext
+      intro r
+      simp [ContinuousLinearMap.toSpanSingleton_apply]
+      rw [mul_comm]
+    }
+    rw [h_clm_eq] at h_comp_im_y
+    exact h_comp_im_y
+  }
+
+  exact ⟨h_re_x, h_re_y, h_im_x, h_im_y⟩
+}
+
+theorem cauchy_riemann_equations_of_differentiable {f : ℂ → ℂ} {z₀ : ℂ} (h : DifferentiableAt_eps f z₀) :
+    ∃ ux uy vx vy : ℝ,
+      HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).re) ux z₀ ∧
+      HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).re) uy z₀ ∧
+      HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).im) vx z₀ ∧
+      HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).im) vy z₀ ∧
+      ux = vy ∧ uy = -vx := by {
+  rcases h with ⟨f', hf'⟩
+  have h_cr := hasDerivAt_eps_imp_cauchy_riemann hf'
+  exact ⟨f'.re, -f'.im, f'.im, f'.re, h_cr.1, h_cr.2.1, h_cr.2.2.1, h_cr.2.2.2, rfl, by ring⟩
+}
+
 end Sarason.Ch2
 
 end
