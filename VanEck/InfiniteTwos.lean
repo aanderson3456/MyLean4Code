@@ -9,6 +9,7 @@ import VanEck
 import LimSup
 import ImpossiblePatterns
 import FinishedSurjLemmas
+import SurjectivityLemmas
 import MirskyNewman
 
 open scoped Classical
@@ -36,63 +37,7 @@ def ZeroDominates : Prop :=
 def InfiniteTwos : Prop :=
   ∀ N, ∃ m > N, vanEckNthTerm m = 2
 
-lemma finite_twos_implies_old_gaps (N_0 : ℕ) (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2) :
-    ∀ z > N_0, vanEckNthTerm z = 0 →
-    ∃ i < z + 1, vanEckNthTerm i = vanEckNthTerm (z + 1) := by {
-  intro z hz_gt hz
-  by_contra h_new
-  --
-  have h_new_forall : ∀ i < z + 1, vanEckNthTerm i ≠ vanEckNthTerm (z + 1) := by {
-    intro i hi hc
-    have hc_ex : ∃ j < z + 1, vanEckNthTerm j = vanEckNthTerm (z + 1) := ⟨i, hi, hc⟩
-    exact h_new hc_ex
-  }
-  --
-  have hz2 : vanEckNthTerm (z + 2) = 0 := (vanEck_mth_term_eq_zero_iff_prev_term_new z).mpr h_new_forall
-  --
-  have hz1_neq_0 : vanEckNthTerm (z + 1) ≠ 0 := by {
-    intro hc
-    have hc_new := h_new_forall z (Nat.lt_succ_self z)
-    rw [hc] at hc_new
-    exact hc_new hz
-  }
-  --
-  have hl_z : lastZero z = z := by {
-    cases z with
-    | zero => rfl
-    | succ z' =>
-      rw [lastZero]
-      rw [if_pos hz]
-  }
-  --
-  have hl_z1 : lastZero (z + 1) = z := by {
-    rw [lastZero]
-    rw [if_neg hz1_neq_0]
-    exact hl_z
-  }
-  --
-  have h_dist := vanEck_distance_to_prev_zero (z + 1) hz2
-  have hz3 : vanEckNthTerm (z + 3) = 2 := by {
-    have h_sub : z + 1 + 2 = z + 3 := rfl
-    rw [← h_sub]
-    rw [h_dist]
-    rw [hl_z1]
-    have h_sub2 : z + 1 + 1 - z = 2 := by {
-      have h1 : z + 1 + 1 = z + 2 := rfl
-      rw [h1]
-      exact Nat.add_sub_cancel_left z 2
-    }
-    exact h_sub2
-  }
-  --
-  have hz3_gt : z + 3 > N_0 := by {
-    apply Nat.lt_of_lt_of_le hz_gt
-    exact Nat.le_add_right z 3
-  }
-  --
-  have h_contra := h_no_twos (z + 3) hz3_gt
-  exact h_contra hz3
-}
+
 
 /--
 A structural constraint stating that infinitely often, a 0-gap is a brand new number.
@@ -164,61 +109,7 @@ theorem new_zero_gaps_implies_infinite_twos : InfiniteNewZeroGaps → InfiniteTw
 -- primary local_periodicity_impossible objective.
 
 
-lemma gap_nonzero_implies_recurrence (N m G : ℕ)
-    (h_nonzero : ∀ k, N < k → k < N + G → vanEckNthTerm k ≠ 0)
-    (h_m : N ≤ m) (h_m2 : m + 2 < N + G) :
-    ∃ n < m + 1, vanEckNthTerm (m + 1) = vanEckNthTerm n := by {
-  have h_m2_gt_N : N < m + 2 := by
-    calc N ≤ m := h_m
-         _ < m + 2 := Nat.lt_add_of_pos_right (by decide)
-  have h_not_zero : vanEckNthTerm (m + 2) ≠ 0 := h_nonzero (m + 2) h_m2_gt_N h_m2
-  have h_iff := vanEck_mth_term_eq_zero_iff_prev_term_new m
-  have h_contra := mt h_iff.mpr h_not_zero
-  have h_ex := not_forall_imp h_contra
-  rcases h_ex with ⟨n, hn, hneq⟩
-  have heq : vanEckNthTerm (m + 1) = vanEckNthTerm n := by
-    have h_eq_symm : vanEckNthTerm n = vanEckNthTerm (m + 1) := by
-      by_contra hc
-      exact hneq hc
-    exact h_eq_symm.symm
-  exact ⟨n, hn, heq⟩
-}
 
-/--
-Alphabet Inventory Bound Constraint Lemma
-If a gap of length G contains no zeros, then all terms in the gap are strictly
-bounded by the maximum value seen in the sequence up to the start of the gap.
-This mathematically confirms the alphabet collapse pigeonhole squeeze principle.
--/
-lemma gap_contains_all_terms (N G : ℕ)
-    (h_nonzero : ∀ j, N < j → j < N + G → vanEckNthTerm j ≠ 0) :
-    ∀ k < N + G - 1, vanEckNthTerm k ≤ vanEckPrefixMax N := by {
-  intro k
-  induction k using Nat.strong_induction_on
-  next m ih =>
-    intro hk
-    by_cases h_le : m ≤ N
-    · exact vanEckNthTerm_le_prefixMax N m h_le
-    · have h_gt : m > N := Nat.lt_of_not_ge h_le
-      have hm_pos : m > 0 := Nat.lt_of_le_of_lt (Nat.zero_le N) h_gt
-      have h_m_sub : m - 1 ≥ N := Nat.le_sub_one_of_lt h_gt
-      have h_m2 : m - 1 + 2 < N + G := by
-        have h_sub : m - 1 + 1 = m := Nat.sub_add_cancel hm_pos
-        have h1 : m - 1 + 2 = m + 1 := by
-          calc m - 1 + 2 = m - 1 + 1 + 1 := rfl
-               _ = m + 1 := by rw [h_sub]
-        rw [h1]
-        exact Nat.add_lt_of_lt_sub hk
-      have h_ex := gap_nonzero_implies_recurrence N (m - 1) G h_nonzero h_m_sub h_m2
-      rcases h_ex with ⟨n, hn, heq⟩
-      have hm_eq : m - 1 + 1 = m := Nat.sub_add_cancel hm_pos
-      rw [hm_eq] at heq
-      rw [hm_eq] at hn
-      have hn_lt : n < N + G - 1 := Nat.lt_trans hn hk
-      have ih_res := ih n hn hn_lt
-      rw [heq]
-      exact ih_res
-}
 
 lemma local_vanEckState_isBounded (N n B : ℕ) (hN : N + B ≤ n) (hB0 : B > 0)
     (h_bound : ∀ k, N ≤ k → k < n → vanEckNthTerm k < B) :
@@ -1500,7 +1391,7 @@ lemma finite_cycle_gap_collapse (n_1 n_2 K : ℕ)
   · have h_n2 : n_2 = n_1 + 1 := by omega
     have h0 : vanEckNthTerm n_1 = vanEckNthTerm (n_1 + 1) := by {
       have hp0 := h_per 0 (Nat.zero_le K)
-      simp at hp0; rw [h_n2] at hp0; exact hp0
+      simp only [Nat.add_zero] at hp0; rw [h_n2] at hp0; exact hp0
     }
     have h1 : vanEckNthTerm (n_1 + 2) = 1 :=
       vanEck_consecutive_eq_implies_next_one n_1 h0
@@ -1512,9 +1403,10 @@ lemma finite_cycle_gap_collapse (n_1 n_2 K : ℕ)
     }
     have h3 : vanEckNthTerm (n_1 + 3) = 1 := by rw [← h2]; exact h1
     have h_cons : vanEckNthTerm (n_1 + 2) = 1 ∧ vanEckNthTerm (n_1 + 2 + 1) = 1 := by {
-      constructor; exact h1
-      have : n_1 + 2 + 1 = n_1 + 3 := by omega
-      rw [this]; exact h3
+      constructor
+      · exact h1
+      · have : n_1 + 2 + 1 = n_1 + 3 := by omega
+        rw [this]; exact h3
     }
     exact vanEck_no_consecutive_ones (n_1 + 2) h_cons
   --
@@ -1541,9 +1433,10 @@ lemma finite_cycle_gap_collapse (n_1 n_2 K : ℕ)
         have hv2_1 : vanEckNthTerm (n_1 + 2) = 1 := by rw [h24]; exact h_next
         have hv3_1 : vanEckNthTerm (n_1 + 3) = 1 := by rw [← heq]; exact hv2_1
         have h_cons : vanEckNthTerm (n_1 + 2) = 1 ∧ vanEckNthTerm (n_1 + 2 + 1) = 1 := by {
-          constructor; exact hv2_1
-          have : n_1 + 2 + 1 = n_1 + 3 := by omega
-          rw [this]; exact hv3_1
+          constructor
+          · exact hv2_1
+          · have : n_1 + 2 + 1 = n_1 + 3 := by omega
+            rw [this]; exact hv3_1
         }
         exact vanEck_no_consecutive_ones (n_1 + 2) h_cons
       · -- v(n_1+1) = v(n_1+3) with v(n_1+2) ≠ v(n_1+3).
@@ -1614,7 +1507,7 @@ lemma finite_cycle_gap_collapse (n_1 n_2 K : ℕ)
         -- Sum of P elements each ≤ 1 is ≤ P
         calc ∑ k : Fin P, ((k.val + P - v_fn k) / P)
             ≤ ∑ _k : Fin P, 1 := Finset.sum_le_sum (fun k _ => h_dk_bound k)
-          _ = P := by simp [Finset.sum_const, Finset.card_fin]
+          _ = P := by simp [Finset.sum_const]
       }
   --
       -- ══════════════════════════════════════════════════════════════
@@ -1748,14 +1641,15 @@ lemma finite_cycle_gap_collapse (n_1 n_2 K : ℕ)
           }
           change vanEckNthTerm (n_2 + y + 1) = vanEckNthTerm (n_2 + k.val + 1)
           rw [h_eq_mod]
-          sorry
+          have h_eq : vanEckNthTerm (n_2 + k.val + 1 - X) = X := by {
+            sorry
+          }
+          rw [h_eq]
         }
         have h_no_intermediate_nat : ∀ k : Fin P, ∀ i < v_nat (k.val + 1), i > 0 → v_nat ((k.val + P - i) % P + 1) ≠ v_nat (k.val + 1) := by {
-          -- The Van Eck MRO (Most Recent Occurrence) constraint.
-          -- If the gap to the previous occurrence is X, there are no occurrences of X
--- strictly between them.
-          -- This maps directly to the assertion that for any offset i strictly between 0 and X,
-          -- the value at index (k - i) modulo P cannot equal X.
+          intro k i hi_lt hi_pos
+          dsimp [v_nat]
+          let X := vanEckNthTerm (n_2 + k.val + 1)
           sorry
         }
         exact combinatorial_squeeze P h_P_ge_4 v_nat f hv1_nat hvP_nat h_no2_nat h_no1_nat hf_nat f_bij h_recent_nat h_no_intermediate_nat
@@ -1986,7 +1880,7 @@ theorem dense_collisions_force_twos (B : ℕ) (hB_gt : B > 0) :
         rw [ht2] at ht1
         have ht3 : n_1 + k - 1 - start ≤ n_2 + 3 - start := Nat.sub_le_sub_right ht1 start
         have ht4 : n_2 + 3 - start = n_2 - start + 3 := by
-          have hh : start ≤ n_2 := Nat.le_trans (Nat.le_trans (Nat.le_add_right start (B + 1)) hn1_ge) (Nat.le_of_lt hn1_lt_n2)
+          have hh : start ≤ n_2 := Nat.le_trans (Nat.le_add_right start (B + 1)) hn1_ge |>.trans (Nat.le_of_lt hn1_lt_n2)
           have hA2 : n_2 + 3 = 3 + n_2 := Nat.add_comm _ _
           have hB2 : 3 + n_2 - start = 3 + (n_2 - start) := Nat.add_sub_assoc hh 3
           have hC2 : 3 + (n_2 - start) = n_2 - start + 3 := Nat.add_comm _ _
@@ -2022,14 +1916,13 @@ theorem dense_collisions_force_twos (B : ℕ) (hB_gt : B > 0) :
   --
   have h_per := local_forward_periodicity_left (B + 1) n_1 n_2 K h_state_eq hn1_ge_B hn2_ge_B (Nat.zero_lt_succ B) hd1_lt hd1_pos
   --
-  have h_contra := local_periodicity_impossible n_1 n_2 K hn1_lt_n2 (Nat.le_refl _) (by
+  have h_contra := local_periodicity_impossible n_1 n_2 K hn1_lt_n2 (Nat.le_refl _) (by {
     intro m hm
     have h1 : start ≤ n_1 := Nat.le_trans (Nat.le_add_right start (B + 1)) hn1_ge
     have h2 : start < m := Nat.lt_of_le_of_lt h1 hm
     exact h_no_twos m (Nat.lt_trans (Nat.lt_of_le_of_lt (Nat.le_max_left N N_max) h_start_gt) h2)
-  )
-
-
+  })
+  -- Periodicity evaluation matches.
   have h_per_eval : ∀ k ≤ K, vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_2 + k) := fun k hk => (h_per k hk).right
   exact h_contra h_per_eval
 }
@@ -2047,17 +1940,93 @@ lemma sequence_bounded_implies_dense (M : ℕ)
 
 lemma no_twos_implies_bounded (N_0 : ℕ) (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2) :
     ∃ M > 0, ∀ m, vanEckNthTerm m ≤ M := by {
-  -- Assume for contradiction that the sequence is unbounded.
-  -- Then it must eventually generate values strictly larger than any previous maximum.
-  -- A new maximum value can only be generated if the sequence evaluates a gap to a
--- previously seen number
-  -- that is larger than any gap seen so far.
-  -- By `finite_twos_implies_old_gaps`, the absence of 2 forces all 0-gaps to fall back to
--- old values.
-  -- Without the ability to continually spawn new gaps, the sequence gets trapped in a
--- cycle of bounded values.
-  -- This contradicts the assumption of unbounded growth.
-  sorry
+  have h_ex_zero : ∃ z > N_0 + 2, vanEckNthTerm z = 0 := by {
+    have h_zeros := infinite_zeros_vanEck (N_0 + 2)
+    rcases h_zeros with ⟨z, hz_gt, hz_zero⟩
+    use z, hz_gt, hz_zero
+  }
+  rcases h_ex_zero with ⟨z_0, hz0_gt, hz0_zero⟩
+  let M := vanEckPrefixMax z_0
+  have hM_pos : M > 0 := by {
+    have h_z0 : 2 ≤ z_0 := by omega
+    have h_le : vanEckNthTerm 2 ≤ M := vanEckNthTerm_le_prefixMax z_0 2 h_z0
+    have h2 : vanEckNthTerm 2 = 1 := rfl
+    rw [h2] at h_le
+    exact h_le
+  }
+  use M
+  constructor
+  · exact hM_pos
+  · have h_bound_zeros : ∀ z ≥ z_0, vanEckNthTerm z = 0 → vanEckPrefixMax z ≤ M := by {
+      intro z
+      induction z using Nat.strong_induction_on with
+      | h z ih =>
+        intro hz_ge hz_zero
+        by_cases hz0 : z = z_0
+        · rw [hz0]
+        · have hz_gt : z > z_0 := Nat.lt_of_le_of_ne hz_ge (Ne.symm hz0)
+          let z_prev := lastZero (z - 1)
+          have hz_prev_lt : z_prev < z := by {
+            have h_le := lastZero_le (z - 1)
+            omega
+          }
+          have hz_prev_zero : vanEckNthTerm z_prev = 0 := vanEck_lastZero_is_zero (z - 1)
+          have hz_prev_ge : z_prev ≥ z_0 := by {
+            by_contra hc
+            have hz_zero_le : z_0 ≤ z - 1 := by omega
+            have h_contra := no_zero_after_lastZero (z - 1) z_0 (by omega) hz_zero_le
+            exact h_contra hz0_zero
+          }
+          have h_ih := ih z_prev hz_prev_lt hz_prev_ge hz_prev_zero
+          have h_all : ∀ k ≤ z, vanEckNthTerm k ≤ M := by {
+            intro k hk
+            by_cases hk_z : k = z
+            · rw [hk_z, hz_zero]
+              omega
+            · have hk_lt : k < z := Nat.lt_of_le_of_ne hk hk_z
+              by_cases hk_z1 : k = z - 1
+              · rw [hk_z1]
+                sorry
+              · have hk_lt_z1 : k < z - 1 := by omega
+                by_cases hk_le_prev : k ≤ z_prev
+                · have h1 : vanEckNthTerm k ≤ vanEckPrefixMax z_prev :=
+                    vanEckNthTerm_le_prefixMax z_prev k hk_le_prev
+                  exact Nat.le_trans h1 h_ih
+                · have hk_gt_prev : k > z_prev := Nat.lt_of_not_ge hk_le_prev
+                  have h_nonzero : ∀ j, z_prev < j → j < z_prev + (z - z_prev) → vanEckNthTerm j ≠ 0 := by {
+                    intro j hj1 hj2
+                    have h_G : z_prev + (z - z_prev) = z := Nat.add_sub_of_le (Nat.le_of_lt hz_prev_lt)
+                    rw [h_G] at hj2
+                    exact no_zero_after_lastZero (z - 1) j hj1 (by omega)
+                  }
+                  have h_gap := gap_contains_all_terms z_prev (z - z_prev) h_nonzero
+                  have h_arg : z_prev + (z - z_prev) - 1 = z - 1 := by {
+                    have h_G : z_prev + (z - z_prev) = z := Nat.add_sub_of_le (Nat.le_of_lt hz_prev_lt)
+                    rw [h_G]
+                  }
+                  rw [h_arg] at h_gap
+                  have h2 := h_gap k hk_lt_z1
+                  exact Nat.le_trans h2 h_ih
+          }
+          unfold vanEckPrefixMax
+          apply listMax_le
+          intro x hx
+          rcases mem_listNth hx with ⟨k, hk_lt, rfl⟩
+          have h_len := vanEckLength z
+          rw [h_len] at hk_lt
+          have hk_le : k ≤ z := Nat.le_of_lt_succ hk_lt
+          have h_det := VanEck_deterministic z k hk_le
+          rw [h_det]
+          exact h_all k hk_le
+    }
+    intro m
+    have h_zeros := infinite_zeros_vanEck (max z_0 m)
+    rcases h_zeros with ⟨z, hz_gt, hz_zero⟩
+    have hz_ge : z ≥ z_0 := by omega
+    have hm_le : m ≤ z := by omega
+    have h_bound_z := h_bound_zeros z hz_ge hz_zero
+    have h_le_z : vanEckNthTerm m ≤ vanEckPrefixMax z := vanEckNthTerm_le_prefixMax z m hm_le
+    exact Nat.le_trans h_le_z h_bound_z
 }
 
 /--
