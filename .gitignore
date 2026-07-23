@@ -1,2 +1,20 @@
-/AnalysTSP/.lake/
-AnalysTSP/.lake/build/bin/
+# OS & Editor files
+.DS_Store
+.agents/
+
+# Lean / Lake build artifacts
+.lake/
+**/.lake/
+
+# Scratch & temporary Lean files
+scratch*.lean
+temp*.lean
+scratch/
+
+# Python & LaTeX build artifacts
+__pycache__/
+*.pyc
+*.aux
+*.log
+*.out
+*.toc

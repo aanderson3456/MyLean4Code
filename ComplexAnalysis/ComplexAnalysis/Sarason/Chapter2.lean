@@ -11,6 +11,8 @@ import Mathlib.Analysis.Complex.RealDeriv
 import Mathlib.Analysis.Complex.Conformal
 import Mathlib.Analysis.Calculus.Deriv.Pow
 import Mathlib.Analysis.Calculus.FDeriv.Star
+import Mathlib.Analysis.Calculus.Deriv.Star
+import Mathlib.Analysis.SpecialFunctions.Complex.Arg
 import ComplexAnalysis.Sarason.Definitions
 /-!
 # Sarason - Chapter 2: Complex Differentiation
@@ -18,7 +20,8 @@ import ComplexAnalysis.Sarason.Definitions
 Formalization of Section II of Donald Sarason's "Notes on Complex Function Theory".
 Focus: Definition of the derivative, Cauchy-Riemann equations, and Differential Operators.
 
-Credit: Donald Sarason
+If you like this, credit Donald Sarason.  If you don't, blame Austin Anderson.
+
 -/
 
 open Complex Filter Metric Sarason TopologicalSpace ContinuousLinearMap
@@ -151,7 +154,10 @@ example (z : ℂ) : ¬ DifferentiableAt ℂ (fun z => star z) z := by {
   · norm_num at h2
   · exact I_ne_zero hI
 }
-
+/--
+  If a real-valued function u has continuous partial derivatives on an open set G,
+  then u is Fréchet differentiable in G.
+-/
 theorem hasFDerivAt_of_hasPartialDeriv {G : Set ℂ} (hG : IsOpen G)
     (u : ℂ → ℝ) (ux uy : ℂ → ℝ)
     (hu_x : ∀ z ∈ G, HasPartialDerivX_C_to_R_eps u (ux z) z)
@@ -290,7 +296,10 @@ theorem hasFDerivAt_of_hasPartialDeriv {G : Set ℂ} (hG : IsOpen G)
   rw [h_deriv_eq] at h_comp_deriv
   exact h_comp_deriv
 }
-
+/--
+  If u and v are real-differentiable at x, then their complex combination f = u + I * v
+  is also real-differentiable at x.
+-/
 theorem differentiableAt_real_of_parts {f : ℂ → ℂ} {u v : ℂ → ℝ} {x : ℂ}
     (hu : DifferentiableAt ℝ u x) (hv : DifferentiableAt ℝ v x)
     (h_parts : ∀ z, f z = u z + I * v z) :
@@ -312,7 +321,10 @@ theorem differentiableAt_real_of_parts {f : ℂ → ℂ} {u v : ℂ → ℝ} {x 
     refine (I • ContinuousLinearMap.id ℝ ℂ).differentiableAt.comp x ?_
     exact ofRealCLM.differentiableAt.comp x hv
 }
-
+/--
+  Expresses the real Fréchet derivative of a complex-valued function f = u + I * v
+  in terms of the real Fréchet derivatives of its real and imaginary parts u and v.
+-/
 theorem fderiv_parts {f : ℂ → ℂ} {u v : ℂ → ℝ} {x : ℂ}
     (hu : DifferentiableAt ℝ u x) (hv : DifferentiableAt ℝ v x)
     (h_parts : ∀ z, f z = u z + I * v z) :
@@ -360,10 +372,12 @@ theorem fderiv_parts {f : ℂ → ℂ} {u v : ℂ → ℝ} {x : ℂ}
 }
 
 /--
-  Theorem II.7: Let f = u + i*v where real-valued u and v are defined in an open subset G of ℂ,
-  and assume u and v have continuous first partial derivatives and satisfy the Cauchy-Riemann equations.
-  Then f is differentiable in G.
+  Theorem II.7:
+  Let f = u + i*v be defined on an open set G in ℂ. Suppose that u and v have
+  first partials in G.  If these partials are continuous and satisfy the CR equations
+  at z₀ ∈ G, then f has a complex derivative at z₀.
 -/
+
 theorem II_7 {G : Set ℂ} (hG : IsOpen G)
     (u v : ℂ → ℝ) (ux uy vx vy : ℂ → ℝ)
     (hu_x : ∀ z ∈ G, HasPartialDerivX_C_to_R_eps u (ux z) z)
@@ -372,41 +386,46 @@ theorem II_7 {G : Set ℂ} (hG : IsOpen G)
     (hv_y : ∀ z ∈ G, HasPartialDerivY_C_to_R_eps v (vy z) z)
     (h_cont_ux : ContinuousOn ux G) (h_cont_uy : ContinuousOn uy G)
     (h_cont_vx : ContinuousOn vx G) (h_cont_vy : ContinuousOn vy G)
-    (h_cr : ∀ z ∈ G, ux z = vy z ∧ uy z = -vx z)
+    (z₀ : ℂ) (hz₀ : z₀ ∈ G)
+    (h_cr : ux z₀ = vy z₀ ∧ uy z₀ = -vx z₀)
     (f : ℂ → ℂ) (hf : ∀ z, f z = u z + I * v z) :
-    ∀ z ∈ G, DifferentiableAt_eps f z := by {
-  intro z hz
+    DifferentiableAt_eps f z₀ := by {
   rw [← differentiableAt_iff_eps]
   rw [differentiableAt_complex_iff_differentiableAt_real]
-  have hu_deriv : HasFDerivAt u (ux z • reCLM + uy z • imCLM) z :=
-    hasFDerivAt_of_hasPartialDeriv hG u ux uy hu_x hu_y h_cont_ux h_cont_uy z hz
-  have hv_deriv : HasFDerivAt v (vx z • reCLM + vy z • imCLM) z :=
-    hasFDerivAt_of_hasPartialDeriv hG v vx vy hv_x hv_y h_cont_vx h_cont_vy z hz
-  have hu_diff : DifferentiableAt ℝ u z := hu_deriv.differentiableAt
-  have hv_diff : DifferentiableAt ℝ v z := hv_deriv.differentiableAt
-  have h_f_diff : DifferentiableAt ℝ f z := differentiableAt_real_of_parts hu_diff hv_diff hf
+  have hu_deriv : HasFDerivAt u (ux z₀ • reCLM + uy z₀ • imCLM) z₀ :=
+    hasFDerivAt_of_hasPartialDeriv hG u ux uy hu_x hu_y h_cont_ux h_cont_uy z₀ hz₀
+  have hv_deriv : HasFDerivAt v (vx z₀ • reCLM + vy z₀ • imCLM) z₀ :=
+    hasFDerivAt_of_hasPartialDeriv hG v vx vy hv_x hv_y h_cont_vx h_cont_vy z₀ hz₀
+  have hu_diff : DifferentiableAt ℝ u z₀ := hu_deriv.differentiableAt
+  have hv_diff : DifferentiableAt ℝ v z₀ := hv_deriv.differentiableAt
+  have h_f_diff : DifferentiableAt ℝ f z₀ := differentiableAt_real_of_parts hu_diff hv_diff hf
   refine ⟨h_f_diff, ?_⟩
-  have h_fderiv_f : fderiv ℝ f z = ofRealCLM.comp (fderiv ℝ u z) + (I • ContinuousLinearMap.id ℝ ℂ).comp (ofRealCLM.comp (fderiv ℝ v z)) := by {
+  have h_fderiv_f : fderiv ℝ f z₀ = ofRealCLM.comp (fderiv ℝ u z₀) + (I • ContinuousLinearMap.id ℝ ℂ).comp (ofRealCLM.comp (fderiv ℝ v z₀)) := by {
     exact fderiv_parts hu_diff hv_diff hf
   }
-  have h_fderiv_u : fderiv ℝ u z = ux z • reCLM + uy z • imCLM := hu_deriv.fderiv
-  have h_fderiv_v : fderiv ℝ v z = vx z • reCLM + vy z • imCLM := hv_deriv.fderiv
+  have h_fderiv_u : fderiv ℝ u z₀ = ux z₀ • reCLM + uy z₀ • imCLM := hu_deriv.fderiv
+  have h_fderiv_v : fderiv ℝ v z₀ = vx z₀ • reCLM + vy z₀ • imCLM := hv_deriv.fderiv
   rw [h_fderiv_f, h_fderiv_u, h_fderiv_v]
   simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
     reCLM_apply, imCLM_apply, ofRealCLM_apply, ContinuousLinearMap.id_apply, smul_eq_mul]
   simp only [I_re, I_im, one_re, one_im]
-  rcases h_cr z hz with ⟨hux, huy⟩
+  rcases h_cr with ⟨hux, huy⟩
   rw [hux, huy]
   simp
-  have h_eval_I : I * (↑(vy z) + I * ↑(vx z)) = -↑(vx z) + I * ↑(vy z) := by {
-    calc I * (↑(vy z) + I * ↑(vx z))
-      _ = I * ↑(vy z) + (I * I) * ↑(vx z) := by ring
-      _ = I * ↑(vy z) + (-1) * ↑(vx z) := by rw [I_mul_I]
-      _ = -↑(vx z) + I * ↑(vy z) := by ring
+  have h_eval_I : I * (↑(vy z₀) + I * ↑(vx z₀)) = -↑(vx z₀) + I * ↑(vy z₀) := by {
+    calc I * (↑(vy z₀) + I * ↑(vx z₀))
+      _ = I * ↑(vy z₀) + (I * I) * ↑(vx z₀) := by ring
+      _ = I * ↑(vy z₀) + (-1) * ↑(vx z₀) := by rw [I_mul_I]
+      _ = -↑(vx z₀) + I * ↑(vy z₀) := by ring
   }
   rw [h_eval_I]
 }
-
+/--
+  If f is complex-differentiable at z₀ with derivative f', then the real and imaginary
+  parts of f have partial derivatives at z₀, given by:
+  - (u_x, u_y) = (re f', -im f')
+  - (v_x, v_y) = (im f', re f')
+-/
 theorem hasDerivAt_eps_imp_cauchy_riemann {f : ℂ → ℂ} {f' : ℂ} {z₀ : ℂ} (h : HasDerivAt_eps f f' z₀) :
     HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).re) f'.re z₀ ∧
     HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).re) (-f'.im) z₀ ∧
@@ -414,7 +433,7 @@ theorem hasDerivAt_eps_imp_cauchy_riemann {f : ℂ → ℂ} {f' : ℂ} {z₀ : �
     HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).im) f'.re z₀ := by {
   rw [← hasDerivAt_iff_eps] at h
   have h_eq_point : ((z₀.re : ℂ) + (z₀.im : ℂ) * I) = z₀ := re_add_im z₀
-  
+
   have h_gx : HasDerivAt (fun x : ℝ ↦ (x : ℂ) + (z₀.im : ℂ) * I) (1 : ℂ) z₀.re := by {
     have h_base : HasDerivAt (fun x : ℝ ↦ (x : ℂ)) 1 z₀.re := by {
       have h_eq : (fun x : ℝ ↦ (x : ℂ)) = ofRealCLM := by { ext x; rfl }
@@ -536,7 +555,11 @@ theorem hasDerivAt_eps_imp_cauchy_riemann {f : ℂ → ℂ} {f' : ℂ} {z₀ : �
 
   exact ⟨h_re_x, h_re_y, h_im_x, h_im_y⟩
 }
-
+/--
+  If f is complex-differentiable at z₀, then the partial derivatives of its real
+  and imaginary parts exist at z₀ and satisfy the Cauchy-Riemann equations:
+  u_x = v_y and u_y = -v_x.
+-/
 theorem cauchy_riemann_equations_of_differentiable {f : ℂ → ℂ} {z₀ : ℂ} (h : DifferentiableAt_eps f z₀) :
     ∃ ux uy vx vy : ℝ,
       HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).re) ux z₀ ∧
@@ -547,6 +570,307 @@ theorem cauchy_riemann_equations_of_differentiable {f : ℂ → ℂ} {z₀ : ℂ
   rcases h with ⟨f', hf'⟩
   have h_cr := hasDerivAt_eps_imp_cauchy_riemann hf'
   exact ⟨f'.re, -f'.im, f'.im, f'.re, h_cr.1, h_cr.2.1, h_cr.2.2.1, h_cr.2.2.2, rfl, by ring⟩
+}
+
+/-
+  II.8 Sarason notes that complex differentiability,
+  a.k.a. being holomorphic, is extra structure
+  compared to differentiability of the real and imaginary parts separately
+  in the ℝ^2 sense.
+  Continuity of first partials is an extra requirement
+  to obtain complex differentiability from differentiability
+  in the ℝ^2 sense given the Cauchy-Riemann equations hold.
+  He hints at future results showing holomorphic functions
+  are in fact infinitely differentiable, not the case for
+  differentiable functions in the ℝ^2 sense.
+-/
+
+/-- If the derivative of a holomorphic function is everywhere zero, the function is constant. -/
+theorem exerciseII_8_1a (f : ℂ → ℂ) (hf : ∀ z, DifferentiableAt_eps f z) (hf' : ∀ z, deriv_eps f z (hf z) = 0) (z w : ℂ) : f z = f w := by {
+  have h_diff : Differentiable ℂ f := by {
+    intro x
+    exact (differentiableAt_iff_eps f x).mpr (hf x)
+  }
+  have h_deriv_zero : ∀ z, deriv f z = 0 := by {
+    intro x
+    rw [deriv_eq_deriv_eps f x (hf x)]
+    exact hf' x
+  }
+  exact is_const_of_deriv_eq_zero h_diff h_deriv_zero z w
+}
+
+/-- If the x-partial derivative of the constant zero function is c, then c = 0. -/
+theorem partial_deriv_zero_imp_zero_x (c : ℝ) (z₀ : ℂ) (h : HasPartialDerivX_C_to_R_eps (fun _ => 0) c z₀) : c = 0 := by {
+  unfold HasPartialDerivX_C_to_R_eps at h
+  by_contra hc
+  have hc_pos : 0 < |c| := abs_pos.mpr hc
+  rcases h |c| hc_pos with ⟨δ, hδ_pos, hδ⟩
+  have h_x : ∃ x : ℝ, 0 < |x - z₀.re| ∧ |x - z₀.re| < δ := by {
+    use z₀.re + δ / 2
+    have h_sub : (z₀.re + δ / 2) - z₀.re = δ / 2 := by ring
+    rw [h_sub]
+    have h1 : 0 < δ / 2 := half_pos hδ_pos
+    have h2 : |δ / 2| = δ / 2 := abs_of_pos h1
+    rw [h2]
+    exact ⟨h1, by linarith⟩
+  }
+  rcases h_x with ⟨x, hx⟩
+  have h_abs := hδ x hx
+  simp at h_abs
+}
+
+/-- If the y-partial derivative of the constant zero function is c, then c = 0. -/
+theorem partial_deriv_zero_imp_zero_y (c : ℝ) (z₀ : ℂ) (h : HasPartialDerivY_C_to_R_eps (fun _ => 0) c z₀) : c = 0 := by {
+  unfold HasPartialDerivY_C_to_R_eps at h
+  by_contra hc
+  have hc_pos : 0 < |c| := abs_pos.mpr hc
+  rcases h |c| hc_pos with ⟨δ, hδ_pos, hδ⟩
+  have h_y : ∃ y : ℝ, 0 < |y - z₀.im| ∧ |y - z₀.im| < δ := by {
+    use z₀.im + δ / 2
+    have h_sub : (z₀.im + δ / 2) - z₀.im = δ / 2 := by ring
+    rw [h_sub]
+    have h1 : 0 < δ / 2 := half_pos hδ_pos
+    have h2 : |δ / 2| = δ / 2 := abs_of_pos h1
+    rw [h2]
+    exact ⟨h1, by linarith⟩
+  }
+  rcases h_y with ⟨y, hy⟩
+  have h_abs := hδ y hy
+  simp at h_abs
+}
+
+/-- If a holomorphic function is strictly real-valued (its imaginary part is zero), it is constant. -/
+theorem exerciseII_8_1b (f : ℂ → ℂ) (hf : ∀ z, DifferentiableAt_eps f z)
+    (h_real : ∀ z, (f z).im = 0) (z w : ℂ) : f z = f w := by {
+  have h_deriv_zero : ∀ x, deriv_eps f x (hf x) = 0 := by {
+    intro x
+    set f' := deriv_eps f x (hf x)
+    have h_deriv : HasDerivAt_eps f f' x := by {
+      have h1 := Classical.choose_spec (hf x)
+      exact h1
+    }
+    have h_cr := hasDerivAt_eps_imp_cauchy_riemann h_deriv
+    rcases h_cr with ⟨_, _, hvx, hvy⟩
+
+    have h_im_zero : (fun z ↦ (f z).im) = (fun z ↦ 0) := by {
+      ext z
+      exact h_real z
+    }
+    rw [h_im_zero] at hvx hvy
+
+    have h_f_im : f'.im = 0 := partial_deriv_zero_imp_zero_x f'.im x hvx
+    have h_f_re : f'.re = 0 := partial_deriv_zero_imp_zero_y f'.re x hvy
+
+    apply Complex.ext
+    · exact h_f_re
+    · exact h_f_im
+  }
+  exact exerciseII_8_1a f hf h_deriv_zero z w
+}
+
+/-- If the modulus of a holomorphic function is constant, the function is constant. -/
+theorem exerciseII_8_1c (f : ℂ → ℂ) (hf : ∀ z, DifferentiableAt_eps f z)
+    (h_norm : ∀ z w, normSq (f z) = normSq (f w)) (z w : ℂ) : f z = f w := by {
+  have h_diff : Differentiable ℂ f := by {
+    intro x
+    exact (differentiableAt_iff_eps f x).mpr (hf x)
+  }
+  by_cases hf_zero : f z = 0
+  · have h1 : normSq (f z) = 0 := by rw [hf_zero, normSq_zero]
+    have h2 : normSq (f w) = 0 := by rw [← h_norm z w, h1]
+    have h3 : f w = 0 := normSq_eq_zero.mp h2
+    rw [hf_zero, h3]
+  · have h1 : normSq (f z) ≠ 0 := mt normSq_eq_zero.mp hf_zero
+    set c := normSq (f z)
+    have hc : ∀ x, normSq (f x) = c := fun x ↦ h_norm x z
+
+    have h_f_ne_zero : ∀ x, f x ≠ 0 := by {
+      intro x h_fx
+      have h2 : normSq (f x) = 0 := by rw [h_fx, normSq_zero]
+      rw [hc x] at h2
+      exact h1 h2
+    }
+
+    set g := fun x ↦ (c : ℂ) * (f x)⁻¹
+    have hg_diff : Differentiable ℂ g := by {
+      apply Differentiable.const_mul
+      exact Differentiable.inv h_diff h_f_ne_zero
+    }
+
+    have h_conj : ∀ x, star (f x) = g x := by {
+      intro x
+      have h_normSq : f x * star (f x) = (normSq (f x) : ℂ) := by {
+        exact mul_conj (f x)
+      }
+      rw [hc x] at h_normSq
+      have h_calc : star (f x) = (c : ℂ) * (f x)⁻¹ := by {
+        calc star (f x) = star (f x) * (f x * (f x)⁻¹) := by {
+               rw [mul_inv_cancel₀ (h_f_ne_zero x), mul_one]
+             }
+             _ = star (f x) * f x * (f x)⁻¹ := by rw [mul_assoc]
+             _ = f x * star (f x) * (f x)⁻¹ := by rw [mul_comm (star (f x)) (f x)]
+             _ = (c : ℂ) * (f x)⁻¹ := by rw [h_normSq]
+      }
+      exact h_calc
+    }
+
+    have h_star_diff : Differentiable ℂ (fun x ↦ star (f x)) := by {
+      have h_eq : (fun x ↦ star (f x)) = g := funext h_conj
+      rw [h_eq]
+      exact hg_diff
+    }
+
+    have h_re_diff : Differentiable ℂ (fun x ↦ ((f x).re : ℂ)) := by {
+      have h_eq : (fun x ↦ ((f x).re : ℂ)) = (fun x ↦ (f x + star (f x)) * (2 : ℂ)⁻¹) := by {
+        ext x
+        have h_add : f x + star (f x) = ↑(2 * (f x).re) := Complex.add_conj (f x)
+        apply Eq.symm
+        calc (f x + star (f x)) * (2 : ℂ)⁻¹ = (↑(2 * (f x).re) : ℂ) * (2 : ℂ)⁻¹ := by rw [h_add]
+        _ = (2 * ↑(f x).re : ℂ) * (2 : ℂ)⁻¹ := by push_cast; rfl
+        _ = ↑(f x).re * (2 * 2⁻¹) := by ring
+        _ = ↑(f x).re * 1 := by rw [mul_inv_cancel₀ (by norm_num)]
+        _ = ↑(f x).re := by ring
+      }
+      rw [h_eq]
+      apply Differentiable.mul_const
+      exact Differentiable.add h_diff h_star_diff
+    }
+
+    have h_re_const : ∀ x y, (f x).re = (f y).re := by {
+      intro x y
+      have h_re_eps : ∀ v, DifferentiableAt_eps (fun x ↦ ((f x).re : ℂ)) v := by {
+        intro v
+        exact (differentiableAt_iff_eps _ v).mp (h_re_diff v)
+      }
+      have h_im_zero : ∀ v, ((fun x ↦ ((f x).re : ℂ)) v).im = 0 := by {
+        intro v
+        exact Complex.ofReal_im (f v).re
+      }
+      have h_eq_C := exerciseII_8_1b (fun x ↦ ((f x).re : ℂ)) h_re_eps h_im_zero x y
+      exact ofReal_inj.mp h_eq_C
+    }
+
+    have h_im_diff : Differentiable ℂ (fun x ↦ ((f x).im : ℂ)) := by {
+      have h_eq : (fun x ↦ ((f x).im : ℂ)) = (fun x ↦ (f x - star (f x)) * (2 * I)⁻¹) := by {
+        ext x
+        have h_sub : f x - star (f x) = ↑(2 * (f x).im) * I := Complex.sub_conj (f x)
+        apply Eq.symm
+        calc (f x - star (f x)) * (2 * I)⁻¹ = (↑(2 * (f x).im) * I : ℂ) * (2 * I)⁻¹ := by rw [h_sub]
+        _ = (2 * ↑(f x).im * I : ℂ) * (2 * I)⁻¹ := by push_cast; rfl
+        _ = ↑(f x).im * (2 * I * (2 * I)⁻¹) := by ring
+        _ = ↑(f x).im * 1 := by rw [mul_inv_cancel₀ (by norm_num)]
+        _ = ↑(f x).im := by ring
+      }
+      rw [h_eq]
+      apply Differentiable.mul_const
+      exact Differentiable.sub h_diff h_star_diff
+    }
+
+    have h_im_const : ∀ x y, (f x).im = (f y).im := by {
+      intro x y
+      have h_im_eps : ∀ v, DifferentiableAt_eps (fun x ↦ ((f x).im : ℂ)) v := by {
+        intro v
+        exact (differentiableAt_iff_eps _ v).mp (h_im_diff v)
+      }
+      have h_im_zero : ∀ v, ((fun x ↦ ((f x).im : ℂ)) v).im = 0 := by {
+        intro v
+        exact Complex.ofReal_im (f v).im
+      }
+      have h_eq_C := exerciseII_8_1b (fun x ↦ ((f x).im : ℂ)) h_im_eps h_im_zero x y
+      exact ofReal_inj.mp h_eq_C
+    }
+
+    apply Complex.ext
+    · exact h_re_const z w
+    · exact h_im_const z w
+}
+
+/-- If the argument of a holomorphic function is constant, the function is constant. -/
+theorem exerciseII_8_1d (f : ℂ → ℂ) (hf : ∀ z, DifferentiableAt_eps f z)
+    (h_arg : ∀ z w, arg (f z) = arg (f w)) (z w : ℂ) : f z = f w := by {
+  have h_diff : Differentiable ℂ f := by {
+    intro x
+    exact (differentiableAt_iff_eps f x).mpr (hf x)
+  }
+  set c := arg (f z)
+  have hc : ∀ x, arg (f x) = c := fun x ↦ h_arg x z
+
+  set g := fun x ↦ f x * exp (-I * (c : ℂ))
+  have hg_diff : Differentiable ℂ g := by {
+    apply Differentiable.mul_const h_diff
+  }
+
+  have hg_eps : ∀ v, DifferentiableAt_eps g v := by {
+    intro v
+    exact (differentiableAt_iff_eps g v).mp (hg_diff v)
+  }
+
+  have hg_real : ∀ x, (g x).im = 0 := by {
+    intro x
+    have h_f : f x = (‖f x‖ : ℂ) * exp ((arg (f x) : ℂ) * I) := by {
+      exact (norm_mul_exp_arg_mul_I (f x)).symm
+    }
+    have h_g : g x = (‖f x‖ : ℂ) := by {
+      have h_g_def : g x = f x * exp (-I * (c : ℂ)) := rfl
+      rw [h_g_def]
+      nth_rewrite 1 [h_f]
+      calc ((‖f x‖ : ℂ) * exp ((arg (f x) : ℂ) * I)) * exp (-I * (c : ℂ))
+        = (‖f x‖ : ℂ) * (exp (c * I) * exp (-I * c)) := by {
+        rw [hc x]
+        ring
+      }
+      _ = (‖f x‖ : ℂ) * exp (c * I - I * c) := by rw [← exp_add]; ring_nf
+      _ = (‖f x‖ : ℂ) * exp 0 := by ring_nf
+      _ = (‖f x‖ : ℂ) * 1 := by rw [exp_zero]
+      _ = (‖f x‖ : ℂ) := by ring
+    }
+    rw [h_g]
+    simp
+  }
+
+  have hg_const := exerciseII_8_1b g hg_eps hg_real z w
+
+  have h_f_eq : f z = g z * exp (I * (c : ℂ)) := by {
+    have h : g z * exp (I * (c : ℂ)) = f z := by {
+      calc g z * exp (I * (c : ℂ)) = (f z * exp (-I * (c : ℂ))) * exp (I * (c : ℂ)) := rfl
+      _ = f z * (exp (-I * c) * exp (I * c)) := by ring
+      _ = f z * exp (-I * c + I * c) := by rw [← exp_add]
+      _ = f z * exp 0 := by ring_nf
+      _ = f z * 1 := by rw [exp_zero]
+      _ = f z := by ring
+    }
+    exact h.symm
+  }
+
+  have h_w_eq : f w = g w * exp (I * (c : ℂ)) := by {
+    have h : g w * exp (I * (c : ℂ)) = f w := by {
+      calc g w * exp (I * (c : ℂ)) = (f w * exp (-I * (c : ℂ))) * exp (I * (c : ℂ)) := rfl
+      _ = f w * (exp (-I * c) * exp (I * c)) := by ring
+      _ = f w * exp (-I * c + I * c) := by rw [← exp_add]
+      _ = f w * exp 0 := by ring_nf
+      _ = f w * 1 := by rw [exp_zero]
+      _ = f w := by ring
+    }
+    exact h.symm
+  }
+
+  rw [h_f_eq, h_w_eq, hg_const]
+}
+
+/-- If f is differentiable at z, then z ↦ star (f (star z)) is differentiable at star z. -/
+theorem exerciseII_9_2 (f : ℂ → ℂ) (z : ℂ) (hf : DifferentiableAt_eps f z) :
+    DifferentiableAt_eps (fun z ↦ star (f (star z))) (star z) := by {
+  rw [← differentiableAt_iff_eps] at hf ⊢
+  have h_comp : (fun z ↦ star (f (star z))) = star ∘ f ∘ star := rfl
+  rw [h_comp]
+  exact hf.star_conj
+}
+
+/-- If f is holomorphic on G, then z ↦ star (f (star z)) is holomorphic on G* = star '' G. -/
+theorem exerciseII_9_2_domain (G : Set ℂ) (f : ℂ → ℂ) (hf : ∀ z ∈ G, DifferentiableAt_eps f z) :
+    ∀ w ∈ star '' G, DifferentiableAt_eps (fun z ↦ star (f (star z))) w := by {
+  rintro w ⟨z, hz, rfl⟩
+  exact exerciseII_9_2 f z (hf z hz)
 }
 
 end Sarason.Ch2

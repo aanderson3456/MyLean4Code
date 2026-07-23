@@ -6,6 +6,7 @@
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Slope
+import Mathlib.Topology.Path
 
 /-!
 # Sarason - Definitions
@@ -17,6 +18,13 @@ classical flavor of Sarason's notes, along with equivalence theorems to Mathlib 
 open Complex Filter TopologicalSpace Metric Bornology
 
 namespace Sarason
+
+/-- A continuous path in the complex plane ℂ connecting x to y. -/
+def path_in_C (x y : ℂ) : Type := Path x y
+
+/-- Velocity / derivative of a path γ : path_in_C x y at parameter time t ∈ ℝ. -/
+noncomputable def pathDeriv {x y : ℂ} (γ : path_in_C x y) (t : ℝ) : ℂ :=
+  deriv γ.extend t
 
 --  Weierstrass definition of a limit at a finite point.
 def HasLimitAt_eps (f : ℂ → ℂ) (L : ℂ) (z₀ : ℂ) : Prop :=
@@ -154,6 +162,19 @@ theorem hasPartialDerivY_iff_eps (u : ℂ → ℝ) (uy : ℝ) (z₀ : ℂ) :
     exact Complex.re_add_im z₀
   }
   rw [h_eq]
+}
+
+open Classical
+
+noncomputable def deriv_eps (f : ℂ → ℂ) (z₀ : ℂ) (h : DifferentiableAt_eps f z₀) : ℂ :=
+  Classical.choose h
+
+theorem deriv_eq_deriv_eps (f : ℂ → ℂ) (z₀ : ℂ) (h : DifferentiableAt_eps f z₀) : 
+    deriv f z₀ = deriv_eps f z₀ h := by {
+  unfold deriv_eps
+  have h1 : HasDerivAt_eps f (Classical.choose h) z₀ := Classical.choose_spec h
+  have h2 : HasDerivAt f (Classical.choose h) z₀ := (hasDerivAt_iff_eps f _ _).mpr h1
+  exact h2.deriv
 }
 
 end Sarason
