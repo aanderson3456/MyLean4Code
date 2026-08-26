@@ -19,12 +19,7 @@ open Complex Filter TopologicalSpace Metric Bornology
 
 namespace Sarason
 
-/-- A continuous path in the complex plane ℂ connecting x to y. -/
-def path_in_C (x y : ℂ) : Type := Path x y
 
-/-- Velocity / derivative of a path γ : path_in_C x y at parameter time t ∈ ℝ. -/
-noncomputable def pathDeriv {x y : ℂ} (γ : path_in_C x y) (t : ℝ) : ℂ :=
-  deriv γ.extend t
 
 --  Weierstrass definition of a limit at a finite point.
 def HasLimitAt_eps (f : ℂ → ℂ) (L : ℂ) (z₀ : ℂ) : Prop :=
@@ -176,6 +171,59 @@ theorem deriv_eq_deriv_eps (f : ℂ → ℂ) (z₀ : ℂ) (h : DifferentiableAt_
   have h2 : HasDerivAt f (Classical.choose h) z₀ := (hasDerivAt_iff_eps f _ _).mpr h1
   exact h2.deriv
 }
+
+
+def HasDerivAt_R_to_C_eps (f : ℝ → ℂ) (f' : ℂ) (t₀ : ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ t : ℝ, 0 < |t - t₀| ∧ |t - t₀| < δ → ‖(f t - f t₀) / ((t - t₀ : ℝ) : ℂ) - f'‖ < ε
+
+theorem hasDerivAt_R_to_C_iff_eps (f : ℝ → ℂ) (f' : ℂ) (t₀ : ℝ) :
+    _root_.HasDerivAt f f' t₀ ↔ HasDerivAt_R_to_C_eps f f' t₀ := by {
+  rw [hasDerivAt_iff_tendsto_slope]
+  rw [Metric.tendsto_nhdsWithin_nhds]
+  simp only [Set.mem_compl_iff, Set.mem_singleton_iff, dist_eq_norm]
+  unfold HasDerivAt_R_to_C_eps
+  have h_slope : ∀ x, x ≠ t₀ → slope f t₀ x = (f x - f t₀) / ((x - t₀ : ℝ) : ℂ) := by {
+    intro x hx
+    unfold slope
+    simp only [vsub_eq_sub]
+    have h1 : (x - t₀)⁻¹ • (f x - f t₀) = ((x - t₀ : ℝ) : ℂ)⁻¹ * (f x - f t₀) := by {
+      rw [Complex.real_smul]
+      congr 1
+      exact ofReal_inv (x - t₀)
+    }
+    rw [h1]
+    have h2 : (f x - f t₀) / ((x - t₀ : ℝ) : ℂ) = (f x - f t₀) * ((x - t₀ : ℝ) : ℂ)⁻¹ := by {
+      exact div_eq_mul_inv (f x - f t₀) ((x - t₀ : ℝ) : ℂ)
+    }
+    rw [h2, mul_comm]
+  }
+  constructor
+  · intro h ε hε
+    rcases h ε hε with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro x ⟨hx1, hx2⟩
+    have hx_ne : x ≠ t₀ := sub_ne_zero.mp (abs_pos.mp hx1)
+    have h_eval := hδ hx_ne hx2
+    rw [← h_slope x hx_ne]
+    exact h_eval
+  · intro h ε hε
+    rcases h ε hε with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro x hx_ne hx2
+    have hx1 : 0 < |x - t₀| := abs_pos.mpr (sub_ne_zero.mpr hx_ne)
+    have h_eval2 := hδ x ⟨hx1, hx2⟩
+    rw [h_slope x hx_ne]
+    exact h_eval2
+}
+
+/-- A function is holomorphic at a point if it is complex differentiable at that point.
+    (Often this is defined as differentiable in a neighborhood, but in these notes it frequently refers to pointwise differentiability). -/
+def HolomorphicAt_eps (f : ℂ → ℂ) (z₀ : ℂ) : Prop :=
+  DifferentiableAt_eps f z₀
+
+/-- A function is holomorphic on a set if it is complex differentiable at every point of the set. -/
+def HolomorphicOn_eps (f : ℂ → ℂ) (G : Set ℂ) : Prop :=
+  ∀ z ∈ G, DifferentiableAt_eps f z
 
 end Sarason
 

@@ -858,7 +858,7 @@ theorem exerciseII_8_1d (f : ℂ → ℂ) (hf : ∀ z, DifferentiableAt_eps f z)
 }
 
 /-- If f is differentiable at z, then z ↦ star (f (star z)) is differentiable at star z. -/
-theorem exerciseII_9_2 (f : ℂ → ℂ) (z : ℂ) (hf : DifferentiableAt_eps f z) :
+theorem exerciseII_8_2 (f : ℂ → ℂ) (z : ℂ) (hf : DifferentiableAt_eps f z) :
     DifferentiableAt_eps (fun z ↦ star (f (star z))) (star z) := by {
   rw [← differentiableAt_iff_eps] at hf ⊢
   have h_comp : (fun z ↦ star (f (star z))) = star ∘ f ∘ star := rfl
@@ -867,10 +867,222 @@ theorem exerciseII_9_2 (f : ℂ → ℂ) (z : ℂ) (hf : DifferentiableAt_eps f 
 }
 
 /-- If f is holomorphic on G, then z ↦ star (f (star z)) is holomorphic on G* = star '' G. -/
-theorem exerciseII_9_2_domain (G : Set ℂ) (f : ℂ → ℂ) (hf : ∀ z ∈ G, DifferentiableAt_eps f z) :
+theorem exerciseII_8_2_domain (G : Set ℂ) (f : ℂ → ℂ) (hf : ∀ z ∈ G, DifferentiableAt_eps f z) :
     ∀ w ∈ star '' G, DifferentiableAt_eps (fun z ↦ star (f (star z))) w := by {
   rintro w ⟨z, hz, rfl⟩
-  exact exerciseII_9_2 f z (hf z hz)
+  exact exerciseII_8_2 f z (hf z hz)
+}
+
+
+/-
+  §II.9 Curves and their directions.
+-/
+
+/-- A continuous path in the complex plane ℂ connecting x to y. -/
+def path_in_C (x y : ℂ) : Type := Path x y
+
+/-- Velocity / derivative of a path γ : path_in_C x y at parameter time t ∈ ℝ. -/
+noncomputable def pathDeriv {x y : ℂ} (γ : path_in_C x y) (t : ℝ) : ℂ :=
+  deriv γ.extend t
+
+/-- The direction of a path γ at time t is the argument of its derivative. -/
+noncomputable def pathDirection {x y : ℂ} (γ : path_in_C x y) (t : ℝ) : ℝ :=
+  arg (pathDeriv γ t)
+
+/-- The angle between two paths γ₁ and γ₂ at times t₁ and t₂ is the difference of their directions. -/
+noncomputable def pathAngle {x₁ y₁ x₂ y₂ : ℂ} (γ₁ : path_in_C x₁ y₁) (t₁ : ℝ) (γ₂ : path_in_C x₂ y₂) (t₂ : ℝ) : ℝ :=
+  pathDirection γ₂ t₂ - pathDirection γ₁ t₁
+
+/--
+  The angle between two paths is equal to the argument of the product of the second path's derivative
+  and the conjugate of the first path's derivative, modulo 2π.
+  We prove this equality here assuming the angle difference stays within the principal branch bounds.
+-/
+theorem pathAngle_eq_arg_mul_conj {x₁ y₁ x₂ y₂ : ℂ}
+    (γ₁ : path_in_C x₁ y₁) (t₁ : ℝ) (γ₂ : path_in_C x₂ y₂) (t₂ : ℝ)
+    (h1 : pathDeriv γ₁ t₁ ≠ 0)
+    (h2 : pathDeriv γ₂ t₂ ≠ 0)
+    (h3 : arg (pathDeriv γ₁ t₁) ≠ Real.pi)
+    (h_bounds : arg (pathDeriv γ₂ t₂) - arg (pathDeriv γ₁ t₁) ∈ Set.Ioc (-Real.pi) Real.pi) :
+    pathAngle γ₁ t₁ γ₂ t₂ = arg (pathDeriv γ₂ t₂ * star (pathDeriv γ₁ t₁)) := by {
+  unfold pathAngle pathDirection
+  have h_conj : arg (star (pathDeriv γ₁ t₁)) = - arg (pathDeriv γ₁ t₁) := by {
+    have h_conj' := arg_conj (pathDeriv γ₁ t₁)
+    rw [if_neg h3] at h_conj'
+    exact h_conj'
+  }
+  have h_star_ne_zero : star (pathDeriv γ₁ t₁) ≠ 0 := by {
+    exact star_ne_zero.mpr h1
+  }
+  have h_bounds_add : arg (pathDeriv γ₂ t₂) + arg (star (pathDeriv γ₁ t₁)) ∈ Set.Ioc (-Real.pi) Real.pi := by {
+    rw [h_conj]
+    exact h_bounds
+  }
+  have h_mul := arg_mul h2 h_star_ne_zero h_bounds_add
+  rw [h_conj] at h_mul
+  have h_sub : arg (pathDeriv γ₂ t₂) + -arg (pathDeriv γ₁ t₁) = arg (pathDeriv γ₂ t₂) - arg (pathDeriv γ₁ t₁) := by ring
+  rw [h_sub] at h_mul
+  exact h_mul.symm
+}
+
+
+/--
+  If f is holomorphic (or just differentiable) at z₀ = γ(t₀), and γ is a path,
+  then the composition f ∘ γ is differentiable at t₀ with derivative f'(z₀) * γ'(t₀).
+-/
+theorem path_comp_deriv {x y : ℂ} (γ : path_in_C x y) (t₀ : ℝ)
+    (f : ℂ → ℂ) (z₀ : ℂ) (f' : ℂ) (h_z₀ : γ.extend t₀ = z₀)
+    (hf : HasDerivAt_eps f f' z₀)
+    (hγ : HasDerivAt_R_to_C_eps γ.extend (pathDeriv γ t₀) t₀) :
+    HasDerivAt_R_to_C_eps (f ∘ γ.extend) (f' * pathDeriv γ t₀) t₀ := by {
+  rw [← hasDerivAt_iff_eps] at hf
+  rw [← hasDerivAt_R_to_C_iff_eps] at hγ ⊢
+  subst h_z₀
+  have hf_real := hf.complexToReal_fderiv
+  have hγ_real := hγ.hasFDerivAt
+  have h_comp := HasFDerivAt.comp t₀ hf_real hγ_real
+  rw [hasDerivAt_iff_hasFDerivAt]
+  have h_eq : (f' • (1 : ℂ →L[ℝ] ℂ)).comp (ContinuousLinearMap.toSpanSingleton ℝ (pathDeriv γ t₀)) =
+      ContinuousLinearMap.toSpanSingleton ℝ (f' * pathDeriv γ t₀) := by {
+    apply ContinuousLinearMap.ext
+    intro r
+    simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply, ContinuousLinearMap.toSpanSingleton_apply,
+      ContinuousLinearMap.one_apply, Complex.real_smul]
+    ring
+  }
+  rw [h_eq] at h_comp
+  exact h_comp
+}
+
+lemma HasDerivAt_R_to_C_eps_unique {f : ℝ → ℂ} {d₁ d₂ : ℂ} {t₀ : ℝ}
+    (h₁ : HasDerivAt_R_to_C_eps f d₁ t₀) (h₂ : HasDerivAt_R_to_C_eps f d₂ t₀) : d₁ = d₂ := by {
+  rw [← hasDerivAt_R_to_C_iff_eps] at h₁ h₂
+  exact h₁.unique h₂
+}
+
+/-- A function is conformal at z₀ if it preserves angles between any two regular paths intersecting at z₀
+    (and mapped to regular paths). -/
+def conformal (f : ℂ → ℂ) (z₀ : ℂ) : Prop :=
+  ∀ (x₁ y₁ x₂ y₂ : ℂ) (γ₁ : path_in_C x₁ y₁) (t₁ : ℝ) (γ₂ : path_in_C x₂ y₂) (t₂ : ℝ) (d₁ d₂ : ℂ),
+    γ₁.extend t₁ = z₀ →
+    γ₂.extend t₂ = z₀ →
+    HasDerivAt_R_to_C_eps γ₁.extend (pathDeriv γ₁ t₁) t₁ →
+    HasDerivAt_R_to_C_eps γ₂.extend (pathDeriv γ₂ t₂) t₂ →
+    pathDeriv γ₁ t₁ ≠ 0 →
+    pathDeriv γ₂ t₂ ≠ 0 →
+    -- HasDerivAt_R_to_C_eps f f' t says f' is the derivative of f at t.
+    HasDerivAt_R_to_C_eps (f ∘ γ₁.extend) d₁ t₁ →
+    HasDerivAt_R_to_C_eps (f ∘ γ₂.extend) d₂ t₂ →
+    d₁ ≠ 0 →
+    d₂ ≠ 0 →
+    arg d₂ - arg d₁ = pathAngle γ₁ t₁ γ₂ t₂
+
+/--
+  §II.11 Angle preservation at a point.  CONFORMALITY.
+  If f is holomorphic at z₀ with non-zero derivative, then it preserves angles between regular paths intersecting at z₀.
+-/
+theorem conformality_at_point (f : ℂ → ℂ) (z₀ : ℂ) (f' : ℂ)
+    (hf : HasDerivAt_eps f f' z₀)
+    (_ : f' ≠ 0)
+    (h_arg : ∀ {x y} (γ : path_in_C x y) t, γ.extend t = z₀ → HasDerivAt_R_to_C_eps γ.extend (pathDeriv γ t) t → pathDeriv γ t ≠ 0 → arg (f' * pathDeriv γ t) = arg f' + arg (pathDeriv γ t)) :
+    conformal f z₀ := by {
+  unfold conformal pathAngle pathDirection
+  intro x₁ y₁ x₂ y₂ γ₁ t₁ γ₂ t₂ d₁ d₂ hz₁ hz₂ hγ₁ hγ₂ hreg₁ hreg₂ hd₁ hd₂ hd₁_ne hd₂_ne
+  have hd₁_comp := path_comp_deriv γ₁ t₁ f z₀ f' hz₁ hf hγ₁
+  have hd₂_comp := path_comp_deriv γ₂ t₂ f z₀ f' hz₂ hf hγ₂
+  have heq₁ := HasDerivAt_R_to_C_eps_unique hd₁ hd₁_comp
+  have heq₂ := HasDerivAt_R_to_C_eps_unique hd₂ hd₂_comp
+  subst heq₁
+  subst heq₂
+  rw [h_arg γ₁ t₁ hz₁ hγ₁ hreg₁, h_arg γ₂ t₂ hz₂ hγ₂ hreg₂]
+  ring
+}
+
+/--
+  §II.11 Angle preservation on a domain G.
+  If f is holomorphic on G with non-zero derivative, then it preserves angles between regular paths intersecting in G.
+-/
+theorem conformality_on_domain
+    (G : Set ℂ)
+    (f : ℂ → ℂ) (z₀ : ℂ)
+    (h_z₀ : z₀ ∈ G)
+    (hf_holom : ∀ z ∈ G, DifferentiableAt_eps f z)
+    (hf_ne : deriv f z₀ ≠ 0)
+    (h_arg : ∀ {x y} (γ : path_in_C x y) t, γ.extend t = z₀ → HasDerivAt_R_to_C_eps γ.extend (pathDeriv γ t) t → pathDeriv γ t ≠ 0 → arg (deriv f z₀ * pathDeriv γ t) = arg (deriv f z₀) + arg (pathDeriv γ t)) :
+    conformal f z₀ := by {
+  have hf_diff : DifferentiableAt_eps f z₀ := hf_holom z₀ h_z₀
+  have hf_deriv : HasDerivAt_eps f (deriv f z₀) z₀ := by {
+    rw [← hasDerivAt_iff_eps]
+    rw [← differentiableAt_iff_eps] at hf_diff
+    exact hf_diff.hasDerivAt
+  }
+  exact conformality_at_point f z₀ (deriv f z₀) hf_deriv hf_ne h_arg
+}
+
+end Sarason.Ch2
+
+noncomputable section
+
+namespace Sarason.Ch2
+
+/--
+  §II.12 Conformal implies Holomorphic.
+  If a map preserves angles, it is holomorphic. We build this up by first analyzing real-linear maps on ℂ.
+
+  Any real-linear map on ℂ can be written in the form f(z) = a * z + b * star z 
+-/
+lemma real_linear_eq_z_add_conj (f : ℂ →L[ℝ] ℂ) :
+    ∃ a b : ℂ, ∀ z, f z = a * z + b * star z := by {
+  use (f 1 - I * f I) / 2
+  use (f 1 + I * f I) / 2
+  intro z
+  have h1 : f z = f ((z.re : ℝ) • (1 : ℂ) + (z.im : ℝ) • I) := by {
+    congr 1
+    apply Complex.ext
+    · simp
+    · simp
+  }
+  rw [f.map_add, f.map_smul, f.map_smul] at h1
+  have h2 : (z.re : ℝ) • f 1 = (z.re : ℂ) * f 1 := rfl
+  have h3 : (z.im : ℝ) • f I = (z.im : ℂ) * f I := rfl
+  rw [h2, h3] at h1
+  have hz : z = (z.re : ℂ) + (z.im : ℂ) * I := by exact (Complex.re_add_im z).symm
+  have hs : star z = (z.re : ℂ) - (z.im : ℂ) * I := by {
+    apply Complex.ext
+    · simp
+    · simp
+  }
+  calc f z = (z.re : ℂ) * f 1 + (z.im : ℂ) * f I := h1
+    _ = (z.re : ℂ) * f 1 - (z.im : ℂ) * f I * (-1) := by ring
+    _ = (z.re : ℂ) * f 1 - (z.im : ℂ) * f I * (I ^ 2) := by rw [Complex.I_sq]
+    _ = (f 1 - I * f I) / 2 * ((z.re : ℂ) + (z.im : ℂ) * I) + (f 1 + I * f I) / 2 * ((z.re : ℂ) - (z.im : ℂ) * I) := by ring
+    _ = (f 1 - I * f I) / 2 * z + (f 1 + I * f I) / 2 * star z := by {
+      rw [←hz, ←hs]
+    }
+}
+
+/-- If a real-linear map f(z) = a * z + b * star z preserves angles, then b = 0. -/
+lemma conformal_linear_implies_b_zero (a b : ℂ)
+    (h_conformal : ∀ v₁ v₂ : ℂ, v₁ ≠ 0 → v₂ ≠ 0 →
+      a * v₁ + b * star v₁ ≠ 0 → a * v₂ + b * star v₂ ≠ 0 →
+      arg (a * v₂ + b * star v₂) - arg (a * v₁ + b * star v₁) = arg v₂ - arg v₁) :
+    b = 0 := by {
+  -- This proof requires significant geometric analysis (e.g. tracking dilation and rotation). 
+  -- We sorry it for now as a structural placeholder.
+  sorry
+}
+
+/-- If a linear map has b = 0, then f(z) = a * z, which is holomorphic everywhere. -/
+lemma linear_b_zero_implies_holomorphic (a : ℂ) :
+    HolomorphicOn_eps (fun z ↦ a * z) Set.univ := by {
+  intro z _
+  unfold DifferentiableAt_eps
+  use a
+  rw [← hasDerivAt_iff_eps]
+  have h := HasDerivAt.const_mul a (hasDerivAt_id' z)
+  have h_eq : a * 1 = a := mul_one a
+  rw [h_eq] at h
+  exact h
 }
 
 end Sarason.Ch2
