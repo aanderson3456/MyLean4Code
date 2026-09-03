@@ -973,9 +973,7 @@ def conformal (f : ℂ → ℂ) (z₀ : ℂ) : Prop :=
     -- HasDerivAt_R_to_C_eps f f' t says f' is the derivative of f at t.
     HasDerivAt_R_to_C_eps (f ∘ γ₁.extend) d₁ t₁ →
     HasDerivAt_R_to_C_eps (f ∘ γ₂.extend) d₂ t₂ →
-    d₁ ≠ 0 →
-    d₂ ≠ 0 →
-    arg d₂ - arg d₁ = pathAngle γ₁ t₁ γ₂ t₂
+    d₁ ≠ 0 ∧ d₂ ≠ 0 ∧ arg d₂ - arg d₁ = pathAngle γ₁ t₁ γ₂ t₂
 
 /--
   §II.11 Angle preservation at a point.  CONFORMALITY.
@@ -983,17 +981,20 @@ def conformal (f : ℂ → ℂ) (z₀ : ℂ) : Prop :=
 -/
 theorem conformality_at_point (f : ℂ → ℂ) (z₀ : ℂ) (f' : ℂ)
     (hf : HasDerivAt_eps f f' z₀)
-    (_ : f' ≠ 0)
+    (hf_ne : f' ≠ 0)
     (h_arg : ∀ {x y} (γ : path_in_C x y) t, γ.extend t = z₀ → HasDerivAt_R_to_C_eps γ.extend (pathDeriv γ t) t → pathDeriv γ t ≠ 0 → arg (f' * pathDeriv γ t) = arg f' + arg (pathDeriv γ t)) :
     conformal f z₀ := by {
   unfold conformal pathAngle pathDirection
-  intro x₁ y₁ x₂ y₂ γ₁ t₁ γ₂ t₂ d₁ d₂ hz₁ hz₂ hγ₁ hγ₂ hreg₁ hreg₂ hd₁ hd₂ hd₁_ne hd₂_ne
+  intro x₁ y₁ x₂ y₂ γ₁ t₁ γ₂ t₂ d₁ d₂ hz₁ hz₂ hγ₁ hγ₂ hreg₁ hreg₂ hd₁ hd₂
   have hd₁_comp := path_comp_deriv γ₁ t₁ f z₀ f' hz₁ hf hγ₁
   have hd₂_comp := path_comp_deriv γ₂ t₂ f z₀ f' hz₂ hf hγ₂
   have heq₁ := HasDerivAt_R_to_C_eps_unique hd₁ hd₁_comp
   have heq₂ := HasDerivAt_R_to_C_eps_unique hd₂ hd₂_comp
   subst heq₁
   subst heq₂
+  have hd1_ne : f' * pathDeriv γ₁ t₁ ≠ 0 := mul_ne_zero hf_ne hreg₁
+  have hd2_ne : f' * pathDeriv γ₂ t₂ ≠ 0 := mul_ne_zero hf_ne hreg₂
+  refine ⟨hd1_ne, hd2_ne, ?_⟩
   rw [h_arg γ₁ t₁ hz₁ hγ₁ hreg₁, h_arg γ₂ t₂ hz₂ hγ₂ hreg₂]
   ring
 }

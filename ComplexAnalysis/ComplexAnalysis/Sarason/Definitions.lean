@@ -227,3 +227,10 @@ def HolomorphicOn_eps (f : ℂ → ℂ) (G : Set ℂ) : Prop :=
 
 end Sarason
 
+/-!
+  NOTE FOR FUTURE AGENTS: 
+  Currently, some theorems in `Chapter2.lean` (such as `conformal_implies_holomorphic`) 
+  use Mathlib's `DifferentiableAt ℝ f z` to represent continuous first partial derivatives / real-differentiability.
+  Eventually, we want to replace this with our own custom epsilon-delta definitions 
+  (similar to `HasDerivAt_eps`) that will define $\mathbb{R}^2$ differentiability from scratch.
+-/
