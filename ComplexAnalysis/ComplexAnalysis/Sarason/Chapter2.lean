@@ -1006,7 +1006,7 @@ theorem conformality_on_domain
     (G : Set ℂ)
     (f : ℂ → ℂ) (z₀ : ℂ)
     (h_z₀ : z₀ ∈ G)
-    (hf_holom : ∀ z ∈ G, DifferentiableAt_eps f z)
+    (hf_holom : HolomorphicOn_eps f G)
     (hf_ne : deriv f z₀ ≠ 0)
     (h_arg : ∀ {x y} (γ : path_in_C x y) t, γ.extend t = z₀ → HasDerivAt_R_to_C_eps γ.extend (pathDeriv γ t) t → pathDeriv γ t ≠ 0 → arg (deriv f z₀ * pathDeriv γ t) = arg (deriv f z₀) + arg (pathDeriv γ t)) :
     conformal f z₀ := by {
@@ -1029,7 +1029,7 @@ namespace Sarason.Ch2
   §II.12 Conformal implies Holomorphic.
   If a map preserves angles, it is holomorphic. We build this up by first analyzing real-linear maps on ℂ.
 
-  Any real-linear map on ℂ can be written in the form f(z) = a * z + b * star z 
+  Any real-linear map on ℂ can be written in the form f(z) = a * z + b * star z
 -/
 lemma real_linear_eq_z_add_conj (f : ℂ →L[ℝ] ℂ) :
     ∃ a b : ℂ, ∀ z, f z = a * z + b * star z := by {
@@ -1061,28 +1061,576 @@ lemma real_linear_eq_z_add_conj (f : ℂ →L[ℝ] ℂ) :
     }
 }
 
+lemma conformal_linear_case_add_zero (a b : ℂ)
+    (h_conformal : ∀ v₁ v₂ : ℂ, v₁ ≠ 0 → v₂ ≠ 0 →
+      a * v₁ + b * star v₁ ≠ 0 → a * v₂ + b * star v₂ ≠ 0 →
+      arg (a * v₂ + b * star v₂) - arg (a * v₁ + b * star v₁) = arg v₂ - arg v₁)
+    (hab : a + b = 0) : b = 0 := by {
+  have hb : b = -a := by {
+    calc b = a + b - a := by ring
+      _ = 0 - a := by rw [hab]
+      _ = -a := by ring
+  }
+  by_cases ha : a = 0
+  · rw [ha, neg_zero] at hb
+    exact hb
+  · have h1 : I ≠ 0 := I_ne_zero
+    have h2 : 1 + I ≠ 0 := by {
+      intro h
+      have h_re : (1 + I : ℂ).re = 0 := by rw [h]; rfl
+      simp at h_re
+    }
+    have hf1 : a * I + b * star I = 2 * a * I := by {
+      rw [hb]
+      apply Complex.ext <;> simp <;> ring
+    }
+    have hf2 : a * (1 + I) + b * star (1 + I) = 2 * a * I := by {
+      rw [hb]
+      apply Complex.ext <;> simp <;> ring
+    }
+    have hf1_ne : a * I + b * star I ≠ 0 := by {
+      rw [hf1]
+      intro h
+      cases mul_eq_zero.mp h with
+      | inl h_2a =>
+        cases mul_eq_zero.mp h_2a with
+        | inl h2 => norm_num at h2
+        | inr ha2 => exact ha ha2
+      | inr h_I => exact I_ne_zero h_I
+    }
+    have h_arg := h_conformal I (1 + I) h1 h2 hf1_ne (by { rw [hf2, ← hf1]; exact hf1_ne })
+    rw [hf1, hf2] at h_arg
+    simp at h_arg
+    have h_arg_eq : arg (1 + I) = arg I := by {
+      rw [arg_I]
+      exact sub_eq_zero.mp h_arg.symm
+    }
+    have h_c := (arg_eq_arg_iff h2 h1).mp h_arg_eq
+    have h_re : (((‖I‖:ℂ) / (‖1 + I‖:ℂ)) * (1 + I)).re = I.re := congrArg re h_c
+    have h_c_real : (((‖I‖:ℂ) / (‖1 + I‖:ℂ))).im = 0 := by simp
+    have h_c_re : (((‖I‖:ℂ) / (‖1 + I‖:ℂ))).re = ‖I‖ / ‖1 + I‖ := by simp
+    have h_re2 : ‖I‖ / ‖1 + I‖ * 1 = 0 := by {
+      calc ‖I‖ / ‖1 + I‖ * 1 = (((‖I‖:ℂ) / (‖1 + I‖:ℂ))).re * (1 + I : ℂ).re - (((‖I‖:ℂ) / (‖1 + I‖:ℂ))).im * (1 + I : ℂ).im := by simp
+        _ = (((‖I‖:ℂ) / (‖1 + I‖:ℂ)) * (1 + I)).re := by simp [mul_re]
+        _ = I.re := h_re
+        _ = 0 := rfl
+    }
+    rw [mul_one] at h_re2
+    have h_norm_I : ‖I‖ = 1 := norm_I
+    rw [h_norm_I] at h_re2
+    have h_norm_zero : (1 : ℝ) = 0 := by {
+      have hh : (1 : ℝ) / ‖1 + I‖ * ‖1 + I‖ = 0 * ‖1 + I‖ := by rw [h_re2]
+      rw [zero_mul] at hh
+      have h_cancel : (1 : ℝ) / ‖1 + I‖ * ‖1 + I‖ = 1 := by {
+        apply div_mul_cancel₀
+        intro h
+        have h_eq_zero : 1 + I = 0 := norm_eq_zero.mp h
+        exact h2 h_eq_zero
+      }
+      rw [h_cancel] at hh
+      exact hh
+    }
+    norm_num at h_norm_zero
+}
+
+lemma conformal_linear_helper (a b v : ℂ)
+    (h_conformal : ∀ v₁ v₂ : ℂ, v₁ ≠ 0 → v₂ ≠ 0 →
+      a * v₁ + b * star v₁ ≠ 0 → a * v₂ + b * star v₂ ≠ 0 →
+      arg (a * v₂ + b * star v₂) - arg (a * v₁ + b * star v₁) = arg v₂ - arg v₁)
+    (hab : a + b ≠ 0)
+    (hv_ne : v ≠ 0)
+    (hfv_ne : a * v + b * star v ≠ 0) :
+    ∃ c : ℝ, (c : ℂ) * (a + b) = a + b * (star v / v) := by {
+  have h1_ne : (1 : ℂ) ≠ 0 := one_ne_zero
+  have hf1_ne : a * 1 + b * star 1 ≠ 0 := by {
+    simp [hab]
+  }
+  have h_arg := h_conformal 1 v h1_ne hv_ne hf1_ne hfv_ne
+  simp at h_arg
+  have eq1 : a * v + b * star v = ‖a * v + b * star v‖ * exp (arg (a * v + b * star v) * I) := (norm_mul_exp_arg_mul_I _).symm
+  have eq2 : exp (arg (a * v + b * star v) * I) = exp ((arg v : ℂ) * I) * exp ((arg (a + b) : ℂ) * I) := by {
+    have h_eq : arg (a * v + b * star v) = arg v + arg (a + b) := eq_add_of_sub_eq h_arg
+    rw [h_eq]
+    push_cast
+    rw [add_mul, exp_add]
+  }
+  rw [eq2] at eq1
+  have eq3 : exp (arg v * I) = v / ‖v‖ := by {
+    have h := norm_mul_exp_arg_mul_I v
+    have h_div : exp (arg v * I) = v / ‖v‖ := by {
+      calc exp (arg v * I) = (‖v‖ : ℂ)⁻¹ * (‖v‖ * exp (arg v * I)) := by {
+             rw [← mul_assoc, inv_mul_cancel₀, one_mul]
+             intro hh
+             have hh2 : ‖v‖ = 0 := by exact_mod_cast hh
+             exact hv_ne (norm_eq_zero.mp hh2)
+           }
+        _ = (‖v‖ : ℂ)⁻¹ * v := by rw [h]
+        _ = v / ‖v‖ := by ring
+    }
+    exact h_div
+  }
+  have eq4 : exp (arg (a + b) * I) = (a + b) / ‖a + b‖ := by {
+    have h := norm_mul_exp_arg_mul_I (a + b)
+    have h_div : exp (arg (a + b) * I) = (a + b) / ‖a + b‖ := by {
+      calc exp (arg (a + b) * I) = (‖a + b‖ : ℂ)⁻¹ * (‖a + b‖ * exp (arg (a + b) * I)) := by {
+             rw [← mul_assoc, inv_mul_cancel₀, one_mul]
+             intro hh
+             have hh2 : ‖a + b‖ = 0 := by exact_mod_cast hh
+             exact hab (norm_eq_zero.mp hh2)
+           }
+        _ = (‖a + b‖ : ℂ)⁻¹ * (a + b) := by rw [h]
+        _ = (a + b) / ‖a + b‖ := by ring
+    }
+    exact h_div
+  }
+  rw [eq3, eq4] at eq1
+  use ‖a * v + b * star v‖ / (‖v‖ * ‖a + b‖)
+  push_cast
+  calc (‖a * v + b * star v‖ / (‖v‖ * ‖a + b‖) : ℂ) * (a + b) = (‖a * v + b * star v‖ / (‖v‖ * ‖a + b‖) : ℂ) * (a + b) * (v / v) := by {
+         rw [div_self hv_ne, mul_one]
+       }
+    _ = (‖a * v + b * star v‖ * (v / ‖v‖ * ((a + b) / ‖a + b‖))) / v := by {
+         ring
+       }
+    _ = (a * v + b * star v) / v := by rw [← eq1]
+    _ = a + b * (star v / v) := by {
+         calc (a * v + b * star v) / v = a * (v / v) + b * (star v / v) := by ring
+           _ = a * 1 + b * (star v / v) := by rw [div_self hv_ne]
+           _ = a + b * (star v / v) := by ring
+       }
+}
+
 /-- If a real-linear map f(z) = a * z + b * star z preserves angles, then b = 0. -/
+
 lemma conformal_linear_implies_b_zero (a b : ℂ)
     (h_conformal : ∀ v₁ v₂ : ℂ, v₁ ≠ 0 → v₂ ≠ 0 →
       a * v₁ + b * star v₁ ≠ 0 → a * v₂ + b * star v₂ ≠ 0 →
       arg (a * v₂ + b * star v₂) - arg (a * v₁ + b * star v₁) = arg v₂ - arg v₁) :
     b = 0 := by {
-  -- This proof requires significant geometric analysis (e.g. tracking dilation and rotation). 
-  -- We sorry it for now as a structural placeholder.
+  by_cases hab : a + b = 0
+  · exact conformal_linear_case_add_zero a b h_conformal hab
+  · -- a + b \neq 0
+    -- To prove b = 0, we use the geometric insight from Sarason:
+    -- "as gamma traverses the unit circle, a + b * (star gamma)/(gamma) twice traverses the unit circle"
+    --
+    -- This geometric insight relies on the relation: c * (a+b) = a + b * (star v / v).
+    -- 1. Conformality Means Angle Preservation: The angle between f(v) and f(1) must equal
+    --    the angle between v and 1. This means the complex argument of f(v)/f(1) matches the argument of v.
+    -- 2. Real Scalars for Equal Arguments: If two complex numbers have the same argument, they lie on the
+    --    same ray from the origin, meaning one is a real scalar multiple of the other: f(v)/f(1) = c * v
+    --    for some real number c > 0.
+    -- 3. Applying the Linear Map: Since f(z) = az + b\bar{z}, f(v) = av + b\bar{v} and f(1) = a + b.
+    --    So (av + b\bar{v})/(a+b) = cv. Multiplying by (a+b) gives av + b\bar{v} = cv(a+b).
+    --    Dividing by v yields the constraint: a + b(\bar{v}/v) = c(a+b).
+    --
+    -- The Geometric Meaning:
+    -- As a vector v traverses the unit circle, the fraction \bar{v}/v (which equals v^-2) traces
+    -- the unit circle twice. The left side, a + b(\bar{v}/v), traces a circle of radius |b| centered at a.
+    -- The right side, c(a+b), traces a straight line passing through the origin and a+b.
+    -- A circle can only lie entirely on a straight line if its radius is 0, implying |b| = 0 and thus b = 0.
+    --
+    -- Rather than formalizing continuous curve traversal, we evaluate this algebraic relation
+    -- at specific orthogonal points (I and 1+I) to algebraically force b = 0.
+
+    have h1 : I ≠ 0 := I_ne_zero
+    have h2 : 1 + I ≠ 0 := by {
+      intro h
+      have h_re : (1 + I : ℂ).re = 0 := by rw [h]; rfl
+      simp at h_re
+    }
+
+    by_cases hfI : a * I + b * star I = 0
+    · -- Handle the edge case where the map sends I to the origin
+      -- if f(I) = 0, then a * I - b * I = 0 \implies a = b.
+      have hab_eq : a = b := by {
+        have h_simp : a * I + b * (-I) = 0 := by {
+          -- Simplify star I to -I
+          calc a * I + b * (-I) = a * I + b * star I := by { rw [star_def, conj_I] }
+            _ = 0 := hfI
+        }
+        have h_div : (a - b) * I = 0 := by {
+          calc (a - b) * I = a * I - b * I := by ring
+            _ = a * I + b * (-I) := by ring
+            _ = 0 := h_simp
+        }
+        cases mul_eq_zero.mp h_div with
+        | inl h_ab => exact sub_eq_zero.mp h_ab
+        | inr h_I => exact False.elim (I_ne_zero h_I)
+      }
+      -- f(1) = a + b = 2a
+      have hf1 : a * 1 + b * star 1 = 2 * a := by {
+        have h_star1 : star (1 : ℂ) = 1 := by { apply Complex.ext <;> simp }
+        rw [hab_eq, h_star1]
+        ring
+      }
+      have hf2 : a * (1 + I) + b * star (1 + I) = 2 * a := by {
+        rw [hab_eq]
+        apply Complex.ext <;> simp <;> ring
+      }
+      by_cases ha_zero : a = 0
+      · rw [ha_zero] at hab_eq
+        exact hab_eq.symm
+      have ha2_ne : 2 * a ≠ 0 := by {
+        -- Prove 2a != 0 to ensure f(1) != 0 for conformality
+        intro h
+        cases mul_eq_zero.mp h with
+        | inl h2 => norm_num at h2
+        | inr ha => exact ha_zero ha
+      }
+      have hf1_ne : a * 1 + b * star 1 ≠ 0 := by {
+        -- Establish f(1) != 0
+        rw [hf1]
+        exact ha2_ne
+      }
+      have h1_one : (1 : ℂ) ≠ 0 := one_ne_zero
+
+      -- Apply conformality between the points 1 and 1+I
+      have h_arg := h_conformal 1 (1 + I) h1_one h2 hf1_ne (by { rw [hf2, ← hf1]; exact hf1_ne })
+      rw [hf1, hf2] at h_arg
+      simp at h_arg
+
+      -- Use the argument equality to extract the norm and arrive at a contradiction
+      -- h_arg : 0 = arg (1 + I) - arg 1
+      have h_arg_1_I : arg (1 + I) = arg 1 := by {
+        rw [arg_one]
+        exact h_arg.symm
+      }
+      have h_c := (arg_eq_arg_iff h2 h1_one).mp h_arg_1_I
+      have h_im : (((‖(1:ℂ)‖:ℂ) / (‖1 + I‖:ℂ)) * (1 + I)).im = (1 : ℂ).im := congrArg im h_c
+      have h_im2 : ‖(1:ℂ)‖ / ‖1 + I‖ * 1 = 0 := by {
+        calc ‖(1:ℂ)‖ / ‖1 + I‖ * 1 = (((‖(1:ℂ)‖:ℂ) / (‖1 + I‖:ℂ))).re * (1 + I : ℂ).im + (((‖(1:ℂ)‖:ℂ) / (‖1 + I‖:ℂ))).im * (1 + I : ℂ).re := by simp
+          _ = (((‖(1:ℂ)‖:ℂ) / (‖1 + I‖:ℂ)) * (1 + I)).im := by simp [mul_im]
+          _ = (1 : ℂ).im := h_im
+          _ = 0 := rfl
+      }
+      rw [mul_one] at h_im2
+      have h_norm : ‖(1:ℂ)‖ / ‖1 + I‖ = 0 := h_im2
+      have h_norm_one : ‖(1:ℂ)‖ = 1 := norm_one
+      rw [h_norm_one] at h_norm
+      have h_norm_zero : (1 : ℝ) = 0 := by {
+        have hh : (1 : ℝ) / ‖1 + I‖ * ‖1 + I‖ = 0 * ‖1 + I‖ := by rw [h_norm]
+        rw [zero_mul] at hh
+        have h_cancel : (1 : ℝ) / ‖1 + I‖ * ‖1 + I‖ = 1 := by {
+          apply div_mul_cancel₀
+          intro h
+          have h_eq_zero : 1 + I = 0 := norm_eq_zero.mp h
+          exact h2 h_eq_zero
+        }
+        rw [h_cancel] at hh
+        exact hh
+      }
+      norm_num at h_norm_zero
+
+    · -- Now a * I + b * star I \neq 0
+      by_cases hf1I : a * (1 + I) + b * star (1 + I) = 0
+      · -- Handle the second edge case where f(1+I) = 0
+        -- f(1+I) = 0 \implies a(1+I) + b(1-I) = 0 \implies b = -aI
+        have h_mul : (a * (1 + I) + b * star (1 + I)) * (1 + I) = 0 := by {
+          rw [hf1I, zero_mul]
+        }
+        have h_alg : (a * (1 + I) + b * star (1 + I)) * (1 + I) = 2 * a * I + 2 * b := by {
+          -- Expand the multiplication by (1+I) to simplify terms
+          have h_star : star (1 + I) = 1 - I := by { apply Complex.ext <;> simp }
+          rw [h_star]
+          apply Complex.ext <;> simp <;> ring
+        }
+        rw [h_alg] at h_mul
+        have hb_eq : 2 * b = -2 * a * I := by {
+          -- Isolate 2b to show b = -aI
+          calc 2 * b = 2 * a * I + 2 * b - 2 * a * I := by ring
+            _ = 0 - 2 * a * I := by rw [h_mul]
+            _ = -2 * a * I := by ring
+        }
+        have hb_eq2 : b = -a * I := by {
+          calc b = (2 * b) / 2 := by ring
+            _ = (-2 * a * I) / 2 := by rw [hb_eq]
+            _ = -a * I := by ring
+        }
+        have ha_ne : a ≠ 0 := by {
+          -- Ensure a != 0 to prevent a+b=0 contradiction
+          intro h
+          rw [h] at hb_eq2
+          have hb_zero : b = 0 := by { rw [hb_eq2]; ring }
+          have hab_zero : a + b = 0 := by rw [h, hb_zero, add_zero]
+          exact hab hab_zero
+        }
+
+        -- Apply the linear helper at I to extract a real scalar c1
+        have h_c1 := conformal_linear_helper a b I h_conformal hab h1 hfI
+        rcases h_c1 with ⟨c1, hc1⟩
+        have hv1 : star I / I = -1 := by {
+          -- Evaluate the \bar{v}/v term for I
+          rw [star_def, conj_I]
+          calc -I / I = -(I / I) := neg_div I I
+            _ = -1 := by { rw [div_self I_ne_zero] }
+        }
+        rw [hv1] at hc1
+        have hc1_re : (c1 : ℂ) * (a * (1 - I)) = a * (1 + I) := by {
+          calc (c1 : ℂ) * (a * (1 - I)) = (c1 : ℂ) * (a + -a * I) := by ring
+            _ = (c1 : ℂ) * (a + b) := by { rw [hb_eq2] }
+            _ = a + b * -1 := hc1
+            _ = a - b := by ring
+            _ = a - (-a * I) := by { rw [hb_eq2] }
+            _ = a * (1 + I) := by ring
+        }
+        have hc1_c : (c1 : ℂ) * (1 - I) = 1 + I := by {
+          -- Cancel out 'a' to yield a purely numerical relation involving c1
+          have h_mul_a : a * ((c1 : ℂ) * (1 - I)) = a * (1 + I) := by {
+            calc a * ((c1 : ℂ) * (1 - I)) = (c1 : ℂ) * (a * (1 - I)) := by ring
+              _ = a * (1 + I) := hc1_re
+          }
+          exact mul_left_cancel₀ ha_ne h_mul_a
+        }
+        have hc1_im : ((c1 : ℂ) * (1 - I)).im = (1 + I : ℂ).im := by rw [hc1_c]
+        have hc1_re2 : ((c1 : ℂ) * (1 - I)).re = (1 + I : ℂ).re := by rw [hc1_c]
+
+        -- The resulting equality for c1 yields a contradiction since c1 is real
+        simp at hc1_im
+        simp at hc1_re2
+        linarith
+
+      · -- Main Case: Neither f(I) nor f(1+I) is zero.
+        -- We apply the linear helper to both I and 1+I to establish our system of equations
+        have h_c1 := conformal_linear_helper a b I h_conformal hab h1 hfI
+        have h_c2 := conformal_linear_helper a b (1 + I) h_conformal hab h2 hf1I
+        rcases h_c1 with ⟨c1, hc1⟩
+        rcases h_c2 with ⟨c2, hc2⟩
+        -- For v = I, \bar{v}/v = -1.
+        have hv1 : star I / I = -1 := by {
+          rw [star_def, conj_I]
+          calc -I / I = -(I / I) := neg_div I I
+            _ = -1 := by { rw [div_self I_ne_zero] }
+        }
+        rw [hv1] at hc1
+
+        -- For v = 1+I, \bar{v}/v = -I.
+        have hv2 : star (1 + I) / (1 + I) = -I := by {
+          -- Evaluate the \bar{v}/v term for 1+I
+          have h_star : star (1 + I) = 1 - I := by { apply Complex.ext <;> simp }
+          rw [h_star]
+          apply mul_right_cancel₀ h2
+          calc (1 - I) / (1 + I) * (1 + I) = 1 - I := div_mul_cancel₀ _ h2
+            _ = -I * (1 + I) := by { apply Complex.ext <;> simp }
+        }
+        rw [hv2] at hc2
+
+        have hc1_alg : b * (1 + c1 : ℂ) = a * (1 - c1 : ℂ) := by {
+          -- Algebraically rearrange the first equation to isolate 'b * factor'
+          calc b * (1 + c1 : ℂ) = b + c1 * b := by ring
+            _ = b + (c1 * a + c1 * b) - c1 * a := by ring
+            _ = b + (c1 : ℂ) * (a + b) - c1 * a := by ring
+            _ = b + (a - b) - c1 * a := by {
+                 have h_sub : a + b * -1 = a - b := by ring
+                 rw [hc1, h_sub]
+               }
+            _ = a - c1 * a := by ring
+            _ = a * (1 - c1 : ℂ) := by ring
+        }
+
+        have hc2_alg : b * (c2 + I : ℂ) = a * (1 - c2 : ℂ) := by {
+          -- Algebraically rearrange the second equation to isolate 'b * factor'
+          calc b * (c2 + I : ℂ) = b * c2 + b * I := by ring
+            _ = b * I + c2 * b := by ring
+            _ = b * I + (c2 * a + c2 * b) - c2 * a := by ring
+            _ = b * I + (c2 : ℂ) * (a + b) - c2 * a := by ring
+            _ = b * I + (a - b * I) - c2 * a := by {
+                 have h_sub : a + b * -I = a - b * I := by ring
+                 rw [hc2, h_sub]
+               }
+            _ = a - c2 * a := by ring
+            _ = a * (1 - c2 : ℂ) := by ring
+        }
+
+        have h_combine : b * ((1 + c1 : ℂ) * (1 - c2 : ℂ) - (c2 + I : ℂ) * (1 - c1 : ℂ)) = 0 := by {
+          -- Combine the two equations by cross-multiplying the terms associated with 'a'
+          -- This eliminates 'a' completely and leaves an equation solely in terms of 'b'
+          calc b * ((1 + c1 : ℂ) * (1 - c2 : ℂ) - (c2 + I : ℂ) * (1 - c1 : ℂ))
+            = b * (1 + c1 : ℂ) * (1 - c2 : ℂ) - b * (c2 + I : ℂ) * (1 - c1 : ℂ) := by ring
+          _ = a * (1 - c1 : ℂ) * (1 - c2 : ℂ) - a * (1 - c2 : ℂ) * (1 - c1 : ℂ) := by {
+               rw [hc1_alg, hc2_alg]
+             }
+          _ = 0 := by ring
+        }
+
+        cases mul_eq_zero.mp h_combine with
+        | inl hb_zero => exact hb_zero
+        | inr h_factor_zero =>
+          -- If b is not zero, the scalar factor must be zero.
+          -- We extract the imaginary part to show c1 = 1.
+          have h_im_calc : ((1 + c1 : ℂ) * (1 - c2 : ℂ) - (c2 + I : ℂ) * (1 - c1 : ℂ)).im = (c1 : ℝ) - 1 := by {
+            simp
+          }
+          have h_im_zero : ((1 + c1 : ℂ) * (1 - c2 : ℂ) - (c2 + I : ℂ) * (1 - c1 : ℂ)).im = 0 := by rw [h_factor_zero]; rfl
+          rw [h_im_calc] at h_im_zero
+          have hc1_eq_1 : (c1 : ℝ) = 1 := sub_eq_zero.mp h_im_zero
+
+          -- Substitute c1 = 1 back into the first equation to trivially force b = 0
+          have hc1_1_complex : (c1 : ℂ) = 1 := by exact_mod_cast hc1_eq_1
+          rw [hc1_1_complex] at hc1_alg
+          have h_rhs : a * (1 - (1 : ℂ)) = 0 := by ring
+          rw [h_rhs] at hc1_alg
+          have h_lhs : b * (1 + 1 : ℂ) = b * 2 := by ring
+          rw [h_lhs] at hc1_alg
+
+          -- This final equality proves b * 2 = 0, which means b = 0
+          cases mul_eq_zero.mp hc1_alg with
+          | inl h_b => exact h_b
+          | inr h_2 => norm_num at h_2
+}
+
+/--
+  Algebraic identity for the total real derivative of a complex function,
+  decomposed into the ∂ and ∂̄ operators applied to v and \bar{v}.
+-/
+lemma fderiv_eq_del_add_delBar (f : ℂ → ℂ) (z : ℂ) (v : ℂ) :
+    fderiv ℝ f z v = (del f z) * v + (delBar f z) * star v := by {
+  let L := fderiv ℝ f z
+  have hv : v = (v.re : ℂ) * 1 + (v.im : ℂ) * I := by {
+    calc v = (v.re : ℂ) + (v.im : ℂ) * I := by exact Eq.symm (re_add_im v)
+      _ = (v.re : ℂ) * 1 + (v.im : ℂ) * I := by rw [mul_one]
+  }
+  have hstar : star v = (v.re : ℂ) * 1 - (v.im : ℂ) * I := by {
+    calc star v = (v.re : ℂ) - (v.im : ℂ) * I := by { apply Complex.ext <;> simp }
+      _ = (v.re : ℂ) * 1 - (v.im : ℂ) * I := by rw [mul_one]
+  }
+  
+  have h_L_v : L v = (v.re : ℝ) • L 1 + (v.im : ℝ) • L I := by {
+    calc L v = L ((v.re : ℂ) + (v.im : ℂ) * I) := by { congr 1; exact Eq.symm (re_add_im v) }
+      _ = L ((v.re : ℝ) • 1 + (v.im : ℝ) • I) := by {
+            congr 1
+            have h1 : (v.re : ℝ) • (1 : ℂ) = (v.re : ℂ) := by { apply Complex.ext <;> simp }
+            have h2 : (v.im : ℝ) • I = (v.im : ℂ) * I := by { apply Complex.ext <;> simp }
+            rw [h1, h2]
+          }
+      _ = (v.re : ℝ) • L 1 + (v.im : ℝ) • L I := by {
+            rw [L.map_add, L.map_smul, L.map_smul]
+          }
+  }
+
+  unfold del delBar
+  dsimp only
+  
+  have h_alg : (1 / 2 : ℂ) * (L 1 - I * L I) * v + (1 / 2 : ℂ) * (L 1 + I * L I) * star v = 
+               (v.re : ℂ) * L 1 + (v.im : ℂ) * L I := by {
+    nth_rw 1 [hv]
+    nth_rw 1 [hstar]
+    calc (1 / 2 : ℂ) * (L 1 - I * L I) * (↑v.re * 1 + ↑v.im * I) + (1 / 2 : ℂ) * (L 1 + I * L I) * (↑v.re * 1 - ↑v.im * I)
+      = (v.re : ℂ) * L 1 - I^2 * (v.im : ℂ) * L I := by ring
+    _ = (v.re : ℂ) * L 1 - (-1) * (v.im : ℂ) * L I := by rw [I_sq]
+    _ = (v.re : ℂ) * L 1 + (v.im : ℂ) * L I := by ring
+  }
+  
+  have h_coerce1 : (v.re : ℝ) • L 1 = (v.re : ℂ) * L 1 := by { apply Complex.ext <;> simp }
+  have h_coerce2 : (v.im : ℝ) • L I = (v.im : ℂ) * L I := by { apply Complex.ext <;> simp }
+  
+  rw [h_coerce1, h_coerce2] at h_L_v
+  
+  rw [h_L_v]
+  exact h_alg.symm
+}
+
+/--
+  The Chain Rule for paths using Sarason's ∂ and ∂̄ operators.
+  If f has continuous first partial derivatives (is real-differentiable),
+  and γ is a differentiable path, then the derivative of f ∘ γ is given by:
+  (f ∘ γ)'(t) = f_z γ'(t) + f_z̄ \overline{γ'(t)}
+-/
+lemma chain_rule_path (f : ℂ → ℂ) (γ : ℝ → ℂ) (t : ℝ)
+    (hf : DifferentiableAt ℝ f (γ t)) (hγ : DifferentiableAt ℝ γ t) (v : ℝ) :
+    fderiv ℝ (f ∘ γ) t v = (del f (γ t)) * (fderiv ℝ γ t v) + (delBar f (γ t)) * star (fderiv ℝ γ t v) := by {
+  -- By the chain rule, the derivative of the composition is the composition of derivatives.
+  have h_comp : fderiv ℝ (f ∘ γ) t v = fderiv ℝ f (γ t) (fderiv ℝ γ t v) := by {
+    have h1 := fderiv_comp t hf hγ
+    rw [h1]
+    rfl
+  }
+  rw [h_comp]
+  -- We apply our algebraic decomposition of the real total derivative into del and delBar parts
+  exact fderiv_eq_del_add_delBar f (γ t) (fderiv ℝ γ t v)
+}
+
+/--
+  Bridge lemma: If a function f is conformal (preserves angles of paths),
+  then its total real derivative L_z at that point is a conformal linear map.
+-/
+lemma conformal_linear_of_conformal (f : ℂ → ℂ) (z : ℂ)
+    (hf : DifferentiableAt ℝ f z) (h_conf : conformal f z) :
+    ∀ v₁ v₂ : ℂ, v₁ ≠ 0 → v₂ ≠ 0 →
+    (del f z) * v₁ + (delBar f z) * star v₁ ≠ 0 →
+    (del f z) * v₂ + (delBar f z) * star v₂ ≠ 0 →
+    arg ((del f z) * v₂ + (delBar f z) * star v₂) - arg ((del f z) * v₁ + (delBar f z) * star v₁) = arg v₂ - arg v₁ := by {
+  -- This proof requires constructing straight-line paths γ_i(t) = z + t * v_i
+  -- and applying the chain_rule_path to evaluate their pathAngles under f.
+  -- The definition of conformal f z guarantees these path angles are preserved.
   sorry
 }
 
-/-- If a linear map has b = 0, then f(z) = a * z, which is holomorphic everywhere. -/
-lemma linear_b_zero_implies_holomorphic (a : ℂ) :
-    HolomorphicOn_eps (fun z ↦ a * z) Set.univ := by {
-  intro z _
-  unfold DifferentiableAt_eps
-  use a
-  rw [← hasDerivAt_iff_eps]
-  have h := HasDerivAt.const_mul a (hasDerivAt_id' z)
-  have h_eq : a * 1 = a := mul_one a
-  rw [h_eq] at h
-  exact h
+/-- 
+  Helper lemma: Evaluates the complex derivative in terms of the ∂ operator. 
+-/
+lemma deriv_eps_eq_del (f : ℂ → ℂ) (z : ℂ) (h_diff : DifferentiableAt ℝ f z) (h_b_zero : delBar f z = 0)
+    (h_holom : DifferentiableAt_eps f z) : deriv_eps f z h_holom = del f z := by {
+  have h_eval1 : fderiv ℝ f z 1 = deriv_eps f z h_holom := sorry
+  
+  have h_decomp := fderiv_eq_del_add_delBar f z 1
+  have h_star1 : star (1 : ℂ) = 1 := star_one ℂ
+  rw [h_star1] at h_decomp
+  rw [h_b_zero] at h_decomp
+  
+  have h_alg : del f z * 1 + 0 * 1 = del f z := by ring
+  rw [h_alg] at h_decomp
+  
+  rw [← h_eval1, h_decomp]
+}
+
+/--
+  Helper lemma: If f is conformal, its derivative (the ∂ operator) cannot be zero.
+-/
+lemma conformal_implies_del_ne_zero (f : ℂ → ℂ) (z : ℂ) (h_diff : DifferentiableAt ℝ f z) (h_conf : conformal f z) : del f z ≠ 0 := by {
+  -- If del f z = 0, then the total derivative L(v) = 0 for all v,
+  -- which contradicts that the angle preserving linear map must be non-zero on non-zero vectors.
+  sorry
+}
+
+/--
+  §II.12 BIG FINALE: Conformality implies Holomorphicity.
+  If f has continuous first partial derivatives (real-differentiable) and is conformal in a domain G,
+  then f is holomorphic in G, and its derivative is never zero.
+-/
+theorem conformal_implies_holomorphic (f : ℂ → ℂ) (G : Set ℂ)
+    (h_diff : ∀ z ∈ G, DifferentiableAt ℝ f z)
+    (h_conf : ∀ z ∈ G, conformal f z) :
+    HolomorphicOn_eps f G ∧ (∀ z ∈ G, ∃ (h : DifferentiableAt_eps f z), deriv_eps f z h ≠ 0) := by {
+  constructor
+  · intro z hz
+    have hd_real := h_diff z hz
+    have h_conf_z := h_conf z hz
+    
+    -- Extract the linear conformality from path conformality
+    have h_lin_conf := conformal_linear_of_conformal f z hd_real h_conf_z
+    
+    -- By Lemma II.12 for linear maps, angle preservation implies the \bar{z} coefficient is 0.
+    have h_b_zero : delBar f z = 0 := conformal_linear_implies_b_zero (del f z) (delBar f z) h_lin_conf
+    
+    -- By Cauchy-Riemann (delBar = 0), f is complex differentiable.
+    exact (hasComplexDerivAt_iff_delBar_eq_zero hd_real).mpr h_b_zero
+    
+  · intro z hz
+    -- f is complex differentiable at z
+    have hd_real := h_diff z hz
+    have h_conf_z := h_conf z hz
+    have h_lin_conf := conformal_linear_of_conformal f z hd_real h_conf_z
+    have h_b_zero : delBar f z = 0 := conformal_linear_implies_b_zero (del f z) (delBar f z) h_lin_conf
+    have h_holom := (hasComplexDerivAt_iff_delBar_eq_zero hd_real).mpr h_b_zero
+    
+    use h_holom
+    
+    -- The complex derivative is exactly the 'a' coefficient (del f z).
+    have h_eq : deriv_eps f z h_holom = del f z := deriv_eps_eq_del f z hd_real h_b_zero h_holom
+    rw [h_eq]
+    
+    -- By conformality, the linear map cannot send non-zero vectors to 0. Thus 'a' \neq 0.
+    exact conformal_implies_del_ne_zero f z hd_real h_conf_z
 }
 
 end Sarason.Ch2
