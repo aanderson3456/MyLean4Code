@@ -234,3 +234,44 @@ end Sarason
   Eventually, we want to replace this with our own custom epsilon-delta definitions 
   (similar to `HasDerivAt_eps`) that will define $\mathbb{R}^2$ differentiability from scratch.
 -/
+
+-- R^2 Euclidean Metrics (from AnalysTSP)
+noncomputable def sqNorm (x : ℝ × ℝ) : ℝ := x.1^2 + x.2^2
+
+noncomputable def sqDist (x y : ℝ × ℝ) : ℝ :=
+  (x.1 - y.1)^2 + (x.2 - y.2)^2
+
+noncomputable def euclideanNorm (x : ℝ × ℝ) : ℝ :=
+  Real.sqrt (sqNorm x)
+
+noncomputable def euclideanDist (x y : ℝ × ℝ) : ℝ :=
+  Real.sqrt (sqDist x y)
+
+-- R^2 Limits (from AnalysTSP)
+def LimitR2toR (f : ℝ × ℝ → ℝ) (a : ℝ × ℝ) (L : ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
+    0 < euclideanDist x a ∧ euclideanDist x a < δ → abs (f x - L) < ε
+
+def LimitR2toR2 (f : ℝ × ℝ → ℝ × ℝ) (a : ℝ × ℝ) (L : ℝ × ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
+    0 < euclideanDist x a ∧ euclideanDist x a < δ → euclideanDist (f x) L < ε
+
+-- Little-o definition for R^2 differentiability
+/-- 
+  f = [u, v] is differentiable at `a` with Jacobian [ux, uy; vx, vy] 
+  if f(x) = f(a) + J(x-a) + o(||x - a||).
+-/
+def HasFDerivAt_R2_eps (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ) (a : ℝ × ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
+    0 < euclideanDist x a ∧ euclideanDist x a < δ →
+    let dx := x.1 - a.1
+    let dy := x.2 - a.2
+    let Ldx := ux * dx + uy * dy
+    let Ldy := vx * dx + vy * dy
+    let err_x := u x - u a - Ldx
+    let err_y := v x - v a - Ldy
+    euclideanNorm (err_x, err_y) ≤ ε * euclideanDist x a
+
+def DifferentiableAt_R2_eps (u v : ℝ × ℝ → ℝ) (a : ℝ × ℝ) : Prop :=
+  ∃ ux uy vx vy, HasFDerivAt_R2_eps u v ux uy vx vy a
+
