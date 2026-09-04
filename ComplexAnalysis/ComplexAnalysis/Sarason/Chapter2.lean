@@ -1479,117 +1479,389 @@ lemma conformal_linear_implies_b_zero (a b : ℂ)
           | inr h_2 => norm_num at h_2
 }
 
-/--
-  Algebraic identity for the total real derivative of a complex function,
-  decomposed into the ∂ and ∂̄ operators applied to v and \bar{v}.
--/
-lemma fderiv_eq_del_add_delBar (f : ℂ → ℂ) (z : ℂ) (v : ℂ) :
-    fderiv ℝ f z v = (del f z) * v + (delBar f z) * star v := by {
-  let L := fderiv ℝ f z
-  have hv : v = (v.re : ℂ) * 1 + (v.im : ℂ) * I := by {
-    calc v = (v.re : ℂ) + (v.im : ℂ) * I := by exact Eq.symm (re_add_im v)
-      _ = (v.re : ℂ) * 1 + (v.im : ℂ) * I := by rw [mul_one]
-  }
-  have hstar : star v = (v.re : ℂ) * 1 - (v.im : ℂ) * I := by {
-    calc star v = (v.re : ℂ) - (v.im : ℂ) * I := by { apply Complex.ext <;> simp }
-      _ = (v.re : ℂ) * 1 - (v.im : ℂ) * I := by rw [mul_one]
-  }
-  
-  have h_L_v : L v = (v.re : ℝ) • L 1 + (v.im : ℝ) • L I := by {
-    calc L v = L ((v.re : ℂ) + (v.im : ℂ) * I) := by { congr 1; exact Eq.symm (re_add_im v) }
-      _ = L ((v.re : ℝ) • 1 + (v.im : ℝ) • I) := by {
-            congr 1
-            have h1 : (v.re : ℝ) • (1 : ℂ) = (v.re : ℂ) := by { apply Complex.ext <;> simp }
-            have h2 : (v.im : ℝ) • I = (v.im : ℂ) * I := by { apply Complex.ext <;> simp }
-            rw [h1, h2]
-          }
-      _ = (v.re : ℝ) • L 1 + (v.im : ℝ) • L I := by {
-            rw [L.map_add, L.map_smul, L.map_smul]
-          }
-  }
 
-  unfold del delBar
-  dsimp only
-  
-  have h_alg : (1 / 2 : ℂ) * (L 1 - I * L I) * v + (1 / 2 : ℂ) * (L 1 + I * L I) * star v = 
-               (v.re : ℂ) * L 1 + (v.im : ℂ) * L I := by {
-    nth_rw 1 [hv]
-    nth_rw 1 [hstar]
-    calc (1 / 2 : ℂ) * (L 1 - I * L I) * (↑v.re * 1 + ↑v.im * I) + (1 / 2 : ℂ) * (L 1 + I * L I) * (↑v.re * 1 - ↑v.im * I)
-      = (v.re : ℂ) * L 1 - I^2 * (v.im : ℂ) * L I := by ring
-    _ = (v.re : ℂ) * L 1 - (-1) * (v.im : ℂ) * L I := by rw [I_sq]
-    _ = (v.re : ℂ) * L 1 + (v.im : ℂ) * L I := by ring
-  }
-  
-  have h_coerce1 : (v.re : ℝ) • L 1 = (v.re : ℂ) * L 1 := by { apply Complex.ext <;> simp }
-  have h_coerce2 : (v.im : ℝ) • L I = (v.im : ℂ) * L I := by { apply Complex.ext <;> simp }
-  
-  rw [h_coerce1, h_coerce2] at h_L_v
-  
-  rw [h_L_v]
-  exact h_alg.symm
+def ConformalLinearMap_eps (ux uy vx vy : ℝ) (v : ℂ) : ℂ :=
+  (ux * v.re + uy * v.im) + I * (vx * v.re + vy * v.im)
+
+noncomputable def del_eps (ux uy vx vy : ℝ) : ℂ :=
+  (1 / 2 : ℂ) * ( (ux + vy) + I * (vx - uy) )
+
+noncomputable def delBar_eps (ux uy vx vy : ℝ) : ℂ :=
+  (1 / 2 : ℂ) * ( (ux - vy) + I * (vx + uy) )
+
+lemma conformal_map_decomp (ux uy vx vy : ℝ) (v : ℂ) :
+  ConformalLinearMap_eps ux uy vx vy v = del_eps ux uy vx vy * v + delBar_eps ux uy vx vy * star v := by {
+  unfold ConformalLinearMap_eps del_eps delBar_eps
+  apply Complex.ext
+  · simp [star, Complex.add_re, Complex.mul_re, Complex.I_re, Complex.I_im, Complex.add_im, Complex.mul_im, Complex.sub_re, Complex.sub_im]
+    ring
+  · simp [star, Complex.add_re, Complex.mul_re, Complex.I_re, Complex.I_im, Complex.add_im, Complex.mul_im, Complex.sub_re, Complex.sub_im]
+    ring
 }
 
-/--
-  The Chain Rule for paths using Sarason's ∂ and ∂̄ operators.
-  If f has continuous first partial derivatives (is real-differentiable),
-  and γ is a differentiable path, then the derivative of f ∘ γ is given by:
-  (f ∘ γ)'(t) = f_z γ'(t) + f_z̄ \overline{γ'(t)}
--/
-lemma chain_rule_path (f : ℂ → ℂ) (γ : ℝ → ℂ) (t : ℝ)
-    (hf : DifferentiableAt ℝ f (γ t)) (hγ : DifferentiableAt ℝ γ t) (v : ℝ) :
-    fderiv ℝ (f ∘ γ) t v = (del f (γ t)) * (fderiv ℝ γ t v) + (delBar f (γ t)) * star (fderiv ℝ γ t v) := by {
-  -- By the chain rule, the derivative of the composition is the composition of derivatives.
-  have h_comp : fderiv ℝ (f ∘ γ) t v = fderiv ℝ f (γ t) (fderiv ℝ γ t v) := by {
-    have h1 := fderiv_comp t hf hγ
-    rw [h1]
-    rfl
-  }
-  rw [h_comp]
-  -- We apply our algebraic decomposition of the real total derivative into del and delBar parts
-  exact fderiv_eq_del_add_delBar f (γ t) (fderiv ℝ γ t v)
+lemma cr_of_delBar_zero (ux uy vx vy : ℝ) (h : delBar_eps ux uy vx vy = 0) :
+  ux = vy ∧ uy = -vx := by {
+  unfold delBar_eps at h
+  have h_re : ((1 / 2 : ℂ) * ( (ux - vy) + I * (vx + uy) )).re = 0 := by rw [h]; rfl
+  have h_im : ((1 / 2 : ℂ) * ( (ux - vy) + I * (vx + uy) )).im = 0 := by rw [h]; rfl
+  simp [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im] at h_re h_im
+  constructor
+  · linarith
+  · linarith
 }
 
-/--
-  Bridge lemma: If a function f is conformal (preserves angles of paths),
-  then its total real derivative L_z at that point is a conformal linear map.
--/
-lemma conformal_linear_of_conformal (f : ℂ → ℂ) (z : ℂ)
-    (hf : DifferentiableAt ℝ f z) (h_conf : conformal f z) :
-    ∀ v₁ v₂ : ℂ, v₁ ≠ 0 → v₂ ≠ 0 →
-    (del f z) * v₁ + (delBar f z) * star v₁ ≠ 0 →
-    (del f z) * v₂ + (delBar f z) * star v₂ ≠ 0 →
-    arg ((del f z) * v₂ + (delBar f z) * star v₂) - arg ((del f z) * v₁ + (delBar f z) * star v₁) = arg v₂ - arg v₁ := by {
-  -- This proof requires constructing straight-line paths γ_i(t) = z + t * v_i
-  -- and applying the chain_rule_path to evaluate their pathAngles under f.
-  -- The definition of conformal f z guarantees these path angles are preserved.
+lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : ℂ}
+    (h : HasFDerivAt_R2_eps u v ux uy vx vy (z.re, z.im)) :
+    HasPartialDerivX_C_to_R_eps (fun z => u (z.re, z.im)) ux z ∧
+    HasPartialDerivY_C_to_R_eps (fun z => u (z.re, z.im)) uy z ∧
+    HasPartialDerivX_C_to_R_eps (fun z => v (z.re, z.im)) vx z ∧
+    HasPartialDerivY_C_to_R_eps (fun z => v (z.re, z.im)) vy z := by {
+  
+  have h_x_u : HasPartialDerivX_C_to_R_eps (fun z => u (z.re, z.im)) ux z := by {
+    unfold HasPartialDerivX_C_to_R_eps HasFDerivAt_R2_eps at *
+    intro ε hε
+    rcases h (ε / 2) (half_pos hε) with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro x hx
+    
+    have h_sub_im : z.im - z.im = 0 := sub_self z.im
+    have h_sq_zero : (0 : ℝ)^2 = 0 := by ring
+    
+    have hdist_eq : euclideanDist (x, z.im) (z.re, z.im) = abs (x - z.re) := by {
+      unfold euclideanDist sqDist
+      dsimp
+      rw [h_sub_im, h_sq_zero, add_zero]
+      have h_abs_sq : |x - z.re|^2 = (x - z.re)^2 := sq_abs (x - z.re)
+      rw [← h_abs_sq, Real.sqrt_sq (abs_nonneg (x - z.re))]
+    }
+    
+    have hdist_pos : 0 < euclideanDist (x, z.im) (z.re, z.im) := by {
+      rw [hdist_eq]
+      exact hx.1
+    }
+    have hdist : euclideanDist (x, z.im) (z.re, z.im) < δ := by {
+      rw [hdist_eq]
+      exact hx.2
+    }
+    
+    have h_bound := hδ (x, z.im) ⟨hdist_pos, hdist⟩
+    dsimp at h_bound
+    rw [h_sub_im] at h_bound
+    
+    have h_mul_zero1 : uy * 0 = 0 := mul_zero uy
+    have h_mul_zero2 : vy * 0 = 0 := mul_zero vy
+    rw [h_mul_zero1, h_mul_zero2, add_zero, add_zero] at h_bound
+    
+    have h_norm : abs (u (x, z.im) - u (z.re, z.im) - ux * (x - z.re)) ≤ euclideanNorm (u (x, z.im) - u (z.re, z.im) - ux * (x - z.re), v (x, z.im) - v (z.re, z.im) - vx * (x - z.re)) := by {
+      unfold euclideanNorm sqNorm
+      dsimp
+      have h_abs_sq : |u (x, z.im) - u (z.re, z.im) - ux * (x - z.re)|^2 = (u (x, z.im) - u (z.re, z.im) - ux * (x - z.re))^2 := sq_abs _
+      rw [← h_abs_sq]
+      apply Real.le_sqrt_of_sq_le
+      have h_sq_nonneg : 0 ≤ (v (x, z.im) - v (z.re, z.im) - vx * (x - z.re)) ^ 2 := sq_nonneg _
+      exact le_add_of_nonneg_right h_sq_nonneg
+    }
+    
+    have h_bound2 := le_trans h_norm h_bound
+    rw [hdist_eq] at h_bound2
+    
+    have h_strict : (ε / 2) * abs (x - z.re) < ε * abs (x - z.re) := by {
+      have h_half : ε / 2 < ε := by linarith
+      exact mul_lt_mul_of_pos_right h_half hx.1
+    }
+    
+    have h_bound3 : abs (u (x, z.im) - u (z.re, z.im) - ux * (x - z.re)) < ε * abs (x - z.re) := lt_of_le_of_lt h_bound2 h_strict
+    
+    dsimp
+    have h_im_re : (z.im : ℂ).re = z.im := Complex.ofReal_re z.im
+    have h_im_im : (z.im : ℂ).im = 0 := Complex.ofReal_im z.im
+    have h_re : ((z.im : ℂ) * I).re = 0 := by simp
+    have h_im : ((z.im : ℂ) * I).im = z.im := by simp
+    
+    rw [h_re, h_im]
+    have h_x_0 : x + 0 = x := add_zero x
+    have h_0_im : 0 + z.im = z.im := zero_add z.im
+    rw [h_x_0, h_0_im]
+    
+    have h_div : |(u (x, z.im) - u (z.re, z.im)) / (x - z.re) - ux| = |(u (x, z.im) - u (z.re, z.im) - ux * (x - z.re)) / (x - z.re)| := by {
+      congr 1
+      have hx_ne : x - z.re ≠ 0 := sub_ne_zero.mpr (sub_ne_zero.mp (abs_pos.mp hx.1))
+      calc (u (x, z.im) - u (z.re, z.im)) / (x - z.re) - ux = (u (x, z.im) - u (z.re, z.im)) / (x - z.re) - (ux * (x - z.re)) / (x - z.re) := by rw [mul_div_cancel_right₀ _ hx_ne]
+        _ = (u (x, z.im) - u (z.re, z.im) - ux * (x - z.re)) / (x - z.re) := by ring
+    }
+    
+    rw [h_div, abs_div]
+    exact (div_lt_iff₀ hx.1).mpr h_bound3
+  }
+
+  have h_y_u : HasPartialDerivY_C_to_R_eps (fun z => u (z.re, z.im)) uy z := by {
+    unfold HasPartialDerivY_C_to_R_eps HasFDerivAt_R2_eps at *
+    intro ε hε
+    rcases h (ε / 2) (half_pos hε) with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro y hy
+    
+    have h_sub_re : z.re - z.re = 0 := sub_self z.re
+    have h_sq_zero : (0 : ℝ)^2 = 0 := by ring
+    
+    have hdist_eq : euclideanDist (z.re, y) (z.re, z.im) = abs (y - z.im) := by {
+      unfold euclideanDist sqDist
+      dsimp
+      rw [h_sub_re, h_sq_zero, zero_add]
+      have h_abs_sq : |y - z.im|^2 = (y - z.im)^2 := sq_abs (y - z.im)
+      rw [← h_abs_sq, Real.sqrt_sq (abs_nonneg (y - z.im))]
+    }
+    
+    have hdist_pos : 0 < euclideanDist (z.re, y) (z.re, z.im) := by {
+      rw [hdist_eq]
+      exact hy.1
+    }
+    have hdist : euclideanDist (z.re, y) (z.re, z.im) < δ := by {
+      rw [hdist_eq]
+      exact hy.2
+    }
+    
+    have h_bound := hδ (z.re, y) ⟨hdist_pos, hdist⟩
+    dsimp at h_bound
+    rw [h_sub_re] at h_bound
+    
+    have h_mul_zero1 : ux * 0 = 0 := mul_zero ux
+    have h_mul_zero2 : vx * 0 = 0 := mul_zero vx
+    rw [h_mul_zero1, h_mul_zero2, zero_add, zero_add] at h_bound
+    
+    have h_norm : abs (u (z.re, y) - u (z.re, z.im) - uy * (y - z.im)) ≤ euclideanNorm (u (z.re, y) - u (z.re, z.im) - uy * (y - z.im), v (z.re, y) - v (z.re, z.im) - vy * (y - z.im)) := by {
+      unfold euclideanNorm sqNorm
+      dsimp
+      have h_abs_sq : |u (z.re, y) - u (z.re, z.im) - uy * (y - z.im)|^2 = (u (z.re, y) - u (z.re, z.im) - uy * (y - z.im))^2 := sq_abs _
+      rw [← h_abs_sq]
+      apply Real.le_sqrt_of_sq_le
+      have h_sq_nonneg : 0 ≤ (v (z.re, y) - v (z.re, z.im) - vy * (y - z.im)) ^ 2 := sq_nonneg _
+      exact le_add_of_nonneg_right h_sq_nonneg
+    }
+    
+    have h_bound2 := le_trans h_norm h_bound
+    rw [hdist_eq] at h_bound2
+    
+    have h_strict : (ε / 2) * abs (y - z.im) < ε * abs (y - z.im) := by {
+      have h_half : ε / 2 < ε := by linarith
+      exact mul_lt_mul_of_pos_right h_half hy.1
+    }
+    
+    have h_bound3 : abs (u (z.re, y) - u (z.re, z.im) - uy * (y - z.im)) < ε * abs (y - z.im) := lt_of_le_of_lt h_bound2 h_strict
+    
+    dsimp
+    have h_im_re : (y : ℂ).re = y := Complex.ofReal_re y
+    have h_im_im : (y : ℂ).im = 0 := Complex.ofReal_im y
+    have h_re : ((y : ℂ) * I).re = 0 := by simp
+    have h_im : ((y : ℂ) * I).im = y := by simp
+    
+    rw [h_re, h_im]
+    have h_x_0 : z.re + 0 = z.re := add_zero z.re
+    have h_0_im : 0 + y = y := zero_add y
+    rw [h_x_0, h_0_im]
+    
+    have h_div : |(u (z.re, y) - u (z.re, z.im)) / (y - z.im) - uy| = |(u (z.re, y) - u (z.re, z.im) - uy * (y - z.im)) / (y - z.im)| := by {
+      congr 1
+      have hy_ne : y - z.im ≠ 0 := sub_ne_zero.mpr (sub_ne_zero.mp (abs_pos.mp hy.1))
+      calc (u (z.re, y) - u (z.re, z.im)) / (y - z.im) - uy = (u (z.re, y) - u (z.re, z.im)) / (y - z.im) - (uy * (y - z.im)) / (y - z.im) := by rw [mul_div_cancel_right₀ _ hy_ne]
+        _ = (u (z.re, y) - u (z.re, z.im) - uy * (y - z.im)) / (y - z.im) := by ring
+    }
+    
+    rw [h_div, abs_div]
+    exact (div_lt_iff₀ hy.1).mpr h_bound3
+  }
+
+  have h_x_v : HasPartialDerivX_C_to_R_eps (fun z => v (z.re, z.im)) vx z := by {
+    unfold HasPartialDerivX_C_to_R_eps HasFDerivAt_R2_eps at *
+    intro ε hε
+    rcases h (ε / 2) (half_pos hε) with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro x hx
+    
+    have h_sub_im : z.im - z.im = 0 := sub_self z.im
+    have h_sq_zero : (0 : ℝ)^2 = 0 := by ring
+    
+    have hdist_eq : euclideanDist (x, z.im) (z.re, z.im) = abs (x - z.re) := by {
+      unfold euclideanDist sqDist
+      dsimp
+      rw [h_sub_im, h_sq_zero, add_zero]
+      have h_abs_sq : |x - z.re|^2 = (x - z.re)^2 := sq_abs (x - z.re)
+      rw [← h_abs_sq, Real.sqrt_sq (abs_nonneg (x - z.re))]
+    }
+    
+    have hdist_pos : 0 < euclideanDist (x, z.im) (z.re, z.im) := by {
+      rw [hdist_eq]
+      exact hx.1
+    }
+    have hdist : euclideanDist (x, z.im) (z.re, z.im) < δ := by {
+      rw [hdist_eq]
+      exact hx.2
+    }
+    
+    have h_bound := hδ (x, z.im) ⟨hdist_pos, hdist⟩
+    dsimp at h_bound
+    rw [h_sub_im] at h_bound
+    
+    have h_mul_zero1 : uy * 0 = 0 := mul_zero uy
+    have h_mul_zero2 : vy * 0 = 0 := mul_zero vy
+    rw [h_mul_zero1, h_mul_zero2, add_zero, add_zero] at h_bound
+    
+    have h_norm : abs (v (x, z.im) - v (z.re, z.im) - vx * (x - z.re)) ≤ euclideanNorm (u (x, z.im) - u (z.re, z.im) - ux * (x - z.re), v (x, z.im) - v (z.re, z.im) - vx * (x - z.re)) := by {
+      unfold euclideanNorm sqNorm
+      dsimp
+      have h_comm : (u (x, z.im) - u (z.re, z.im) - ux * (x - z.re)) ^ 2 + (v (x, z.im) - v (z.re, z.im) - vx * (x - z.re)) ^ 2 = (v (x, z.im) - v (z.re, z.im) - vx * (x - z.re)) ^ 2 + (u (x, z.im) - u (z.re, z.im) - ux * (x - z.re)) ^ 2 := add_comm _ _
+      rw [h_comm]
+      have h_abs_sq : |v (x, z.im) - v (z.re, z.im) - vx * (x - z.re)|^2 = (v (x, z.im) - v (z.re, z.im) - vx * (x - z.re))^2 := sq_abs _
+      rw [← h_abs_sq]
+      apply Real.le_sqrt_of_sq_le
+      have h_sq_nonneg : 0 ≤ (u (x, z.im) - u (z.re, z.im) - ux * (x - z.re)) ^ 2 := sq_nonneg _
+      exact le_add_of_nonneg_right h_sq_nonneg
+    }
+    
+    have h_bound2 := le_trans h_norm h_bound
+    rw [hdist_eq] at h_bound2
+    
+    have h_strict : (ε / 2) * abs (x - z.re) < ε * abs (x - z.re) := by {
+      have h_half : ε / 2 < ε := by linarith
+      exact mul_lt_mul_of_pos_right h_half hx.1
+    }
+    
+    have h_bound3 : abs (v (x, z.im) - v (z.re, z.im) - vx * (x - z.re)) < ε * abs (x - z.re) := lt_of_le_of_lt h_bound2 h_strict
+    
+    dsimp
+    have h_im_re : (z.im : ℂ).re = z.im := Complex.ofReal_re z.im
+    have h_im_im : (z.im : ℂ).im = 0 := Complex.ofReal_im z.im
+    have h_re : ((z.im : ℂ) * I).re = 0 := by simp
+    have h_im : ((z.im : ℂ) * I).im = z.im := by simp
+    
+    rw [h_re, h_im]
+    have h_x_0 : x + 0 = x := add_zero x
+    have h_0_im : 0 + z.im = z.im := zero_add z.im
+    rw [h_x_0, h_0_im]
+    
+    have h_div : |(v (x, z.im) - v (z.re, z.im)) / (x - z.re) - vx| = |(v (x, z.im) - v (z.re, z.im) - vx * (x - z.re)) / (x - z.re)| := by {
+      congr 1
+      have hx_ne : x - z.re ≠ 0 := sub_ne_zero.mpr (sub_ne_zero.mp (abs_pos.mp hx.1))
+      calc (v (x, z.im) - v (z.re, z.im)) / (x - z.re) - vx = (v (x, z.im) - v (z.re, z.im)) / (x - z.re) - (vx * (x - z.re)) / (x - z.re) := by rw [mul_div_cancel_right₀ _ hx_ne]
+        _ = (v (x, z.im) - v (z.re, z.im) - vx * (x - z.re)) / (x - z.re) := by ring
+    }
+    
+    rw [h_div, abs_div]
+    exact (div_lt_iff₀ hx.1).mpr h_bound3
+  }
+
+  have h_y_v : HasPartialDerivY_C_to_R_eps (fun z => v (z.re, z.im)) vy z := by {
+    unfold HasPartialDerivY_C_to_R_eps HasFDerivAt_R2_eps at *
+    intro ε hε
+    rcases h (ε / 2) (half_pos hε) with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro y hy
+    
+    have h_sub_re : z.re - z.re = 0 := sub_self z.re
+    have h_sq_zero : (0 : ℝ)^2 = 0 := by ring
+    
+    have hdist_eq : euclideanDist (z.re, y) (z.re, z.im) = abs (y - z.im) := by {
+      unfold euclideanDist sqDist
+      dsimp
+      rw [h_sub_re, h_sq_zero, zero_add]
+      have h_abs_sq : |y - z.im|^2 = (y - z.im)^2 := sq_abs (y - z.im)
+      rw [← h_abs_sq, Real.sqrt_sq (abs_nonneg (y - z.im))]
+    }
+    
+    have hdist_pos : 0 < euclideanDist (z.re, y) (z.re, z.im) := by {
+      rw [hdist_eq]
+      exact hy.1
+    }
+    have hdist : euclideanDist (z.re, y) (z.re, z.im) < δ := by {
+      rw [hdist_eq]
+      exact hy.2
+    }
+    
+    have h_bound := hδ (z.re, y) ⟨hdist_pos, hdist⟩
+    dsimp at h_bound
+    rw [h_sub_re] at h_bound
+    
+    have h_mul_zero1 : ux * 0 = 0 := mul_zero ux
+    have h_mul_zero2 : vx * 0 = 0 := mul_zero vx
+    rw [h_mul_zero1, h_mul_zero2, zero_add, zero_add] at h_bound
+    
+    have h_norm : abs (v (z.re, y) - v (z.re, z.im) - vy * (y - z.im)) ≤ euclideanNorm (u (z.re, y) - u (z.re, z.im) - uy * (y - z.im), v (z.re, y) - v (z.re, z.im) - vy * (y - z.im)) := by {
+      unfold euclideanNorm sqNorm
+      dsimp
+      have h_comm : (u (z.re, y) - u (z.re, z.im) - uy * (y - z.im)) ^ 2 + (v (z.re, y) - v (z.re, z.im) - vy * (y - z.im)) ^ 2 = (v (z.re, y) - v (z.re, z.im) - vy * (y - z.im)) ^ 2 + (u (z.re, y) - u (z.re, z.im) - uy * (y - z.im)) ^ 2 := add_comm _ _
+      rw [h_comm]
+      have h_abs_sq : |v (z.re, y) - v (z.re, z.im) - vy * (y - z.im)|^2 = (v (z.re, y) - v (z.re, z.im) - vy * (y - z.im))^2 := sq_abs _
+      rw [← h_abs_sq]
+      apply Real.le_sqrt_of_sq_le
+      have h_sq_nonneg : 0 ≤ (u (z.re, y) - u (z.re, z.im) - uy * (y - z.im)) ^ 2 := sq_nonneg _
+      exact le_add_of_nonneg_right h_sq_nonneg
+    }
+    
+    have h_bound2 := le_trans h_norm h_bound
+    rw [hdist_eq] at h_bound2
+    
+    have h_strict : (ε / 2) * abs (y - z.im) < ε * abs (y - z.im) := by {
+      have h_half : ε / 2 < ε := by linarith
+      exact mul_lt_mul_of_pos_right h_half hy.1
+    }
+    
+    have h_bound3 : abs (v (z.re, y) - v (z.re, z.im) - vy * (y - z.im)) < ε * abs (y - z.im) := lt_of_le_of_lt h_bound2 h_strict
+    
+    dsimp
+    have h_im_re : (y : ℂ).re = y := Complex.ofReal_re y
+    have h_im_im : (y : ℂ).im = 0 := Complex.ofReal_im y
+    have h_re : ((y : ℂ) * I).re = 0 := by simp
+    have h_im : ((y : ℂ) * I).im = y := by simp
+    
+    rw [h_re, h_im]
+    have h_x_0 : z.re + 0 = z.re := add_zero z.re
+    have h_0_im : 0 + y = y := zero_add y
+    rw [h_x_0, h_0_im]
+    
+    have h_div : |(v (z.re, y) - v (z.re, z.im)) / (y - z.im) - vy| = |(v (z.re, y) - v (z.re, z.im) - vy * (y - z.im)) / (y - z.im)| := by {
+      congr 1
+      have hy_ne : y - z.im ≠ 0 := sub_ne_zero.mpr (sub_ne_zero.mp (abs_pos.mp hy.1))
+      calc (v (z.re, y) - v (z.re, z.im)) / (y - z.im) - vy = (v (z.re, y) - v (z.re, z.im)) / (y - z.im) - (vy * (y - z.im)) / (y - z.im) := by rw [mul_div_cancel_right₀ _ hy_ne]
+        _ = (v (z.re, y) - v (z.re, z.im) - vy * (y - z.im)) / (y - z.im) := by ring
+    }
+    
+    rw [h_div, abs_div]
+    exact (div_lt_iff₀ hy.1).mpr h_bound3
+  }
+
+  exact ⟨h_x_u, h_y_u, h_x_v, h_y_v⟩
+}
+
+
+lemma path_comp_deriv_R2 (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ) (z : ℂ)
+  (h_diff : HasFDerivAt_R2_eps u v ux uy vx vy (z.re, z.im))
+  {x y : ℂ} (γ : path_in_C x y) (t₀ : ℝ) (h_eq : γ.extend t₀ = z) :
+  HasDerivAt_R_to_C_eps (fun t => u ((γ.extend t).re, (γ.extend t).im) + I * v ((γ.extend t).re, (γ.extend t).im))
+    (ConformalLinearMap_eps ux uy vx vy (pathDeriv γ t₀)) t₀ := by {
   sorry
 }
 
-/-- 
-  Helper lemma: Evaluates the complex derivative in terms of the ∂ operator. 
--/
-lemma deriv_eps_eq_del (f : ℂ → ℂ) (z : ℂ) (h_diff : DifferentiableAt ℝ f z) (h_b_zero : delBar f z = 0)
-    (h_holom : DifferentiableAt_eps f z) : deriv_eps f z h_holom = del f z := by {
-  have h_eval1 : fderiv ℝ f z 1 = deriv_eps f z h_holom := sorry
-  
-  have h_decomp := fderiv_eq_del_add_delBar f z 1
-  have h_star1 : star (1 : ℂ) = 1 := star_one ℂ
-  rw [h_star1] at h_decomp
-  rw [h_b_zero] at h_decomp
-  
-  have h_alg : del f z * 1 + 0 * 1 = del f z := by ring
-  rw [h_alg] at h_decomp
-  
-  rw [← h_eval1, h_decomp]
+lemma conformal_linear_of_conformal_eps (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ) (z : ℂ)
+  (h_diff : HasFDerivAt_R2_eps u v ux uy vx vy (z.re, z.im))
+  (h_conf : conformal (fun w => u (w.re, w.im) + I * v (w.re, w.im)) z) :
+  conformal (ConformalLinearMap_eps ux uy vx vy) 0 := by {
+  sorry
 }
 
-/--
-  Helper lemma: If f is conformal, its derivative (the ∂ operator) cannot be zero.
--/
-lemma conformal_implies_del_ne_zero (f : ℂ → ℂ) (z : ℂ) (h_diff : DifferentiableAt ℝ f z) (h_conf : conformal f z) : del f z ≠ 0 := by {
-  -- If del f z = 0, then the total derivative L(v) = 0 for all v,
-  -- which contradicts that the angle preserving linear map must be non-zero on non-zero vectors.
+
+
+lemma deriv_eps_eq_del (ux uy vx vy : ℝ) (h_cr : ux = vy ∧ uy = -vx) :
+  (ux : ℂ) + I * vx = del_eps ux uy vx vy := by {
+  unfold del_eps
+  apply Complex.ext
+  · simp [Complex.mul_re, Complex.add_re, Complex.I_re, Complex.I_im, Complex.sub_re]
+    linarith
+  · simp [Complex.mul_im, Complex.add_im, Complex.I_re, Complex.I_im, Complex.sub_im]
+    linarith
+}
+
+lemma conformal_implies_del_ne_zero (ux uy vx vy : ℝ) (h_conf : conformal (ConformalLinearMap_eps ux uy vx vy) 0) :
+  del_eps ux uy vx vy ≠ 0 := by {
   sorry
 }
 
@@ -1598,42 +1870,17 @@ lemma conformal_implies_del_ne_zero (f : ℂ → ℂ) (z : ℂ) (h_diff : Differ
   If f has continuous first partial derivatives (real-differentiable) and is conformal in a domain G,
   then f is holomorphic in G, and its derivative is never zero.
 -/
-theorem conformal_implies_holomorphic (f : ℂ → ℂ) (G : Set ℂ)
-    (h_diff : ∀ z ∈ G, DifferentiableAt ℝ f z)
+theorem conformal_implies_holomorphic_II_12 {G : Set ℂ} (hG : IsOpen G)
+    (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ × ℝ → ℝ)
+    (hu_diff : ∀ z ∈ G, HasFDerivAt_R2_eps u v (ux (z.re, z.im)) (uy (z.re, z.im)) (vx (z.re, z.im)) (vy (z.re, z.im)) (z.re, z.im))
+    (h_cont_ux : ContinuousOn (fun z : ℂ => ux (z.re, z.im)) G) (h_cont_uy : ContinuousOn (fun z : ℂ => uy (z.re, z.im)) G)
+    (h_cont_vx : ContinuousOn (fun z : ℂ => vx (z.re, z.im)) G) (h_cont_vy : ContinuousOn (fun z : ℂ => vy (z.re, z.im)) G)
+    (f : ℂ → ℂ) (hf : ∀ z, f z = u (z.re, z.im) + I * v (z.re, z.im))
     (h_conf : ∀ z ∈ G, conformal f z) :
     HolomorphicOn_eps f G ∧ (∀ z ∈ G, ∃ (h : DifferentiableAt_eps f z), deriv_eps f z h ≠ 0) := by {
-  constructor
-  · intro z hz
-    have hd_real := h_diff z hz
-    have h_conf_z := h_conf z hz
-    
-    -- Extract the linear conformality from path conformality
-    have h_lin_conf := conformal_linear_of_conformal f z hd_real h_conf_z
-    
-    -- By Lemma II.12 for linear maps, angle preservation implies the \bar{z} coefficient is 0.
-    have h_b_zero : delBar f z = 0 := conformal_linear_implies_b_zero (del f z) (delBar f z) h_lin_conf
-    
-    -- By Cauchy-Riemann (delBar = 0), f is complex differentiable.
-    exact (hasComplexDerivAt_iff_delBar_eq_zero hd_real).mpr h_b_zero
-    
-  · intro z hz
-    -- f is complex differentiable at z
-    have hd_real := h_diff z hz
-    have h_conf_z := h_conf z hz
-    have h_lin_conf := conformal_linear_of_conformal f z hd_real h_conf_z
-    have h_b_zero : delBar f z = 0 := conformal_linear_implies_b_zero (del f z) (delBar f z) h_lin_conf
-    have h_holom := (hasComplexDerivAt_iff_delBar_eq_zero hd_real).mpr h_b_zero
-    
-    use h_holom
-    
-    -- The complex derivative is exactly the 'a' coefficient (del f z).
-    have h_eq : deriv_eps f z h_holom = del f z := deriv_eps_eq_del f z hd_real h_b_zero h_holom
-    rw [h_eq]
-    
-    -- By conformality, the linear map cannot send non-zero vectors to 0. Thus 'a' \neq 0.
-    exact conformal_implies_del_ne_zero f z hd_real h_conf_z
+  
+  -- The full proof using the algebraic extraction
+  sorry
 }
 
 end Sarason.Ch2
-
-end
