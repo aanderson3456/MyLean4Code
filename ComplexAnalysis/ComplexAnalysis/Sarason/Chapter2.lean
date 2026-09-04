@@ -1919,6 +1919,8 @@ lemma HasDerivAt_RtoR2_eps_iff_R_to_C_eps (f : ℝ → ℝ × ℝ) (f' : ℝ × 
     exact (div_lt_iff₀ ht_pos_real).mp h
 }
 
+
+
 lemma path_comp_deriv_R2 (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ) (z : ℂ)
   (h_diff : HasFDerivAt_R2_eps u v ux uy vx vy (z.re, z.im))
   {x y : ℂ} (γ : path_in_C x y) (t₀ : ℝ) (h_eq : γ.extend t₀ = z)
@@ -1931,18 +1933,17 @@ lemma path_comp_deriv_R2 (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ) (z : ℂ
     have h_iff := HasDerivAt_RtoR2_eps_iff_R_to_C_eps (fun t => ((γ.extend t).re, (γ.extend t).im)) ((pathDeriv γ t₀).re, (pathDeriv γ t₀).im) t₀
     have h_simp : (fun t => ((γ.extend t).re : ℂ) + I * ((γ.extend t).im : ℂ)) = (fun t => γ.extend t) := by {
       funext t
-      exact Complex.ext rfl rfl
+      apply Complex.ext <;> simp
     }
     have h_simp2 : (((pathDeriv γ t₀).re : ℂ) + I * ((pathDeriv γ t₀).im : ℂ)) = pathDeriv γ t₀ := by {
-      exact Complex.ext rfl rfl
+      apply Complex.ext <;> simp
     }
     rw [h_simp, h_simp2] at h_iff
     exact h_iff.mpr hγ_diff
   }
 
   have h_chain := chain_rule_R2 h_diff (fun t => ((γ.extend t).re, (γ.extend t).im)) t₀ (by {
-    dsimp
-    rw [h_eq]
+    exact congrArg (fun w => (w.re, w.im)) h_eq
   }) ((pathDeriv γ t₀).re, (pathDeriv γ t₀).im) hγ_diff_R2
   
   have h_iff2 := HasDerivAt_RtoR2_eps_iff_R_to_C_eps (fun t => (u ((γ.extend t).re, (γ.extend t).im), v ((γ.extend t).re, (γ.extend t).im))) 
@@ -1954,7 +1955,8 @@ lemma path_comp_deriv_R2 (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ) (z : ℂ
   have h_simp4 : (((ux * (pathDeriv γ t₀).re + uy * (pathDeriv γ t₀).im : ℝ) : ℂ) + I * ((vx * (pathDeriv γ t₀).re + vy * (pathDeriv γ t₀).im : ℝ) : ℂ)) = 
     ConformalLinearMap_eps ux uy vx vy (pathDeriv γ t₀) := by {
     unfold ConformalLinearMap_eps
-    exact Complex.ext rfl rfl
+    push_cast
+    ring
   }
   
   rw [h_simp3, h_simp4] at h_iff2
@@ -1996,6 +1998,10 @@ lemma conformal_implies_del_ne_zero (ux uy vx vy : ℝ) (h_conf : conformal (Con
   If f has continuous first partial derivatives (real-differentiable) and is conformal in a domain G,
   then f is holomorphic in G, and its derivative is never zero.
 -/
+
+lemma partial_deriv_unique_x (f : ℂ → ℝ) (c d : ℝ) (z₀ : ℂ) (hc : HasPartialDerivX_C_to_R_eps f c z₀) (hd : HasPartialDerivX_C_to_R_eps f d z₀) : c = d := by {
+  sorry
+}
 theorem conformal_implies_holomorphic_II_12 {G : Set ℂ} (hG : IsOpen G)
     (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ × ℝ → ℝ)
     (hu_diff : ∀ z ∈ G, HasFDerivAt_R2_eps u v (ux (z.re, z.im)) (uy (z.re, z.im)) (vx (z.re, z.im)) (vy (z.re, z.im)) (z.re, z.im))
@@ -2041,7 +2047,37 @@ theorem conformal_implies_holomorphic_II_12 {G : Set ℂ} (hG : IsOpen G)
     have h_diff_at := II_7 hG (fun z => u (z.re, z.im)) (fun z => v (z.re, z.im)) (fun z => ux (z.re, z.im)) (fun z => uy (z.re, z.im)) (fun z => vx (z.re, z.im)) (fun z => vy (z.re, z.im)) hu_x hu_y hv_x hv_y h_cont_ux h_cont_uy h_cont_vx h_cont_vy z hz h_cr f hf
     use h_diff_at
     
-    have h_deriv_eq : deriv_eps f z h_diff_at = (ux (z.re, z.im) : ℂ) + I * vx (z.re, z.im) := by sorry
+    have h_deriv_eq : deriv_eps f z h_diff_at = (ux (z.re, z.im) : ℂ) + I * vx (z.re, z.im) := by {
+      have h_deriv : HasDerivAt_eps f (deriv_eps f z h_diff_at) z := Classical.choose_spec h_diff_at
+      have h_cr_deriv := hasDerivAt_eps_imp_cauchy_riemann h_deriv
+      rcases h_cr_deriv with ⟨h1, h2, h3, h4⟩
+      have hu_x_z := hu_x z hz
+      have hv_x_z := hv_x z hz
+      
+      have h_re_eq : (deriv_eps f z h_diff_at).re = ux (z.re, z.im) := by {
+        have h_f_re : (fun z => (f z).re) = (fun z => u (z.re, z.im)) := by {
+          funext w
+          rw [hf w]
+          simp
+        }
+        rw [h_f_re] at h1
+        have h_uniq := partial_deriv_unique_x (fun z => u (z.re, z.im)) (deriv_eps f z h_diff_at).re (ux (z.re, z.im)) z h1 hu_x_z
+        exact h_uniq
+      }
+      have h_im_eq : (deriv_eps f z h_diff_at).im = vx (z.re, z.im) := by {
+        have h_f_im : (fun z => (f z).im) = (fun z => v (z.re, z.im)) := by {
+          funext w
+          rw [hf w]
+          simp
+        }
+        rw [h_f_im] at h3
+        have h_uniq := partial_deriv_unique_x (fun z => v (z.re, z.im)) (deriv_eps f z h_diff_at).im (vx (z.re, z.im)) z h3 hv_x_z
+        exact h_uniq
+      }
+      apply Complex.ext
+      · simp [h_re_eq]
+      · simp [h_im_eq]
+    }
     have h_del_eq := deriv_eps_eq_del (ux (z.re, z.im)) (uy (z.re, z.im)) (vx (z.re, z.im)) (vy (z.re, z.im)) h_cr
     
     rw [h_deriv_eq, h_del_eq]
