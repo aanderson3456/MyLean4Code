@@ -24,7 +24,7 @@ If you like this, credit Donald Sarason.  If you don't, blame Austin Anderson.
 
 -/
 
-open Complex Filter Metric Sarason TopologicalSpace ContinuousLinearMap
+open Complex Filter Metric Sarason TopologicalSpace ContinuousLinearMap ComplexAnalysis.R2
 open scoped Topology
 
 noncomputable section
@@ -1562,7 +1562,7 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
       exact le_add_of_nonneg_right h_sq_nonneg
     }
     
-    have h_bound2 := le_trans h_norm h_bound
+    have h_bound2 := lt_of_le_of_lt h_norm h_bound
     rw [hdist_eq] at h_bound2
     
     have h_strict : (ε / 2) * abs (x - z.re) < ε * abs (x - z.re) := by {
@@ -1570,7 +1570,7 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
       exact mul_lt_mul_of_pos_right h_half hx.1
     }
     
-    have h_bound3 : abs (u (x, z.im) - u (z.re, z.im) - ux * (x - z.re)) < ε * abs (x - z.re) := lt_of_le_of_lt h_bound2 h_strict
+    have h_bound3 : abs (u (x, z.im) - u (z.re, z.im) - ux * (x - z.re)) < ε * abs (x - z.re) := lt_trans h_bound2 h_strict
     
     dsimp
     have h_im_re : (z.im : ℂ).re = z.im := Complex.ofReal_re z.im
@@ -1639,7 +1639,7 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
       exact le_add_of_nonneg_right h_sq_nonneg
     }
     
-    have h_bound2 := le_trans h_norm h_bound
+    have h_bound2 := lt_of_le_of_lt h_norm h_bound
     rw [hdist_eq] at h_bound2
     
     have h_strict : (ε / 2) * abs (y - z.im) < ε * abs (y - z.im) := by {
@@ -1647,7 +1647,7 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
       exact mul_lt_mul_of_pos_right h_half hy.1
     }
     
-    have h_bound3 : abs (u (z.re, y) - u (z.re, z.im) - uy * (y - z.im)) < ε * abs (y - z.im) := lt_of_le_of_lt h_bound2 h_strict
+    have h_bound3 : abs (u (z.re, y) - u (z.re, z.im) - uy * (y - z.im)) < ε * abs (y - z.im) := lt_trans h_bound2 h_strict
     
     dsimp
     have h_im_re : (y : ℂ).re = y := Complex.ofReal_re y
@@ -1718,7 +1718,7 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
       exact le_add_of_nonneg_right h_sq_nonneg
     }
     
-    have h_bound2 := le_trans h_norm h_bound
+    have h_bound2 := lt_of_le_of_lt h_norm h_bound
     rw [hdist_eq] at h_bound2
     
     have h_strict : (ε / 2) * abs (x - z.re) < ε * abs (x - z.re) := by {
@@ -1726,7 +1726,7 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
       exact mul_lt_mul_of_pos_right h_half hx.1
     }
     
-    have h_bound3 : abs (v (x, z.im) - v (z.re, z.im) - vx * (x - z.re)) < ε * abs (x - z.re) := lt_of_le_of_lt h_bound2 h_strict
+    have h_bound3 : abs (v (x, z.im) - v (z.re, z.im) - vx * (x - z.re)) < ε * abs (x - z.re) := lt_trans h_bound2 h_strict
     
     dsimp
     have h_im_re : (z.im : ℂ).re = z.im := Complex.ofReal_re z.im
@@ -1797,7 +1797,7 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
       exact le_add_of_nonneg_right h_sq_nonneg
     }
     
-    have h_bound2 := le_trans h_norm h_bound
+    have h_bound2 := lt_of_le_of_lt h_norm h_bound
     rw [hdist_eq] at h_bound2
     
     have h_strict : (ε / 2) * abs (y - z.im) < ε * abs (y - z.im) := by {
@@ -1805,7 +1805,7 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
       exact mul_lt_mul_of_pos_right h_half hy.1
     }
     
-    have h_bound3 : abs (v (z.re, y) - v (z.re, z.im) - vy * (y - z.im)) < ε * abs (y - z.im) := lt_of_le_of_lt h_bound2 h_strict
+    have h_bound3 : abs (v (z.re, y) - v (z.re, z.im) - vy * (y - z.im)) < ε * abs (y - z.im) := lt_trans h_bound2 h_strict
     
     dsimp
     have h_im_re : (y : ℂ).re = y := Complex.ofReal_re y
@@ -1833,12 +1833,132 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
 }
 
 
+lemma HasDerivAt_RtoR2_eps_iff_R_to_C_eps (f : ℝ → ℝ × ℝ) (f' : ℝ × ℝ) (t₀ : ℝ) :
+  HasDerivAt_RtoR2_eps f f' t₀ ↔ 
+  HasDerivAt_R_to_C_eps (fun t => (f t).1 + I * (f t).2) (f'.1 + I * f'.2) t₀ := by {
+  unfold HasDerivAt_RtoR2_eps HasDerivAt_R_to_C_eps
+  apply forall_congr'
+  intro ε
+  apply forall_congr'
+  intro hε
+  apply exists_congr
+  intro δ
+  apply and_congr_right
+  intro hδ
+  apply forall_congr'
+  intro t
+  apply forall_congr'
+  intro ht
+  dsimp only
+  have h_pos : (t : ℂ) - (t₀ : ℂ) ≠ 0 := by {
+    intro h
+    have h1 : (t : ℂ) = (t₀ : ℂ) := by exact sub_eq_zero.mp h
+    have h2 : t = t₀ := by exact mod_cast h1
+    have h3 : |t - t₀| = 0 := by { rw [h2, sub_self, abs_zero] }
+    linarith [ht.1]
+  }
+  have h_eq_left : euclideanDist (f t) (f t₀ + (f'.1 * (t - t₀), f'.2 * (t - t₀))) =
+    ‖(((f t).1 + I * (f t).2) - ((f t₀).1 + I * (f t₀).2)) - (f'.1 + I * f'.2) * ((t : ℂ) - (t₀ : ℂ))‖ := by {
+    have h_inner : (((f t).1 + I * (f t).2) - ((f t₀).1 + I * (f t₀).2)) - (f'.1 + I * f'.2) * ((t : ℂ) - (t₀ : ℂ)) = 
+      Complex.mk ((f t).1 - ((f t₀).1 + f'.1 * (t - t₀))) ((f t).2 - ((f t₀).2 + f'.2 * (t - t₀))) := by {
+      apply Complex.ext <;> simp <;> ring
+    }
+    rw [h_inner]
+    unfold euclideanDist sqDist
+    rw [Complex.norm_def]
+    unfold normSq
+    dsimp
+    congr 1
+    have h_sq1 (A : ℝ) : A^2 = A * A := by ring
+    rw [h_sq1, h_sq1]
+  }
+  rw [h_eq_left]
+  have h_sub : (((f t).1 + I * (f t).2) - ((f t₀).1 + I * (f t₀).2)) / ((t : ℂ) - (t₀ : ℂ)) - (f'.1 + I * f'.2) = 
+    ((((f t).1 + I * (f t).2) - ((f t₀).1 + I * (f t₀).2)) - (f'.1 + I * f'.2) * ((t : ℂ) - (t₀ : ℂ))) / ((t : ℂ) - (t₀ : ℂ)) := by {
+    calc (((f t).1 + I * (f t).2) - ((f t₀).1 + I * (f t₀).2)) / ((t : ℂ) - (t₀ : ℂ)) - (f'.1 + I * f'.2)
+      _ = (((f t).1 + I * (f t).2) - ((f t₀).1 + I * (f t₀).2)) / ((t : ℂ) - (t₀ : ℂ)) - (f'.1 + I * f'.2) * ((t : ℂ) - (t₀ : ℂ)) / ((t : ℂ) - (t₀ : ℂ)) := by {
+        congr 1
+        exact (mul_div_cancel_right₀ _ h_pos).symm
+      }
+      _ = ((((f t).1 + I * (f t).2) - ((f t₀).1 + I * (f t₀).2)) - (f'.1 + I * f'.2) * ((t : ℂ) - (t₀ : ℂ))) / ((t : ℂ) - (t₀ : ℂ)) := by ring
+  }
+  have ht_pos_real : 0 < |t - t₀| := ht.1
+  have h_norm_div : ‖(((f t).1 + I * (f t).2) - ((f t₀).1 + I * (f t₀).2)) / ((t : ℂ) - (t₀ : ℂ)) - (f'.1 + I * f'.2)‖ =
+    ‖(((f t).1 + I * (f t).2) - ((f t₀).1 + I * (f t₀).2)) - (f'.1 + I * f'.2) * ((t : ℂ) - (t₀ : ℂ))‖ / ‖((t : ℂ) - (t₀ : ℂ))‖ := by {
+    rw [h_sub]
+    exact norm_div _ _
+  }
+  have h_norm_t : ‖((t : ℂ) - (t₀ : ℂ))‖ = |t - t₀| := by {
+    have h1 : ((t : ℂ) - (t₀ : ℂ)) = Complex.mk (t - t₀) 0 := by { apply Complex.ext <;> simp }
+    have h2 : ‖Complex.mk (t - t₀) 0‖ = Real.sqrt ((t - t₀)^2 + 0^2) := by {
+      rw [Complex.norm_def]
+      unfold normSq
+      dsimp
+      congr 1
+      have h_sq1 (A : ℝ) : A^2 = A * A := by ring
+      rw [h_sq1, h_sq1]
+    }
+    rw [h1, h2]
+    have h3 : (t - t₀)^2 + 0^2 = (t - t₀)^2 := by ring
+    rw [h3]
+    exact Real.sqrt_sq_eq_abs (t - t₀)
+  }
+         
+  constructor
+  · intro h
+    change ‖(((f t).1 + I * (f t).2) - ((f t₀).1 + I * (f t₀).2)) / (↑(t - t₀) : ℂ) - (f'.1 + I * f'.2)‖ < ε
+    have h_symm : (↑(t - t₀) : ℂ) = ((t : ℂ) - (t₀ : ℂ)) := by push_cast; rfl
+    rw [h_symm]
+    rw [h_norm_div, h_norm_t]
+    exact (div_lt_iff₀ ht_pos_real).mpr h
+  · intro h
+    change ‖(((f t).1 + I * (f t).2) - ((f t₀).1 + I * (f t₀).2)) / (↑(t - t₀) : ℂ) - (f'.1 + I * f'.2)‖ < ε at h
+    have h_symm : (↑(t - t₀) : ℂ) = ((t : ℂ) - (t₀ : ℂ)) := by push_cast; rfl
+    rw [h_symm] at h
+    rw [h_norm_div, h_norm_t] at h
+    exact (div_lt_iff₀ ht_pos_real).mp h
+}
+
 lemma path_comp_deriv_R2 (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ) (z : ℂ)
   (h_diff : HasFDerivAt_R2_eps u v ux uy vx vy (z.re, z.im))
-  {x y : ℂ} (γ : path_in_C x y) (t₀ : ℝ) (h_eq : γ.extend t₀ = z) :
+  {x y : ℂ} (γ : path_in_C x y) (t₀ : ℝ) (h_eq : γ.extend t₀ = z)
+  (hγ_diff : HasDerivAt_R_to_C_eps (fun t => γ.extend t) (pathDeriv γ t₀) t₀) :
   HasDerivAt_R_to_C_eps (fun t => u ((γ.extend t).re, (γ.extend t).im) + I * v ((γ.extend t).re, (γ.extend t).im))
     (ConformalLinearMap_eps ux uy vx vy (pathDeriv γ t₀)) t₀ := by {
-  sorry
+  
+  have hγ_diff_R2 : HasDerivAt_RtoR2_eps (fun t => ((γ.extend t).re, (γ.extend t).im)) 
+    ((pathDeriv γ t₀).re, (pathDeriv γ t₀).im) t₀ := by {
+    have h_iff := HasDerivAt_RtoR2_eps_iff_R_to_C_eps (fun t => ((γ.extend t).re, (γ.extend t).im)) ((pathDeriv γ t₀).re, (pathDeriv γ t₀).im) t₀
+    have h_simp : (fun t => ((γ.extend t).re : ℂ) + I * ((γ.extend t).im : ℂ)) = (fun t => γ.extend t) := by {
+      funext t
+      exact Complex.ext rfl rfl
+    }
+    have h_simp2 : (((pathDeriv γ t₀).re : ℂ) + I * ((pathDeriv γ t₀).im : ℂ)) = pathDeriv γ t₀ := by {
+      exact Complex.ext rfl rfl
+    }
+    rw [h_simp, h_simp2] at h_iff
+    exact h_iff.mpr hγ_diff
+  }
+
+  have h_chain := chain_rule_R2 h_diff (fun t => ((γ.extend t).re, (γ.extend t).im)) t₀ (by {
+    dsimp
+    rw [h_eq]
+  }) ((pathDeriv γ t₀).re, (pathDeriv γ t₀).im) hγ_diff_R2
+  
+  have h_iff2 := HasDerivAt_RtoR2_eps_iff_R_to_C_eps (fun t => (u ((γ.extend t).re, (γ.extend t).im), v ((γ.extend t).re, (γ.extend t).im))) 
+    (ux * (pathDeriv γ t₀).re + uy * (pathDeriv γ t₀).im, vx * (pathDeriv γ t₀).re + vy * (pathDeriv γ t₀).im) t₀
+  
+  have h_simp3 : (fun t => (u ((γ.extend t).re, (γ.extend t).im) : ℂ) + I * (v ((γ.extend t).re, (γ.extend t).im) : ℂ)) = 
+    (fun t => u ((γ.extend t).re, (γ.extend t).im) + I * v ((γ.extend t).re, (γ.extend t).im)) := rfl
+  
+  have h_simp4 : (((ux * (pathDeriv γ t₀).re + uy * (pathDeriv γ t₀).im : ℝ) : ℂ) + I * ((vx * (pathDeriv γ t₀).re + vy * (pathDeriv γ t₀).im : ℝ) : ℂ)) = 
+    ConformalLinearMap_eps ux uy vx vy (pathDeriv γ t₀) := by {
+    unfold ConformalLinearMap_eps
+    exact Complex.ext rfl rfl
+  }
+  
+  rw [h_simp3, h_simp4] at h_iff2
+  exact h_iff2.mp h_chain
 }
 
 lemma conformal_linear_of_conformal_eps (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ) (z : ℂ)
