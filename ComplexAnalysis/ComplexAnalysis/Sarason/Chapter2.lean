@@ -1963,11 +1963,220 @@ lemma path_comp_deriv_R2 (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ) (z : ℂ
   exact h_iff2.mp h_chain
 }
 
+
+/-- Straight-line path from -v to v, passing through 0 at t = 1/2. -/
+noncomputable def line_path_zero (v : ℂ) : path_in_C (-v) v where
+  toFun := fun t => -v + (2 * (↑(t : ℝ) : ℂ)) * v
+  continuous_toFun := by {
+    apply Continuous.add continuous_const
+    apply Continuous.mul _ continuous_const
+    apply Continuous.mul continuous_const
+    exact Complex.continuous_ofReal.comp continuous_subtype_val
+  }
+  source' := by { simp }
+  target' := by { push_cast; ring }
+
+lemma line_path_zero_extend_half (v : ℂ) : (line_path_zero v).extend (1/2 : ℝ) = 0 := by {
+  unfold Path.extend
+  dsimp [Set.IccExtend, Set.projIcc, line_path_zero]
+  norm_num
+}
+
+/-- The HasDerivAt for line_path_zero's extend at 1/2, proved via ε-δ. -/
+lemma line_path_zero_hasDerivAt_eps (v : ℂ) :
+    HasDerivAt_R_to_C_eps (line_path_zero v).extend (2 * v) (1/2 : ℝ) := by {
+  unfold HasDerivAt_R_to_C_eps
+  intro ε hε
+  use 1/2, by norm_num
+  intro t ⟨ht_pos, ht_dist⟩
+  have ht_gt : 0 < t := by { have := abs_lt.mp ht_dist; linarith }
+  have ht_lt : t < 1 := by { have := abs_lt.mp ht_dist; linarith }
+  have h_ext_half : (line_path_zero v).extend (1/2 : ℝ) = 0 := line_path_zero_extend_half v
+  -- For t ∈ (0,1), extend t = line_path_zero v ⟨t, ...⟩ = -v + 2t*v
+  have h_ext_t : (line_path_zero v).extend t = -v + (2 * (↑t : ℂ)) * v := by {
+    unfold Path.extend
+    dsimp [Set.IccExtend, Set.projIcc, line_path_zero]
+    simp [le_of_lt ht_gt, le_of_lt ht_lt]
+  }
+  rw [h_ext_t, h_ext_half]
+  -- Simplify: (-v + 2tv - 0) / (t - 1/2) - 2v
+  have ht_ne : (t - 1/2 : ℝ) ≠ 0 := abs_pos.mp ht_pos
+  -- Actually simpler: the numerator is exactly (2v)(t - 1/2) so quotient is 2v
+  have h_num : -v + (2 * ↑t) * v = (2 * v) * ↑(t - 1/2 : ℝ) := by { push_cast; ring }
+  rw [sub_zero, h_num]
+  have ht_ne2 : (↑(t - 1/2 : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr ht_ne
+  rw [mul_div_cancel_right₀ _ ht_ne2, sub_self, norm_zero]
+  exact hε
+}
+
+lemma line_path_zero_pathDeriv (v : ℂ) : pathDeriv (line_path_zero v) (1/2 : ℝ) = 2 * v := by {
+  unfold pathDeriv
+  have h := line_path_zero_hasDerivAt_eps v
+  rw [← hasDerivAt_R_to_C_iff_eps] at h
+  exact h.deriv
+}
+
+/-- Linear functions trivially satisfy HasFDerivAt_R2_eps. -/
+lemma linear_hasFDerivAt_R2_eps (ux uy vx vy : ℝ) (a : ℝ × ℝ) :
+    HasFDerivAt_R2_eps (fun p => ux * p.1 + uy * p.2) (fun p => vx * p.1 + vy * p.2)
+      ux uy vx vy a := by {
+  unfold HasFDerivAt_R2_eps
+  intro ε hε
+  use 1, one_pos
+  intro x hx
+  dsimp
+  have h_eq : ((fun p => ux * p.1 + uy * p.2) x - (fun p => ux * p.1 + uy * p.2) a - (ux * (x.1 - a.1) + uy * (x.2 - a.2)),
+               (fun p => vx * p.1 + vy * p.2) x - (fun p => vx * p.1 + vy * p.2) a - (vx * (x.1 - a.1) + vy * (x.2 - a.2))) = (0, 0) := by {
+    ext
+    · ring
+    · ring
+  }
+  have h_err : ((fun p => ux * p.1 + uy * p.2) x - (fun p => ux * p.1 + uy * p.2) a - (ux * (x.1 - a.1) + uy * (x.2 - a.2))) = 0 := congrArg Prod.fst h_eq
+  have h_err2 : ((fun p => vx * p.1 + vy * p.2) x - (fun p => vx * p.1 + vy * p.2) a - (vx * (x.1 - a.1) + vy * (x.2 - a.2))) = 0 := congrArg Prod.snd h_eq
+  rw [h_err, h_err2]
+  unfold euclideanNorm sqNorm; simp
+  exact mul_pos hε hx.1
+}
+
+/-- Translate a path by a constant `c`. -/
+noncomputable def translated_path {x y : ℂ} (c : ℂ) (γ : path_in_C x y) : path_in_C (c + x) (c + y) where
+  toFun := fun t => c + γ.toFun t
+  continuous_toFun := Continuous.add continuous_const γ.continuous_toFun
+  source' := by { change c + γ.toFun 0 = c + x; have h : γ.toFun 0 = x := (γ : Path x y).source'; rw [h] }
+  target' := by { change c + γ.toFun 1 = c + y; have h : γ.toFun 1 = y := (γ : Path x y).target'; rw [h] }
+
+lemma translated_path_extend {x y : ℂ} (c : ℂ) (γ : path_in_C x y) (t : ℝ) :
+  (translated_path c γ).extend t = c + γ.extend t := by {
+  change c + γ.toFun (Set.projIcc 0 1 zero_le_one t) = c + γ.toFun (Set.projIcc 0 1 zero_le_one t)
+  rfl
+}
+
+lemma translated_path_hasDerivAt_eps {x y : ℂ} (c : ℂ) (γ : path_in_C x y) (t : ℝ) (v : ℂ)
+  (h : HasDerivAt_R_to_C_eps γ.extend v t) :
+  HasDerivAt_R_to_C_eps (translated_path c γ).extend v t := by {
+  unfold HasDerivAt_R_to_C_eps at *
+  intro ε hε
+  rcases h ε hε with ⟨δ, hδ_pos, hδ⟩
+  use δ, hδ_pos
+  intro t' ht'
+  have h_bound := hδ t' ht'
+  have h_eq : ((translated_path c γ).extend t' - (translated_path c γ).extend t) = γ.extend t' - γ.extend t := by {
+    rw [translated_path_extend, translated_path_extend]
+    ring
+  }
+  rw [h_eq]
+  exact h_bound
+}
+
+lemma translated_path_pathDeriv {x y : ℂ} (c : ℂ) (γ : path_in_C x y) (t : ℝ) :
+  pathDeriv (translated_path c γ) t = pathDeriv γ t := by {
+  unfold pathDeriv
+  have h_eq : (translated_path c γ).extend = (fun t => c + γ.extend t) := by {
+    funext t'
+    exact translated_path_extend c γ t'
+  }
+  rw [h_eq]
+  exact deriv_const_add c
+}
+
 lemma conformal_linear_of_conformal_eps (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ) (z : ℂ)
   (h_diff : HasFDerivAt_R2_eps u v ux uy vx vy (z.re, z.im))
   (h_conf : conformal (fun w => u (w.re, w.im) + I * v (w.re, w.im)) z) :
   conformal (ConformalLinearMap_eps ux uy vx vy) 0 := by {
-  sorry
+  unfold conformal
+  intro γ₁ γ₂ x y p₁ t₁ p₂ t₂ f'₁ f'₂ hext₁ hext₂ hp₁_diff hp₂_diff hp₁_ne hp₂_ne hf₁_diff hf₂_diff
+  let Γ₁ := translated_path z p₁
+  let Γ₂ := translated_path z p₂
+  have hΓ₁_ext : Γ₁.extend t₁ = z := by {
+    rw [translated_path_extend, hext₁, add_zero]
+  }
+  have hΓ₂_ext : Γ₂.extend t₂ = z := by {
+    rw [translated_path_extend, hext₂, add_zero]
+  }
+  have hΓ₁_diff : HasDerivAt_R_to_C_eps Γ₁.extend (pathDeriv Γ₁ t₁) t₁ := by {
+    rw [translated_path_pathDeriv]
+    exact translated_path_hasDerivAt_eps z p₁ t₁ _ hp₁_diff
+  }
+  have hΓ₂_diff : HasDerivAt_R_to_C_eps Γ₂.extend (pathDeriv Γ₂ t₂) t₂ := by {
+    rw [translated_path_pathDeriv]
+    exact translated_path_hasDerivAt_eps z p₂ t₂ _ hp₂_diff
+  }
+  have hΓ₁_ne : pathDeriv Γ₁ t₁ ≠ 0 := by {
+    rw [translated_path_pathDeriv]
+    exact hp₁_ne
+  }
+  have hΓ₂_ne : pathDeriv Γ₂ t₂ ≠ 0 := by {
+    rw [translated_path_pathDeriv]
+    exact hp₂_ne
+  }
+  have h_chain₁ := path_comp_deriv_R2 u v ux uy vx vy z h_diff Γ₁ t₁ hΓ₁_ext hΓ₁_diff
+  have h_chain₂ := path_comp_deriv_R2 u v ux uy vx vy z h_diff Γ₂ t₂ hΓ₂_ext hΓ₂_diff
+  
+  unfold conformal at h_conf
+  have h_res := h_conf (z + γ₁) (z + γ₂) (z + x) (z + y) Γ₁ t₁ Γ₂ t₂ 
+    (ConformalLinearMap_eps ux uy vx vy (pathDeriv Γ₁ t₁)) 
+    (ConformalLinearMap_eps ux uy vx vy (pathDeriv Γ₂ t₂)) 
+    hΓ₁_ext hΓ₂_ext hΓ₁_diff hΓ₂_diff hΓ₁_ne hΓ₂_ne h_chain₁ h_chain₂
+
+  have h_L_diff := linear_hasFDerivAt_R2_eps ux uy vx vy (0, 0)
+  
+  have h_chain_L₁ := path_comp_deriv_R2 (fun p => ux * p.1 + uy * p.2) (fun p => vx * p.1 + vy * p.2) ux uy vx vy 0 h_L_diff p₁ t₁ hext₁ hp₁_diff
+  have h_chain_L₂ := path_comp_deriv_R2 (fun p => ux * p.1 + uy * p.2) (fun p => vx * p.1 + vy * p.2) ux uy vx vy 0 h_L_diff p₂ t₂ hext₂ hp₂_diff
+  
+  have h_simp₁ : (fun t =>
+      ↑(ux * (((Path.extend p₁) t).re, ((Path.extend p₁) t).im).1 +
+            uy * (((Path.extend p₁) t).re, ((Path.extend p₁) t).im).2) +
+        I *
+          ↑(vx * (((Path.extend p₁) t).re, ((Path.extend p₁) t).im).1 +
+              vy * (((Path.extend p₁) t).re, ((Path.extend p₁) t).im).2)) = 
+                 (ConformalLinearMap_eps ux uy vx vy ∘ p₁.extend) := by {
+    funext t
+    unfold ConformalLinearMap_eps Function.comp
+    push_cast
+    ring
+  }
+  have h_simp₂ : (fun t =>
+      ↑(ux * (((Path.extend p₂) t).re, ((Path.extend p₂) t).im).1 +
+            uy * (((Path.extend p₂) t).re, ((Path.extend p₂) t).im).2) +
+        I *
+          ↑(vx * (((Path.extend p₂) t).re, ((Path.extend p₂) t).im).1 +
+              vy * (((Path.extend p₂) t).re, ((Path.extend p₂) t).im).2)) = 
+                 (ConformalLinearMap_eps ux uy vx vy ∘ p₂.extend) := by {
+    funext t
+    unfold ConformalLinearMap_eps Function.comp
+    push_cast
+    ring
+  }
+  
+  rw [h_simp₁] at h_chain_L₁
+  rw [h_simp₂] at h_chain_L₂
+
+  have h_uniq₁ : f'₁ = ConformalLinearMap_eps ux uy vx vy (pathDeriv p₁ t₁) := by {
+    have h1 := (hasDerivAt_R_to_C_iff_eps _ _ _).mpr hf₁_diff
+    have h2 := (hasDerivAt_R_to_C_iff_eps _ _ _).mpr h_chain_L₁
+    exact HasDerivAt.unique h1 h2
+  }
+  
+  have h_uniq₂ : f'₂ = ConformalLinearMap_eps ux uy vx vy (pathDeriv p₂ t₂) := by {
+    have h1 := (hasDerivAt_R_to_C_iff_eps _ _ _).mpr hf₂_diff
+    have h2 := (hasDerivAt_R_to_C_iff_eps _ _ _).mpr h_chain_L₂
+    exact HasDerivAt.unique h1 h2
+  }
+
+  rcases h_res with ⟨h_res_ne₁, h_res_ne₂, h_res_eq⟩
+  
+  have h_angle_eq : pathAngle Γ₁ t₁ Γ₂ t₂ = pathAngle p₁ t₁ p₂ t₂ := by {
+    unfold pathAngle pathDirection
+    rw [translated_path_pathDeriv, translated_path_pathDeriv]
+  }
+  
+  rw [translated_path_pathDeriv] at h_res_eq
+  rw [translated_path_pathDeriv] at h_res_eq
+  rw [translated_path_pathDeriv] at h_res_ne₁
+  rw [translated_path_pathDeriv] at h_res_ne₂
+  
+  rw [h_uniq₁, h_uniq₂]
+  exact ⟨h_res_ne₁, h_res_ne₂, h_res_eq.trans h_angle_eq⟩
 }
 
 
@@ -1985,12 +2194,107 @@ lemma deriv_eps_eq_del (ux uy vx vy : ℝ) (h_cr : ux = vy ∧ uy = -vx) :
 
 lemma conformal_implies_delBar_zero (ux uy vx vy : ℝ) (h_conf : conformal (ConformalLinearMap_eps ux uy vx vy) 0) :
   delBar_eps ux uy vx vy = 0 := by {
-  sorry
+  apply conformal_linear_implies_b_zero (del_eps ux uy vx vy) (delBar_eps ux uy vx vy)
+  intro v₁ v₂ hv₁ hv₂ hLv₁ hLv₂
+  rw [← conformal_map_decomp] at hLv₁ hLv₂
+  rw [← conformal_map_decomp, ← conformal_map_decomp]
+  have hext₁ := line_path_zero_extend_half v₁
+  have hext₂ := line_path_zero_extend_half v₂
+  have hpd₁ := line_path_zero_pathDeriv v₁
+  have hpd₂ := line_path_zero_pathDeriv v₂
+  have hreg₁ : pathDeriv (line_path_zero v₁) (1/2 : ℝ) ≠ 0 := by {
+    rw [hpd₁]; exact mul_ne_zero two_ne_zero hv₁
+  }
+  have hreg₂ : pathDeriv (line_path_zero v₂) (1/2 : ℝ) ≠ 0 := by {
+    rw [hpd₂]; exact mul_ne_zero two_ne_zero hv₂
+  }
+  have hγ₁_eps := line_path_zero_hasDerivAt_eps v₁
+  have hγ₂_eps := line_path_zero_hasDerivAt_eps v₂
+  have hγ₁_deriv : HasDerivAt_R_to_C_eps (line_path_zero v₁).extend
+      (pathDeriv (line_path_zero v₁) (1/2)) (1/2) := by { rw [hpd₁]; exact hγ₁_eps }
+  have hγ₂_deriv : HasDerivAt_R_to_C_eps (line_path_zero v₂).extend
+      (pathDeriv (line_path_zero v₂) (1/2)) (1/2) := by { rw [hpd₂]; exact hγ₂_eps }
+  have hL_diff := linear_hasFDerivAt_R2_eps ux uy vx vy (0, 0)
+  have hd₁ := path_comp_deriv_R2 (fun p => ux * p.1 + uy * p.2) (fun p => vx * p.1 + vy * p.2)
+    ux uy vx vy 0 hL_diff (line_path_zero v₁) (1/2) hext₁ hγ₁_deriv
+  rw [hpd₁] at hd₁
+  have heq₁ : (fun (t : ℝ) => ((ux * ((line_path_zero v₁).extend t).re + uy * ((line_path_zero v₁).extend t).im : ℝ) : ℂ) + I * ((vx * ((line_path_zero v₁).extend t).re + vy * ((line_path_zero v₁).extend t).im : ℝ) : ℂ)) = ConformalLinearMap_eps ux uy vx vy ∘ (line_path_zero v₁).extend := by {
+    funext t
+    unfold ConformalLinearMap_eps Function.comp
+    push_cast
+    ring
+  }
+  rw [heq₁] at hd₁
+
+  have hd₂ := path_comp_deriv_R2 (fun p => ux * p.1 + uy * p.2) (fun p => vx * p.1 + vy * p.2)
+    ux uy vx vy 0 hL_diff (line_path_zero v₂) (1/2) hext₂ hγ₂_deriv
+  rw [hpd₂] at hd₂
+  have heq₂ : (fun (t : ℝ) => ((ux * ((line_path_zero v₂).extend t).re + uy * ((line_path_zero v₂).extend t).im : ℝ) : ℂ) + I * ((vx * ((line_path_zero v₂).extend t).re + vy * ((line_path_zero v₂).extend t).im : ℝ) : ℂ)) = ConformalLinearMap_eps ux uy vx vy ∘ (line_path_zero v₂).extend := by {
+    funext t
+    unfold ConformalLinearMap_eps Function.comp
+    push_cast
+    ring
+  }
+  rw [heq₂] at hd₂
+  unfold conformal at h_conf
+  have h_res := h_conf (-v₁) v₁ (-v₂) v₂
+    (line_path_zero v₁) (1/2) (line_path_zero v₂) (1/2)
+    (ConformalLinearMap_eps ux uy vx vy (2 * v₁)) (ConformalLinearMap_eps ux uy vx vy (2 * v₂))
+    hext₁ hext₂ hγ₁_deriv hγ₂_deriv hreg₁ hreg₂ hd₁ hd₂
+  have h_angle := h_res.2.2
+  unfold pathAngle pathDirection at h_angle
+  rw [hpd₁, hpd₂] at h_angle
+  have h_arg_scale (w : ℂ) : arg (2 * w) = arg w := by {
+    rw [show (2 : ℂ) * w = ↑(2 : ℝ) * w from by push_cast; ring]
+    exact arg_real_mul w (by norm_num : (0:ℝ) < 2)
+  }
+  have h_L_scale (w : ℂ) : ConformalLinearMap_eps ux uy vx vy (2 * w) =
+      ↑(2 : ℝ) * ConformalLinearMap_eps ux uy vx vy w := by {
+    unfold ConformalLinearMap_eps
+    apply Complex.ext <;> simp <;> ring
+  }
+  have h_arg_L_scale (w : ℂ) : arg (ConformalLinearMap_eps ux uy vx vy (2 * w)) =
+      arg (ConformalLinearMap_eps ux uy vx vy w) := by {
+    rw [h_L_scale]; exact arg_real_mul _ (by norm_num : (0:ℝ) < 2)
+  }
+  calc arg (ConformalLinearMap_eps ux uy vx vy v₂) - arg (ConformalLinearMap_eps ux uy vx vy v₁)
+      = arg (ConformalLinearMap_eps ux uy vx vy (2 * v₂)) -
+        arg (ConformalLinearMap_eps ux uy vx vy (2 * v₁)) := by rw [h_arg_L_scale, h_arg_L_scale]
+    _ = arg (2 * v₂) - arg (2 * v₁) := h_angle
+    _ = arg v₂ - arg v₁ := by rw [h_arg_scale, h_arg_scale]
 }
 
 lemma conformal_implies_del_ne_zero (ux uy vx vy : ℝ) (h_conf : conformal (ConformalLinearMap_eps ux uy vx vy) 0) :
   del_eps ux uy vx vy ≠ 0 := by {
-  sorry
+  have h_delBar := conformal_implies_delBar_zero ux uy vx vy h_conf
+  intro h_del_zero
+  have hL_zero : ∀ w, ConformalLinearMap_eps ux uy vx vy w = 0 := by {
+    intro w
+    have := conformal_map_decomp ux uy vx vy w
+    rw [h_del_zero, h_delBar] at this; simp at this; exact this
+  }
+  have hd_zero : HasDerivAt_R_to_C_eps (ConformalLinearMap_eps ux uy vx vy ∘ (line_path_zero (1 : ℂ)).extend) 0 (1/2) := by {
+    unfold HasDerivAt_R_to_C_eps
+    intro ε hε
+    use 1, one_pos
+    intro t ht
+    simp only [Function.comp, hL_zero, sub_zero, zero_div, norm_zero]
+    exact hε
+  }
+  have hext := line_path_zero_extend_half (1 : ℂ)
+  have hpd : pathDeriv (line_path_zero (1 : ℂ)) (1/2 : ℝ) = 2 := by {
+    rw [line_path_zero_pathDeriv]; norm_num
+  }
+  have hreg : pathDeriv (line_path_zero (1 : ℂ)) (1/2 : ℝ) ≠ 0 := by { rw [hpd]; norm_num }
+  have hγ_deriv : HasDerivAt_R_to_C_eps (line_path_zero (1 : ℂ)).extend (pathDeriv (line_path_zero (1 : ℂ)) (1/2)) (1/2) := by {
+    rw [hpd]
+    have h := line_path_zero_hasDerivAt_eps (1 : ℂ)
+    simp only [mul_one] at h; exact h
+  }
+  unfold conformal at h_conf
+  have h_res := h_conf (-1) 1 (-1) 1 (line_path_zero 1) (1/2) (line_path_zero 1) (1/2) 0 0
+    hext hext hγ_deriv hγ_deriv hreg hreg hd_zero hd_zero
+  exact h_res.1 rfl
 }
 
 /--
@@ -2000,7 +2304,8 @@ lemma conformal_implies_del_ne_zero (ux uy vx vy : ℝ) (h_conf : conformal (Con
 -/
 
 lemma partial_deriv_unique_x (f : ℂ → ℝ) (c d : ℝ) (z₀ : ℂ) (hc : HasPartialDerivX_C_to_R_eps f c z₀) (hd : HasPartialDerivX_C_to_R_eps f d z₀) : c = d := by {
-  sorry
+  rw [← hasPartialDerivX_iff_eps] at hc hd
+  exact hc.deriv.symm.trans hd.deriv
 }
 theorem conformal_implies_holomorphic_II_12 {G : Set ℂ} (hG : IsOpen G)
     (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ × ℝ → ℝ)

@@ -39,14 +39,14 @@ def DifferentiableAt_eps (f : ℂ → ℂ) (z₀ : ℂ) : Prop :=
   ∃ f', HasDerivAt_eps f f' z₀
 
 -- Weierstrass definition of partial derivative with respect to x.
-def HasPartialDerivX_C_to_R_eps (u : ℂ → ℝ) (ux : ℝ) (z₀ : ℂ) : Prop :=
+def HasPartialDerivX_C_to_R_eps (u : ℂ → ℝ) (ux₀ : ℝ) (z₀ : ℂ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ, 0 < |x - z₀.re| ∧ |x - z₀.re| < δ →
-    |(u ((x : ℂ) + (z₀.im : ℂ) * I) - u z₀) / (x - z₀.re) - ux| < ε
+    |(u ((x : ℂ) + (z₀.im : ℂ) * I) - u z₀) / (x - z₀.re) - ux₀| < ε
 
 -- Weierstrass definition of partial derivative with respect to y.
-def HasPartialDerivY_C_to_R_eps (u : ℂ → ℝ) (uy : ℝ) (z₀ : ℂ) : Prop :=
+def HasPartialDerivY_C_to_R_eps (u : ℂ → ℝ) (uy₀ : ℝ) (z₀ : ℂ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ y : ℝ, 0 < |y - z₀.im| ∧ |y - z₀.im| < δ →
-    |(u ((z₀.re : ℂ) + (y : ℂ) * I) - u z₀) / (y - z₀.im) - uy| < ε
+    |(u ((z₀.re : ℂ) + (y : ℂ) * I) - u z₀) / (y - z₀.im) - uy₀| < ε
 
 --  Equivalence theorem between Mathlib's limit at a point (using punctured neighborhoods) and Weierstrass epsilon-delta limit.
 theorem tendsto_nhds_iff_eps (f : ℂ → ℂ) (L z₀ : ℂ) :
@@ -140,8 +140,8 @@ theorem hasDerivAt_R_iff_eps (f : ℝ → ℝ) (f' x₀ : ℝ) :
     exact abs_pos.mpr (sub_ne_zero.mpr hx_ne)
 }
 
-theorem hasPartialDerivX_iff_eps (u : ℂ → ℝ) (ux : ℝ) (z₀ : ℂ) :
-    _root_.HasDerivAt (fun x : ℝ ↦ u ((x : ℂ) + (z₀.im : ℂ) * I)) ux z₀.re ↔ HasPartialDerivX_C_to_R_eps u ux z₀ := by {
+theorem hasPartialDerivX_iff_eps (u : ℂ → ℝ) (ux₀ : ℝ) (z₀ : ℂ) :
+    _root_.HasDerivAt (fun x : ℝ ↦ u ((x : ℂ) + (z₀.im : ℂ) * I)) ux₀ z₀.re ↔ HasPartialDerivX_C_to_R_eps u ux₀ z₀ := by {
   rw [hasDerivAt_R_iff_eps]
   unfold HasPartialDerivX_C_to_R_eps
   have h_eq : ((z₀.re : ℂ) + (z₀.im : ℂ) * I) = z₀ := by {
@@ -150,8 +150,8 @@ theorem hasPartialDerivX_iff_eps (u : ℂ → ℝ) (ux : ℝ) (z₀ : ℂ) :
   rw [h_eq]
 }
 
-theorem hasPartialDerivY_iff_eps (u : ℂ → ℝ) (uy : ℝ) (z₀ : ℂ) :
-    _root_.HasDerivAt (fun y : ℝ ↦ u ((z₀.re : ℂ) + (y : ℂ) * I)) uy z₀.im ↔ HasPartialDerivY_C_to_R_eps u uy z₀ := by {
+theorem hasPartialDerivY_iff_eps (u : ℂ → ℝ) (uy₀ : ℝ) (z₀ : ℂ) :
+    _root_.HasDerivAt (fun y : ℝ ↦ u ((z₀.re : ℂ) + (y : ℂ) * I)) uy₀ z₀.im ↔ HasPartialDerivY_C_to_R_eps u uy₀ z₀ := by {
   rw [hasDerivAt_R_iff_eps]
   unfold HasPartialDerivY_C_to_R_eps
   have h_eq : ((z₀.re : ℂ) + (z₀.im : ℂ) * I) = z₀ := by {
@@ -174,11 +174,11 @@ theorem deriv_eq_deriv_eps (f : ℂ → ℂ) (z₀ : ℂ) (h : DifferentiableAt_
 }
 
 
-def HasDerivAt_R_to_C_eps (f : ℝ → ℂ) (f' : ℂ) (t₀ : ℝ) : Prop :=
-  ∀ ε > 0, ∃ δ > 0, ∀ t : ℝ, 0 < |t - t₀| ∧ |t - t₀| < δ → ‖(f t - f t₀) / ((t - t₀ : ℝ) : ℂ) - f'‖ < ε
+def HasDerivAt_R_to_C_eps (f : ℝ → ℂ) (f'₀ : ℂ) (t₀ : ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ t : ℝ, 0 < |t - t₀| ∧ |t - t₀| < δ → ‖(f t - f t₀) / ((t - t₀ : ℝ) : ℂ) - f'₀‖ < ε
 
-theorem hasDerivAt_R_to_C_iff_eps (f : ℝ → ℂ) (f' : ℂ) (t₀ : ℝ) :
-    _root_.HasDerivAt f f' t₀ ↔ HasDerivAt_R_to_C_eps f f' t₀ := by {
+theorem hasDerivAt_R_to_C_iff_eps (f : ℝ → ℂ) (f'₀ : ℂ) (t₀ : ℝ) :
+    _root_.HasDerivAt f f'₀ t₀ ↔ HasDerivAt_R_to_C_eps f f'₀ t₀ := by {
   rw [hasDerivAt_iff_tendsto_slope]
   rw [Metric.tendsto_nhdsWithin_nhds]
   simp only [Set.mem_compl_iff, Set.mem_singleton_iff, dist_eq_norm]
