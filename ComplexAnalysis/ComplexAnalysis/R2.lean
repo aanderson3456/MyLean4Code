@@ -32,13 +32,7 @@ def ConvergesR2 (seq : ℕ → ℝ × ℝ) (L : ℝ × ℝ): Prop :=
 def HasFDerivAt_R2_eps (u v : ℝ × ℝ → ℝ) (ux₀ uy₀ vx₀ vy₀ : ℝ) (a : ℝ × ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
     0 < euclideanDist x a ∧ euclideanDist x a < δ →
-    let dx := x.1 - a.1
-    let dy := x.2 - a.2
-    let Ldx := ux₀ * dx + uy₀ * dy
-    let Ldy := vx₀ * dx + vy₀ * dy
-    let err_x := u x - u a - Ldx
-    let err_y := v x - v a - Ldy
-    euclideanNorm (err_x, err_y) < ε * euclideanDist x a
+    euclideanNorm (u x - u a - (ux₀ * (x.1 - a.1) + uy₀ * (x.2 - a.2)), v x - v a - (vx₀ * (x.1 - a.1) + vy₀ * (x.2 - a.2))) < ε * euclideanDist x a
 
 def DifferentiableAt_R2_eps (u v : ℝ × ℝ → ℝ) (a : ℝ × ℝ) : Prop :=
   ∃ (ux₀ uy₀ vx₀ vy₀ : ℝ), HasFDerivAt_R2_eps u v ux₀ uy₀ vx₀ vy₀ a

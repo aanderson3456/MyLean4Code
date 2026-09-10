@@ -101,13 +101,7 @@ def ConvergesR2 (seq : $\mathbb{N}$ $\to$ $\mathbb{R}$ $\times$ $\mathbb{R}$) (L
 def HasFDerivAt_R2_eps (u v : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) (ux$_0$ uy$_0$ vx$_0$ vy$_0$ : $\mathbb{R}$) (a : $\mathbb{R}$ $\times$ $\mathbb{R}$) : Prop :=
   $\forall$ $\varepsilon$ > 0, $\exists$ $\delta$ > 0, $\forall$ x : $\mathbb{R}$ $\times$ $\mathbb{R}$,
     0 < euclideanDist x a $\wedge$ euclideanDist x a < $\delta$ $\to$
-    let dx := x.1 - a.1
-    let dy := x.2 - a.2
-    let Ldx := ux$_0$ * dx + uy$_0$ * dy
-    let Ldy := vx$_0$ * dx + vy$_0$ * dy
-    let err_x := u x - u a - Ldx
-    let err_y := v x - v a - Ldy
-    euclideanNorm (err_x, err_y) < $\varepsilon$ * euclideanDist x a
+    euclideanNorm (u x - u a - (ux$_0$ * (x.1 - a.1) + uy$_0$ * (x.2 - a.2)), v x - v a - (vx$_0$ * (x.1 - a.1) + vy$_0$ * (x.2 - a.2))) < $\varepsilon$ * euclideanDist x a
 \end{lstlisting}
     \[ \lim_{h \to 0} \left( F(a+h) - F(a) - \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} h \right) = 0 \]
     \[ \lim_{(h_1, h_2) \to (0,0)} \left( \begin{pmatrix} u(a_1+h_1, a_2+h_2) - u(a_1, a_2) \\ v(a_1+h_1, a_2+h_2) - v(a_1, a_2) \end{pmatrix} - \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} \begin{pmatrix} h_1 \\ h_2 \end{pmatrix} \right) = \begin{pmatrix} 0 \\ 0 \end{pmatrix} \]
