@@ -33,7 +33,7 @@ def remainder_priority (n : Nat) (v : List.Vector B n) : Nat :=
 theorem quotient_priority_vt_equivalence (n : Nat) :
   ∃ (C : Finset (List.Vector B n)),
     (∀ v ∈ C, remainder_priority n v = 0) ∧ 
-    (C = VTCode n 0) := by
+    (C = Finset.VTCode n 0) := by
   sorry
 
 end QuotientPriority

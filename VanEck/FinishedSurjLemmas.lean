@@ -305,6 +305,26 @@ lemma no_zero_after_lastZero (m k : ℕ) (hk1 : lastZero m < k) (hk2 : k ≤ m) 
         exact ih k hk1 hk2'
 }
 
+lemma gap_nonzero_implies_recurrence (N m G : ℕ)
+    (h_nonzero : ∀ k, N < k → k < N + G → vanEckNthTerm k ≠ 0)
+    (h_m : N ≤ m) (h_m2 : m + 2 < N + G) :
+    ∃ n < m + 1, vanEckNthTerm (m + 1) = vanEckNthTerm n := by {
+  have h_m2_gt_N : N < m + 2 := by
+    calc N ≤ m := h_m
+         _ < m + 2 := Nat.lt_add_of_pos_right (by decide)
+  have h_not_zero : vanEckNthTerm (m + 2) ≠ 0 := h_nonzero (m + 2) h_m2_gt_N h_m2
+  have h_iff := vanEck_mth_term_eq_zero_iff_prev_term_new m
+  have h_contra := mt h_iff.mpr h_not_zero
+  have h_ex := not_forall_imp h_contra
+  rcases h_ex with ⟨n, hn, hneq⟩
+  have heq : vanEckNthTerm (m + 1) = vanEckNthTerm n := by
+    have h_eq_symm : vanEckNthTerm n = vanEckNthTerm (m + 1) := by
+      by_contra hc
+      exact hneq hc
+    exact h_eq_symm.symm
+  exact ⟨n, hn, heq⟩
+}
+
 lemma gap_contains_all_terms (N G : ℕ)
     (h_nonzero : ∀ j, N < j → j < N + G → vanEckNthTerm j ≠ 0) :
     ∀ k < N + G - 1, vanEckNthTerm k ≤ vanEckPrefixMax N := by {

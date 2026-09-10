@@ -40,6 +40,16 @@ LEAN_EXPORT lean_object* lp_VTlean_appendBit__sub__add___redArg(lean_object*, ui
 LEAN_EXPORT lean_object* lp_VTlean_appendBit__sub__add___redArg___boxed(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_appendBit__sub__add(lean_object*, lean_object*, lean_object*, uint8_t);
 LEAN_EXPORT lean_object* lp_VTlean_appendBit__sub__add___boxed(lean_object*, lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean_vectorAppendEquiv___lam__0(lean_object*);
+lean_object* lean_mk_empty_array_with_capacity(lean_object*);
+static lean_once_cell_t lp_VTlean_vectorAppendEquiv___lam__1___closed__0_once = LEAN_ONCE_CELL_INITIALIZER;
+static lean_object* lp_VTlean_vectorAppendEquiv___lam__1___closed__0;
+lean_object* l___private_Init_Data_List_Impl_0__List_takeTR_go___redArg(lean_object*, lean_object*, lean_object*, lean_object*);
+lean_object* l_List_getLast___redArg(lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean_vectorAppendEquiv___lam__1(lean_object*, lean_object*);
+static const lean_closure_object lp_VTlean_vectorAppendEquiv___closed__0_value = {.m_header = {.m_rc = 0, .m_cs_sz = sizeof(lean_closure_object) + sizeof(void*)*0, .m_other = 0, .m_tag = 245}, .m_fun = (void*)lp_VTlean_vectorAppendEquiv___lam__0, .m_arity = 1, .m_num_fixed = 0, .m_objs = {} };
+static const lean_object* lp_VTlean_vectorAppendEquiv___closed__0 = (const lean_object*)&lp_VTlean_vectorAppendEquiv___closed__0_value;
+LEAN_EXPORT lean_object* lp_VTlean_vectorAppendEquiv(lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_c__0___redArg(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_c__0(lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_c__0___boxed(lean_object*, lean_object*, lean_object*);
@@ -66,6 +76,16 @@ lean_object* lp_mathlib_Fintype_piFinset___at___00Behrend_box_spec__0___redArg(l
 lean_object* lp_mathlib_Finset_map___redArg(lean_object*, lean_object*);
 lean_object* lp_mathlib_Finset_sum___at___00Fin_accumulate_spec__0___redArg(lean_object*, lean_object*);
 LEAN_EXPORT lean_object* lp_VTlean_r__alg(lean_object*, lean_object*);
+lean_object* lp_VTlean_List_num__Is(lean_object*);
+LEAN_EXPORT uint8_t lp_VTlean_C__slice___lam__0(lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean_C__slice___lam__0___boxed(lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean_C__slice___lam__2(lean_object*, lean_object*);
+lean_object* lp_mathlib_Multiset_filter___redArg(lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean_C__slice(lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean_C__slice__0___lam__2(lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean_C__slice__0(lean_object*, lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean_C__slice__1___lam__2(lean_object*, lean_object*);
+LEAN_EXPORT lean_object* lp_VTlean_C__slice__1(lean_object*, lean_object*, lean_object*);
 LEAN_EXPORT uint8_t lp_VTlean_A__mat___lam__0(lean_object* x_1, lean_object* x_2) {
 _start:
 {
@@ -320,6 +340,58 @@ lean_dec(x_1);
 return x_6;
 }
 }
+LEAN_EXPORT lean_object* lp_VTlean_vectorAppendEquiv___lam__0(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; lean_object* x_3; uint8_t x_4; lean_object* x_5; 
+x_2 = lean_ctor_get(x_1, 0);
+lean_inc(x_2);
+x_3 = lean_ctor_get(x_1, 1);
+lean_inc(x_3);
+lean_dec_ref(x_1);
+x_4 = lean_unbox(x_3);
+lean_dec(x_3);
+x_5 = lp_VTlean_appendBit___redArg(x_2, x_4);
+return x_5;
+}
+}
+static lean_object* _init_lp_VTlean_vectorAppendEquiv___lam__1___closed__0(void) {
+_start:
+{
+lean_object* x_1; lean_object* x_2; 
+x_1 = lean_unsigned_to_nat(0u);
+x_2 = lean_mk_empty_array_with_capacity(x_1);
+return x_2;
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean_vectorAppendEquiv___lam__1(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+lean_object* x_3; lean_object* x_4; lean_object* x_5; lean_object* x_6; 
+x_3 = lean_obj_once(&lp_VTlean_vectorAppendEquiv___lam__1___closed__0, &lp_VTlean_vectorAppendEquiv___lam__1___closed__0_once, _init_lp_VTlean_vectorAppendEquiv___lam__1___closed__0);
+lean_inc(x_2);
+x_4 = l___private_Init_Data_List_Impl_0__List_takeTR_go___redArg(x_2, x_2, x_1, x_3);
+x_5 = l_List_getLast___redArg(x_2);
+lean_dec(x_2);
+x_6 = lean_alloc_ctor(0, 2, 0);
+lean_ctor_set(x_6, 0, x_4);
+lean_ctor_set(x_6, 1, x_5);
+return x_6;
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean_vectorAppendEquiv(lean_object* x_1) {
+_start:
+{
+lean_object* x_2; lean_object* x_3; lean_object* x_4; 
+x_2 = ((lean_object*)(lp_VTlean_vectorAppendEquiv___closed__0));
+x_3 = lean_alloc_closure((void*)(lp_VTlean_vectorAppendEquiv___lam__1), 2, 1);
+lean_closure_set(x_3, 0, x_1);
+x_4 = lean_alloc_ctor(0, 2, 0);
+lean_ctor_set(x_4, 0, x_2);
+lean_ctor_set(x_4, 1, x_3);
+return x_4;
+}
+}
 LEAN_EXPORT lean_object* lp_VTlean_c__0___redArg(lean_object* x_1, lean_object* x_2) {
 _start:
 {
@@ -498,6 +570,114 @@ x_10 = lp_mathlib_Fintype_piFinset___at___00Behrend_box_spec__0___redArg(x_6, x_
 x_11 = lp_mathlib_Finset_map___redArg(x_9, x_10);
 x_12 = lp_mathlib_Finset_sum___at___00Fin_accumulate_spec__0___redArg(x_11, x_4);
 return x_12;
+}
+}
+LEAN_EXPORT uint8_t lp_VTlean_C__slice___lam__0(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+lean_object* x_3; uint8_t x_4; 
+x_3 = lp_VTlean_List_num__Is(x_2);
+x_4 = lean_nat_dec_eq(x_3, x_1);
+lean_dec(x_3);
+return x_4;
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean_C__slice___lam__0___boxed(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+uint8_t x_3; lean_object* x_4; 
+x_3 = lp_VTlean_C__slice___lam__0(x_1, x_2);
+lean_dec(x_2);
+lean_dec(x_1);
+x_4 = lean_box(x_3);
+return x_4;
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean_C__slice___lam__2(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+lean_object* x_3; 
+x_3 = lean_apply_1(x_1, x_2);
+return x_3;
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean_C__slice(lean_object* x_1, lean_object* x_2, lean_object* x_3) {
+_start:
+{
+lean_object* x_4; lean_object* x_5; lean_object* x_6; lean_object* x_7; lean_object* x_8; lean_object* x_9; lean_object* x_10; lean_object* x_11; lean_object* x_12; lean_object* x_13; 
+x_4 = lean_alloc_closure((void*)(lp_VTlean_C__slice___lam__0___boxed), 2, 1);
+lean_closure_set(x_4, 0, x_3);
+x_5 = ((lean_object*)(lp_VTlean_r__alg___closed__0));
+x_6 = lean_alloc_closure((void*)(lp_VTlean_C__slice___lam__2), 2, 1);
+lean_closure_set(x_6, 0, x_2);
+lean_inc(x_1);
+x_7 = lp_mathlib_Equiv_vectorEquivFin___redArg(x_1);
+x_8 = lp_mathlib_Equiv_symm___redArg(x_7);
+x_9 = lean_alloc_closure((void*)(lp_VTlean_r__alg___lam__2), 2, 1);
+lean_closure_set(x_9, 0, x_8);
+x_10 = lp_mathlib_Fintype_piFinset___at___00Behrend_box_spec__0___redArg(x_1, x_5);
+x_11 = lp_mathlib_Finset_map___redArg(x_9, x_10);
+x_12 = lp_mathlib_Multiset_filter___redArg(x_4, x_11);
+x_13 = lp_mathlib_Finset_sum___at___00Fin_accumulate_spec__0___redArg(x_12, x_6);
+return x_13;
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean_C__slice__0___lam__2(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+lean_object* x_3; 
+x_3 = lp_VTlean_c__0___redArg(x_1, x_2);
+return x_3;
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean_C__slice__0(lean_object* x_1, lean_object* x_2, lean_object* x_3) {
+_start:
+{
+lean_object* x_4; lean_object* x_5; lean_object* x_6; lean_object* x_7; lean_object* x_8; lean_object* x_9; lean_object* x_10; lean_object* x_11; lean_object* x_12; lean_object* x_13; 
+x_4 = lean_alloc_closure((void*)(lp_VTlean_C__slice___lam__0___boxed), 2, 1);
+lean_closure_set(x_4, 0, x_3);
+x_5 = ((lean_object*)(lp_VTlean_r__alg___closed__0));
+x_6 = lean_alloc_closure((void*)(lp_VTlean_C__slice__0___lam__2), 2, 1);
+lean_closure_set(x_6, 0, x_2);
+lean_inc(x_1);
+x_7 = lp_mathlib_Equiv_vectorEquivFin___redArg(x_1);
+x_8 = lp_mathlib_Equiv_symm___redArg(x_7);
+x_9 = lean_alloc_closure((void*)(lp_VTlean_r__alg___lam__2), 2, 1);
+lean_closure_set(x_9, 0, x_8);
+x_10 = lp_mathlib_Fintype_piFinset___at___00Behrend_box_spec__0___redArg(x_1, x_5);
+x_11 = lp_mathlib_Finset_map___redArg(x_9, x_10);
+x_12 = lp_mathlib_Multiset_filter___redArg(x_4, x_11);
+x_13 = lp_mathlib_Finset_sum___at___00Fin_accumulate_spec__0___redArg(x_12, x_6);
+return x_13;
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean_C__slice__1___lam__2(lean_object* x_1, lean_object* x_2) {
+_start:
+{
+lean_object* x_3; 
+x_3 = lp_VTlean_c__1___redArg(x_1, x_2);
+return x_3;
+}
+}
+LEAN_EXPORT lean_object* lp_VTlean_C__slice__1(lean_object* x_1, lean_object* x_2, lean_object* x_3) {
+_start:
+{
+lean_object* x_4; lean_object* x_5; lean_object* x_6; lean_object* x_7; lean_object* x_8; lean_object* x_9; lean_object* x_10; lean_object* x_11; lean_object* x_12; lean_object* x_13; 
+x_4 = lean_alloc_closure((void*)(lp_VTlean_C__slice___lam__0___boxed), 2, 1);
+lean_closure_set(x_4, 0, x_3);
+x_5 = ((lean_object*)(lp_VTlean_r__alg___closed__0));
+x_6 = lean_alloc_closure((void*)(lp_VTlean_C__slice__1___lam__2), 2, 1);
+lean_closure_set(x_6, 0, x_2);
+lean_inc(x_1);
+x_7 = lp_mathlib_Equiv_vectorEquivFin___redArg(x_1);
+x_8 = lp_mathlib_Equiv_symm___redArg(x_7);
+x_9 = lean_alloc_closure((void*)(lp_VTlean_r__alg___lam__2), 2, 1);
+lean_closure_set(x_9, 0, x_8);
+x_10 = lp_mathlib_Fintype_piFinset___at___00Behrend_box_spec__0___redArg(x_1, x_5);
+x_11 = lp_mathlib_Finset_map___redArg(x_9, x_10);
+x_12 = lp_mathlib_Multiset_filter___redArg(x_4, x_11);
+x_13 = lp_mathlib_Finset_sum___at___00Fin_accumulate_spec__0___redArg(x_12, x_6);
+return x_13;
 }
 }
 lean_object* initialize_Init(uint8_t builtin);

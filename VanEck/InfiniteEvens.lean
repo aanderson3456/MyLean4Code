@@ -18,7 +18,13 @@ Because it's a new number, the term immediately following it must be 0.
 lemma new_odd_forces_next_zero (N : ℕ) (h_odds : OnlyOddsAndZerosAfter N) (m : ℕ) (hm : m > N)
     (h_odd : vanEckNthTerm m % 2 = 1) (h_new : ∀ i < m, vanEckNthTerm i ≠ vanEckNthTerm m) :
     vanEckNthTerm (m + 1) = 0 := by {
-  sorry
+  have hm_pos : m ≥ 1 := by omega
+  have h_m1 : m - 1 + 2 = m + 1 := by omega
+  have h_m2 : m - 1 + 1 = m := by omega
+  rw [← h_m1]
+  apply (vanEck_mth_term_eq_zero_iff_prev_term_new (m - 1)).mpr
+  rw [h_m2]
+  exact h_new
 }
 
 /--
@@ -27,44 +33,141 @@ If we get a new odd number `X` at index `m`, we look at the term right before it
 Since we are only generating odds and zeros, `vanEckNthTerm (m - 1)` must be either 0 or an odd number.
 If it is 0, we say the backtrack is "done" because a 0 immediately preceding a new value forces a specific gap structure (specifically a gap of 2 next, which is even, leading to a contradiction).
 -/
-lemma prev_term_of_new_odd_is_zero_or_odd (N : ℕ) (h_odds : OnlyOddsAndZerosAfter N) (m : ℕ) (hm : m > N + 1)
-    (h_odd : vanEckNthTerm m % 2 = 1) (h_new : ∀ i < m, vanEckNthTerm i ≠ vanEckNthTerm m) :
-    vanEckNthTerm (m - 1) = 0 ∨ vanEckNthTerm (m - 1) % 2 = 1 := by {
+lemma lookback_step (m X : ℕ) (h_X : vanEckNthTerm m = X) (h_X_odd : X % 2 = 1) 
+    (h_prev_nz : vanEckNthTerm (m - 1) ≠ 0) :
+    ∃ prev < m - 1, vanEckNthTerm prev = vanEckNthTerm (m - 1) ∧ prev % 2 = m % 2 := by {
+  have hX_pos : X ≠ 0 := by omega
+  have hm_pos : m > 0 := by
+    by_contra hc
+    have h0 : m = 0 := by omega
+    rw [h0] at h_X
+    have hv0 : vanEckNthTerm 0 = 0 := rfl
+    rw [hv0] at h_X
+    omega
+  have hm_sub : m - 1 + 1 = m := Nat.sub_add_cancel hm_pos
+  have hk : m - 1 ≥ 1 := by
+    by_contra hc
+    have hm1 : m - 1 = 0 := by omega
+    have hm1_eq : m = 1 := by omega
+    rw [hm1_eq] at h_X
+    have hv1 : vanEckNthTerm 1 = 0 := rfl
+    rw [hv1] at h_X
+    omega
+  have ht := gap_determines_value (m - 1) hk X (by decide) (by rw [hm_sub]; exact h_X) hX_pos
+  have hX_le : X ≤ m := by
+    have h_gap := vanEck_is_gap m hm_pos
+    rw [h_X] at h_gap
+    have h_ms := matchSearch_le_length (vanEck (m - 1)) (m - 1)
+    rw [← h_gap] at h_ms
+    have h_len := vanEckLength (m - 1)
+    rw [h_len] at h_ms
+    have hm_len_sub : m - 1 + 1 = m := Nat.sub_add_cancel hm_pos
+    rw [hm_len_sub] at h_ms
+    exact h_ms
+  have hX_lt : X < m := by
+    by_contra hc
+    have heq : X = m := by omega
+    have ht2 : vanEckNthTerm (m - 1) = vanEckNthTerm (m - 1 - m) := by
+      rw [heq] at ht
+      exact ht
+    have h0 : m - 1 - m = 0 := by omega
+    rw [h0] at ht2
+    have hv0 : vanEckNthTerm 0 = 0 := rfl
+    rw [hv0] at ht2
+    exact h_prev_nz ht2
+  have h_X_ge_1 : X ≥ 1 := by omega
+  have hm1_pos : m - 1 > 0 := hk
+  have h_lt : m - 1 - X < m - 1 := Nat.sub_lt hm1_pos h_X_ge_1
+  have h_par : (m - 1 - X) % 2 = m % 2 := by
+    have ⟨k, hk_X⟩ : ∃ k, X = 2 * k + 1 := ⟨X / 2, by omega⟩
+    have h_eq : m = (m - 1 - X) + 2 * (k + 1) := by omega
+    rw [h_eq]
+    omega
+  exact ⟨m - 1 - X, h_lt, ht.symm, h_par⟩
+}
+
+lemma lookback_hits_even (m : ℕ) (h_odd : vanEckNthTerm m % 2 = 1) :
+    ∃ curr_k ≤ m, curr_k % 2 = m % 2 ∧ vanEckNthTerm (curr_k - 1) % 2 = 0 := by {
+  induction' m using Nat.strong_induction_on with m ih
+  by_cases h0 : vanEckNthTerm (m - 1) % 2 = 0
+  · exact ⟨m, Nat.le_refl m, rfl, h0⟩
+  · have h1 : vanEckNthTerm (m - 1) % 2 = 1 := by omega
+    have h_nz : vanEckNthTerm (m - 1) ≠ 0 := by omega
+    have h_step := lookback_step m (vanEckNthTerm m) rfl h_odd h_nz
+    rcases h_step with ⟨prev, h_prev_lt, h_prev_val, h_prev_par⟩
+    have h_prev_odd : vanEckNthTerm prev % 2 = 1 := by
+      rw [h_prev_val]
+      exact h1
+    have h_prev_lt_m : prev < m := by omega
+    have h_ih := ih prev h_prev_lt_m h_prev_odd
+    rcases h_ih with ⟨curr_k, h_curr_le, h_curr_par, h_curr_even⟩
+    have h_le : curr_k ≤ m := by omega
+    have h_par : curr_k % 2 = m % 2 := by
+      rw [h_curr_par, h_prev_par]
+    exact ⟨curr_k, h_le, h_par, h_curr_even⟩
+}
+
+lemma zero_gap_even (N : ℕ) (h_odds : OnlyOddsAndZerosAfter N) 
+    (z_a z_b : ℕ) (hz_a : vanEckNthTerm z_a = 0) (hz_b : vanEckNthTerm z_b = 0)
+    (hz_lt : z_a < z_b) (h_between : ∀ i, z_a < i → i < z_b → vanEckNthTerm i ≠ 0)
+    (h_bounds : N < z_a) :
+    z_b % 2 = z_a % 2 := by {
   sorry
 }
 
-/--
-Informal Explanation:
-If the previous term `vanEckNthTerm (m - 1)` was another odd number `Y` (not 0), then `Y` must be smaller than the new odd number `X`.
-Why? Because `X` is the distance to the previous occurrence of `Y`. Since `X` is generated at `m`, the previous occurrence of `Y` was at index `m - 1 - X`.
-Since index `m - 1 - X` must be ≥ 0, `X` cannot be larger than `m - 1`. 
-The distance relationship formally is `X = m - 1 - prev`, where `vanEckNthTerm prev = Y`.
--/
-lemma prev_term_odd_implies_distance (N : ℕ) (h_odds : OnlyOddsAndZerosAfter N) (m : ℕ) (hm : m > N + 1)
-    (h_new : ∀ i < m, vanEckNthTerm i ≠ vanEckNthTerm m)
-    (h_prev_odd : vanEckNthTerm (m - 1) % 2 = 1) :
-    ∃ prev < m - 1, vanEckNthTerm prev = vanEckNthTerm (m - 1) ∧ vanEckNthTerm m = m - 1 - prev := by {
-  sorry
+lemma zero_gap_odd (N : ℕ) (h_odds : OnlyOddsAndZerosAfter N) 
+    (z_a z_b : ℕ) (hz_a : vanEckNthTerm z_a = 0) (hz_b : vanEckNthTerm z_b = 0)
+    (hz_lt : z_a < z_b) (h_between : ∀ i, z_a < i → i < z_b → vanEckNthTerm i ≠ 0)
+    (h_bounds : N < z_a) :
+    z_b % 2 ≠ z_a % 2 := by {
+  have h_match : listNth (vanEck z_b) ((vanEck z_b).length - 1) = listNth (vanEck z_b) z_a := by
+    have h_len : (vanEck z_b).length = z_b + 1 := vanEckLength z_b
+    have h_len1 : (vanEck z_b).length - 1 = z_b := by omega
+    rw [h_len1]
+    have hd_zb : listNth (vanEck z_b) z_b = vanEckNthTerm z_b := rfl
+    have hd_za : listNth (vanEck z_b) z_a = vanEckNthTerm z_a := by
+      exact VanEck_deterministic z_b z_a (Nat.le_of_lt hz_lt)
+    rw [hd_zb, hd_za, hz_b, hz_a]
+  have h_fail : ∀ k, 1 ≤ k → k ≤ z_b - z_a - 1 → listNth (vanEck z_b) ((vanEck z_b).length - 1) ≠ listNth (vanEck z_b) (z_a + k) := by
+    intro k hk1 h_le
+    have h_len1 : (vanEck z_b).length - 1 = z_b := by
+      have h_len : (vanEck z_b).length = z_b + 1 := vanEckLength z_b
+      omega
+    rw [h_len1]
+    have hd_zb : listNth (vanEck z_b) z_b = vanEckNthTerm z_b := rfl
+    have hd_zak : listNth (vanEck z_b) (z_a + k) = vanEckNthTerm (z_a + k) := by
+      exact VanEck_deterministic z_b (z_a + k) (by omega)
+    rw [hd_zb, hd_zak, hz_b]
+    exact fun h => h_between (z_a + k) (by omega) (by omega) h.symm
+  have h_ms := matchSearch_eq_dist (vanEck z_b) z_a (z_b - z_a - 1) h_match h_fail
+  have hz_sub : z_a + (z_b - z_a - 1) + 1 = z_b := by omega
+  rw [hz_sub] at h_ms
+  have h_gap := vanEck_is_gap (z_b + 1) (by omega)
+  have h_len2 : (vanEck z_b).length - 1 - z_a = z_b - z_a := by
+    have h_len : (vanEck z_b).length = z_b + 1 := vanEckLength z_b
+    omega
+  rw [h_len2] at h_ms
+  have h_sub_zb : z_b + 1 - 1 = z_b := rfl
+  rw [h_sub_zb] at h_gap
+  rw [h_ms] at h_gap
+  have h_val : vanEckNthTerm (z_b + 1) = z_b - z_a := h_gap
+  
+  have h_zb1_gt_N : z_b + 1 > N := by omega
+  have h_or := h_odds (z_b + 1) h_zb1_gt_N
+  have h_odd : (z_b - z_a) % 2 = 1 := by
+    cases h_or with
+    | inl h_is_zero => 
+      have hc : z_b - z_a = 0 := by
+        have hz_eq : vanEckNthTerm (z_b + 1) = 0 := h_is_zero
+        rw [h_val] at hz_eq
+        exact hz_eq
+      omega
+    | inr h_is_odd => 
+      rw [← h_val]
+      exact h_is_odd
+  omega
 }
 
-/--
-Informal Explanation:
-By chaining these lookbacks, we create a backtrack tree. Every odd number points back to its previous occurrence. 
-Because the sequence only contains odds and zeros, and every odd number requires a previous occurrence to generate the next gap, the sequence must repeatedly jump back to smaller indices.
-This backtracking cannot continue infinitely into the past (since indices must be ≥ 0), so it must eventually hit a 0.
--/
-lemma odd_chain_eventually_hits_zero (N : ℕ) (h_odds : OnlyOddsAndZerosAfter N) (m : ℕ) (hm : m > N)
-    (h_odd : vanEckNthTerm m % 2 = 1) :
-    ∃ z < m, vanEckNthTerm z = 0 ∧ (∀ i, z < i → i ≤ m → vanEckNthTerm i ≠ 0) := by {
-  sorry
-}
-
-/--
-Informal Explanation:
-When the backtrack chain eventually hits a 0, the structure forces the generation of an even number (specifically 2).
-Since we assumed `OnlyOddsAndZerosAfter N`, generating an even number is a direct contradiction.
-Therefore, an infinite sequence of only odds and zeros cannot exist.
--/
 lemma odds_and_zeros_chain_contradiction (N : ℕ) (h_odds : OnlyOddsAndZerosAfter N) : False := by {
   sorry
 }

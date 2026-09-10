@@ -4,6 +4,7 @@ import ComplexAnalysis.Sarason.Definitions
 open Complex
 open Sarason
 open Sarason.Ch2
+open ComplexAnalysis.R2
 
 theorem conformal_implies_holomorphic_II_12 {G : Set ℂ} (hG : IsOpen G)
     (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ × ℝ → ℝ)
@@ -50,7 +51,37 @@ theorem conformal_implies_holomorphic_II_12 {G : Set ℂ} (hG : IsOpen G)
     have h_diff_at := II_7 hG (fun z => u (z.re, z.im)) (fun z => v (z.re, z.im)) (fun z => ux (z.re, z.im)) (fun z => uy (z.re, z.im)) (fun z => vx (z.re, z.im)) (fun z => vy (z.re, z.im)) hu_x hu_y hv_x hv_y h_cont_ux h_cont_uy h_cont_vx h_cont_vy z hz h_cr f hf
     use h_diff_at
     
-    have h_deriv_eq : deriv_eps f z h_diff_at = (ux (z.re, z.im) : ℂ) + I * vx (z.re, z.im) := by sorry
+    have h_deriv_eq : deriv_eps f z h_diff_at = (ux (z.re, z.im) : ℂ) + I * vx (z.re, z.im) := by {
+      have h_deriv : HasDerivAt_eps f (deriv_eps f z h_diff_at) z := Classical.choose_spec h_diff_at
+      have h_cr_deriv := hasDerivAt_eps_imp_cauchy_riemann h_deriv
+      rcases h_cr_deriv with ⟨h1, h2, h3, h4⟩
+      have hu_x_z := hu_x z hz
+      have hv_x_z := hv_x z hz
+
+      have h_re_eq : (deriv_eps f z h_diff_at).re = ux (z.re, z.im) := by {
+        have h_f_re : (fun z => (f z).re) = (fun z => u (z.re, z.im)) := by {
+          funext w
+          rw [hf w]
+          simp
+        }
+        rw [h_f_re] at h1
+        have h_uniq := partial_deriv_unique_x (fun z => u (z.re, z.im)) (deriv_eps f z h_diff_at).re (ux (z.re, z.im)) z h1 hu_x_z
+        exact h_uniq
+      }
+      have h_im_eq : (deriv_eps f z h_diff_at).im = vx (z.re, z.im) := by {
+        have h_f_im : (fun z => (f z).im) = (fun z => v (z.re, z.im)) := by {
+          funext w
+          rw [hf w]
+          simp
+        }
+        rw [h_f_im] at h3
+        have h_uniq := partial_deriv_unique_x (fun z => v (z.re, z.im)) (deriv_eps f z h_diff_at).im (vx (z.re, z.im)) z h3 hv_x_z
+        exact h_uniq
+      }
+      apply Complex.ext
+      · simp [h_re_eq]
+      · simp [h_im_eq]
+    }
     have h_del_eq := deriv_eps_eq_del (ux (z.re, z.im)) (uy (z.re, z.im)) (vx (z.re, z.im)) (vy (z.re, z.im)) h_cr
     
     rw [h_deriv_eq, h_del_eq]

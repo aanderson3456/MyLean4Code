@@ -23,6 +23,8 @@ The formalization spans several key files:
 
 ## 3. Current Compilation Status
 The project builds warning-free with `lake build`.
+* **Mirsky-Newman Theorem**: Fully verified without any `sorry` in [MirskyNewman.lean](file:///Users/austinanderson/GitHub/MyLean4Code/VanEck/MirskyNewman.lean) (`total_sum_eq_zero`, `mod_add_mul_inj`, `sum_cover_eq_evalAP`, `total_sum_eq_sum_cover`, and `mirsky_newman_exact_cover`).
+* **Infinite Evens**: `new_odd_forces_next_zero` is proven without `sorry` in [InfiniteEvens.lean](file:///Users/austinanderson/GitHub/MyLean4Code/VanEck/InfiniteEvens.lean).
 * **Important**: Do not redefine helper lemmas that already exist in imported files (e.g., `finite_twos_implies_old_gaps` which is in `SurjectivityLemmas.lean`).
 
 ---

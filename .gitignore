@@ -18,3 +18,7 @@ __pycache__/
 *.log
 *.out
 *.toc
+cert_engine/
+cert_engine/*.cert
+cert_engine/*.bin
+cert_engine/cert_checker

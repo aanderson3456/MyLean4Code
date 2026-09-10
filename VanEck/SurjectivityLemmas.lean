@@ -4,21 +4,6 @@ import LimSup
 import FinishedSurjLemmas
 import Mathlib
 
-lemma vanEck_surjective_zero : ∃ m, vanEckNthTerm m = 0 := by {
-  use 0
-  exact vanEck_head_eq_zero 0
-}
-
-lemma vanEck_surjective_one : ∃ m, vanEckNthTerm m = 1 := by {
-  use 2
-  rfl
-}
-
-lemma vanEck_surjective_two : ∃ m, vanEckNthTerm m = 2 := by {
-  use 4
-  rfl
-}
-
 lemma new_value_next_is_zero (m : ℕ) (h_new : ∀ i < m, vanEckNthTerm i ≠ vanEckNthTerm m) :
     vanEckNthTerm (m + 1) = 0 := by {
   by_cases hm : m = 0
@@ -917,26 +902,6 @@ lemma vanEckPrefixMax_monotone (n m : ℕ) (hnm : n ≤ m) : vanEckPrefixMax n �
   have hd2 := VanEck_deterministic m k (Nat.le_trans hk_le hnm)
   rw [hd2, ← hd1] at h_in
   exact le_listMax_of_mem h_in
-}
-
-lemma gap_nonzero_implies_recurrence (N m G : ℕ)
-    (h_nonzero : ∀ k, N < k → k < N + G → vanEckNthTerm k ≠ 0)
-    (h_m : N ≤ m) (h_m2 : m + 2 < N + G) :
-    ∃ n < m + 1, vanEckNthTerm (m + 1) = vanEckNthTerm n := by {
-  have h_m2_gt_N : N < m + 2 := by
-    calc N ≤ m := h_m
-         _ < m + 2 := Nat.lt_add_of_pos_right (by decide)
-  have h_not_zero : vanEckNthTerm (m + 2) ≠ 0 := h_nonzero (m + 2) h_m2_gt_N h_m2
-  have h_iff := vanEck_mth_term_eq_zero_iff_prev_term_new m
-  have h_contra := mt h_iff.mpr h_not_zero
-  have h_ex := not_forall_imp h_contra
-  rcases h_ex with ⟨n, hn, hneq⟩
-  have heq : vanEckNthTerm (m + 1) = vanEckNthTerm n := by
-    have h_eq_symm : vanEckNthTerm n = vanEckNthTerm (m + 1) := by
-      by_contra hc
-      exact hneq hc
-    exact h_eq_symm.symm
-  exact ⟨n, hn, heq⟩
 }
 
 
