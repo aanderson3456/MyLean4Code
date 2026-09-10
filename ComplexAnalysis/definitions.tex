@@ -137,17 +137,17 @@ def HasLimitAtInf_eps (f : $\mathbb{C} \to \mathbb{R}$) (L : $\mathbb{R}$) : Pro
 \end{lstlisting}
     \[ \lim_{|z| \to \infty} f(z) = L \]
 
-    \item \textbf{\texttt{HasDerivAt\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $f' \in \mathbb{C}$, $z_0 \in \mathbb{C}$): Complex differentiability at a point.
+    \item \textbf{\texttt{HasDerivAt\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $f'_0 \in \mathbb{C}$, $z_0 \in \mathbb{C}$): Complex differentiability at a point.
 \begin{lstlisting}[language=Caml]
-def HasDerivAt_eps (f : $\mathbb{C} \to \mathbb{C}$) (f' : $\mathbb{C}$) (z$_0$ : $\mathbb{C}$) : Prop := 
-  HasLimitAt_eps (fun z => (f z - f z$_0$) / (z - z$_0$)) f' z$_0$
+def HasDerivAt_eps (f : $\mathbb{C} \to \mathbb{C}$) (f'_0 : $\mathbb{C}$) (z$_0$ : $\mathbb{C}$) : Prop := 
+  HasLimitAt_eps (fun z => (f z - f z$_0$) / (z - z$_0$)) f'_0 z$_0$
 \end{lstlisting}
-    \[ \lim_{z \to z_0} \frac{f(z) - f(z_0)}{z - z_0} = f' \]
+    \[ \lim_{z \to z_0} \frac{f(z) - f(z_0)}{z - z_0} = f'_0 \]
 
     \item \textbf{\texttt{DifferentiableAt\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $z_0 \in \mathbb{C}$):
 \begin{lstlisting}[language=Caml]
 def DifferentiableAt_eps (f : $\mathbb{C} \to \mathbb{C}$) (z$_0$ : $\mathbb{C}$) : Prop := 
-  $\exists$ f', HasDerivAt_eps f f' z$_0$
+  $\exists$ f'_0, HasDerivAt_eps f f'_0 z$_0$
 \end{lstlisting}
     \[ f \text{ is differentiable at } z_0 \]
 

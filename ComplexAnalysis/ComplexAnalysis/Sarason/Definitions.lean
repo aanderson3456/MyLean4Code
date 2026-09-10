@@ -31,12 +31,12 @@ def HasLimitAtInf_eps (f : ℂ → ℝ) (L : ℝ) : Prop :=
   ∀ ε > 0, ∃ M > 0, ∀ z, ‖z‖ > M → |f z - L| < ε
 
 --  Weierstrass definition of having a complex derivative at z₀.
-def HasDerivAt_eps (f : ℂ → ℂ) (f' : ℂ) (z₀ : ℂ) : Prop :=
-  HasLimitAt_eps (fun z => (f z - f z₀) / (z - z₀)) f' z₀
+def HasDerivAt_eps (f : ℂ → ℂ) (f'₀ : ℂ) (z₀ : ℂ) : Prop :=
+  HasLimitAt_eps (fun z => (f z - f z₀) / (z - z₀)) f'₀ z₀
 
 --  Weierstrass definition of complex differentiability at z₀.
 def DifferentiableAt_eps (f : ℂ → ℂ) (z₀ : ℂ) : Prop :=
-  ∃ f', HasDerivAt_eps f f' z₀
+  ∃ f'₀, HasDerivAt_eps f f'₀ z₀
 
 -- Weierstrass definition of partial derivative with respect to x.
 def HasPartialDerivX_C_to_R_eps (u : ℂ → ℝ) (ux₀ : ℝ) (z₀ : ℂ) : Prop :=
@@ -95,8 +95,8 @@ theorem tendsto_cobounded_iff_eps (f : ℂ → ℝ) (L : ℝ) :
 }
 
 --  Equivalence theorem between Mathlib's derivative at a point and Weierstrass derivative.
-theorem hasDerivAt_iff_eps (f : ℂ → ℂ) (f' z₀ : ℂ) :
-    _root_.HasDerivAt f f' z₀ ↔ HasDerivAt_eps f f' z₀ := by {
+theorem hasDerivAt_iff_eps (f : ℂ → ℂ) (f'₀ z₀ : ℂ) :
+    _root_.HasDerivAt f f'₀ z₀ ↔ HasDerivAt_eps f f'₀ z₀ := by {
   rw [hasDerivAt_iff_tendsto_slope]
   rw [tendsto_nhds_iff_eps]
   unfold HasDerivAt_eps
@@ -112,9 +112,9 @@ theorem differentiableAt_iff_eps (f : ℂ → ℂ) (z₀ : ℂ) :
     use deriv f z₀
     rw [← hasDerivAt_iff_eps]
     exact h.hasDerivAt
-  · rintro ⟨f', hf'⟩
-    rw [← hasDerivAt_iff_eps] at hf'
-    exact hf'.differentiableAt
+  · rintro ⟨f'₀, hf'₀⟩
+    rw [← hasDerivAt_iff_eps] at hf'₀
+    exact hf'₀.differentiableAt
 }
 
 -- Equivalence theorem between Mathlib's 1D derivative at a point (using filters) and Weierstrass epsilon-delta limit.
