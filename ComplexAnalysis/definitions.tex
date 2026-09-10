@@ -99,6 +99,8 @@ def HasFDerivAt_R2_eps (u v : $\mathbb{R} \times \mathbb{R} \to \mathbb{R}$) (ux
   )) (0, 0) (0, 0)
 \end{lstlisting}
     \[ \lim_{h \to 0} \left( F(a+h) - F(a) - \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} h \right) = 0 \]
+    \[ \lim_{(h_1, h_2) \to (0,0)} \left( \begin{pmatrix} u(a_1+h_1, a_2+h_2) - u(a_1, a_2) \\ v(a_1+h_1, a_2+h_2) - v(a_1, a_2) \end{pmatrix} - \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} \begin{pmatrix} h_1 \\ h_2 \end{pmatrix} \right) = \begin{pmatrix} 0 \\ 0 \end{pmatrix} \]
+
 
     \item \textbf{\texttt{DifferentiableAt\_R2\_eps}} ($u, v : \mathbb{R}^2 \to \mathbb{R}$, $a \in \mathbb{R}^2$):
 \begin{lstlisting}[language=Caml]
