@@ -3,6 +3,28 @@
 \usepackage{amsmath, amssymb, amsthm}
 \usepackage[margin=1in]{geometry}
 \usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+
+\lstset{ 
+    backgroundcolor=\color{backcolour},   
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=none,                    
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    morekeywords={def, noncomputable, Prop, let, in, fun, if, then, else, match, with, where},
+    mathescape=true
+}
 
 \title{Definitions in \texttt{Sarason/} and \texttt{R2.lean}}
 \author{Lean Formalization Project}
@@ -11,130 +33,312 @@
 \begin{document}
 \maketitle
 
-This document provides a comprehensive list of all definitions manually formalized in the \texttt{ComplexAnalysis} project, specifically within \texttt{R2.lean} and the \texttt{Sarason/} directory. No axioms are used; all concepts are built strictly from $\mathbb{R}^2$ foundations.
+This document provides a comprehensive list of all definitions manually formalized in the \texttt{ComplexAnalysis} project, specifically within \texttt{R2.lean} and the \texttt{Sarason/} directory. For each definition, the raw Lean code is presented first, followed by its mathematical interpretation.
 
 \section{\texttt{ComplexAnalysis/R2.lean}}
 
-These definitions establish the pure $\mathbb{R}^2$ foundational layer, strictly avoiding Mathlib topological/metric dependencies where requested, favoring $\epsilon-\delta$ constructions.
-
 \begin{itemize}
-    \item \textbf{\texttt{sqNorm}} ($x \in \mathbb{R}^2 \to \mathbb{R}$): The squared Euclidean norm.
-    \[ \texttt{sqNorm}(x) = x_1^2 + x_2^2 \]
-    
-    \item \textbf{\texttt{sqDist}} ($x, y \in \mathbb{R}^2 \to \mathbb{R}$): The squared Euclidean distance.
-    \[ \texttt{sqDist}(x, y) = \texttt{sqNorm}(x - y) \]
-    
-    \item \textbf{\texttt{euclideanNorm}} ($x \in \mathbb{R}^2 \to \mathbb{R}$): The standard Euclidean norm.
-    \[ \texttt{euclideanNorm}(x) = \sqrt{x_1^2 + x_2^2} \]
-    
-    \item \textbf{\texttt{euclideanDist}} ($x, y \in \mathbb{R}^2 \to \mathbb{R}$): The Euclidean distance.
-    \[ \texttt{euclideanDist}(x, y) = \sqrt{\texttt{sqDist}(x, y)} \]
-    
-    \item \textbf{\texttt{LimitRtoR2}} ($f : \mathbb{R} \to \mathbb{R}^2$, $a \in \mathbb{R}$, $L \in \mathbb{R}^2$):
-    \[ \forall \epsilon > 0, \exists \delta > 0, \forall x, 0 < |x - a| < \delta \implies \texttt{euclideanDist}(f(x), L) < \epsilon \]
-    
-    \item \textbf{\texttt{LimitR2toR}} ($f : \mathbb{R}^2 \to \mathbb{R}$, $a \in \mathbb{R}^2$, $L \in \mathbb{R}$):
-    \[ \forall \epsilon > 0, \exists \delta > 0, \forall x, 0 < \texttt{euclideanDist}(x, a) < \delta \implies |f(x) - L| < \epsilon \]
-    
-    \item \textbf{\texttt{LimitR2toR2}} ($f : \mathbb{R}^2 \to \mathbb{R}^2$, $a \in \mathbb{R}^2$, $L \in \mathbb{R}^2$):
-    \[ \forall \epsilon > 0, \exists \delta > 0, \forall x, 0 < \texttt{euclideanDist}(x, a) < \delta \implies \texttt{euclideanDist}(f(x), L) < \epsilon \]
-    
-    \item \textbf{\texttt{ConvergesR2}} ($\text{seq} : \mathbb{N} \to \mathbb{R}^2$, $L \in \mathbb{R}^2$):
-    \[ \forall \epsilon > 0, \exists N \in \mathbb{N}, \forall n \ge N, \texttt{euclideanDist}(\text{seq}(n), L) < \epsilon \]
-    
-    \item \textbf{\texttt{HasFDerivAt\_R2\_eps}} ($u, v : \mathbb{R}^2 \to \mathbb{R}$, $u_{x0}, u_{y0}, v_{x0}, v_{y0} \in \mathbb{R}$, $a \in \mathbb{R}^2$): Defines the Fréchet derivative of $F(x,y) = (u(x,y), v(x,y))$ at $a$. Let $L(h) = \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} h$.
-    \[ \lim_{h \to 0} \frac{\texttt{euclideanNorm}(F(a+h) - F(a) - L(h))}{\texttt{euclideanNorm}(h)} = 0 \]
-    
-    \item \textbf{\texttt{DifferentiableAt\_R2\_eps}} ($u, v : \mathbb{R}^2 \to \mathbb{R}$, $a \in \mathbb{R}^2$):
-    \[ \exists u_{x0}, u_{y0}, v_{x0}, v_{y0} \in \mathbb{R}, \texttt{HasFDerivAt\_R2\_eps}(u, v, u_{x0}, u_{y0}, v_{x0}, v_{y0}, a) \]
-    
-    \item \textbf{\texttt{HasDerivAt\_RtoR2\_eps}} ($f : \mathbb{R} \to \mathbb{R}^2$, $f'_0 \in \mathbb{R}^2$, $t_0 \in \mathbb{R}$): Defines the derivative of a parametric curve in $\mathbb{R}^2$.
+    \item \textbf{\texttt{sqNorm}}
+\begin{lstlisting}[language=Caml]
+noncomputable def sqNorm (x : $\mathbb{R} \times \mathbb{R}$) : $\mathbb{R}$ := x.1$^2$ + x.2$^2$
+\end{lstlisting}
+    \[ \text{sqNorm}(x) = x_1^2 + x_2^2 \]
+
+    \item \textbf{\texttt{sqDist}}
+\begin{lstlisting}[language=Caml]
+noncomputable def sqDist (x y : $\mathbb{R} \times \mathbb{R}$) : $\mathbb{R}$ := sqNorm (x - y)
+\end{lstlisting}
+    \[ \text{sqDist}(x, y) = \text{sqNorm}(x - y) \]
+
+    \item \textbf{\texttt{euclideanNorm}}
+\begin{lstlisting}[language=Caml]
+noncomputable def euclideanNorm (x : $\mathbb{R} \times \mathbb{R}$) : $\mathbb{R}$ := Real.sqrt (sqNorm x)
+\end{lstlisting}
+    \[ \text{euclideanNorm}(x) = \sqrt{x_1^2 + x_2^2} \]
+
+    \item \textbf{\texttt{euclideanDist}}
+\begin{lstlisting}[language=Caml]
+noncomputable def euclideanDist (x y : $\mathbb{R} \times \mathbb{R}$) : $\mathbb{R}$ := Real.sqrt (sqDist x y)
+\end{lstlisting}
+    \[ \text{euclideanDist}(x, y) = \sqrt{\text{sqDist}(x, y)} \]
+
+    \item \textbf{\texttt{LimitRtoR2}}
+\begin{lstlisting}[language=Caml]
+def LimitRtoR2 (f : $\mathbb{R} \to \mathbb{R} \times \mathbb{R}$) (a : $\mathbb{R}$) (L : $\mathbb{R} \times \mathbb{R}$) : Prop := 
+  $\forall\ \varepsilon > 0,\ \exists\ \delta > 0,\ \forall$ x : $\mathbb{R}$, 0 < |x - a| $\wedge$ |x - a| < $\delta \to$ euclideanDist (f x) L < $\varepsilon$
+\end{lstlisting}
+    \[ \lim_{x \to a} f(x) = L \iff \forall \epsilon > 0, \exists \delta > 0, \forall x, 0 < |x - a| < \delta \implies \text{euclideanDist}(f(x), L) < \epsilon \]
+
+    \item \textbf{\texttt{LimitR2toR}}
+\begin{lstlisting}[language=Caml]
+def LimitR2toR (f : $\mathbb{R} \times \mathbb{R} \to \mathbb{R}$) (a : $\mathbb{R} \times \mathbb{R}$) (L : $\mathbb{R}$) : Prop := 
+  $\forall\ \varepsilon > 0,\ \exists\ \delta > 0,\ \forall$ x : $\mathbb{R} \times \mathbb{R}$, 0 < euclideanDist x a $\wedge$ euclideanDist x a < $\delta \to$ |f x - L| < $\varepsilon$
+\end{lstlisting}
+    \[ \lim_{x \to a} f(x) = L \iff \forall \epsilon > 0, \exists \delta > 0, \forall x \in \mathbb{R}^2, 0 < \text{euclideanDist}(x, a) < \delta \implies |f(x) - L| < \epsilon \]
+
+    \item \textbf{\texttt{LimitR2toR2}}
+\begin{lstlisting}[language=Caml]
+def LimitR2toR2 (f : $\mathbb{R} \times \mathbb{R} \to \mathbb{R} \times \mathbb{R}$) (a : $\mathbb{R} \times \mathbb{R}$) (L : $\mathbb{R} \times \mathbb{R}$) : Prop := 
+  $\forall\ \varepsilon > 0,\ \exists\ \delta > 0,\ \forall$ x : $\mathbb{R} \times \mathbb{R}$, 0 < euclideanDist x a $\wedge$ euclideanDist x a < $\delta \to$ euclideanDist (f x) L < $\varepsilon$
+\end{lstlisting}
+    \[ \lim_{x \to a} f(x) = L \iff \forall \epsilon > 0, \exists \delta > 0, \forall x \in \mathbb{R}^2, 0 < \text{euclideanDist}(x, a) < \delta \implies \text{euclideanDist}(f(x), L) < \epsilon \]
+
+    \item \textbf{\texttt{ConvergesR2}}
+\begin{lstlisting}[language=Caml]
+def ConvergesR2 (seq : $\mathbb{N} \to \mathbb{R} \times \mathbb{R}$) (L : $\mathbb{R} \times \mathbb{R}$): Prop := 
+  $\forall\ \varepsilon > 0,\ \exists$ N : $\mathbb{N},\ \forall$ n $\ge$ N, euclideanDist (seq n) L < $\varepsilon$
+\end{lstlisting}
+    \[ \lim_{n \to \infty} \text{seq}(n) = L \iff \forall \epsilon > 0, \exists N \in \mathbb{N}, \forall n \ge N, \text{euclideanDist}(\text{seq}(n), L) < \epsilon \]
+
+    \item \textbf{\texttt{HasFDerivAt\_R2\_eps}}
+\begin{lstlisting}[language=Caml]
+def HasFDerivAt_R2_eps (u v : $\mathbb{R} \times \mathbb{R} \to \mathbb{R}$) (ux0 uy0 vx0 vy0 : $\mathbb{R}$) (a : $\mathbb{R} \times \mathbb{R}$) : Prop :=
+  LimitR2toR2 (fun h => (
+    (u (a.1 + h.1, a.2 + h.2) - u a) - (ux0 * h.1 + uy0 * h.2), 
+    (v (a.1 + h.1, a.2 + h.2) - v a) - (vx0 * h.1 + vy0 * h.2)
+  )) (0, 0) (0, 0)
+\end{lstlisting}
+    \[ \lim_{h \to 0} \left( F(a+h) - F(a) - \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} h \right) = 0 \]
+
+    \item \textbf{\texttt{DifferentiableAt\_R2\_eps}}
+\begin{lstlisting}[language=Caml]
+def DifferentiableAt_R2_eps (u v : $\mathbb{R} \times \mathbb{R} \to \mathbb{R}$) (a : $\mathbb{R} \times \mathbb{R}$) : Prop := 
+  $\exists$ ux0 uy0 vx0 vy0 : $\mathbb{R}$, HasFDerivAt_R2_eps u v ux0 uy0 vx0 vy0 a
+\end{lstlisting}
+    \[ \exists u_{x0}, u_{y0}, v_{x0}, v_{y0} \in \mathbb{R}, \text{HasFDerivAt\_R2\_eps}(u, v, u_{x0}, u_{y0}, v_{x0}, v_{y0}, a) \]
+
+    \item \textbf{\texttt{HasDerivAt\_RtoR2\_eps}}
+\begin{lstlisting}[language=Caml]
+def HasDerivAt_RtoR2_eps (f : $\mathbb{R} \to \mathbb{R} \times \mathbb{R}$) (f'0 : $\mathbb{R} \times \mathbb{R}$) (t$_0$ : $\mathbb{R}$) : Prop :=
+  LimitRtoR2 (fun t => (
+    (f t).1 - (f t$_0$).1 - (t - t$_0$) * f'0.1, 
+    (f t).2 - (f t$_0$).2 - (t - t$_0$) * f'0.2
+  )) t$_0$ (0, 0)
+\end{lstlisting}
+    \[ \lim_{t \to t_0} (f(t) - f(t_0) - (t - t_0)f'_0) = 0 \]
 \end{itemize}
 
 \section{\texttt{ComplexAnalysis/Sarason/Definitions.lean}}
 
-This file bridges the $\mathbb{R}^2$ real-differentiability into $\mathbb{C}$-differentiability using epsilon-delta constructions.
-
 \begin{itemize}
-    \item \textbf{\texttt{HasLimitAt\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $L \in \mathbb{C}$, $z_0 \in \mathbb{C}$):
-    \[ \forall \epsilon > 0, \exists \delta > 0, \forall z, 0 < |z - z_0| < \delta \implies |f(z) - L| < \epsilon \]
-    
-    \item \textbf{\texttt{HasLimitAtInf\_eps}} ($f : \mathbb{C} \to \mathbb{R}$, $L \in \mathbb{R}$):
-    \[ \forall \epsilon > 0, \exists R > 0, \forall z, |z| > R \implies |f(z) - L| < \epsilon \]
-    
-    \item \textbf{\texttt{HasDerivAt\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $f' \in \mathbb{C}$, $z_0 \in \mathbb{C}$): Complex differentiability at a point.
+    \item \textbf{\texttt{HasLimitAt\_eps}}
+\begin{lstlisting}[language=Caml]
+def HasLimitAt_eps (f : $\mathbb{C} \to \mathbb{C}$) (L : $\mathbb{C}$) (z$_0$ : $\mathbb{C}$) : Prop := 
+  $\forall\ \varepsilon > 0,\ \exists\ \delta > 0,\ \forall$ z : $\mathbb{C}$, 0 < Complex.abs (z - z$_0$) $\wedge$ Complex.abs (z - z$_0$) < $\delta \to$ Complex.abs (f z - L) < $\varepsilon$
+\end{lstlisting}
+    \[ \lim_{z \to z_0} f(z) = L \]
+
+    \item \textbf{\texttt{HasLimitAtInf\_eps}}
+\begin{lstlisting}[language=Caml]
+def HasLimitAtInf_eps (f : $\mathbb{C} \to \mathbb{R}$) (L : $\mathbb{R}$) : Prop := 
+  $\forall\ \varepsilon > 0,\ \exists$ R > 0, $\forall$ z : $\mathbb{C}$, Complex.abs z > R $\to$ |f z - L| < $\varepsilon$
+\end{lstlisting}
+    \[ \lim_{|z| \to \infty} f(z) = L \]
+
+    \item \textbf{\texttt{HasDerivAt\_eps}}
+\begin{lstlisting}[language=Caml]
+def HasDerivAt_eps (f : $\mathbb{C} \to \mathbb{C}$) (f' : $\mathbb{C}$) (z$_0$ : $\mathbb{C}$) : Prop := 
+  HasLimitAt_eps (fun z => (f z - f z$_0$) / (z - z$_0$)) f' z$_0$
+\end{lstlisting}
     \[ \lim_{z \to z_0} \frac{f(z) - f(z_0)}{z - z_0} = f' \]
-    
-    \item \textbf{\texttt{DifferentiableAt\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $z_0 \in \mathbb{C}$):
-    \[ \exists f' \in \mathbb{C}, \texttt{HasDerivAt\_eps}(f, f', z_0) \]
-    
-    \item \textbf{\texttt{HasPartialDerivX\_C\_to\_R\_eps}} / \textbf{\texttt{HasPartialDerivY\_C\_to\_R\_eps}}: Partial derivatives of a real-valued function of a complex variable (identifying $\mathbb{C} \cong \mathbb{R}^2$).
-    
-    \item \textbf{\texttt{deriv\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $z_0 \in \mathbb{C}$, $h : \texttt{DifferentiableAt\_eps}\ f\ z_0$): The classical derivative value $f'(z_0)$ extracted via choice.
-    
-    \item \textbf{\texttt{HasDerivAt\_R\_to\_C\_eps}} ($f : \mathbb{R} \to \mathbb{C}$, $f'_0 \in \mathbb{C}$, $t_0 \in \mathbb{R}$): Derivative of a complex-valued path parameterized by a real variable.
-    
-    \item \textbf{\texttt{HolomorphicAt\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $z_0 \in \mathbb{C}$): $f$ is complex-differentiable in some open neighborhood around $z_0$.
-    
-    \item \textbf{\texttt{HolomorphicOn\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $G \subset \mathbb{C}$): $f$ is holomorphic at every point in the open set $G$.
+
+    \item \textbf{\texttt{DifferentiableAt\_eps}}
+\begin{lstlisting}[language=Caml]
+def DifferentiableAt_eps (f : $\mathbb{C} \to \mathbb{C}$) (z$_0$ : $\mathbb{C}$) : Prop := 
+  $\exists$ f', HasDerivAt_eps f f' z$_0$
+\end{lstlisting}
+    \[ f \text{ is differentiable at } z_0 \]
+
+    \item \textbf{\texttt{HasPartialDerivX\_C\_to\_R\_eps}}
+\begin{lstlisting}[language=Caml]
+def HasPartialDerivX_C_to_R_eps (u : $\mathbb{C} \to \mathbb{R}$) (ux : $\mathbb{R}$) (z$_0$ : $\mathbb{C}$) : Prop := 
+  $\forall\ \varepsilon > 0,\ \exists\ \delta > 0,\ \forall$ x : $\mathbb{R}$, 0 < |x - z$_0$.re| $\wedge$ |x - z$_0$.re| < $\delta \to$ 
+    |(u ((x : $\mathbb{C}$) + (z$_0$.im : $\mathbb{C}$) * I) - u z$_0$) / (x - z$_0$.re) - ux| < $\varepsilon$
+\end{lstlisting}
+    \[ \frac{\partial u}{\partial x}(z_0) = u_x \]
+
+    \item \textbf{\texttt{HasPartialDerivY\_C\_to\_R\_eps}}
+\begin{lstlisting}[language=Caml]
+def HasPartialDerivY_C_to_R_eps (u : $\mathbb{C} \to \mathbb{R}$) (uy : $\mathbb{R}$) (z$_0$ : $\mathbb{C}$) : Prop := 
+  $\forall\ \varepsilon > 0,\ \exists\ \delta > 0,\ \forall$ y : $\mathbb{R}$, 0 < |y - z$_0$.im| $\wedge$ |y - z$_0$.im| < $\delta \to$ 
+    |(u ((z$_0$.re : $\mathbb{C}$) + (y : $\mathbb{C}$) * I) - u z$_0$) / (y - z$_0$.im) - uy| < $\varepsilon$
+\end{lstlisting}
+    \[ \frac{\partial u}{\partial y}(z_0) = u_y \]
+
+    \item \textbf{\texttt{deriv\_eps}}
+\begin{lstlisting}[language=Caml]
+noncomputable def deriv_eps (f : $\mathbb{C} \to \mathbb{C}$) (z$_0$ : $\mathbb{C}$) (h : DifferentiableAt_eps f z$_0$) : $\mathbb{C}$ := 
+  Classical.choose h
+\end{lstlisting}
+    \[ \text{deriv\_eps}(f, z_0) = f'(z_0) \]
+
+    \item \textbf{\texttt{HasDerivAt\_R\_to\_C\_eps}}
+\begin{lstlisting}[language=Caml]
+def HasDerivAt_R_to_C_eps (f : $\mathbb{R} \to \mathbb{C}$) (f'0 : $\mathbb{C}$) (t$_0$ : $\mathbb{R}$) : Prop := 
+  $\forall\ \varepsilon > 0,\ \exists\ \delta > 0,\ \forall$ t : $\mathbb{R}$, 0 < |t - t$_0$| $\wedge$ |t - t$_0$| < $\delta \to$ 
+    Complex.abs ((f t - f t$_0$) / (t - t$_0$) - f'0) < $\varepsilon$
+\end{lstlisting}
+    \[ \lim_{t \to t_0} \frac{f(t) - f(t_0)}{t - t_0} = f'_0 \]
+
+    \item \textbf{\texttt{HolomorphicAt\_eps}}
+\begin{lstlisting}[language=Caml]
+def HolomorphicAt_eps (f : $\mathbb{C} \to \mathbb{C}$) (z$_0$ : $\mathbb{C}$) : Prop := 
+  $\exists$ r > 0, $\forall$ z, Complex.abs (z - z$_0$) < r $\to$ DifferentiableAt_eps f z
+\end{lstlisting}
+    \[ f \text{ is holomorphic at } z_0 \iff f \text{ is complex-differentiable on some open ball around } z_0 \]
+
+    \item \textbf{\texttt{HolomorphicOn\_eps}}
+\begin{lstlisting}[language=Caml]
+def HolomorphicOn_eps (f : $\mathbb{C} \to \mathbb{C}$) (G : Set $\mathbb{C}$) : Prop := 
+  $\forall$ z $\in$ G, HolomorphicAt_eps f z
+\end{lstlisting}
+    \[ f \text{ is holomorphic on } G \]
 \end{itemize}
 
 \section{\texttt{ComplexAnalysis/Sarason/Chapter1.lean}}
 
-These cover the basic topology of the extended complex plane and stereographic projections.
-
 \begin{itemize}
-    \item \textbf{\texttt{chordalMetric}} ($z, w \in \mathbb{C} \to \mathbb{R}$): The chordal distance between two points in the complex plane mapped to the Riemann sphere.
+    \item \textbf{\texttt{chordalMetric}}
+\begin{lstlisting}[language=Caml]
+noncomputable def chordalMetric (z w : $\mathbb{C}$) : $\mathbb{R}$ := 
+  (2 * Complex.abs (z - w)) / (Real.sqrt (1 + Complex.normSq z) * Real.sqrt (1 + Complex.normSq w))
+\end{lstlisting}
     \[ \chi(z, w) = \frac{2|z - w|}{\sqrt{1 + |z|^2} \sqrt{1 + |w|^2}} \]
-    
-    \item \textbf{\texttt{chordalMetricToInf}} ($z \in \mathbb{C} \to \mathbb{R}$): The chordal distance from a point $z$ to the point at infinity $\infty$.
+
+    \item \textbf{\texttt{chordalMetricToInf}}
+\begin{lstlisting}[language=Caml]
+noncomputable def chordalMetricToInf (z : $\mathbb{C}$) : $\mathbb{R}$ := 
+  2 / Real.sqrt (1 + Complex.normSq z)
+\end{lstlisting}
     \[ \chi(z, \infty) = \frac{2}{\sqrt{1 + |z|^2}} \]
-    
-    \item \textbf{\texttt{$\Phi$}} ($z \in \mathbb{C} \to \mathbb{R}^3$): The stereographic projection mapping $z$ to a point on the unit sphere $S^2 \subset \mathbb{R}^3$.
-    
-    \item \textbf{\texttt{ChordalC}}: Type alias for $\mathbb{C}$ equipped with the chordal metric.
+
+    \item \textbf{\texttt{$\Phi$ (Stereographic Projection)}}
+\begin{lstlisting}[language=Caml]
+noncomputable def $\Phi$ (z : $\mathbb{C}$) : EuclideanSpace $\mathbb{R}$ (Fin 3) := 
+  ![ (2 * z.re) / (1 + Complex.normSq z), 
+     (2 * z.im) / (1 + Complex.normSq z), 
+     (Complex.normSq z - 1) / (1 + Complex.normSq z) ]
+\end{lstlisting}
+    \[ \Phi(z) = \left( \frac{2 \operatorname{Re}(z)}{1 + |z|^2}, \frac{2 \operatorname{Im}(z)}{1 + |z|^2}, \frac{|z|^2 - 1}{1 + |z|^2} \right) \in S^2 \]
+
+    \item \textbf{\texttt{ChordalC}}
+\begin{lstlisting}[language=Caml]
+def Chordal$\mathbb{C}$ : Type := $\mathbb{C}$
+\end{lstlisting}
+    \[ \text{ChordalC} = \mathbb{C} \text{ (equipped with chordal metric)} \]
 \end{itemize}
 
 \section{\texttt{ComplexAnalysis/Sarason/Chapter2.lean}}
 
-These house the core objects for calculus, complex derivatives (Wirtinger derivatives), paths, and conformality.
-
 \begin{itemize}
-    \item \textbf{\texttt{del}} / \textbf{\texttt{delBar}} ($f : \mathbb{C} \to \mathbb{C}$, $z \in \mathbb{C}$): Wirtinger derivatives.
-    \[ \partial f = \frac{1}{2} \left( \frac{\partial f}{\partial x} - i \frac{\partial f}{\partial y} \right), \quad \bar{\partial} f = \frac{1}{2} \left( \frac{\partial f}{\partial x} + i \frac{\partial f}{\partial y} \right) \]
-    
-    \item \textbf{\texttt{del\_eps}} / \textbf{\texttt{delBar\_eps}} ($u_{x0}, u_{y0}, v_{x0}, v_{y0} \in \mathbb{R}$): Wirtinger derivatives expressed purely in terms of the real partial derivatives of $f = u + iv$.
-    \[ \partial f = \frac{1}{2} (u_{x0} + v_{y0}) + \frac{i}{2} (v_{x0} - u_{y0}), \quad \bar{\partial} f = \frac{1}{2} (u_{x0} - v_{y0}) + \frac{i}{2} (v_{x0} + u_{y0}) \]
-    
-    \item \textbf{\texttt{path\_in\_C}} ($x, y \in \mathbb{C}$): A continuous path $\gamma : [0, 1] \to \mathbb{C}$ starting at $x$ and ending at $y$.
-    
-    \item \textbf{\texttt{translated\_path}} ($c, x, y \in \mathbb{C}$, $\gamma : \text{path\_in\_C}\ x\ y$): A path shifted by the constant $c$, creating a path from $c+x$ to $c+y$.
-    
-    \item \textbf{\texttt{pathDeriv}} ($\gamma : \text{path\_in\_C}\ x\ y$, $t \in \mathbb{R}$): The tangent vector $\gamma'(t) \in \mathbb{C}$, extracted via choice from \texttt{HasDerivAt\_R\_to\_C\_eps} extended to $\mathbb{R}$.
-    
-    \item \textbf{\texttt{pathDirection}} ($\gamma : \text{path\_in\_C}\ x\ y$, $t \in \mathbb{R}$): The argument (angle) of the tangent vector, $\arg(\gamma'(t))$.
-    
-    \item \textbf{\texttt{pathAngle}} ($\gamma_1, t_1, \gamma_2, t_2$): The angle between two intersecting paths.
-    \[ \text{pathAngle}(\gamma_1, t_1, \gamma_2, t_2) = \text{pathDirection}(\gamma_2, t_2) - \text{pathDirection}(\gamma_1, t_1) \]
-    
-    \item \textbf{\texttt{conformal}} ($f : \mathbb{C} \to \mathbb{C}$, $z_0 \in \mathbb{C}$): $f$ preserves angles between any two paths intersecting at $z_0$ with non-zero derivatives.
-    
-    \item \textbf{\texttt{centered\_line\_path}} ($z, v \in \mathbb{C}$): A straight-line path from $z - v$ to $z + v$ evaluating to $z$ at $t = 1/2$.
+    \item \textbf{\texttt{del} ($\partial$)}
+\begin{lstlisting}[language=Caml]
+def del (f : $\mathbb{C} \to \mathbb{C}$) (z : $\mathbb{C}$) : $\mathbb{C}$ := 
+  (1/2 : $\mathbb{C}$) * (deriv (fun x : $\mathbb{R} \Rightarrow$ f (z + x)) 0 - I * deriv (fun y : $\mathbb{R} \Rightarrow$ f (z + y * I)) 0)
+\end{lstlisting}
+    \[ \partial f = \frac{1}{2} \left( \frac{\partial f}{\partial x} - i \frac{\partial f}{\partial y} \right) \]
+
+    \item \textbf{\texttt{delBar} ($\bar{\partial}$)}
+\begin{lstlisting}[language=Caml]
+def delBar (f : $\mathbb{C} \to \mathbb{C}$) (z : $\mathbb{C}$) : $\mathbb{C}$ := 
+  (1/2 : $\mathbb{C}$) * (deriv (fun x : $\mathbb{R} \Rightarrow$ f (z + x)) 0 + I * deriv (fun y : $\mathbb{R} \Rightarrow$ f (z + y * I)) 0)
+\end{lstlisting}
+    \[ \bar{\partial} f = \frac{1}{2} \left( \frac{\partial f}{\partial x} + i \frac{\partial f}{\partial y} \right) \]
+
+    \item \textbf{\texttt{del\_eps}}
+\begin{lstlisting}[language=Caml]
+noncomputable def del_eps (ux0 uy0 vx0 vy0 : $\mathbb{R}$) : $\mathbb{C}$ := 
+  ((ux0 + vy0) / 2 : $\mathbb{R}$) + I * ((vx0 - uy0) / 2 : $\mathbb{R}$)
+\end{lstlisting}
+    \[ \partial f = \frac{1}{2} (u_{x0} + v_{y0}) + \frac{i}{2} (v_{x0} - u_{y0}) \]
+
+    \item \textbf{\texttt{delBar\_eps}}
+\begin{lstlisting}[language=Caml]
+noncomputable def delBar_eps (ux0 uy0 vx0 vy0 : $\mathbb{R}$) : $\mathbb{C}$ := 
+  ((ux0 - vy0) / 2 : $\mathbb{R}$) + I * ((vx0 + uy0) / 2 : $\mathbb{R}$)
+\end{lstlisting}
+    \[ \bar{\partial} f = \frac{1}{2} (u_{x0} - v_{y0}) + \frac{i}{2} (v_{x0} + u_{y0}) \]
+
+    \item \textbf{\texttt{path\_in\_C}}
+\begin{lstlisting}[language=Caml]
+def path_in_C (x y : $\mathbb{C}$) : Type := Path x y
+\end{lstlisting}
+    \[ \gamma : [0, 1] \to \mathbb{C} \text{ where } \gamma(0)=x, \gamma(1)=y \]
+
+    \item \textbf{\texttt{translated\_path}}
+\begin{lstlisting}[language=Caml]
+noncomputable def translated_path (c x y : $\mathbb{C}$) ($\gamma$ : path_in_C x y) : path_in_C (c + x) (c + y) where
+  toFun := fun t => c + $\gamma$ t
+\end{lstlisting}
+    \[ \gamma_{c}(t) = c + \gamma(t) \]
+
+    \item \textbf{\texttt{pathDeriv}}
+\begin{lstlisting}[language=Caml]
+noncomputable def pathDeriv {x y : $\mathbb{C}$} ($\gamma$ : path_in_C x y) (t : $\mathbb{R}$) : $\mathbb{C}$ := 
+  deriv $\gamma$.extend t
+\end{lstlisting}
+    \[ \gamma'(t) = \frac{d\gamma}{dt} \]
+
+    \item \textbf{\texttt{pathDirection}}
+\begin{lstlisting}[language=Caml]
+noncomputable def pathDirection {x y : $\mathbb{C}$} ($\gamma$ : path_in_C x y) (t : $\mathbb{R}$) : $\mathbb{R}$ := 
+  Complex.arg (pathDeriv $\gamma$ t)
+\end{lstlisting}
+    \[ \text{Direction}(\gamma, t) = \arg(\gamma'(t)) \]
+
+    \item \textbf{\texttt{pathAngle}}
+\begin{lstlisting}[language=Caml]
+noncomputable def pathAngle {x$_1$ y$_1$ x$_2$ y$_2$ : $\mathbb{C}$} ($\gamma_1$ : path_in_C x$_1$ y$_1$) (t$_1$ : $\mathbb{R}$) 
+  ($\gamma_2$ : path_in_C x$_2$ y$_2$) (t$_2$ : $\mathbb{R}$) : $\mathbb{R}$ := 
+  pathDirection $\gamma_2$ t$_2$ - pathDirection $\gamma_1$ t$_1$
+\end{lstlisting}
+    \[ \text{Angle}(\gamma_1, t_1, \gamma_2, t_2) = \arg(\gamma_2'(t_2)) - \arg(\gamma_1'(t_1)) \]
+
+    \item \textbf{\texttt{conformal}}
+\begin{lstlisting}[language=Caml]
+def conformal (f : $\mathbb{C} \to \mathbb{C}$) (z$_0$ : $\mathbb{C}$) : Prop := 
+  $\forall$ x$_1$ y$_1$ x$_2$ y$_2$ : $\mathbb{C},\ \forall\ \gamma_1$ : path_in_C x$_1$ y$_1,\ \forall$ t$_1$ : $\mathbb{R}$, 
+  $\forall\ \gamma_2$ : path_in_C x$_2$ y$_2,\ \forall$ t$_2$ : $\mathbb{R}$,
+  $\gamma_1$.extend t$_1$ = z$_0 \to \gamma_2$.extend t$_2$ = z$_0 \to$ 
+  DifferentiableAt $\mathbb{R}\ \gamma_1$.extend t$_1 \to$ DifferentiableAt $\mathbb{R}\ \gamma_2$.extend t$_2 \to$ 
+  pathDeriv $\gamma_1$ t$_1 \neq$ 0 $\to$ pathDeriv $\gamma_2$ t$_2 \neq$ 0 $\to$ 
+  DifferentiableAt $\mathbb{R}$ (f $\circ\ \gamma_1$.extend) t$_1 \to$ DifferentiableAt $\mathbb{R}$ (f $\circ\ \gamma_2$.extend) t$_2 \to$ 
+  pathDeriv (f_circ_gamma $\gamma_1$ f) t$_1 \neq$ 0 $\wedge$ 
+  pathDeriv (f_circ_gamma $\gamma_2$ f) t$_2 \neq$ 0 $\wedge$ 
+  pathAngle (f_circ_gamma $\gamma_1$ f) t$_1$ (f_circ_gamma $\gamma_2$ f) t$_2$ = pathAngle $\gamma_1$ t$_1\ \gamma_2$ t$_2$
+\end{lstlisting}
+    \[ \text{Conformal } f \text{ at } z_0 \iff f \text{ preserves angles between all regular intersecting curves at } z_0 \]
+
+    \item \textbf{\texttt{centered\_line\_path}}
+\begin{lstlisting}[language=Caml]
+noncomputable def centered_line_path (z v : $\mathbb{C}$) : path_in_C (z - v) (z + v) where
+  toFun := fun t => z + (2 * (t : $\mathbb{R}$) - 1) * v
+\end{lstlisting}
     \[ \gamma(t) = z + (2t - 1)v \]
 \end{itemize}
 
 \section{\texttt{ComplexAnalysis/Sarason/Chapter3.lean}}
 
-Matrix representations of Möbius transformations acting on the Riemann sphere.
-
 \begin{itemize}
-    \item \textbf{\texttt{translationMatrix}} ($b \in \mathbb{C}$): 
+    \item \textbf{\texttt{translationMatrix}}
+\begin{lstlisting}[language=Caml]
+noncomputable def translationMatrix (b : $\mathbb{C}$) : GL (Fin 2) $\mathbb{C}$ := 
+  Units.mk0 !![1, b; 0, 1] ...
+\end{lstlisting}
     \[ \begin{pmatrix} 1 & b \\ 0 & 1 \end{pmatrix} \]
-    
-    \item \textbf{\texttt{scalingMatrix}} ($a \in \mathbb{C}, a \neq 0$): 
+
+    \item \textbf{\texttt{scalingMatrix}}
+\begin{lstlisting}[language=Caml]
+noncomputable def scalingMatrix (a : $\mathbb{C}$) (ha : a $\neq$ 0) : GL (Fin 2) $\mathbb{C}$ := 
+  Units.mk0 !![a, 0; 0, 1] ...
+\end{lstlisting}
     \[ \begin{pmatrix} a & 0 \\ 0 & 1 \end{pmatrix} \]
-    
-    \item \textbf{\texttt{inversionMatrix}}: 
+
+    \item \textbf{\texttt{inversionMatrix}}
+\begin{lstlisting}[language=Caml]
+noncomputable def inversionMatrix : GL (Fin 2) $\mathbb{C}$ := 
+  Units.mk0 !![0, 1; 1, 0] ...
+\end{lstlisting}
     \[ \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix} \]
 \end{itemize}
 
