@@ -30,6 +30,7 @@
 \author{Lean Formalization Project}
 \date{\today}
 
+\lstset{literate={₀}{{$_0$}}1}
 \begin{document}
 \maketitle
 
@@ -92,10 +93,10 @@ def ConvergesR2 (seq : $\mathbb{N} \to \mathbb{R} \times \mathbb{R}$) (L : $\mat
 
     \item \textbf{\texttt{HasFDerivAt\_R2\_eps}} ($u, v : \mathbb{R}^2 \to \mathbb{R}$, $u_{x0}, u_{y0}, v_{x0}, v_{y0} \in \mathbb{R}$, $a \in \mathbb{R}^2$): Defines the Fréchet derivative of $F(x,y) = (u(x,y), v(x,y))$ at $a$. Let $L(h) = \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} h$.
 \begin{lstlisting}[language=Caml]
-def HasFDerivAt_R2_eps (u v : $\mathbb{R} \times \mathbb{R} \to \mathbb{R}$) (ux0 uy0 vx0 vy0 : $\mathbb{R}$) (a : $\mathbb{R} \times \mathbb{R}$) : Prop :=
+def HasFDerivAt_R2_eps (u v : $\mathbb{R} \times \mathbb{R} \to \mathbb{R}$) (ux₀ uy₀ vx₀ vy₀ : $\mathbb{R}$) (a : $\mathbb{R} \times \mathbb{R}$) : Prop :=
   LimitR2toR2 (fun h => (
-    (u (a.1 + h.1, a.2 + h.2) - u a) - (ux0 * h.1 + uy0 * h.2), 
-    (v (a.1 + h.1, a.2 + h.2) - v a) - (vx0 * h.1 + vy0 * h.2)
+    (u (a.1 + h.1, a.2 + h.2) - u a) - (ux₀ * h.1 + uy₀ * h.2), 
+    (v (a.1 + h.1, a.2 + h.2) - v a) - (vx₀ * h.1 + vy₀ * h.2)
   )) (0, 0) (0, 0)
 \end{lstlisting}
     \[ \lim_{h \to 0} \left( F(a+h) - F(a) - \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} h \right) = 0 \]
@@ -105,16 +106,16 @@ def HasFDerivAt_R2_eps (u v : $\mathbb{R} \times \mathbb{R} \to \mathbb{R}$) (ux
     \item \textbf{\texttt{DifferentiableAt\_R2\_eps}} ($u, v : \mathbb{R}^2 \to \mathbb{R}$, $a \in \mathbb{R}^2$):
 \begin{lstlisting}[language=Caml]
 def DifferentiableAt_R2_eps (u v : $\mathbb{R} \times \mathbb{R} \to \mathbb{R}$) (a : $\mathbb{R} \times \mathbb{R}$) : Prop := 
-  $\exists$ ux0 uy0 vx0 vy0 : $\mathbb{R}$, HasFDerivAt_R2_eps u v ux0 uy0 vx0 vy0 a
+  $\exists$ ux₀ uy₀ vx₀ vy₀ : $\mathbb{R}$, HasFDerivAt_R2_eps u v ux₀ uy₀ vx₀ vy₀ a
 \end{lstlisting}
     \[ \exists u_{x0}, u_{y0}, v_{x0}, v_{y0} \in \mathbb{R}, \text{HasFDerivAt\_R2\_eps}(u, v, u_{x0}, u_{y0}, v_{x0}, v_{y0}, a) \]
 
     \item \textbf{\texttt{HasDerivAt\_RtoR2\_eps}} ($f : \mathbb{R} \to \mathbb{R}^2$, $f'_0 \in \mathbb{R}^2$, $t_0 \in \mathbb{R}$): Defines the derivative of a parametric curve in $\mathbb{R}^2$.
 \begin{lstlisting}[language=Caml]
-def HasDerivAt_RtoR2_eps (f : $\mathbb{R} \to \mathbb{R} \times \mathbb{R}$) (f'0 : $\mathbb{R} \times \mathbb{R}$) (t$_0$ : $\mathbb{R}$) : Prop :=
+def HasDerivAt_RtoR2_eps (f : $\mathbb{R} \to \mathbb{R} \times \mathbb{R}$) (f'₀ : $\mathbb{R} \times \mathbb{R}$) (t$_0$ : $\mathbb{R}$) : Prop :=
   LimitRtoR2 (fun t => (
-    (f t).1 - (f t$_0$).1 - (t - t$_0$) * f'0.1, 
-    (f t).2 - (f t$_0$).2 - (t - t$_0$) * f'0.2
+    (f t).1 - (f t$_0$).1 - (t - t$_0$) * f'₀.1, 
+    (f t).2 - (f t$_0$).2 - (t - t$_0$) * f'₀.2
   )) t$_0$ (0, 0)
 \end{lstlisting}
     \[ \lim_{t \to t_0} (f(t) - f(t_0) - (t - t_0)f'_0) = 0 \]
@@ -139,15 +140,15 @@ def HasLimitAtInf_eps (f : $\mathbb{C} \to \mathbb{R}$) (L : $\mathbb{R}$) : Pro
 
     \item \textbf{\texttt{HasDerivAt\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $f'_0 \in \mathbb{C}$, $z_0 \in \mathbb{C}$): Complex differentiability at a point.
 \begin{lstlisting}[language=Caml]
-def HasDerivAt_eps (f : $\mathbb{C} \to \mathbb{C}$) (f'_0 : $\mathbb{C}$) (z$_0$ : $\mathbb{C}$) : Prop := 
-  HasLimitAt_eps (fun z => (f z - f z$_0$) / (z - z$_0$)) f'_0 z$_0$
+def HasDerivAt_eps (f : $\mathbb{C} \to \mathbb{C}$) (f'₀ : $\mathbb{C}$) (z$_0$ : $\mathbb{C}$) : Prop := 
+  HasLimitAt_eps (fun z => (f z - f z$_0$) / (z - z$_0$)) f'₀ z$_0$
 \end{lstlisting}
     \[ \lim_{z \to z_0} \frac{f(z) - f(z_0)}{z - z_0} = f'_0 \]
 
     \item \textbf{\texttt{DifferentiableAt\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $z_0 \in \mathbb{C}$):
 \begin{lstlisting}[language=Caml]
 def DifferentiableAt_eps (f : $\mathbb{C} \to \mathbb{C}$) (z$_0$ : $\mathbb{C}$) : Prop := 
-  $\exists$ f'_0, HasDerivAt_eps f f'_0 z$_0$
+  $\exists$ f'₀, HasDerivAt_eps f f'₀ z$_0$
 \end{lstlisting}
     \[ f \text{ is differentiable at } z_0 \]
 
@@ -176,9 +177,9 @@ noncomputable def deriv_eps (f : $\mathbb{C} \to \mathbb{C}$) (z$_0$ : $\mathbb{
 
     \item \textbf{\texttt{HasDerivAt\_R\_to\_C\_eps}} ($f : \mathbb{R} \to \mathbb{C}$, $f'_0 \in \mathbb{C}$, $t_0 \in \mathbb{R}$): Derivative of a complex-valued path parameterized by a real variable.
 \begin{lstlisting}[language=Caml]
-def HasDerivAt_R_to_C_eps (f : $\mathbb{R} \to \mathbb{C}$) (f'0 : $\mathbb{C}$) (t$_0$ : $\mathbb{R}$) : Prop := 
+def HasDerivAt_R_to_C_eps (f : $\mathbb{R} \to \mathbb{C}$) (f'₀ : $\mathbb{C}$) (t$_0$ : $\mathbb{R}$) : Prop := 
   $\forall\ \varepsilon > 0,\ \exists\ \delta > 0,\ \forall$ t : $\mathbb{R}$, 0 < |t - t$_0$| $\wedge$ |t - t$_0$| < $\delta \to$ 
-    Complex.abs ((f t - f t$_0$) / (t - t$_0$) - f'0) < $\varepsilon$
+    Complex.abs ((f t - f t$_0$) / (t - t$_0$) - f'₀) < $\varepsilon$
 \end{lstlisting}
     \[ \lim_{t \to t_0} \frac{f(t) - f(t_0)}{t - t_0} = f'_0 \]
 
@@ -249,15 +250,15 @@ def delBar (f : $\mathbb{C} \to \mathbb{C}$) (z : $\mathbb{C}$) : $\mathbb{C}$ :
 
     \item \textbf{\texttt{del\_eps}} / \textbf{\texttt{delBar\_eps}} ($u_{x0}, u_{y0}, v_{x0}, v_{y0} \in \mathbb{R}$): Wirtinger derivatives expressed purely in terms of the real partial derivatives of $f = u + iv$.
 \begin{lstlisting}[language=Caml]
-noncomputable def del_eps (ux0 uy0 vx0 vy0 : $\mathbb{R}$) : $\mathbb{C}$ := 
-  ((ux0 + vy0) / 2 : $\mathbb{R}$) + I * ((vx0 - uy0) / 2 : $\mathbb{R}$)
+noncomputable def del_eps (ux₀ uy₀ vx₀ vy₀ : $\mathbb{R}$) : $\mathbb{C}$ := 
+  ((ux₀ + vy₀) / 2 : $\mathbb{R}$) + I * ((vx₀ - uy₀) / 2 : $\mathbb{R}$)
 \end{lstlisting}
     \[ \partial f = \frac{1}{2} (u_{x0} + v_{y0}) + \frac{i}{2} (v_{x0} - u_{y0}) \]
 
     \item \textbf{\texttt{delBar\_eps}}
 \begin{lstlisting}[language=Caml]
-noncomputable def delBar_eps (ux0 uy0 vx0 vy0 : $\mathbb{R}$) : $\mathbb{C}$ := 
-  ((ux0 - vy0) / 2 : $\mathbb{R}$) + I * ((vx0 + uy0) / 2 : $\mathbb{R}$)
+noncomputable def delBar_eps (ux₀ uy₀ vx₀ vy₀ : $\mathbb{R}$) : $\mathbb{C}$ := 
+  ((ux₀ - vy₀) / 2 : $\mathbb{R}$) + I * ((vx₀ + uy₀) / 2 : $\mathbb{R}$)
 \end{lstlisting}
     \[ \bar{\partial} f = \frac{1}{2} (u_{x0} - v_{y0}) + \frac{i}{2} (v_{x0} + u_{y0}) \]
 
