@@ -1,0 +1,208 @@
+:root {
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-primary: #ffffff;
+    --text-secondary: #cbd5e1;
+    --maker-color: #38bdf8;
+    --breaker-color: #fb7185;
+    --accent-color: #a78bfa;
+    --grid-line: #475569;
+    --grid-hover: #64748b;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+header {
+    width: 100%;
+    padding: 2rem 0;
+    text-align: center;
+    background: linear-gradient(to bottom, #1e293b, transparent);
+    margin-bottom: 2rem;
+}
+
+h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(to right, var(--maker-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.credits {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+main {
+    display: flex;
+    gap: 2rem;
+    padding: 0 2rem 4rem 2rem;
+    max-width: 1200px;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.sidebar {
+    flex: 1;
+    min-width: 300px;
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.game-container {
+    flex: 2;
+    min-width: 400px;
+    position: relative;
+    background-color: var(--card-bg);
+    padding: 1rem;
+    border-radius: 1rem;
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#grid {
+    cursor: pointer;
+}
+
+.cell {
+    stroke: var(--grid-line);
+    stroke-width: 1;
+    fill: transparent;
+    transition: fill 0.2s, stroke 0.2s;
+}
+
+.cell:hover {
+    fill: var(--grid-hover);
+}
+
+.maker-piece {
+    fill: var(--maker-color);
+    filter: drop-shadow(0 0 10px var(--maker-color));
+}
+
+.breaker-piece {
+    fill: var(--breaker-color);
+    filter: drop-shadow(0 0 10px var(--breaker-color));
+}
+
+.winning-highlight {
+    stroke: var(--accent-color);
+    stroke-width: 3;
+    fill: rgba(139, 92, 246, 0.2);
+}
+
+.paving-pair {
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 2;
+    fill: rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.control-group h3 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+select, button {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    border: 1px solid var(--grid-line);
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+select:hover, button:hover {
+    border-color: var(--accent-color);
+    background-color: rgba(139, 92, 246, 0.1);
+}
+
+button.primary {
+    background-color: var(--accent-color);
+    border: none;
+    font-weight: 600;
+}
+
+button.primary:hover {
+    background-color: #7c3aed;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.status-card {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+}
+
+.status-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.status-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 0.25rem;
+}
+
+.turn-maker { color: var(--maker-color); }
+.turn-breaker { color: var(--breaker-color); }
+
+.shape-preview {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(5, 20px);
+    grid-template-rows: repeat(5, 20px);
+    gap: 2px;
+    justify-content: center;
+}
+
+.preview-cell {
+    background-color: var(--grid-line);
+    border-radius: 2px;
+}
+
+.preview-cell.active {
+    background-color: var(--maker-color);
+}

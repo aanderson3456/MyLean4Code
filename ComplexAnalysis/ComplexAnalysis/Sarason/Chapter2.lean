@@ -1518,7 +1518,8 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
     HasPartialDerivY_C_to_R_eps (fun z => v (z.re, z.im)) vy z := by {
   
   have h_x_u : HasPartialDerivX_C_to_R_eps (fun z => u (z.re, z.im)) ux z := by {
-    unfold HasPartialDerivX_C_to_R_eps HasFDerivAt_R2_eps at *
+    unfold HasPartialDerivX_C_to_R_eps at *
+    simp only [HasFDerivAt_R2_eps_iff] at *
     intro ε hε
     rcases h (ε / 2) (half_pos hε) with ⟨δ, hδ_pos, hδ⟩
     use δ, hδ_pos
@@ -1595,7 +1596,8 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
   }
 
   have h_y_u : HasPartialDerivY_C_to_R_eps (fun z => u (z.re, z.im)) uy z := by {
-    unfold HasPartialDerivY_C_to_R_eps HasFDerivAt_R2_eps at *
+    unfold HasPartialDerivY_C_to_R_eps at *
+    simp only [HasFDerivAt_R2_eps_iff] at *
     intro ε hε
     rcases h (ε / 2) (half_pos hε) with ⟨δ, hδ_pos, hδ⟩
     use δ, hδ_pos
@@ -1672,7 +1674,8 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
   }
 
   have h_x_v : HasPartialDerivX_C_to_R_eps (fun z => v (z.re, z.im)) vx z := by {
-    unfold HasPartialDerivX_C_to_R_eps HasFDerivAt_R2_eps at *
+    unfold HasPartialDerivX_C_to_R_eps at *
+    simp only [HasFDerivAt_R2_eps_iff] at *
     intro ε hε
     rcases h (ε / 2) (half_pos hε) with ⟨δ, hδ_pos, hδ⟩
     use δ, hδ_pos
@@ -1751,7 +1754,8 @@ lemma partials_of_fderiv_R2 {u v : ℝ × ℝ → ℝ} {ux uy vx vy : ℝ} {z : 
   }
 
   have h_y_v : HasPartialDerivY_C_to_R_eps (fun z => v (z.re, z.im)) vy z := by {
-    unfold HasPartialDerivY_C_to_R_eps HasFDerivAt_R2_eps at *
+    unfold HasPartialDerivY_C_to_R_eps at *
+    simp only [HasFDerivAt_R2_eps_iff] at *
     intro ε hε
     rcases h (ε / 2) (half_pos hε) with ⟨δ, hδ_pos, hδ⟩
     use δ, hδ_pos
@@ -2020,11 +2024,10 @@ lemma line_path_zero_pathDeriv (v : ℂ) : pathDeriv (line_path_zero v) (1/2 : �
 lemma linear_hasFDerivAt_R2_eps (ux uy vx vy : ℝ) (a : ℝ × ℝ) :
     HasFDerivAt_R2_eps (fun p => ux * p.1 + uy * p.2) (fun p => vx * p.1 + vy * p.2)
       ux uy vx vy a := by {
-  unfold HasFDerivAt_R2_eps
+  rw [HasFDerivAt_R2_eps_iff]
   intro ε hε
   use 1, one_pos
   intro x hx
-  dsimp
   have h_eq : ((fun p => ux * p.1 + uy * p.2) x - (fun p => ux * p.1 + uy * p.2) a - (ux * (x.1 - a.1) + uy * (x.2 - a.2)),
                (fun p => vx * p.1 + vy * p.2) x - (fun p => vx * p.1 + vy * p.2) a - (vx * (x.1 - a.1) + vy * (x.2 - a.2))) = (0, 0) := by {
     ext

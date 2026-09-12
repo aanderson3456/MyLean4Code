@@ -1,0 +1,79 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\title{On the Optimality of Varshamov-Tenengolts Codes among Perfect Single-Deletion-Correcting Codes: A Formalization Report}
+\author{Austin Anderson \\ \small\href{https://github.com/aanderson3456/MyLean4Code}{GitHub Repository: aanderson3456/MyLean4Code}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This report surveys the single-deletion-correcting properties of binary Varshamov-Tenengolts (VT) codes, focusing on the unsolved conjecture regarding the global optimality of $VT_0(n)$ and the recent Lean 4 formalization efforts. We describe the formal proof that $VT_0(n)$ is optimal among all \emph{perfect} single-deletion-correcting codes, which successfully compiles in the interactive theorem prover Lean 4. While the core maximality of the zero-checksum class is fully verified using complex analysis and discrete Fourier transforms, the bridge showing that any perfect code has size matching a VT code is currently postulated as a conjecture.
+\end{abstract}
+
+\section{The VT(0) Optimal Theorem and Conjecture}
+For any block length $n \ge 1$ and residue class $a \in \{0, 1, \dots, n\}$, the binary Varshamov-Tenengolts code $VT_a(n)$ consists of all binary vectors $(x_1, \dots, x_n) \in \{0, 1\}^n$ satisfying the checksum condition:
+\begin{equation}
+\sum_{i=1}^n i x_i \equiv a \pmod{n+1}.
+\end{equation}
+A survey by N. J. A. Sloane~\cite{Sloane02} outlines the fundamental properties of these codes, showing that $VT_0(n)$ possesses the maximum cardinality among all $VT_a(n)$ codes for a given length $n$. More significantly, it is conjectured (Conjecture~2.6 in~\cite{Sloane02}) that $VT_0(n)$ is optimal among \emph{all} binary single-deletion-correcting codes of length $n$, meaning its cardinality $|VT_0(n)|$ achieves the absolute upper bound $A(n, 1)$. This conjecture has been verified computationally for small lengths: Albert No~\cite{No19} proved the conjecture for $n \le 10$ using Mixed Integer Linear Programming (MILP) techniques, and Nakasho et al.~\cite{Nakasho23} established the bound for $n = 11$ (yielding $|VT_0(11)| = 172$) via an integer linear programming solver with run-based linear constraints. For general $n$, the conjecture remains unsolved.
+
+\section{Lean Formalizations by Yuki Kondo}
+The initial formalization of Varshamov-Tenengolts codes in the Lean theorem prover was conducted by Yuki Kondo (c/o Manabu Hagiwara)~\cite{Kondo22}. Kondo formalized the core definitions of binary vectors, the single-deletion deletion sphere $dS(x)$, and the checksum moment function $\sum_{i=1}^n i x_i$ recursively using 1-based indexing. A major milestone of their work was the formalization and verification of Levenshtein's decoding algorithm. Kondo proved that for any codeword $x \in VT_a(n)$ and any received vector $y \in dS(x)$, the decoding algorithm successfully reconstructs the original vector $x$, formally establishing the single-deletion-correcting capability of VT codes in Lean.
+
+\section{Other Attempts and Partial Results}
+Various historical and modern attempts have sought to resolve the optimality of VT codes. Levenshtein~\cite{Lev65} established the asymptotic optimality of these codes by showing that $A(n, 1) \sim 2^n / n$ as $n \to \infty$. Furthermore, Levenshtein~\cite{Lev92} introduced the concept of perfect deletion-correcting codes, proving that the deletion spheres $dS(x)$ of any VT code $VT_a(n)$ form a partition of the space of descendants $\{0,1\}^{n-1}$, making VT codes perfect single-deletion-correcting codes for all $a$. Other related efforts, such as those by Tenengolts~\cite{Ten76}, have focused on constructing linear single-deletion-correcting codes, though they suffer from a larger check-bit overhead of $O(\sqrt{n})$ compared to the $O(\log n)$ overhead of VT codes.
+
+\section{Detailed Proof of \texttt{vt0\_is\_optimal\_perfect}}
+The theorem \texttt{vt0\_is\_optimal\_perfect}, formalized in the module \texttt{VTlean.Progressive}, establishes that $VT_0(n)$ is optimal among all perfect single-deletion-correcting codes of length $n$.
+\begin{theorem}
+Let $C \subset \{0,1\}^n$ be a perfect single-deletion-correcting code of length $n$. Then:
+\begin{equation}
+|C| \le |VT_0(n)|.
+\end{equation}
+\end{theorem}
+
+\begin{proof}[Proof Structure and Formalization Details]
+The proof is structured as follows and builds successfully in Lean 4:
+\begin{enumerate}
+\item \textbf{Perfect Card Equivalence}: We show that the cardinality of any perfect single-deletion-correcting code $C$ must match the cardinality of some VT code $VT_a(n)$ for some $a \in \{0, \dots, n\}$. Let $c(x) = 1$ if $x \in C$ and $0$ otherwise. The perfect code condition implies that for all descendants $y \in \{0,1\}^{n-1}$, we have $\sum_x A_{x,y} c(x) = 1$, where $A_{x,y} = 1$ if $y \in dS(x)$ and $0$ otherwise. 
+By inductive tracking of the run transitions using cumulative deletion potentials $P(x, k, u) = \sum_{y \in \text{cumulativeDels}(x, k)} u(y)$, we unroll this algebraic system. This reduces the size of $C$ to $\sum_{k=0}^n T_{n,k,a}$ for some $a$, which is the size of $VT_a(n)$. In the Lean codebase, this corresponds to the lemma \texttt{perfect\_code\_card\_eq\_sum\_T} in \texttt{VTlean.AlgebraicFractal}, which is currently postulated with a \texttt{sorry}.
+\item \textbf{Maximality of the Zero-Checksum Class}: We prove that $|VT_a(n)| \le |VT_0(n)|$ for all $a$. This corresponds to the theorem \texttt{VTCode\_zero\_is\_max}, which is fully verified in the module \texttt{VTlean.Cuculiere} without any occurrences of \texttt{sorry}. The proof utilizes the Discrete Fourier Transform over $\mathbb{C}$. The card of $VT_a(n)$ is represented using the $(n+1)$-th roots of unity $\omega$:
+\begin{equation}
+|VT_a(n)| = \frac{1}{n+1} \sum_{j=0}^n \omega^{-aj} P_n(\omega^j),
+\end{equation}
+where $P_n(y) = \prod_{k=1}^n (1 + y^k)$ is the generating polynomial of Cuculiere's triangle. By complex conjugation symmetry, we show that $P_n(\omega^j)$ is a non-negative real number for all $j$. Since $|\omega^{-aj}| = 1$ and $P_n(\omega^j) \ge 0$, the real part of each term in the sum is bounded by $P_n(\omega^j)$. Thus, the sum is maximized when $a = 0$ (yielding $\omega^0 = 1$), concluding that $|VT_a(n)| \le |VT_0(n)|$.
+\end{enumerate}
+\end{proof}
+
+\begin{thebibliography}{9}
+\bibitem{Sloane02}
+N. J. A. Sloane, ``On Single-Deletion-Correcting Codes,'' \emph{Codes and Designs} (Ray-Chaudhuri Festschrift), Walter de Gruyter, Berlin, 2002, pp. 273--291.
+\bibitem{No19}
+A. No, ``Nonasymptotic Upper Bounds on Binary Single Deletion Codes via Mixed Integer Linear Programming,'' \emph{Entropy}, vol. 21, no. 9, p. 868, 2019.
+\bibitem{Nakasho23}
+K. Nakasho, M. Hagiwara, A. Anderson, and J. B. Nation, ``The Tight Upper Bound for the Size of Single Deletion Error Correcting Codes of Length 11,'' \emph{Proceedings of the 2024 International Symposium on Information Theory and Its Applications (ISITA2024)}, 2024 (also arXiv:2309.14736).
+\bibitem{Kondo22}
+Y. Kondo (c/o M. Hagiwara), ``Formalization of Varshamov-Tenengolts Codes in Lean,'' GitHub Repository, 2022.
+\bibitem{Lev65}
+V. I. Levenshtein, ``Binary codes capable of correcting deletions, insertions, and reversals,'' \emph{Soviet Physics Doklady}, vol. 10, no. 8, pp. 707--710, 1966.
+\bibitem{Lev92}
+V. I. Levenshtein, ``Perfect codes in deletion and insertion metric spaces,'' \emph{Discrete Mathematics and Applications}, vol. 2, no. 3, pp. 241--258, 1992.
+\bibitem{Ten76}
+G. Tenengolts, ``Codes correcting a single deletion or insertion,'' \emph{IEEE Transactions on Information Theory}, vol. 22, no. 3, pp. 338--345, 1976.
+\end{thebibliography}
+
+\end{document}

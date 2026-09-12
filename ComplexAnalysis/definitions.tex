@@ -99,12 +99,15 @@ def ConvergesR2 (seq : $\mathbb{N}$ $\to$ $\mathbb{R}$ $\times$ $\mathbb{R}$) (L
     \item \textbf{\texttt{HasFDerivAt\_R2\_eps}} ($u, v : \mathbb{R}^2 \to \mathbb{R}$, $u_{x0}, u_{y0}, v_{x0}, v_{y0} \in \mathbb{R}$, $a \in \mathbb{R}^2$): Defines the Fréchet derivative of $F(x,y) = (u(x,y), v(x,y))$ at $a$. Let $L(h) = \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} h$.
 \begin{lstlisting}[language=Caml, mathescape=true]
 def HasFDerivAt_R2_eps (u v : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) (ux$_0$ uy$_0$ vx$_0$ vy$_0$ : $\mathbb{R}$) (a : $\mathbb{R}$ $\times$ $\mathbb{R}$) : Prop :=
-  $\forall$ $\varepsilon$ > 0, $\exists$ $\delta$ > 0, $\forall$ x : $\mathbb{R}$ $\times$ $\mathbb{R}$,
-    0 < euclideanDist x a $\wedge$ euclideanDist x a < $\delta$ $\to$
-    euclideanNorm (u x - u a - (ux$_0$ * (x.1 - a.1) + uy$_0$ * (x.2 - a.2)), v x - v a - (vx$_0$ * (x.1 - a.1) + vy$_0$ * (x.2 - a.2))) < $\varepsilon$ * euclideanDist x a
+  LimitR2toR (fun h => 
+    euclideanNorm (
+      (u (a.1 + h.1, a.2 + h.2) - u a) - (ux$_0$ * h.1 + uy$_0$ * h.2), 
+      (v (a.1 + h.1, a.2 + h.2) - v a) - (vx$_0$ * h.1 + vy$_0$ * h.2)
+    ) / euclideanNorm h
+  ) (0, 0) 0
 \end{lstlisting}
-    \[ \lim_{h \to 0} \left( F(a+h) - F(a) - \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} h \right) = 0 \]
-    \[ \lim_{(h_1, h_2) \to (0,0)} \left( \begin{pmatrix} u(a_1+h_1, a_2+h_2) - u(a_1, a_2) \\ v(a_1+h_1, a_2+h_2) - v(a_1, a_2) \end{pmatrix} - \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} \begin{pmatrix} h_1 \\ h_2 \end{pmatrix} \right) = \begin{pmatrix} 0 \\ 0 \end{pmatrix} \]
+    \[ \lim_{h \to 0} \frac{\left\| F(a+h) - F(a) - \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} h \right\|}{\|h\|} = 0 \]
+    \[ \lim_{(h_1, h_2) \to (0,0)} \frac{\left\| \begin{pmatrix} u(a_1+h_1, a_2+h_2) - u(a_1, a_2) \\ v(a_1+h_1, a_2+h_2) - v(a_1, a_2) \end{pmatrix} - \begin{pmatrix} u_{x0} & u_{y0} \\ v_{x0} & v_{y0} \end{pmatrix} \begin{pmatrix} h_1 \\ h_2 \end{pmatrix} \right\|}{\| (h_1, h_2) \|} = 0 \]
 
 
     \item \textbf{\texttt{DifferentiableAt\_R2\_eps}} ($u, v : \mathbb{R}^2 \to \mathbb{R}$, $a \in \mathbb{R}^2$):
