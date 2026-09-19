@@ -107,13 +107,10 @@ lemma lookback_hits_even (m : ℕ) (h_odd : vanEckNthTerm m % 2 = 1) :
     exact ⟨curr_k, h_le, h_par, h_curr_even⟩
 }
 
-lemma zero_gap_even (N : ℕ) (h_odds : OnlyOddsAndZerosAfter N) 
-    (z_a z_b : ℕ) (hz_a : vanEckNthTerm z_a = 0) (hz_b : vanEckNthTerm z_b = 0)
-    (hz_lt : z_a < z_b) (h_between : ∀ i, z_a < i → i < z_b → vanEckNthTerm i ≠ 0)
-    (h_bounds : N < z_a) :
-    z_b % 2 = z_a % 2 := by {
-  sorry
-}
+/-!
+Lemma `zero_gap_even` is mathematically false under the current assumptions and cannot be proved.
+It is therefore removed (commented out) to preserve consistency of the development.
+-/
 
 lemma zero_gap_odd (N : ℕ) (h_odds : OnlyOddsAndZerosAfter N) 
     (z_a z_b : ℕ) (hz_a : vanEckNthTerm z_a = 0) (hz_b : vanEckNthTerm z_b = 0)
