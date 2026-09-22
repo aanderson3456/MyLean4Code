@@ -883,7 +883,7 @@ def path_in_C (x y : ℂ) : Type := Path x y
 
 /-- Velocity / derivative of a path γ : path_in_C x y at parameter time t ∈ ℝ. -/
 noncomputable def pathDeriv {x y : ℂ} (γ : path_in_C x y) (t : ℝ) : ℂ :=
-  deriv γ.extend t
+  deriv_R_to_C_eps γ.extend t
 
 /-- The direction of a path γ at time t is the argument of its derivative. -/
 noncomputable def pathDirection {x y : ℂ} (γ : path_in_C x y) (t : ℝ) : ℝ :=
@@ -2016,8 +2016,7 @@ lemma line_path_zero_hasDerivAt_eps (v : ℂ) :
 lemma line_path_zero_pathDeriv (v : ℂ) : pathDeriv (line_path_zero v) (1/2 : ℝ) = 2 * v := by {
   unfold pathDeriv
   have h := line_path_zero_hasDerivAt_eps v
-  rw [← hasDerivAt_R_to_C_iff_eps] at h
-  exact h.deriv
+  exact deriv_R_to_C_eps_eq _ _ _ h
 }
 
 /-- Linear functions trivially satisfy HasFDerivAt_R2_eps. -/
@@ -2079,7 +2078,37 @@ lemma translated_path_pathDeriv {x y : ℂ} (c : ℂ) (γ : path_in_C x y) (t : 
     exact translated_path_extend c γ t'
   }
   rw [h_eq]
-  exact deriv_const_add c
+  by_cases h_diff : DifferentiableAt_R_to_C_eps γ.extend t
+  · have h_deriv := hasDerivAt_deriv_R_to_C_eps γ.extend t h_diff
+    have h_deriv_add : HasDerivAt_R_to_C_eps (fun t => c + γ.extend t) (deriv_R_to_C_eps γ.extend t) t := by {
+      unfold HasDerivAt_R_to_C_eps at *
+      intro ε hε
+      rcases h_deriv ε hε with ⟨δ, hδ_pos, hδ⟩
+      use δ, hδ_pos
+      intro t' ht'
+      have h_eval := hδ t' ht'
+      have h_sub : (c + γ.extend t') - (c + γ.extend t) = γ.extend t' - γ.extend t := by ring
+      rw [h_sub]
+      exact h_eval
+    }
+    exact deriv_R_to_C_eps_eq _ _ _ h_deriv_add
+  · have h_not_diff : ¬ DifferentiableAt_R_to_C_eps (fun t => c + γ.extend t) t := by {
+      intro h_diff2
+      rcases h_diff2 with ⟨f', hf'⟩
+      apply h_diff
+      use f'
+      unfold HasDerivAt_R_to_C_eps at *
+      intro ε hε
+      rcases hf' ε hε with ⟨δ, hδ_pos, hδ⟩
+      use δ, hδ_pos
+      intro t' ht'
+      have h_eval := hδ t' ht'
+      have h_sub : (c + γ.extend t') - (c + γ.extend t) = γ.extend t' - γ.extend t := by ring
+      rw [h_sub] at h_eval
+      exact h_eval
+    }
+    unfold deriv_R_to_C_eps
+    rw [dif_neg h_diff, dif_neg h_not_diff]
 }
 
 lemma conformal_linear_of_conformal_eps (u v : ℝ × ℝ → ℝ) (ux uy vx vy : ℝ) (z : ℂ)

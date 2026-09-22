@@ -12,7 +12,7 @@ import ComplexAnalysis.R2
 /-!
 # Sarason - Definitions
 
-Weierstrass-style definitions for limits, derivatives, and continuity to maintain the 
+Weierstrass-style definitions for limits, derivatives, and continuity to maintain the
 classical flavor of Sarason's notes, along with equivalence theorems to Mathlib filters.
 -/
 
@@ -165,7 +165,7 @@ open Classical
 noncomputable def deriv_eps (f : ℂ → ℂ) (z₀ : ℂ) (h : DifferentiableAt_eps f z₀) : ℂ :=
   Classical.choose h
 
-theorem deriv_eq_deriv_eps (f : ℂ → ℂ) (z₀ : ℂ) (h : DifferentiableAt_eps f z₀) : 
+theorem deriv_eq_deriv_eps (f : ℂ → ℂ) (z₀ : ℂ) (h : DifferentiableAt_eps f z₀) :
     deriv f z₀ = deriv_eps f z₀ h := by {
   unfold deriv_eps
   have h1 : HasDerivAt_eps f (Classical.choose h) z₀ := Classical.choose_spec h
@@ -217,6 +217,37 @@ theorem hasDerivAt_R_to_C_iff_eps (f : ℝ → ℂ) (f'₀ : ℂ) (t₀ : ℝ) :
     exact h_eval2
 }
 
+/-- Real-differentiability of a path at a point, in the epsilon-delta sense. -/
+def DifferentiableAt_R_to_C_eps (f : ℝ → ℂ) (t₀ : ℝ) : Prop :=
+  ∃ f'₀, HasDerivAt_R_to_C_eps f f'₀ t₀
+
+/-- The classical derivative value extracted via choice, or 0 if not differentiable. -/
+noncomputable def deriv_R_to_C_eps (f : ℝ → ℂ) (t₀ : ℝ) : ℂ :=
+  if h : DifferentiableAt_R_to_C_eps f t₀ then Classical.choose h else 0
+
+theorem deriv_R_to_C_eq_deriv_eps (f : ℝ → ℂ) (t₀ : ℝ) (h : DifferentiableAt_R_to_C_eps f t₀) :
+    deriv_R_to_C_eps f t₀ = Classical.choose h := by {
+  unfold deriv_R_to_C_eps
+  rw [dif_pos h]
+}
+
+theorem hasDerivAt_deriv_R_to_C_eps (f : ℝ → ℂ) (t₀ : ℝ) (h : DifferentiableAt_R_to_C_eps f t₀) :
+    HasDerivAt_R_to_C_eps f (deriv_R_to_C_eps f t₀) t₀ := by {
+  rw [deriv_R_to_C_eq_deriv_eps f t₀ h]
+  exact Classical.choose_spec h
+}
+
+theorem deriv_R_to_C_eps_eq (f : ℝ → ℂ) (t₀ : ℝ) (f'₀ : ℂ) (h : HasDerivAt_R_to_C_eps f f'₀ t₀) :
+    deriv_R_to_C_eps f t₀ = f'₀ := by {
+  have h_diff : DifferentiableAt_R_to_C_eps f t₀ := ⟨f'₀, h⟩
+  have h_deriv := hasDerivAt_deriv_R_to_C_eps f t₀ h_diff
+  have hm1 := (hasDerivAt_R_to_C_iff_eps f f'₀ t₀).mpr h
+  have hm2 := (hasDerivAt_R_to_C_iff_eps f (deriv_R_to_C_eps f t₀) t₀).mpr h_deriv
+  exact hm2.unique hm1
+}
+
+
+
 /-- A function is holomorphic at a point if it is complex differentiable at that point.
     (Often this is defined as differentiable in a neighborhood, but in these notes it frequently refers to pointwise differentiability). -/
 def HolomorphicAt_eps (f : ℂ → ℂ) (z₀ : ℂ) : Prop :=
@@ -229,12 +260,11 @@ def HolomorphicOn_eps (f : ℂ → ℂ) (G : Set ℂ) : Prop :=
 end Sarason
 
 /-!
-  NOTE FOR FUTURE AGENTS: 
-  Currently, some theorems in `Chapter2.lean` (such as `conformal_implies_holomorphic`) 
+  NOTE FOR FUTURE AGENTS:
+  Currently, some theorems in `Chapter2.lean` (such as `conformal_implies_holomorphic`)
   use Mathlib's `DifferentiableAt ℝ f z` to represent continuous first partial derivatives / real-differentiability.
-  Eventually, we want to replace this with our own custom epsilon-delta definitions 
+  Eventually, we want to replace this with our own custom epsilon-delta definitions
   (similar to `HasDerivAt_eps`) that will define $\mathbb{R}^2$ differentiability from scratch.
 -/
 
 -- R^2 Euclidean Metrics (from AnalysTSP)
-

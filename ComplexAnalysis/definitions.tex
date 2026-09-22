@@ -173,7 +173,7 @@ def HasPartialDerivX_C_to_R_eps (u : $\mathbb{C}$ $\to$ $\mathbb{R}$) (ux$_0$ : 
 
 -- Weierstrass definition of partial derivative with respect to y.
 \end{lstlisting}
-    \[ \frac{\partial u}{\partial x}(z_0) = u_x \]
+    \[ \frac{\partial u}{\partial x}(z_0) = u_{x0} \]
 
     \item \textbf{\texttt{HasPartialDerivY\_C\_to\_R\_eps}}
 \begin{lstlisting}[language=Caml, mathescape=true]
@@ -183,7 +183,7 @@ def HasPartialDerivY_C_to_R_eps (u : $\mathbb{C}$ $\to$ $\mathbb{R}$) (uy$_0$ : 
 
 --  Equivalence theorem between Mathlib's limit at a point (using punctured neighborhoods) and Weierstrass epsilon-delta limit.
 \end{lstlisting}
-    \[ \frac{\partial u}{\partial y}(z_0) = u_y \]
+    \[ \frac{\partial u}{\partial y}(z_0) = u_{y0} \]
 
     \item \textbf{\texttt{deriv\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $z_0 \in \mathbb{C}$, $h : \texttt{DifferentiableAt\_eps}\ f\ z_0$): The classical derivative value $f'(z_0)$ extracted via choice.
 \begin{lstlisting}[language=Caml, mathescape=true]
@@ -198,6 +198,22 @@ def HasDerivAt_R_to_C_eps (f : $\mathbb{R}$ $\to$ $\mathbb{C}$) (f'$_0$ : $\math
   $\forall$ $\varepsilon$ > 0, $\exists$ $\delta$ > 0, $\forall$ t : $\mathbb{R}$, 0 < |t - t$_0$| $\wedge$ |t - t$_0$| < $\delta$ $\to$ $\|$(f t - f t$_0$) / ((t - t$_0$ : $\mathbb{R}$) : $\mathbb{C}$) - f'$_0$$\|$ < $\varepsilon$
 \end{lstlisting}
     \[ \lim_{t \to t_0} \frac{f(t) - f(t_0)}{t - t_0} = f'_0 \]
+
+    \item \textbf{\texttt{DifferentiableAt\_R\_to\_C\_eps}} ($f : \mathbb{R} \to \mathbb{C}$, $t_0 \in \mathbb{R}$):
+\begin{lstlisting}[language=Caml, mathescape=true]
+def DifferentiableAt_R_to_C_eps (f : $\mathbb{R}$ $\to$ $\mathbb{C}$) (t$_0$ : $\mathbb{R}$) : Prop :=
+  $\exists$ f'$_0$, HasDerivAt_R_to_C_eps f f'$_0$ t$_0$
+
+/-- The classical derivative value extracted via choice, or 0 if not differentiable. -/
+\end{lstlisting}
+    \[ \exists f'_0 \in \mathbb{C}, \text{HasDerivAt\_R\_to\_C\_eps}(f, f'_0, t_0) \]
+
+    \item \textbf{\texttt{deriv\_R\_to\_C\_eps}} ($f : \mathbb{R} \to \mathbb{C}$, $t_0 \in \mathbb{R}$):
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def deriv_R_to_C_eps (f : $\mathbb{R}$ $\to$ $\mathbb{C}$) (t$_0$ : $\mathbb{R}$) : $\mathbb{C}$ :=
+  if h : DifferentiableAt_R_to_C_eps f t$_0$ then Classical.choose h else 0
+\end{lstlisting}
+    \[ \text{deriv\_R\_to\_C\_eps}(f, t_0) = \begin{cases} f'(t_0) & \text{if differentiable} \\ 0 & \text{otherwise} \end{cases} \]
 
     \item \textbf{\texttt{HolomorphicAt\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $z_0 \in \mathbb{C}$): $f$ is complex-differentiable in some open neighborhood around $z_0$.
 \begin{lstlisting}[language=Caml, mathescape=true]
@@ -216,10 +232,10 @@ def HolomorphicOn_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}
 end Sarason
 
 /-!
-  NOTE FOR FUTURE AGENTS: 
-  Currently, some theorems in `Chapter2.lean` (such as `conformal_implies_holomorphic`) 
+  NOTE FOR FUTURE AGENTS:
+  Currently, some theorems in `Chapter2.lean` (such as `conformal_implies_holomorphic`)
   use Mathlib's `DifferentiableAt $\mathbb{R}$ f z` to represent continuous first partial derivatives / real-differentiability.
-  Eventually, we want to replace this with our own custom epsilon-delta definitions 
+  Eventually, we want to replace this with our own custom epsilon-delta definitions
   (similar to `HasDerivAt_eps`) that will define $\mathbb{R}^2$ differentiability from scratch.
 -/
 
@@ -329,7 +345,7 @@ noncomputable def translated_path {x y : $\mathbb{C}$} (c : $\mathbb{C}$) ($\gam
     \item \textbf{\texttt{pathDeriv}} ($\gamma : \text{path\_in\_C}\ x\ y$, $t \in \mathbb{R}$): The tangent vector $\gamma'(t) \in \mathbb{C}$, extracted via choice from \texttt{HasDerivAt\_R\_to\_C\_eps} extended to $\mathbb{R}$.
 \begin{lstlisting}[language=Caml, mathescape=true]
 noncomputable def pathDeriv {x y : $\mathbb{C}$} ($\gamma$ : path_in_C x y) (t : $\mathbb{R}$) : $\mathbb{C}$ :=
-  deriv $\gamma$.extend t
+  deriv_R_to_C_eps $\gamma$.extend t
 
 /-- The direction of a path $\gamma$ at time t is the argument of its derivative. -/
 \end{lstlisting}
