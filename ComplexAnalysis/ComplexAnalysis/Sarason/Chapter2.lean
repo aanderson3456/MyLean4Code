@@ -2471,4 +2471,6 @@ theorem conformal_implies_holomorphic_II_12 {G : Set ℂ} (hG : IsOpen G)
     exact h_del_ne_zero
 }
 
+--II.14  Holomorphic implies Harmonic
+
 end Sarason.Ch2

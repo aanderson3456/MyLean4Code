@@ -270,6 +270,14 @@ def HolomorphicAt_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (z$_0$ : $\mathbb{C}
 def HolomorphicOn_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}$) : Prop :=
   $\forall$ z $\in$ G, DifferentiableAt_eps f z
 
+def TwiceContinuouslyDifferentiable_C_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}$) : Prop :=
+  TwiceContinuouslyDifferentiable_R2_eps (fun p => (f (p.1 + p.2 * I)).re) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G} $\wedge$
+  TwiceContinuouslyDifferentiable_R2_eps (fun p => (f (p.1 + p.2 * I)).im) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G}
+
+def Harmonic_C_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}$) : Prop :=
+  Harmonic_R2_eps (fun p => (f (p.1 + p.2 * I)).re) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G} $\wedge$
+  Harmonic_R2_eps (fun p => (f (p.1 + p.2 * I)).im) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G}
+
 end Sarason
 
 /-!

@@ -256,6 +256,15 @@ def HolomorphicAt_eps (f : ℂ → ℂ) (z₀ : ℂ) : Prop :=
 /-- A function is holomorphic on a set if it is complex differentiable at every point of the set. -/
 def HolomorphicOn_eps (f : ℂ → ℂ) (G : Set ℂ) : Prop :=
   ∀ z ∈ G, DifferentiableAt_eps f z
+/-- A complex function is twice continuously differentiable on an open set G if its real and imaginary parts are. -/
+def TwiceContinuouslyDifferentiable_C_eps (f : ℂ → ℂ) (G : Set ℂ) : Prop :=
+  ComplexAnalysis.R2.TwiceContinuouslyDifferentiable_R2_eps (fun p => (f (p.1 + p.2 * I)).re) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} ∧
+  ComplexAnalysis.R2.TwiceContinuouslyDifferentiable_R2_eps (fun p => (f (p.1 + p.2 * I)).im) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}
+
+/-- A complex function is harmonic on an open set G if its real and imaginary parts are harmonic. -/
+def Harmonic_C_eps (f : ℂ → ℂ) (G : Set ℂ) : Prop :=
+  ComplexAnalysis.R2.Harmonic_R2_eps (fun p => (f (p.1 + p.2 * I)).re) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} ∧
+  ComplexAnalysis.R2.Harmonic_R2_eps (fun p => (f (p.1 + p.2 * I)).im) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}
 
 end Sarason
 

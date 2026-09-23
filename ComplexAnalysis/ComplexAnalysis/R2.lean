@@ -377,7 +377,7 @@ lemma mixed_partials_eq_eps
 
 /-- A real-valued function of two real variables is harmonic on an open set G
 if its first and second partial derivatives are continuous and satisfy Laplace's equation. -/
-def Harmonic_R2_eps (u : ℝ × ℝ → ℝ) (G : Set (ℝ × ℝ)) : Prop :=
+def TwiceContinuouslyDifferentiable_R2_eps (u : ℝ × ℝ → ℝ) (G : Set (ℝ × ℝ)) : Prop :=
   IsOpen G ∧
   ∃ (ux uy uxx uxy uyx uyy : ℝ × ℝ → ℝ),
     (∀ p ∈ G, HasPartialDerivX_R2_eps u (ux p) p) ∧
@@ -391,7 +391,17 @@ def Harmonic_R2_eps (u : ℝ × ℝ → ℝ) (G : Set (ℝ × ℝ)) : Prop :=
     (ContinuousOn uxx G) ∧
     (ContinuousOn uxy G) ∧
     (ContinuousOn uyx G) ∧
-    (ContinuousOn uyy G) ∧
+    (ContinuousOn uyy G)
+
+/-- A real-valued function of two real variables is harmonic on an open set G
+if its first and second partial derivatives are continuous and satisfy Laplace's equation. -/
+def Harmonic_R2_eps (u : ℝ × ℝ → ℝ) (G : Set (ℝ × ℝ)) : Prop :=
+  TwiceContinuouslyDifferentiable_R2_eps u G ∧
+  ∃ (ux uy uxx uxy uyx uyy : ℝ × ℝ → ℝ),
+    (∀ p ∈ G, HasPartialDerivX_R2_eps u (ux p) p) ∧
+    (∀ p ∈ G, HasPartialDerivY_R2_eps u (uy p) p) ∧
+    (∀ p ∈ G, HasPartialDerivX_R2_eps ux (uxx p) p) ∧
+    (∀ p ∈ G, HasPartialDerivY_R2_eps uy (uyy p) p) ∧
     (∀ p ∈ G, uxx p + uyy p = 0)
 
 lemma HasFDerivAt_R2_eps_iff (u v : ℝ × ℝ → ℝ) (ux₀ uy₀ vx₀ vy₀ : ℝ) (a : ℝ × ℝ) :
