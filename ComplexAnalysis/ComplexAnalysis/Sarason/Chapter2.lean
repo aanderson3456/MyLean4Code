@@ -2473,4 +2473,280 @@ theorem conformal_implies_holomorphic_II_12 {G : Set ℂ} (hG : IsOpen G)
 
 --II.14  Holomorphic implies Harmonic
 
+lemma HasPartialDerivX_C_to_R_eps_iff_R2_eps (u : ℂ → ℝ) (ux₀ : ℝ) (z₀ : ℂ) :
+    HasPartialDerivX_C_to_R_eps u ux₀ z₀ ↔ HasPartialDerivX_R2_eps (fun p => u (p.1 + p.2 * I)) ux₀ (z₀.re, z₀.im) := by {
+  unfold HasPartialDerivX_C_to_R_eps HasPartialDerivX_R2_eps
+  have h : (z₀.re : ℂ) + (z₀.im : ℂ) * I = z₀ := by exact Complex.re_add_im z₀
+  simp_rw [h]
+}
+
+lemma HasPartialDerivY_C_to_R_eps_iff_R2_eps (u : ℂ → ℝ) (uy₀ : ℝ) (z₀ : ℂ) :
+    HasPartialDerivY_C_to_R_eps u uy₀ z₀ ↔ HasPartialDerivY_R2_eps (fun p => u (p.1 + p.2 * I)) uy₀ (z₀.re, z₀.im) := by {
+  unfold HasPartialDerivY_C_to_R_eps HasPartialDerivY_R2_eps
+  have h : (z₀.re : ℂ) + (z₀.im : ℂ) * I = z₀ := by exact Complex.re_add_im z₀
+  simp_rw [h]
+}
+
+lemma partial_deriv_unique_y (f : ℂ → ℝ) (c d : ℝ) (z₀ : ℂ) (hc : HasPartialDerivY_C_to_R_eps f c z₀) (hd : HasPartialDerivY_C_to_R_eps f d z₀) : c = d := by {
+  unfold HasPartialDerivY_C_to_R_eps at hc hd
+  -- we know limit is unique
+  have h_lim1 : Tendsto (fun y : ℝ => (f ((z₀.re : ℂ) + (y : ℂ) * I) - f z₀) / (y - z₀.im)) (nhdsWithin z₀.im {z₀.im}ᶜ) (nhds c) := by {
+    rw [tendsto_nhds_iff_eps_R]
+    exact hc
+  }
+  have h_lim2 : Tendsto (fun y : ℝ => (f ((z₀.re : ℂ) + (y : ℂ) * I) - f z₀) / (y - z₀.im)) (nhdsWithin z₀.im {z₀.im}ᶜ) (nhds d) := by {
+    rw [tendsto_nhds_iff_eps_R]
+    exact hd
+  }
+  exact tendsto_nhds_unique h_lim1 h_lim2
+}
+
+lemma partial_deriv_unique_x_R2 (u : ℝ × ℝ → ℝ) (c d : ℝ) (p : ℝ × ℝ)
+    (hc : HasPartialDerivX_R2_eps u c p)
+    (hd : HasPartialDerivX_R2_eps u d p) : c = d := by {
+  unfold HasPartialDerivX_R2_eps at hc hd
+  have h_lim1 : Tendsto (fun x : ℝ => (u (x, p.2) - u p) / (x - p.1)) (nhdsWithin p.1 {p.1}ᶜ) (nhds c) := by { rw [tendsto_nhds_iff_eps_R]; exact hc }
+  have h_lim2 : Tendsto (fun x : ℝ => (u (x, p.2) - u p) / (x - p.1)) (nhdsWithin p.1 {p.1}ᶜ) (nhds d) := by { rw [tendsto_nhds_iff_eps_R]; exact hd }
+  exact tendsto_nhds_unique h_lim1 h_lim2
+}
+
+lemma partial_deriv_unique_y_R2 (u : ℝ × ℝ → ℝ) (c d : ℝ) (p : ℝ × ℝ)
+    (hc : HasPartialDerivY_R2_eps u c p)
+    (hd : HasPartialDerivY_R2_eps u d p) : c = d := by {
+  unfold HasPartialDerivY_R2_eps at hc hd
+  have h_lim1 : Tendsto (fun y : ℝ => (u (p.1, y) - u p) / (y - p.2)) (nhdsWithin p.2 {p.2}ᶜ) (nhds c) := by { rw [tendsto_nhds_iff_eps_R]; exact hc }
+  have h_lim2 : Tendsto (fun y : ℝ => (u (p.1, y) - u p) / (y - p.2)) (nhdsWithin p.2 {p.2}ᶜ) (nhds d) := by { rw [tendsto_nhds_iff_eps_R]; exact hd }
+  exact tendsto_nhds_unique h_lim1 h_lim2
+}
+
+lemma partial_deriv_congr_x (u v : ℝ × ℝ → ℝ) (c : ℝ) (p₀ : ℝ × ℝ) (G : Set (ℝ × ℝ)) (hG : IsOpen G) (hp₀ : p₀ ∈ G)
+    (h_eq : ∀ q ∈ G, u q = v q)
+    (hu : HasPartialDerivX_R2_eps u c p₀) :
+    HasPartialDerivX_R2_eps v c p₀ := by {
+  unfold HasPartialDerivX_R2_eps at hu ⊢
+  intro ε hε
+  rcases hu ε hε with ⟨δ, hδ, h_bound⟩
+  rcases Metric.isOpen_iff.mp hG p₀ hp₀ with ⟨δ_G, hδ_G, hG_ball⟩
+  -- Take minimum of δ and δ_G/2 to ensure we stay in G
+  use min δ (δ_G / 2)
+  have h_min : 0 < min δ (δ_G / 2) := lt_min hδ (half_pos hδ_G)
+  refine ⟨h_min, ?_⟩
+  intro x hx
+  have hx_lt_δ : |x - p₀.1| < δ := lt_of_lt_of_le hx.2 (min_le_left _ _)
+  have h_bound_x := h_bound x ⟨hx.1, hx_lt_δ⟩
+  -- We need to show that (x, p₀.2) is in G
+  have h_in_G : (x, p₀.2) ∈ G := by {
+    apply hG_ball
+    rw [Metric.mem_ball, dist_eq_norm]
+    -- norm of (x - p₀.1, 0)
+    have h_norm : ‖(x, p₀.2) - p₀‖ = |x - p₀.1| := by {
+      have h_sub : (x, p₀.2) - p₀ = (x - p₀.1, 0) := by {
+        ext
+        · simp
+        · simp
+      }
+      rw [h_sub]
+      simp [Real.norm_eq_abs]
+    }
+    rw [h_norm]
+    have hx_lt_δG2 : |x - p₀.1| < δ_G / 2 := lt_of_lt_of_le hx.2 (min_le_right _ _)
+    linarith
+  }
+  have hu_x : u (x, p₀.2) = v (x, p₀.2) := h_eq _ h_in_G
+  have hu_p0 : u p₀ = v p₀ := h_eq p₀ hp₀
+  rw [← hu_x, ← hu_p0]
+  exact h_bound_x
+}
+
+lemma partial_deriv_congr_y (u v : ℝ × ℝ → ℝ) (c : ℝ) (p₀ : ℝ × ℝ) (G : Set (ℝ × ℝ)) (hG : IsOpen G) (hp₀ : p₀ ∈ G)
+    (h_eq : ∀ q ∈ G, u q = v q)
+    (hu : HasPartialDerivY_R2_eps u c p₀) :
+    HasPartialDerivY_R2_eps v c p₀ := by {
+  unfold HasPartialDerivY_R2_eps at hu ⊢
+  intro ε hε
+  rcases hu ε hε with ⟨δ, hδ, h_bound⟩
+  rcases Metric.isOpen_iff.mp hG p₀ hp₀ with ⟨δ_G, hδ_G, hG_ball⟩
+  use min δ (δ_G / 2)
+  have h_min : 0 < min δ (δ_G / 2) := lt_min hδ (half_pos hδ_G)
+  refine ⟨h_min, ?_⟩
+  intro y hy
+  have hy_lt_δ : |y - p₀.2| < δ := lt_of_lt_of_le hy.2 (min_le_left _ _)
+  have h_bound_y := h_bound y ⟨hy.1, hy_lt_δ⟩
+  have h_in_G : (p₀.1, y) ∈ G := by {
+    apply hG_ball
+    rw [Metric.mem_ball, dist_eq_norm]
+    have h_norm : ‖(p₀.1, y) - p₀‖ = |y - p₀.2| := by {
+      have h_sub : (p₀.1, y) - p₀ = (0, y - p₀.2) := by {
+        ext
+        · simp
+        · simp
+      }
+      rw [h_sub]
+      simp [Real.norm_eq_abs]
+    }
+    rw [h_norm]
+    have hy_lt_δG2 : |y - p₀.2| < δ_G / 2 := lt_of_lt_of_le hy.2 (min_le_right _ _)
+    linarith
+  }
+  have hu_y : u (p₀.1, y) = v (p₀.1, y) := h_eq _ h_in_G
+  have hu_p0 : u p₀ = v p₀ := h_eq p₀ hp₀
+  rw [← hu_y, ← hu_p0]
+  exact h_bound_y
+}
+
+lemma partial_deriv_neg_y (u : ℝ × ℝ → ℝ) (c : ℝ) (p : ℝ × ℝ)
+    (hu : HasPartialDerivY_R2_eps u c p) :
+    HasPartialDerivY_R2_eps (fun q => -u q) (-c) p := by {
+  unfold HasPartialDerivY_R2_eps at hu ⊢
+  intro ε hε
+  rcases hu ε hε with ⟨δ, hδ, h_bound⟩
+  use δ
+  refine ⟨hδ, ?_⟩
+  intro y hy
+  have h_bound_y := h_bound y hy
+  have h_eq : |(-u (p.1, y) - -u p) / (y - p.2) - -c| = |(u (p.1, y) - u p) / (y - p.2) - c| := by {
+    have h_sub : (-u (p.1, y) - -u p) / (y - p.2) - -c = -((u (p.1, y) - u p) / (y - p.2) - c) := by ring
+    rw [h_sub, abs_neg]
+  }
+  rw [h_eq]
+  exact h_bound_y
+}
+
+lemma partial_deriv_neg_x (u : ℝ × ℝ → ℝ) (c : ℝ) (p : ℝ × ℝ)
+    (hu : HasPartialDerivX_R2_eps u c p) :
+    HasPartialDerivX_R2_eps (fun q => -u q) (-c) p := by {
+  unfold HasPartialDerivX_R2_eps at hu ⊢
+  intro ε hε
+  rcases hu ε hε with ⟨δ, hδ, h_bound⟩
+  use δ
+  refine ⟨hδ, ?_⟩
+  intro x hx
+  have h_bound_x := h_bound x hx
+  have h_eq : |(-u (x, p.2) - -u p) / (x - p.1) - -c| = |(u (x, p.2) - u p) / (x - p.1) - c| := by {
+    have h_sub : (-u (x, p.2) - -u p) / (x - p.1) - -c = -((u (x, p.2) - u p) / (x - p.1) - c) := by ring
+    rw [h_sub, abs_neg]
+  }
+  rw [h_eq]
+  exact h_bound_x
+}
+
+theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set ℂ} (hG : IsOpen G)
+    (h_hol : HolomorphicOn_eps f G)
+    (h_twice_diff : TwiceContinuouslyDifferentiable_C_eps f G) :
+    Harmonic_C_eps f G := by {
+  unfold Harmonic_C_eps
+  have h_twice_diff_copy := h_twice_diff
+  unfold TwiceContinuouslyDifferentiable_C_eps at h_twice_diff
+  rcases h_twice_diff with ⟨h_u, h_v⟩
+  unfold TwiceContinuouslyDifferentiable_R2_eps at h_u h_v
+  rcases h_u with ⟨hG_R2, ux, uy, uxx, uxy, uyx, uyy, hu_x, hu_y, h_cont_ux, h_cont_uy, hu_xx, hu_xy, hu_yx, hu_yy, h_cont_uxx, h_cont_uxy, h_cont_uyx, h_cont_uyy⟩
+  rcases h_v with ⟨_, vx, vy, vxx, vxy, vyx, vyy, hv_x, hv_y, h_cont_vx, h_cont_vy, hv_xx, hv_xy, hv_yx, hv_yy, h_cont_vxx, h_cont_vxy, h_cont_vyx, h_cont_vyy⟩
+
+  -- Prove ux = vy and uy = -vx on G
+  have h_CR_x : ∀ p ∈ {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}, ux p = vy p := by {
+    intro p hp
+    have h_diff_z : DifferentiableAt_eps f (p.1 + p.2 * I) := h_hol (p.1 + p.2 * I) hp
+    have h_CR := cauchy_riemann_equations_of_differentiable h_diff_z
+    rcases h_CR with ⟨ux_CR, uy_CR, vx_CR, vy_CR, h_ux_CR, h_uy_CR, h_vx_CR, h_vy_CR, h1, h2⟩
+    have h_ux_R2 : HasPartialDerivX_R2_eps (fun p => (f (p.1 + p.2 * I)).re) (ux p) p := hu_x p hp
+    have h_vy_R2 : HasPartialDerivY_R2_eps (fun p => (f (p.1 + p.2 * I)).im) (vy p) p := hv_y p hp
+    have h_ux_C : HasPartialDerivX_C_to_R_eps (fun z => (f z).re) (ux p) (p.1 + p.2 * I) := by {
+      rw [HasPartialDerivX_C_to_R_eps_iff_R2_eps]
+      have h_p : (((p.1 : ℂ) + (p.2 : ℂ) * I).re, ((p.1 : ℂ) + (p.2 : ℂ) * I).im) = p := by { ext <;> simp }
+      rw [h_p]
+      exact h_ux_R2
+    }
+    have h_vy_C : HasPartialDerivY_C_to_R_eps (fun z => (f z).im) (vy p) (p.1 + p.2 * I) := by {
+      rw [HasPartialDerivY_C_to_R_eps_iff_R2_eps]
+      have h_p : (((p.1 : ℂ) + (p.2 : ℂ) * I).re, ((p.1 : ℂ) + (p.2 : ℂ) * I).im) = p := by { ext <;> simp }
+      rw [h_p]
+      exact h_vy_R2
+    }
+    have h_ux_eq := partial_deriv_unique_x _ _ _ _ h_ux_C h_ux_CR
+    have h_vy_eq := partial_deriv_unique_y _ _ _ _ h_vy_C h_vy_CR
+    rw [h_ux_eq, h_vy_eq]
+    exact h1
+  }
+  have h_CR_y : ∀ p ∈ {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}, uy p = -vx p := by {
+    intro p hp
+    have h_diff_z : DifferentiableAt_eps f (p.1 + p.2 * I) := h_hol (p.1 + p.2 * I) hp
+    have h_CR := cauchy_riemann_equations_of_differentiable h_diff_z
+    rcases h_CR with ⟨ux_CR, uy_CR, vx_CR, vy_CR, h_ux_CR, h_uy_CR, h_vx_CR, h_vy_CR, h1, h2⟩
+    have h_uy_R2 : HasPartialDerivY_R2_eps (fun p => (f (p.1 + p.2 * I)).re) (uy p) p := hu_y p hp
+    have h_vx_R2 : HasPartialDerivX_R2_eps (fun p => (f (p.1 + p.2 * I)).im) (vx p) p := hv_x p hp
+    have h_uy_C : HasPartialDerivY_C_to_R_eps (fun z => (f z).re) (uy p) (p.1 + p.2 * I) := by {
+      rw [HasPartialDerivY_C_to_R_eps_iff_R2_eps]
+      have h_p : (((p.1 : ℂ) + (p.2 : ℂ) * I).re, ((p.1 : ℂ) + (p.2 : ℂ) * I).im) = p := by { ext <;> simp }
+      rw [h_p]
+      exact h_uy_R2
+    }
+    have h_vx_C : HasPartialDerivX_C_to_R_eps (fun z => (f z).im) (vx p) (p.1 + p.2 * I) := by {
+      rw [HasPartialDerivX_C_to_R_eps_iff_R2_eps]
+      have h_p : (((p.1 : ℂ) + (p.2 : ℂ) * I).re, ((p.1 : ℂ) + (p.2 : ℂ) * I).im) = p := by { ext <;> simp }
+      rw [h_p]
+      exact h_vx_R2
+    }
+    have h_uy_eq := partial_deriv_unique_y _ _ _ _ h_uy_C h_uy_CR
+    have h_vx_eq := partial_deriv_unique_x _ _ _ _ h_vx_C h_vx_CR
+    rw [h_uy_eq, h_vx_eq]
+    exact h2
+  }
+
+  constructor
+  · refine ⟨h_twice_diff_copy.1, ux, uy, uxx, uxy, uyx, uyy, hu_x, hu_y, hu_xx, hu_yy, ?_⟩
+    intro p hp
+    -- Proof of uxx p + uyy p = 0
+    have h_uxx_eq_vyx : uxx p = vyx p := by {
+      have h_ux_deriv : HasPartialDerivX_R2_eps ux (uxx p) p := hu_xx p hp
+      have h_vy_deriv : HasPartialDerivX_R2_eps vy (vyx p) p := hv_yx p hp
+      have h_vy_deriv2 : HasPartialDerivX_R2_eps vy (uxx p) p := partial_deriv_congr_x ux vy (uxx p) p _ hG_R2 hp h_CR_x h_ux_deriv
+      exact partial_deriv_unique_x_R2 vy (uxx p) (vyx p) p h_vy_deriv2 h_vy_deriv
+    }
+    have h_uyy_eq_neg_vxy : uyy p = -vxy p := by {
+      have h_uy_deriv : HasPartialDerivY_R2_eps uy (uyy p) p := hu_yy p hp
+      have h_vx_deriv : HasPartialDerivY_R2_eps vx (vxy p) p := hv_xy p hp
+      have h_neg_vx_deriv : HasPartialDerivY_R2_eps (fun p => -vx p) (-vxy p) p := partial_deriv_neg_y vx (vxy p) p h_vx_deriv
+      have h_neg_vx_deriv2 : HasPartialDerivY_R2_eps (fun p => -vx p) (uyy p) p := partial_deriv_congr_y uy (fun p => -vx p) (uyy p) p _ hG_R2 hp h_CR_y h_uy_deriv
+      exact partial_deriv_unique_y_R2 (fun p => -vx p) (uyy p) (-vxy p) p h_neg_vx_deriv2 h_neg_vx_deriv
+    }
+    have h_vxy_eq_vyx : vxy p = vyx p := by {
+      have h_mixed := mixed_partials_eq_eps (fun p => (f (p.1 + p.2 * I)).im) vx vy vxx vxy vyx vyy {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} p hG_R2 hp hv_x hv_y hv_xx hv_xy hv_yx hv_yy h_cont_vx h_cont_vy h_cont_vxx h_cont_vxy h_cont_vyx h_cont_vyy
+      exact h_mixed
+    }
+    rw [h_uxx_eq_vyx, h_uyy_eq_neg_vxy, ← h_vxy_eq_vyx]
+    ring
+  · refine ⟨h_twice_diff_copy.2, vx, vy, vxx, vxy, vyx, vyy, hv_x, hv_y, hv_xx, hv_yy, ?_⟩
+    intro p hp
+    -- Proof of vxx p + vyy p = 0
+    have h_vxx_eq_neg_uyx : vxx p = -uyx p := by {
+      have h_vx_deriv : HasPartialDerivX_R2_eps vx (vxx p) p := hv_xx p hp
+      have h_uy_deriv : HasPartialDerivX_R2_eps uy (uyx p) p := hu_yx p hp
+      have h_neg_uy_deriv : HasPartialDerivX_R2_eps (fun p => -uy p) (-uyx p) p := partial_deriv_neg_x uy (uyx p) p h_uy_deriv
+      have h_neg_CR_y : ∀ q ∈ {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}, vx q = -uy q := by {
+        intro q hq
+        have h := h_CR_y q hq
+        linarith
+      }
+      have h_neg_uy_deriv2 : HasPartialDerivX_R2_eps (fun p => -uy p) (vxx p) p := partial_deriv_congr_x vx (fun p => -uy p) (vxx p) p _ hG_R2 hp h_neg_CR_y h_vx_deriv
+      exact partial_deriv_unique_x_R2 (fun p => -uy p) (vxx p) (-uyx p) p h_neg_uy_deriv2 h_neg_uy_deriv
+    }
+    have h_vyy_eq_uxy : vyy p = uxy p := by {
+      have h_vy_deriv : HasPartialDerivY_R2_eps vy (vyy p) p := hv_yy p hp
+      have h_ux_deriv : HasPartialDerivY_R2_eps ux (uxy p) p := hu_xy p hp
+      -- we know ux = vy from h_CR_x, but we need vy = ux for congr_y
+      have h_CR_x_rev : ∀ q ∈ {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}, vy q = ux q := by {
+        intro q hq
+        exact (h_CR_x q hq).symm
+      }
+      have h_ux_deriv2 : HasPartialDerivY_R2_eps ux (vyy p) p := partial_deriv_congr_y vy ux (vyy p) p _ hG_R2 hp h_CR_x_rev h_vy_deriv
+      exact partial_deriv_unique_y_R2 ux (vyy p) (uxy p) p h_ux_deriv2 h_ux_deriv
+    }
+    have h_uxy_eq_uyx : uxy p = uyx p := by {
+      have h_mixed := mixed_partials_eq_eps (fun p => (f (p.1 + p.2 * I)).re) ux uy uxx uxy uyx uyy {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} p hG_R2 hp hu_x hu_y hu_xx hu_xy hu_yx hu_yy h_cont_ux h_cont_uy h_cont_uxx h_cont_uxy h_cont_uyx h_cont_uyy
+      exact h_mixed
+    }
+    rw [h_vxx_eq_neg_uyx, h_vyy_eq_uxy, ← h_uxy_eq_uyx]
+    ring
+}
+
 end Sarason.Ch2
