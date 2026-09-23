@@ -124,7 +124,48 @@ def HasDerivAt_RtoR2_eps (f : $\mathbb{R}$ $\to$ $\mathbb{R}$ $\times$ $\mathbb{
     euclideanDist (f t) (f t$_0$ + (f'$_0$.1 * (t - t$_0$), f'$_0$.2 * (t - t$_0$))) < $\varepsilon$ * |t - t$_0$|
 \end{lstlisting}
     \[ \lim_{t \to t_0} (f(t) - f(t_0) - (t - t_0)f'_0) = 0 \]
+
+    \item \textbf{\texttt{HasPartialDerivX\_R2\_eps}} ($u : \mathbb{R}^2 \to \mathbb{R}$, $ux_0 \in \mathbb{R}$, $p_0 \in \mathbb{R}^2$):
+\begin{lstlisting}[language=Caml, mathescape=true]
+def HasPartialDerivX_R2_eps (u : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) (ux$_0$ : $\mathbb{R}$) (p$_0$ : $\mathbb{R}$ $\times$ $\mathbb{R}$) : Prop :=
+  $\forall$ $\varepsilon$ > 0, $\exists$ $\delta$ > 0, $\forall$ x : $\mathbb{R}$, 0 < |x - p$_0$.1| $\wedge$ |x - p$_0$.1| < $\delta$ $\to$
+    |(u (x, p$_0$.2) - u p$_0$) / (x - p$_0$.1) - ux$_0$| < $\varepsilon$
+\end{lstlisting}
+    \[ \lim_{x \to p_{0,x}} \frac{u(x, p_{0,y}) - u(p_0)}{x - p_{0,x}} = ux_0 \]
+
+    \item \textbf{\texttt{HasPartialDerivY\_R2\_eps}} ($u : \mathbb{R}^2 \to \mathbb{R}$, $uy_0 \in \mathbb{R}$, $p_0 \in \mathbb{R}^2$):
+\begin{lstlisting}[language=Caml, mathescape=true]
+def HasPartialDerivY_R2_eps (u : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) (uy$_0$ : $\mathbb{R}$) (p$_0$ : $\mathbb{R}$ $\times$ $\mathbb{R}$) : Prop :=
+  $\forall$ $\varepsilon$ > 0, $\exists$ $\delta$ > 0, $\forall$ y : $\mathbb{R}$, 0 < |y - p$_0$.2| $\wedge$ |y - p$_0$.2| < $\delta$ $\to$
+    |(u (p$_0$.1, y) - u p$_0$) / (y - p$_0$.2) - uy$_0$| < $\varepsilon$
+
+/-- A real-valued function of two real variables is harmonic on an open set G
+if its first and second partial derivatives are continuous and satisfy Laplace's equation. -/
+\end{lstlisting}
+    \[ \lim_{y \to p_{0,y}} \frac{u(p_{0,x}, y) - u(p_0)}{y - p_{0,y}} = uy_0 \]
+
+    \item \textbf{\texttt{Harmonic\_R2\_eps}} ($u : \mathbb{R}^2 \to \mathbb{R}$, $G \subset \mathbb{R}^2$):
+\begin{lstlisting}[language=Caml, mathescape=true]
+def Harmonic_R2_eps (u : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) (G : Set ($\mathbb{R}$ $\times$ $\mathbb{R}$)) : Prop :=
+  IsOpen G $\wedge$
+  $\exists$ (ux uy uxx uxy uyx uyy : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$),
+    ($\forall$ p $\in$ G, HasPartialDerivX_R2_eps u (ux p) p) $\wedge$
+    ($\forall$ p $\in$ G, HasPartialDerivY_R2_eps u (uy p) p) $\wedge$
+    (ContinuousOn ux G) $\wedge$
+    (ContinuousOn uy G) $\wedge$
+    ($\forall$ p $\in$ G, HasPartialDerivX_R2_eps ux (uxx p) p) $\wedge$
+    ($\forall$ p $\in$ G, HasPartialDerivY_R2_eps ux (uxy p) p) $\wedge$
+    ($\forall$ p $\in$ G, HasPartialDerivX_R2_eps uy (uyx p) p) $\wedge$
+    ($\forall$ p $\in$ G, HasPartialDerivY_R2_eps uy (uyy p) p) $\wedge$
+    (ContinuousOn uxx G) $\wedge$
+    (ContinuousOn uxy G) $\wedge$
+    (ContinuousOn uyx G) $\wedge$
+    (ContinuousOn uyy G) $\wedge$
+    ($\forall$ p $\in$ G, uxx p + uyy p = 0)
+\end{lstlisting}
+    \[ \text{First and second partials continuous on } G, \quad \Delta u = u_{xx} + u_{yy} = 0 \]
 \end{itemize}
+
 
 \section{\texttt{ComplexAnalysis/Sarason/Definitions.lean}}
 

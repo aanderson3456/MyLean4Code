@@ -2,9 +2,13 @@ import Mathlib.Topology.Basic
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Analysis.Normed.Group.Basic
 import Mathlib.Analysis.Real.Sqrt
+import Mathlib.Analysis.Calculus.Deriv.Basic
+import Mathlib.Analysis.Calculus.FDeriv.Symmetric
+import Mathlib.Analysis.Calculus.FDeriv.Partial
+import Mathlib.Analysis.Calculus.Deriv.Slope
 
 namespace ComplexAnalysis.R2
-open Complex
+open Complex Filter Topology
 
 noncomputable def sqNorm (x : ℝ × ℝ) : ℝ := x.1^2 + x.2^2
 
@@ -32,9 +36,9 @@ def ConvergesR2 (seq : ℕ → ℝ × ℝ) (L : ℝ × ℝ): Prop :=
   ∀ ε > 0, ∃ N : ℕ, ∀ n ≥ N, euclideanDist (seq n) L < ε
 
 def HasFDerivAt_R2_eps (u v : ℝ × ℝ → ℝ) (ux₀ uy₀ vx₀ vy₀ : ℝ) (a : ℝ × ℝ) : Prop :=
-  LimitR2toR (fun h => 
+  LimitR2toR (fun h =>
     euclideanNorm (
-      (u (a.1 + h.1, a.2 + h.2) - u a) - (ux₀ * h.1 + uy₀ * h.2), 
+      (u (a.1 + h.1, a.2 + h.2) - u a) - (ux₀ * h.1 + uy₀ * h.2),
       (v (a.1 + h.1, a.2 + h.2) - v a) - (vx₀ * h.1 + vy₀ * h.2)
     ) / euclideanNorm h
   ) (0, 0) 0
@@ -42,12 +46,361 @@ def HasFDerivAt_R2_eps (u v : ℝ × ℝ → ℝ) (ux₀ uy₀ vx₀ vy₀ : ℝ
 def DifferentiableAt_R2_eps (u v : ℝ × ℝ → ℝ) (a : ℝ × ℝ) : Prop :=
   ∃ (ux₀ uy₀ vx₀ vy₀ : ℝ), HasFDerivAt_R2_eps u v ux₀ uy₀ vx₀ vy₀ a
 
+def HasPartialDerivX_R2_eps (u : ℝ × ℝ → ℝ) (ux₀ : ℝ) (p₀ : ℝ × ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ, 0 < |x - p₀.1| ∧ |x - p₀.1| < δ →
+    |(u (x, p₀.2) - u p₀) / (x - p₀.1) - ux₀| < ε
+
+def HasPartialDerivY_R2_eps (u : ℝ × ℝ → ℝ) (uy₀ : ℝ) (p₀ : ℝ × ℝ) : Prop :=
+  ∀ ε > 0, ∃ δ > 0, ∀ y : ℝ, 0 < |y - p₀.2| ∧ |y - p₀.2| < δ →
+    |(u (p₀.1, y) - u p₀) / (y - p₀.2) - uy₀| < ε
+
+lemma tendsto_nhds_iff_eps_R (f : ℝ → ℝ) (L x₀ : ℝ) :
+    Tendsto f (nhdsWithin x₀ {x₀}ᶜ) (nhds L) ↔
+    (∀ ε > 0, ∃ δ > 0, ∀ x, 0 < |x - x₀| ∧ |x - x₀| < δ → |f x - L| < ε) := by {
+  rw [Metric.tendsto_nhdsWithin_nhds]
+  simp only [Set.mem_compl_iff, Set.mem_singleton_iff, dist_eq_norm, Real.norm_eq_abs]
+  apply Iff.intro
+  · intro h ε hε
+    rcases h ε hε with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro x hx
+    have h_ne : x ≠ x₀ := by {
+      intro contra
+      rw [contra, sub_self, abs_zero] at hx
+      exact (lt_irrefl 0 hx.1).elim
+    }
+    exact hδ h_ne hx.2
+  · intro h ε hε
+    rcases h ε hε with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro x hx1 hx2
+    have h_pos : 0 < |x - x₀| := abs_pos.mpr (sub_ne_zero.mpr hx1)
+    exact hδ x ⟨h_pos, hx2⟩
+}
+
+lemma hasDerivAt_iff_hasPartialDerivX_R2_eps (u : ℝ × ℝ → ℝ) (ux₀ : ℝ) (p₀ : ℝ × ℝ) :
+    HasDerivAt (fun x ↦ u (x, p₀.2)) ux₀ p₀.1 ↔ HasPartialDerivX_R2_eps u ux₀ p₀ := by {
+  unfold HasPartialDerivX_R2_eps
+  rw [hasDerivAt_iff_tendsto_slope]
+  unfold slope
+  rw [tendsto_nhds_iff_eps_R]
+  apply Iff.intro
+  · intro h ε hε
+    rcases h ε hε with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro x hx
+    have h_eq : (x - p₀.1)⁻¹ • ((fun x_1 => u (x_1, p₀.2)) x -ᵥ (fun x => u (x, p₀.2)) p₀.1) = (u (x, p₀.2) - u p₀) / (x - p₀.1) := by {
+      simp only [vsub_eq_sub, smul_eq_mul]
+      have h_eq2 : u (p₀.1, p₀.2) = u p₀ := rfl
+      rw [h_eq2, div_eq_mul_inv, mul_comm]
+    }
+    have hδx := hδ x hx
+    rw [h_eq] at hδx
+    exact hδx
+  · intro h ε hε
+    rcases h ε hε with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro x hx
+    have h_eq : (x - p₀.1)⁻¹ • ((fun x_1 => u (x_1, p₀.2)) x -ᵥ (fun x => u (x, p₀.2)) p₀.1) = (u (x, p₀.2) - u p₀) / (x - p₀.1) := by {
+      simp only [vsub_eq_sub, smul_eq_mul]
+      have h_eq2 : u (p₀.1, p₀.2) = u p₀ := rfl
+      rw [h_eq2, div_eq_mul_inv, mul_comm]
+    }
+    have hδx := hδ x hx
+    rw [← h_eq] at hδx
+    exact hδx
+}
+
+lemma hasDerivAt_iff_hasPartialDerivY_R2_eps (u : ℝ × ℝ → ℝ) (uy₀ : ℝ) (p₀ : ℝ × ℝ) :
+    HasDerivAt (fun y ↦ u (p₀.1, y)) uy₀ p₀.2 ↔ HasPartialDerivY_R2_eps u uy₀ p₀ := by {
+  unfold HasPartialDerivY_R2_eps
+  rw [hasDerivAt_iff_tendsto_slope]
+  unfold slope
+  rw [tendsto_nhds_iff_eps_R]
+  apply Iff.intro
+  · intro h ε hε
+    rcases h ε hε with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro x hx
+    have h_eq : (x - p₀.2)⁻¹ • ((fun y => u (p₀.1, y)) x -ᵥ (fun y => u (p₀.1, y)) p₀.2) = (u (p₀.1, x) - u p₀) / (x - p₀.2) := by {
+      simp only [vsub_eq_sub, smul_eq_mul]
+      have h_eq2 : u (p₀.1, p₀.2) = u p₀ := rfl
+      rw [h_eq2, div_eq_mul_inv, mul_comm]
+    }
+    have hδx := hδ x hx
+    rw [h_eq] at hδx
+    exact hδx
+  · intro h ε hε
+    rcases h ε hε with ⟨δ, hδ_pos, hδ⟩
+    use δ, hδ_pos
+    intro x hx
+    have h_eq : (x - p₀.2)⁻¹ • ((fun y => u (p₀.1, y)) x -ᵥ (fun y => u (p₀.1, y)) p₀.2) = (u (p₀.1, x) - u p₀) / (x - p₀.2) := by {
+      simp only [vsub_eq_sub, smul_eq_mul]
+      have h_eq2 : u (p₀.1, p₀.2) = u p₀ := rfl
+      rw [h_eq2, div_eq_mul_inv, mul_comm]
+    }
+    have hδx := hδ x hx
+    rw [← h_eq] at hδx
+    exact hδx
+}
+
+lemma hasFDerivAt_of_continuous_partials_eps
+    (u ux uy : ℝ × ℝ → ℝ) (G : Set (ℝ × ℝ)) (p : ℝ × ℝ)
+    (hG : IsOpen G) (hp : p ∈ G)
+    (h_ux : ∀ p ∈ G, HasPartialDerivX_R2_eps u (ux p) p)
+    (h_uy : ∀ p ∈ G, HasPartialDerivY_R2_eps u (uy p) p)
+    (h_cont_ux : ContinuousOn ux G)
+    (h_cont_uy : ContinuousOn uy G) :
+    HasFDerivAt u (
+      (ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (ux p)).comp (ContinuousLinearMap.fst ℝ ℝ ℝ) +
+      (ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (uy p)).comp (ContinuousLinearMap.snd ℝ ℝ ℝ)
+    ) p := by
+{
+  let f1 : ℝ → ℝ → ℝ →L[ℝ] ℝ := fun x y => ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (ux (x, y))
+  let f2 : ℝ → ℝ → ℝ →L[ℝ] ℝ := fun x y => ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (uy (x, y))
+  have hf1 : ∀ᶠ q in 𝓝 p, HasFDerivAt (fun x => u (x, q.2)) (f1 q.1 q.2) q.1 := by {
+    apply Filter.eventually_of_mem (hG.mem_nhds hp)
+    intro q hq
+    have h_deriv : HasDerivAt (fun x => u (x, q.2)) (ux q) q.1 :=
+      (hasDerivAt_iff_hasPartialDerivX_R2_eps u (ux q) q).mpr (h_ux q hq)
+    exact h_deriv.hasFDerivAt
+  }
+  have hf2 : ∀ᶠ q in 𝓝 p, HasFDerivAt (fun y => u (q.1, y)) (f2 q.1 q.2) q.2 := by {
+    apply Filter.eventually_of_mem (hG.mem_nhds hp)
+    intro q hq
+    have h_deriv : HasDerivAt (fun y => u (q.1, y)) (uy q) q.2 :=
+      (hasDerivAt_iff_hasPartialDerivY_R2_eps u (uy q) q).mpr (h_uy q hq)
+    exact h_deriv.hasFDerivAt
+  }
+  have hc1 : ContinuousAt ↿f1 p := by {
+    have h_cont_ux_p : ContinuousAt ux p := (ContinuousOn.continuousAt h_cont_ux (hG.mem_nhds hp))
+    have h_smul : Continuous (fun (c : ℝ) => ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) c) :=
+      (ContinuousLinearMap.smulRightL ℝ ℝ ℝ (ContinuousLinearMap.id ℝ ℝ)).continuous
+    exact h_smul.continuousAt.comp h_cont_ux_p
+  }
+  have hc2 : ContinuousAt ↿f2 p := by {
+    have h_cont_uy_p : ContinuousAt uy p := (ContinuousOn.continuousAt h_cont_uy (hG.mem_nhds hp))
+    have h_smul : Continuous (fun (c : ℝ) => ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) c) :=
+      (ContinuousLinearMap.smulRightL ℝ ℝ ℝ (ContinuousLinearMap.id ℝ ℝ)).continuous
+    exact h_smul.continuousAt.comp h_cont_uy_p
+  }
+  have h_strict := hasStrictFDerivAt_uncurry_coprod (u := p) (f := fun x y => u (x, y)) (f₁ := f1) (f₂ := f2) hf1 hf2 hc1 hc2
+  exact h_strict.hasFDerivAt
+}
+
+lemma contDiffAt_one_of_continuous_partials_eps
+    (u ux uy : ℝ × ℝ → ℝ) (G : Set (ℝ × ℝ)) (p : ℝ × ℝ)
+    (hG : IsOpen G) (hp : p ∈ G)
+    (h_ux : ∀ q ∈ G, HasPartialDerivX_R2_eps u (ux q) q)
+    (h_uy : ∀ q ∈ G, HasPartialDerivY_R2_eps u (uy q) q)
+    (h_cont_ux : ContinuousOn ux G)
+    (h_cont_uy : ContinuousOn uy G) :
+    ContDiffAt ℝ 1 u p := by {
+  let f' : ℝ × ℝ → ℝ × ℝ →L[ℝ] ℝ := fun q =>
+    ContinuousLinearMap.smulRight (ContinuousLinearMap.fst ℝ ℝ ℝ) (ux q) +
+    ContinuousLinearMap.smulRight (ContinuousLinearMap.snd ℝ ℝ ℝ) (uy q)
+  rw [contDiffAt_one_iff]
+  use f'
+  have h_nhd : G ∈ 𝓝 p := hG.mem_nhds hp
+  refine ⟨G, h_nhd, ?_, ?_⟩
+  · have h_smul1 : Continuous (fun (c : ℝ) => ContinuousLinearMap.smulRight (ContinuousLinearMap.fst ℝ ℝ ℝ) c) := 
+      (ContinuousLinearMap.smulRightL ℝ (ℝ × ℝ) ℝ (ContinuousLinearMap.fst ℝ ℝ ℝ)).continuous
+    have h_smul2 : Continuous (fun (c : ℝ) => ContinuousLinearMap.smulRight (ContinuousLinearMap.snd ℝ ℝ ℝ) c) := 
+      (ContinuousLinearMap.smulRightL ℝ (ℝ × ℝ) ℝ (ContinuousLinearMap.snd ℝ ℝ ℝ)).continuous
+    have h_comp1 : ContinuousOn (fun q => ContinuousLinearMap.smulRight (ContinuousLinearMap.fst ℝ ℝ ℝ) (ux q)) G := h_smul1.comp_continuousOn h_cont_ux
+    have h_comp2 : ContinuousOn (fun q => ContinuousLinearMap.smulRight (ContinuousLinearMap.snd ℝ ℝ ℝ) (uy q)) G := h_smul2.comp_continuousOn h_cont_uy
+    exact h_comp1.add h_comp2
+  · intro q hq
+    have H : f' q = 
+      ((ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (ux q)).comp (ContinuousLinearMap.fst ℝ ℝ ℝ) +
+      (ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (uy q)).comp (ContinuousLinearMap.snd ℝ ℝ ℝ)) := by {
+      apply ContinuousLinearMap.ext
+      intro v
+      simp only [f', ContinuousLinearMap.add_apply, ContinuousLinearMap.smulRight_apply,
+        ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply, smul_eq_mul]
+    }
+    rw [H]
+    exact hasFDerivAt_of_continuous_partials_eps u ux uy G q hG hq h_ux h_uy h_cont_ux h_cont_uy
+}
+
+lemma contDiffAt_two_of_continuous_second_partials_eps
+    (u ux uy uxx uxy uyx uyy : ℝ × ℝ → ℝ) (G : Set (ℝ × ℝ)) (p : ℝ × ℝ)
+    (hG : IsOpen G) (hp : p ∈ G)
+    (h_ux : ∀ q ∈ G, HasPartialDerivX_R2_eps u (ux q) q)
+    (h_uy : ∀ q ∈ G, HasPartialDerivY_R2_eps u (uy q) q)
+    (h_uxx : ∀ q ∈ G, HasPartialDerivX_R2_eps ux (uxx q) q)
+    (h_uxy : ∀ q ∈ G, HasPartialDerivY_R2_eps ux (uxy q) q)
+    (h_uyx : ∀ q ∈ G, HasPartialDerivX_R2_eps uy (uyx q) q)
+    (h_uyy : ∀ q ∈ G, HasPartialDerivY_R2_eps uy (uyy q) q)
+    (h_cont_ux : ContinuousOn ux G)
+    (h_cont_uy : ContinuousOn uy G)
+    (h_cont_uxx : ContinuousOn uxx G)
+    (h_cont_uxy : ContinuousOn uxy G)
+    (h_cont_uyx : ContinuousOn uyx G)
+    (h_cont_uyy : ContinuousOn uyy G) :
+    ContDiffAt ℝ 2 u p := by {
+  let f' : ℝ × ℝ → ℝ × ℝ →L[ℝ] ℝ := fun q =>
+    ContinuousLinearMap.smulRight (ContinuousLinearMap.fst ℝ ℝ ℝ) (ux q) +
+    ContinuousLinearMap.smulRight (ContinuousLinearMap.snd ℝ ℝ ℝ) (uy q)
+  change ContDiffAt ℝ (↑(1 : ℕ) + 1) u p
+  rw [contDiffAt_succ_iff_hasFDerivAt]
+  use f'
+  constructor
+  · have h_nhd : G ∈ 𝓝 p := hG.mem_nhds hp
+    use G, h_nhd
+    intro q hq
+    have H : f' q = 
+      ((ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (ux q)).comp (ContinuousLinearMap.fst ℝ ℝ ℝ) +
+      (ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (uy q)).comp (ContinuousLinearMap.snd ℝ ℝ ℝ)) := by {
+      apply ContinuousLinearMap.ext
+      intro v
+      simp only [f', ContinuousLinearMap.add_apply, ContinuousLinearMap.smulRight_apply,
+        ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply, smul_eq_mul]
+    }
+    rw [H]
+    exact hasFDerivAt_of_continuous_partials_eps u ux uy G q hG hq h_ux h_uy h_cont_ux h_cont_uy
+  · have H1 : ContDiffAt ℝ 1 ux p := 
+      contDiffAt_one_of_continuous_partials_eps ux uxx uxy G p hG hp h_uxx h_uxy h_cont_uxx h_cont_uxy
+    have H2 : ContDiffAt ℝ 1 uy p := 
+      contDiffAt_one_of_continuous_partials_eps uy uyx uyy G p hG hp h_uyx h_uyy h_cont_uyx h_cont_uyy
+    have h_L1 : ContDiff ℝ 1 (ContinuousLinearMap.smulRightL ℝ (ℝ × ℝ) ℝ (ContinuousLinearMap.fst ℝ ℝ ℝ)) := 
+      (ContinuousLinearMap.smulRightL ℝ (ℝ × ℝ) ℝ (ContinuousLinearMap.fst ℝ ℝ ℝ)).contDiff
+    have H1' : ContDiffAt ℝ 1 (fun q => ContinuousLinearMap.smulRight (ContinuousLinearMap.fst ℝ ℝ ℝ) (ux q)) p := 
+      h_L1.contDiffAt.comp p H1
+    have h_L2 : ContDiff ℝ 1 (ContinuousLinearMap.smulRightL ℝ (ℝ × ℝ) ℝ (ContinuousLinearMap.snd ℝ ℝ ℝ)) := 
+      (ContinuousLinearMap.smulRightL ℝ (ℝ × ℝ) ℝ (ContinuousLinearMap.snd ℝ ℝ ℝ)).contDiff
+    have H2' : ContDiffAt ℝ 1 (fun q => ContinuousLinearMap.smulRight (ContinuousLinearMap.snd ℝ ℝ ℝ) (uy q)) p := 
+      h_L2.contDiffAt.comp p H2
+    exact H1'.add H2'
+}
+
+lemma mixed_partials_eq_eps
+    (u ux uy uxx uxy uyx uyy : ℝ × ℝ → ℝ) (G : Set (ℝ × ℝ)) (p : ℝ × ℝ)
+    (hG : IsOpen G) (hp : p ∈ G)
+    (h_ux : ∀ q ∈ G, HasPartialDerivX_R2_eps u (ux q) q)
+    (h_uy : ∀ q ∈ G, HasPartialDerivY_R2_eps u (uy q) q)
+    (h_uxx : ∀ q ∈ G, HasPartialDerivX_R2_eps ux (uxx q) q)
+    (h_uxy : ∀ q ∈ G, HasPartialDerivY_R2_eps ux (uxy q) q)
+    (h_uyx : ∀ q ∈ G, HasPartialDerivX_R2_eps uy (uyx q) q)
+    (h_uyy : ∀ q ∈ G, HasPartialDerivY_R2_eps uy (uyy q) q)
+    (h_cont_ux : ContinuousOn ux G)
+    (h_cont_uy : ContinuousOn uy G)
+    (h_cont_uxx : ContinuousOn uxx G)
+    (h_cont_uxy : ContinuousOn uxy G)
+    (h_cont_uyx : ContinuousOn uyx G)
+    (h_cont_uyy : ContinuousOn uyy G) :
+    uxy p = uyx p := by {
+  have H := contDiffAt_two_of_continuous_second_partials_eps u ux uy uxx uxy uyx uyy G p hG hp h_ux h_uy h_uxx h_uxy h_uyx h_uyy h_cont_ux h_cont_uy h_cont_uxx h_cont_uxy h_cont_uyx h_cont_uyy
+  have Hsymm := H.isSymmSndFDerivAt (by norm_num)
+  have H_eq := Hsymm.eq (0, 1) (1, 0)
+  let f' : ℝ × ℝ → ℝ × ℝ →L[ℝ] ℝ := fun q =>
+    ContinuousLinearMap.smulRight (ContinuousLinearMap.fst ℝ ℝ ℝ) (ux q) +
+    ContinuousLinearMap.smulRight (ContinuousLinearMap.snd ℝ ℝ ℝ) (uy q)
+  have h_fderiv_eq : ∀ q ∈ G, fderiv ℝ u q = f' q := by {
+    intro q hq
+    have H_fderiv := hasFDerivAt_of_continuous_partials_eps u ux uy G q hG hq h_ux h_uy h_cont_ux h_cont_uy
+    -- we need f' q to match exactly the map in H_fderiv
+    have H_map : f' q = 
+      ((ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (ux q)).comp (ContinuousLinearMap.fst ℝ ℝ ℝ) +
+      (ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (uy q)).comp (ContinuousLinearMap.snd ℝ ℝ ℝ)) := by {
+      apply ContinuousLinearMap.ext
+      intro v
+      simp only [f', ContinuousLinearMap.add_apply, ContinuousLinearMap.smulRight_apply,
+        ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply, smul_eq_mul]
+    }
+    rw [H_map]
+    exact H_fderiv.fderiv
+  }
+  have h_eventually_eq : fderiv ℝ u =ᶠ[𝓝 p] f' := Filter.eventuallyEq_iff_exists_mem.mpr ⟨G, hG.mem_nhds hp, h_fderiv_eq⟩
+  have H_fderiv2 : fderiv ℝ (fderiv ℝ u) p = fderiv ℝ f' p := Filter.EventuallyEq.fderiv_eq h_eventually_eq
+  
+  let f_ux' : ℝ × ℝ →L[ℝ] ℝ := ContinuousLinearMap.smulRight (ContinuousLinearMap.fst ℝ ℝ ℝ) (uxx p) + ContinuousLinearMap.smulRight (ContinuousLinearMap.snd ℝ ℝ ℝ) (uxy p)
+  let f_uy' : ℝ × ℝ →L[ℝ] ℝ := ContinuousLinearMap.smulRight (ContinuousLinearMap.fst ℝ ℝ ℝ) (uyx p) + ContinuousLinearMap.smulRight (ContinuousLinearMap.snd ℝ ℝ ℝ) (uyy p)
+  
+  have H_ux_deriv := hasFDerivAt_of_continuous_partials_eps ux uxx uxy G p hG hp h_uxx h_uxy h_cont_uxx h_cont_uxy
+  have H_uy_deriv := hasFDerivAt_of_continuous_partials_eps uy uyx uyy G p hG hp h_uyx h_uyy h_cont_uyx h_cont_uyy
+  
+  have H_ux_deriv2 : HasFDerivAt ux f_ux' p := by {
+    have H_map : f_ux' = 
+      ((ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (uxx p)).comp (ContinuousLinearMap.fst ℝ ℝ ℝ) +
+      (ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (uxy p)).comp (ContinuousLinearMap.snd ℝ ℝ ℝ)) := by {
+      apply ContinuousLinearMap.ext
+      intro v
+      simp only [f_ux', ContinuousLinearMap.add_apply, ContinuousLinearMap.smulRight_apply,
+        ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply, smul_eq_mul]
+    }
+    rw [H_map]
+    exact H_ux_deriv
+  }
+  have H_uy_deriv2 : HasFDerivAt uy f_uy' p := by {
+    have H_map : f_uy' = 
+      ((ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (uyx p)).comp (ContinuousLinearMap.fst ℝ ℝ ℝ) +
+      (ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℝ ℝ) (uyy p)).comp (ContinuousLinearMap.snd ℝ ℝ ℝ)) := by {
+      apply ContinuousLinearMap.ext
+      intro v
+      simp only [f_uy', ContinuousLinearMap.add_apply, ContinuousLinearMap.smulRight_apply,
+        ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply, smul_eq_mul]
+    }
+    rw [H_map]
+    exact H_uy_deriv
+  }
+  let L1 : ℝ →L[ℝ] (ℝ × ℝ →L[ℝ] ℝ) := ContinuousLinearMap.smulRightL ℝ (ℝ × ℝ) ℝ (ContinuousLinearMap.fst ℝ ℝ ℝ)
+  let L2 : ℝ →L[ℝ] (ℝ × ℝ →L[ℝ] ℝ) := ContinuousLinearMap.smulRightL ℝ (ℝ × ℝ) ℝ (ContinuousLinearMap.snd ℝ ℝ ℝ)
+  
+  have h_L1_deriv : HasFDerivAt L1 L1 (ux p) := L1.hasFDerivAt
+  have h_L2_deriv : HasFDerivAt L2 L2 (uy p) := L2.hasFDerivAt
+  
+  have H_f1_deriv : HasFDerivAt (fun q => L1 (ux q)) (L1.comp f_ux') p := 
+    HasFDerivAt.comp p h_L1_deriv H_ux_deriv2
+  have H_f2_deriv : HasFDerivAt (fun q => L2 (uy q)) (L2.comp f_uy') p := 
+    HasFDerivAt.comp p h_L2_deriv H_uy_deriv2
+    
+  have H_f'_deriv : HasFDerivAt f' (L1.comp f_ux' + L2.comp f_uy') p := 
+    HasFDerivAt.add H_f1_deriv H_f2_deriv
+    
+  have H_fderiv3 : fderiv ℝ f' p = (L1.comp f_ux' + L2.comp f_uy') := H_f'_deriv.fderiv
+  
+  -- Now we evaluate both sides of H_eq at (0, 1) and (1, 0)
+  have H_val1 : fderiv ℝ (fderiv ℝ u) p (0, 1) (1, 0) = uxy p := by {
+    rw [H_fderiv2, H_fderiv3]
+    change (1 : ℝ) * ((0 : ℝ) * uxx p + (1 : ℝ) * uxy p) + (0 : ℝ) * ((0 : ℝ) * uyx p + (1 : ℝ) * uyy p) = uxy p
+    ring
+  }
+  have H_val2 : fderiv ℝ (fderiv ℝ u) p (1, 0) (0, 1) = uyx p := by {
+    rw [H_fderiv2, H_fderiv3]
+    change (0 : ℝ) * ((1 : ℝ) * uxx p + (0 : ℝ) * uxy p) + (1 : ℝ) * ((1 : ℝ) * uyx p + (0 : ℝ) * uyy p) = uyx p
+    ring
+  }
+  rw [H_val1, H_val2] at H_eq
+  exact H_eq
+}
+
+/-- A real-valued function of two real variables is harmonic on an open set G
+if its first and second partial derivatives are continuous and satisfy Laplace's equation. -/
+def Harmonic_R2_eps (u : ℝ × ℝ → ℝ) (G : Set (ℝ × ℝ)) : Prop :=
+  IsOpen G ∧
+  ∃ (ux uy uxx uxy uyx uyy : ℝ × ℝ → ℝ),
+    (∀ p ∈ G, HasPartialDerivX_R2_eps u (ux p) p) ∧
+    (∀ p ∈ G, HasPartialDerivY_R2_eps u (uy p) p) ∧
+    (ContinuousOn ux G) ∧
+    (ContinuousOn uy G) ∧
+    (∀ p ∈ G, HasPartialDerivX_R2_eps ux (uxx p) p) ∧
+    (∀ p ∈ G, HasPartialDerivY_R2_eps ux (uxy p) p) ∧
+    (∀ p ∈ G, HasPartialDerivX_R2_eps uy (uyx p) p) ∧
+    (∀ p ∈ G, HasPartialDerivY_R2_eps uy (uyy p) p) ∧
+    (ContinuousOn uxx G) ∧
+    (ContinuousOn uxy G) ∧
+    (ContinuousOn uyx G) ∧
+    (ContinuousOn uyy G) ∧
+    (∀ p ∈ G, uxx p + uyy p = 0)
+
 lemma HasFDerivAt_R2_eps_iff (u v : ℝ × ℝ → ℝ) (ux₀ uy₀ vx₀ vy₀ : ℝ) (a : ℝ × ℝ) :
   HasFDerivAt_R2_eps u v ux₀ uy₀ vx₀ vy₀ a ↔
   ∀ ε > 0, ∃ δ > 0, ∀ x : ℝ × ℝ,
     0 < euclideanDist x a ∧ euclideanDist x a < δ →
-    euclideanNorm (u x - u a - (ux₀ * (x.1 - a.1) + uy₀ * (x.2 - a.2)), 
-                   v x - v a - (vx₀ * (x.1 - a.1) + vy₀ * (x.2 - a.2))) < ε * euclideanDist x a := by {
+    euclideanNorm (u x - u a - (ux₀ * (x.1 - a.1) + uy₀ * (x.2 - a.2)),
+                   v x - v a - (vx₀ * (x.1 - a.1) + vy₀ * (x.2 - a.2))) < ε * euclideanDist x a := by
+{
   unfold HasFDerivAt_R2_eps LimitR2toR
   apply Iff.intro
   · intro h_lim ε hε
