@@ -269,28 +269,38 @@ def HolomorphicAt_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (z$_0$ : $\mathbb{C}
 \begin{lstlisting}[language=Caml, mathescape=true]
 def HolomorphicOn_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}$) : Prop :=
   $\forall$ z $\in$ G, DifferentiableAt_eps f z
-
-def TwiceContinuouslyDifferentiable_C_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}$) : Prop :=
-  TwiceContinuouslyDifferentiable_R2_eps (fun p => (f (p.1 + p.2 * I)).re) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G} $\wedge$
-  TwiceContinuouslyDifferentiable_R2_eps (fun p => (f (p.1 + p.2 * I)).im) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G}
-
-def Harmonic_C_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}$) : Prop :=
-  Harmonic_R2_eps (fun p => (f (p.1 + p.2 * I)).re) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G} $\wedge$
-  Harmonic_R2_eps (fun p => (f (p.1 + p.2 * I)).im) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G}
-
-end Sarason
-
-/-!
-  NOTE FOR FUTURE AGENTS:
-  Currently, some theorems in `Chapter2.lean` (such as `conformal_implies_holomorphic`)
-  use Mathlib's `DifferentiableAt $\mathbb{R}$ f z` to represent continuous first partial derivatives / real-differentiability.
-  Eventually, we want to replace this with our own custom epsilon-delta definitions
-  (similar to `HasDerivAt_eps`) that will define $\mathbb{R}^2$ differentiability from scratch.
--/
-
--- R^2 Euclidean Metrics (from AnalysTSP)
 \end{lstlisting}
     \[ f \text{ is holomorphic on } G \]
+
+    \item \textbf{\texttt{TwiceContinuouslyDifferentiable\_C\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $G \subset \mathbb{C}$): $f$ is twice continuously differentiable on the open set $G$ if its real and imaginary parts are.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def TwiceContinuouslyDifferentiable_C_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}$) : Prop :=
+  ComplexAnalysis.R2.TwiceContinuouslyDifferentiable_R2_eps (fun p => (f (p.1 + p.2 * I)).re) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G} $\wedge$
+  ComplexAnalysis.R2.TwiceContinuouslyDifferentiable_R2_eps (fun p => (f (p.1 + p.2 * I)).im) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G}
+\end{lstlisting}
+    \[ \text{Re}(f), \text{Im}(f) \in C^2(G, \mathbb{R}) \]
+
+    \item \textbf{\texttt{Harmonic\_C\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $G \subset \mathbb{C}$): $f$ is harmonic on the open set $G$ if its real and imaginary parts satisfy Laplace's equation $\Delta = 0$ on $G$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def Harmonic_C_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}$) : Prop :=
+  ComplexAnalysis.R2.Harmonic_R2_eps (fun p => (f (p.1 + p.2 * I)).re) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G} $\wedge$
+  ComplexAnalysis.R2.Harmonic_R2_eps (fun p => (f (p.1 + p.2 * I)).im) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G}
+\end{lstlisting}
+    \[ \Delta \text{Re}(f) = 0, \quad \Delta \text{Im}(f) = 0 \text{ on } G \]
+
+    \item \textbf{\texttt{HarmonicConjugate\_C\_eps}} ($u, v : \mathbb{C} \to \mathbb{R}$, $G \subset \mathbb{C}$): A real-valued function $v$ is a harmonic conjugate of a real-valued function $u$ on an open set $G$ if both are harmonic on $G$ and they satisfy the Cauchy-Riemann equations on $G$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def HarmonicConjugate_C_eps (u v : $\mathbb{C}$ $\to$ $\mathbb{R}$) (G : Set $\mathbb{C}$) : Prop :=
+  ComplexAnalysis.R2.Harmonic_R2_eps (fun p => u (p.1 + p.2 * I)) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G} $\wedge$
+  ComplexAnalysis.R2.Harmonic_R2_eps (fun p => v (p.1 + p.2 * I)) {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | p.1 + p.2 * I $\in$ G} $\wedge$
+  $\exists$ (ux uy vx vy : $\mathbb{C}$ $\to$ $\mathbb{R}$),
+    ($\forall$ z $\in$ G, HasPartialDerivX_C_to_R_eps u (ux z) z) $\wedge$
+    ($\forall$ z $\in$ G, HasPartialDerivY_C_to_R_eps u (uy z) z) $\wedge$
+    ($\forall$ z $\in$ G, HasPartialDerivX_C_to_R_eps v (vx z) z) $\wedge$
+    ($\forall$ z $\in$ G, HasPartialDerivY_C_to_R_eps v (vy z) z) $\wedge$
+    ($\forall$ z $\in$ G, ux z = vy z $\wedge$ uy z = -vx z)
+\end{lstlisting}
+    \[ \Delta u = 0, \quad \Delta v = 0, \quad u_x = v_y, \quad u_y = -v_x \text{ on } G \]
 \end{itemize}
 
 \section{\texttt{ComplexAnalysis/Sarason/Chapter1.lean}}

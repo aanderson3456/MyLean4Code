@@ -2470,6 +2470,15 @@ theorem conformal_implies_holomorphic_II_12 {G : Set ℂ} (hG : IsOpen G)
     rw [h_deriv_eq, h_del_eq]
     exact h_del_ne_zero
 }
+/-- A complex function is twice continuously differentiable on an open set G if its real and imaginary parts are. -/
+def TwiceContinuouslyDifferentiable_C_eps (f : ℂ → ℂ) (G : Set ℂ) : Prop :=
+  ComplexAnalysis.R2.TwiceContinuouslyDifferentiable_R2_eps (fun p => (f (p.1 + p.2 * I)).re) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} ∧
+  ComplexAnalysis.R2.TwiceContinuouslyDifferentiable_R2_eps (fun p => (f (p.1 + p.2 * I)).im) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}
+
+/-- A complex function is harmonic on an open set G if its real and imaginary parts are harmonic. -/
+def Harmonic_C_eps (f : ℂ → ℂ) (G : Set ℂ) : Prop :=
+  ComplexAnalysis.R2.Harmonic_R2_eps (fun p => (f (p.1 + p.2 * I)).re) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} ∧
+  ComplexAnalysis.R2.Harmonic_R2_eps (fun p => (f (p.1 + p.2 * I)).im) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}
 
 --II.14  Holomorphic implies Harmonic
 
@@ -2810,6 +2819,509 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
     ring
 }
 
+/-- A real-valued function v is a harmonic conjugate of a real-valued function u on an open set G
+if both are harmonic on G and they satisfy the Cauchy-Riemann equations on G. -/
+def HarmonicConjugate_C_eps (u v : ℂ → ℝ) (G : Set ℂ) : Prop :=
+  ComplexAnalysis.R2.Harmonic_R2_eps (fun p => u (p.1 + p.2 * I)) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} ∧
+  ComplexAnalysis.R2.Harmonic_R2_eps (fun p => v (p.1 + p.2 * I)) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} ∧
+  ∃ (ux uy vx vy : ℂ → ℝ),
+    (∀ z ∈ G, HasPartialDerivX_C_to_R_eps u (ux z) z) ∧
+    (∀ z ∈ G, HasPartialDerivY_C_to_R_eps u (uy z) z) ∧
+    (∀ z ∈ G, HasPartialDerivX_C_to_R_eps v (vx z) z) ∧
+    (∀ z ∈ G, HasPartialDerivY_C_to_R_eps v (vy z) z) ∧
+    (∀ z ∈ G, ux z = vy z ∧ uy z = -vx z)
 
+/--
+The $x$-partial derivative of a real-valued complex function is invariant under adding a real constant.
+-/
+lemma HasPartialDerivX_C_to_R_eps_add_const (v : ℂ → ℝ) (vx₀ : ℝ) (z₀ : ℂ) (c : ℝ)
+    (hv : HasPartialDerivX_C_to_R_eps v vx₀ z₀) :
+    HasPartialDerivX_C_to_R_eps (fun z => v z + c) vx₀ z₀ := by {
+  unfold HasPartialDerivX_C_to_R_eps at hv ⊢
+  intro ε hε
+  rcases hv ε hε with ⟨δ, hδ_pos, hδ⟩
+  use δ, hδ_pos
+  intro x hx
+  have h_bound := hδ x hx
+  have h_eq : (v ((x : ℂ) + (z₀.im : ℂ) * I) + c - (v z₀ + c)) / (x - z₀.re) - vx₀ =
+              (v ((x : ℂ) + (z₀.im : ℂ) * I) - v z₀) / (x - z₀.re) - vx₀ := by {
+    have h_sub : v ((x : ℂ) + (z₀.im : ℂ) * I) + c - (v z₀ + c) = v ((x : ℂ) + (z₀.im : ℂ) * I) - v z₀ := by ring
+    rw [h_sub]
+  }
+  rw [h_eq]
+  exact h_bound
+}
+
+/--
+The $y$-partial derivative of a real-valued complex function is invariant under adding a real constant.
+-/
+lemma HasPartialDerivY_C_to_R_eps_add_const (v : ℂ → ℝ) (vy₀ : ℝ) (z₀ : ℂ) (c : ℝ)
+    (hv : HasPartialDerivY_C_to_R_eps v vy₀ z₀) :
+    HasPartialDerivY_C_to_R_eps (fun z => v z + c) vy₀ z₀ := by {
+  unfold HasPartialDerivY_C_to_R_eps at hv ⊢
+  intro ε hε
+  rcases hv ε hε with ⟨δ, hδ_pos, hδ⟩
+  use δ, hδ_pos
+  intro y hy
+  have h_bound := hδ y hy
+  have h_eq : (v ((z₀.re : ℂ) + (y : ℂ) * I) + c - (v z₀ + c)) / (y - z₀.im) - vy₀ =
+              (v ((z₀.re : ℂ) + (y : ℂ) * I) - v z₀) / (y - z₀.im) - vy₀ := by {
+    have h_sub : v ((z₀.re : ℂ) + (y : ℂ) * I) + c - (v z₀ + c) = v ((z₀.re : ℂ) + (y : ℂ) * I) - v z₀ := by ring
+    rw [h_sub]
+  }
+  rw [h_eq]
+  exact h_bound
+}
+
+/--
+The $x$-partial derivative of a function on $\mathbb{R}^2$ is invariant under adding a constant.
+-/
+lemma HasPartialDerivX_R2_eps_add_const (u : ℝ × ℝ → ℝ) (ux₀ : ℝ) (p₀ : ℝ × ℝ) (c : ℝ)
+    (hu : HasPartialDerivX_R2_eps u ux₀ p₀) :
+    HasPartialDerivX_R2_eps (fun p => u p + c) ux₀ p₀ := by {
+  unfold HasPartialDerivX_R2_eps at hu ⊢
+  intro ε hε
+  rcases hu ε hε with ⟨δ, hδ_pos, hδ⟩
+  use δ, hδ_pos
+  intro x hx
+  have h_bound := hδ x hx
+  have h_eq : (u (x, p₀.2) + c - (u p₀ + c)) / (x - p₀.1) - ux₀ =
+              (u (x, p₀.2) - u p₀) / (x - p₀.1) - ux₀ := by {
+    have h_sub : u (x, p₀.2) + c - (u p₀ + c) = u (x, p₀.2) - u p₀ := by ring
+    rw [h_sub]
+  }
+  rw [h_eq]
+  exact h_bound
+}
+
+/--
+The $y$-partial derivative of a function on $\mathbb{R}^2$ is invariant under adding a constant.
+-/
+lemma HasPartialDerivY_R2_eps_add_const (u : ℝ × ℝ → ℝ) (uy₀ : ℝ) (p₀ : ℝ × ℝ) (c : ℝ)
+    (hu : HasPartialDerivY_R2_eps u uy₀ p₀) :
+    HasPartialDerivY_R2_eps (fun p => u p + c) uy₀ p₀ := by {
+  unfold HasPartialDerivY_R2_eps at hu ⊢
+  intro ε hε
+  rcases hu ε hε with ⟨δ, hδ_pos, hδ⟩
+  use δ, hδ_pos
+  intro y hy
+  have h_bound := hδ y hy
+  have h_eq : (u (p₀.1, y) + c - (u p₀ + c)) / (y - p₀.2) - uy₀ =
+              (u (p₀.1, y) - u p₀) / (y - p₀.2) - uy₀ := by {
+    have h_sub : u (p₀.1, y) + c - (u p₀ + c) = u (p₀.1, y) - u p₀ := by ring
+    rw [h_sub]
+  }
+  rw [h_eq]
+  exact h_bound
+}
+
+/--
+A twice continuously differentiable function on $\mathbb{R}^2$ remains twice continuously differentiable when a constant is added,
+because the partial derivatives are identical.
+-/
+lemma TwiceContinuouslyDifferentiable_R2_eps_add_const (u : ℝ × ℝ → ℝ) (G : Set (ℝ × ℝ)) (c : ℝ)
+    (hu : TwiceContinuouslyDifferentiable_R2_eps u G) :
+    TwiceContinuouslyDifferentiable_R2_eps (fun p => u p + c) G := by {
+  unfold TwiceContinuouslyDifferentiable_R2_eps at hu ⊢
+  rcases hu with ⟨hG, ux, uy, uxx, uxy, uyx, uyy, h_ux, h_uy, h_cont_ux, h_cont_uy, h_uxx, h_uxy, h_uyx, h_uyy, h_cont_uxx, h_cont_uxy, h_cont_uyx, h_cont_uyy⟩
+  refine ⟨hG, ux, uy, uxx, uxy, uyx, uyy, ?_, ?_, h_cont_ux, h_cont_uy, h_uxx, h_uxy, h_uyx, h_uyy, h_cont_uxx, h_cont_uxy, h_cont_uyx, h_cont_uyy⟩
+  · intro p hp
+    exact HasPartialDerivX_R2_eps_add_const u (ux p) p c (h_ux p hp)
+  · intro p hp
+    exact HasPartialDerivY_R2_eps_add_const u (uy p) p c (h_uy p hp)
+}
+
+/--
+A harmonic function on $\mathbb{R}^2$ remains harmonic when a constant is added, since the Laplace equation holds.
+-/
+lemma Harmonic_R2_eps_add_const (u : ℝ × ℝ → ℝ) (G : Set (ℝ × ℝ)) (c : ℝ)
+    (hu : Harmonic_R2_eps u G) :
+    Harmonic_R2_eps (fun p => u p + c) G := by {
+  unfold Harmonic_R2_eps at hu ⊢
+  rcases hu with ⟨h_twice, ux, uy, uxx, uxy, uyx, uyy, h_ux, h_uy, h_uxx, h_uyy, h_laplace⟩
+  refine ⟨TwiceContinuouslyDifferentiable_R2_eps_add_const u G c h_twice, ux, uy, uxx, uxy, uyx, uyy, ?_, ?_, h_uxx, h_uyy, h_laplace⟩
+  · intro p hp
+    exact HasPartialDerivX_R2_eps_add_const u (ux p) p c (h_ux p hp)
+  · intro p hp
+    exact HasPartialDerivY_R2_eps_add_const u (uy p) p c (h_uy p hp)
+}
+
+/--
+If $v$ is a harmonic conjugate of $u$ on an open set $G$, then for any real constant $c$,
+$v + c$ is also a harmonic conjugate of $u$. The addition of a constant leaves all partial derivatives invariant,
+preserving the Cauchy-Riemann equations and harmonicity.
+-/
+theorem nonunique_harmonic_conj (u v : ℂ → ℝ) (G : Set ℂ) (c : ℝ)
+    (h_conj : HarmonicConjugate_C_eps u v G) :
+    HarmonicConjugate_C_eps u (fun z => v z + c) G := by {
+  unfold HarmonicConjugate_C_eps at h_conj ⊢
+  rcases h_conj with ⟨h_u_harm, h_v_harm, ux, uy, vx, vy, h_ux, h_uy, h_vx, h_vy, h_CR⟩
+  refine ⟨h_u_harm, ?_, ux, uy, vx, vy, h_ux, h_uy, ?_, ?_, h_CR⟩
+  · have h_v_add_c_harm : Harmonic_R2_eps (fun p => (v (↑p.1 + ↑p.2 * I)) + c) {p : ℝ × ℝ | ↑p.1 + ↑p.2 * I ∈ G} := Harmonic_R2_eps_add_const (fun p => v (↑p.1 + ↑p.2 * I)) {p : ℝ × ℝ | ↑p.1 + ↑p.2 * I ∈ G} c h_v_harm
+    exact h_v_add_c_harm
+  · intro z hz
+    exact HasPartialDerivX_C_to_R_eps_add_const v (vx z) z c (h_vx z hz)
+  · intro z hz
+    exact HasPartialDerivY_C_to_R_eps_add_const v (vy z) z c (h_vy z hz)
+}
+
+-- Exercises
+
+/--
+If $u(x,y) = ax^3 + bx^2y + cxy^2 + dy^3$ is harmonic on all of $\mathbb{R}^2$,
+then its coefficients must satisfy $c = -3a$ and $b = -3d$.
+-/
+lemma hasDerivAt_u_x (a b c d p2 : ℝ) (x : ℝ) :
+  HasDerivAt (fun x => a * x^3 + b * x^2 * p2 + c * x * p2^2 + d * p2^3)
+    (3 * a * x^2 + 2 * b * x * p2 + c * p2^2) x := by {
+  have h1 : HasDerivAt (fun x => a * x^3) (a * (3 * x^2)) x := by {
+    have h1a : HasDerivAt (fun x : ℝ => x^3) ((3 : ℝ) * x^(3-1)) x := hasDerivAt_pow 3 x
+    have h_eq : (3 : ℝ) * x ^ (3 - 1) = 3 * x^2 := by ring
+    exact HasDerivAt.const_mul a (h_eq ▸ h1a)
+  }
+  have h2 : HasDerivAt (fun x => b * x^2 * p2) (b * (2 * x) * p2) x := by {
+    have h2a : HasDerivAt (fun x => b * x^2) (b * (2 * x)) x := by {
+      have h := hasDerivAt_pow 2 x
+      have h_eq : (2 : ℝ) * x ^ (2 - 1) = 2 * x := by ring
+      exact HasDerivAt.const_mul b (h_eq ▸ h)
+    }
+    exact HasDerivAt.mul_const h2a p2
+  }
+  have h3 : HasDerivAt (fun x => c * x * p2^2) (c * 1 * p2^2) x := by {
+    have h3a : HasDerivAt (fun x => c * x) (c * 1) x := HasDerivAt.const_mul c (hasDerivAt_id x)
+    exact HasDerivAt.mul_const h3a (p2^2)
+  }
+  have h4 : HasDerivAt (fun x => d * p2^3) 0 x := hasDerivAt_const x (d * p2^3)
+  have h_eq : a * (3 * x ^ 2) + b * (2 * x) * p2 + c * 1 * p2 ^ 2 + 0 = 3 * a * x ^ 2 + 2 * b * x * p2 + c * p2 ^ 2 := by ring
+  exact h_eq ▸ HasDerivAt.add (HasDerivAt.add (HasDerivAt.add h1 h2) h3) h4
+}
+
+lemma hasDerivAt_u_y (a b c d p1 : ℝ) (y : ℝ) :
+  HasDerivAt (fun y => a * p1^3 + b * p1^2 * y + c * p1 * y^2 + d * y^3)
+    (b * p1^2 + 2 * c * p1 * y + 3 * d * y^2) y := by {
+  have h1 : HasDerivAt (fun y => a * p1^3) 0 y := hasDerivAt_const y (a * p1^3)
+  have h2 : HasDerivAt (fun y => b * p1^2 * y) (b * p1^2 * 1) y := HasDerivAt.const_mul (b * p1^2) (hasDerivAt_id y)
+  have h3 : HasDerivAt (fun y => c * p1 * y^2) (c * p1 * (2 * y)) y := by {
+    have h := hasDerivAt_pow 2 y
+    have h_eq : (2 : ℝ) * y ^ (2 - 1) = 2 * y := by ring
+    exact HasDerivAt.const_mul (c * p1) (h_eq ▸ h)
+  }
+  have h4 : HasDerivAt (fun y => d * y^3) (d * (3 * y^2)) y := by {
+    have h := hasDerivAt_pow 3 y
+    have h_eq : (3 : ℝ) * y ^ (3 - 1) = 3 * y^2 := by ring
+    exact HasDerivAt.const_mul d (h_eq ▸ h)
+  }
+  have h_eq : 0 + b * p1 ^ 2 * 1 + c * p1 * (2 * y) + d * (3 * y ^ 2) = b * p1 ^ 2 + 2 * c * p1 * y + 3 * d * y ^ 2 := by ring
+  exact h_eq ▸ HasDerivAt.add (HasDerivAt.add (HasDerivAt.add h1 h2) h3) h4
+}
+
+lemma hasDerivAt_u_xx (a b c p2 : ℝ) (x : ℝ) :
+  HasDerivAt (fun x => 3 * a * x^2 + 2 * b * x * p2 + c * p2^2)
+    (6 * a * x + 2 * b * p2) x := by {
+  have h1 : HasDerivAt (fun x => 3 * a * x^2) (3 * a * (2 * x)) x := by {
+    have h := hasDerivAt_pow 2 x
+    have h_eq : (2 : ℝ) * x ^ (2 - 1) = 2 * x := by ring
+    exact HasDerivAt.const_mul (3 * a) (h_eq ▸ h)
+  }
+  have h2 : HasDerivAt (fun x => 2 * b * x * p2) (2 * b * 1 * p2) x := by {
+    have h2a : HasDerivAt (fun x => 2 * b * x) (2 * b * 1) x := HasDerivAt.const_mul (2 * b) (hasDerivAt_id x)
+    exact HasDerivAt.mul_const h2a p2
+  }
+  have h3 : HasDerivAt (fun x => c * p2^2) 0 x := hasDerivAt_const x (c * p2^2)
+  have h_eq : 3 * a * (2 * x) + 2 * b * 1 * p2 + 0 = 6 * a * x + 2 * b * p2 := by ring
+  exact h_eq ▸ HasDerivAt.add (HasDerivAt.add h1 h2) h3
+}
+
+lemma hasDerivAt_u_yy (b c d p1 : ℝ) (y : ℝ) :
+  HasDerivAt (fun y => b * p1^2 + 2 * c * p1 * y + 3 * d * y^2)
+    (2 * c * p1 + 6 * d * y) y := by {
+  have h1 : HasDerivAt (fun y => b * p1^2) 0 y := hasDerivAt_const y (b * p1^2)
+  have h2 : HasDerivAt (fun y => 2 * c * p1 * y) (2 * c * p1 * 1) y := HasDerivAt.const_mul (2 * c * p1) (hasDerivAt_id y)
+  have h3 : HasDerivAt (fun y => 3 * d * y^2) (3 * d * (2 * y)) y := by {
+    have h := hasDerivAt_pow 2 y
+    have h_eq : (2 : ℝ) * y ^ (2 - 1) = 2 * y := by ring
+    exact HasDerivAt.const_mul (3 * d) (h_eq ▸ h)
+  }
+  have h_eq : 0 + 2 * c * p1 * 1 + 3 * d * (2 * y) = 2 * c * p1 + 6 * d * y := by ring
+  exact h_eq ▸ HasDerivAt.add (HasDerivAt.add h1 h2) h3
+}
+
+lemma hasDerivAt_u_xy (a b c p1 : ℝ) (y : ℝ) :
+  HasDerivAt (fun y => 3 * a * p1^2 + 2 * b * p1 * y + c * y^2)
+    (2 * b * p1 + 2 * c * y) y := by {
+  have h1 : HasDerivAt (fun y => 3 * a * p1^2) 0 y := hasDerivAt_const y (3 * a * p1^2)
+  have h2 : HasDerivAt (fun y => 2 * b * p1 * y) (2 * b * p1 * 1) y := HasDerivAt.const_mul (2 * b * p1) (hasDerivAt_id y)
+  have h3 : HasDerivAt (fun y => c * y^2) (c * (2 * y)) y := by {
+    have h := hasDerivAt_pow 2 y
+    have h_eq : (2 : ℝ) * y ^ (2 - 1) = 2 * y := by ring
+    exact HasDerivAt.const_mul c (h_eq ▸ h)
+  }
+  have h_eq : 0 + 2 * b * p1 * 1 + c * (2 * y) = 2 * b * p1 + 2 * c * y := by ring
+  exact h_eq ▸ HasDerivAt.add (HasDerivAt.add h1 h2) h3
+}
+
+lemma hasDerivAt_u_yx (b c d p2 : ℝ) (x : ℝ) :
+  HasDerivAt (fun x => b * x^2 + 2 * c * x * p2 + 3 * d * p2^2)
+    (2 * b * x + 2 * c * p2) x := by {
+  have h1 : HasDerivAt (fun x => b * x^2) (b * (2 * x)) x := by {
+    have h := hasDerivAt_pow 2 x
+    have h_eq : (2 : ℝ) * x ^ (2 - 1) = 2 * x := by ring
+    exact HasDerivAt.const_mul b (h_eq ▸ h)
+  }
+  have h2 : HasDerivAt (fun x => 2 * c * x * p2) (2 * c * 1 * p2) x := by {
+    have h2a : HasDerivAt (fun x => 2 * c * x) (2 * c * 1) x := HasDerivAt.const_mul (2 * c) (hasDerivAt_id x)
+    exact HasDerivAt.mul_const h2a p2
+  }
+  have h3 : HasDerivAt (fun x => 3 * d * p2^2) 0 x := hasDerivAt_const x (3 * d * p2^2)
+  have h_eq : b * (2 * x) + 2 * c * 1 * p2 + 0 = 2 * b * x + 2 * c * p2 := by ring
+  exact h_eq ▸ HasDerivAt.add (HasDerivAt.add h1 h2) h3
+}
+
+lemma exercise_harmonic_coeffs (a b c d : ℝ) :
+    Harmonic_R2_eps (fun p : ℝ × ℝ => a * p.1^3 + b * p.1^2 * p.2 + c * p.1 * p.2^2 + d * p.2^3) Set.univ →
+    b = -3 * d ∧ c = -3 * a := by {
+  intro h
+  unfold Harmonic_R2_eps at h
+  rcases h with ⟨-, ux, uy, uxx, uxy, uyx, uyy, hx, hy, hxx, hyy, hlap⟩
+  
+  have h_ux_eq : ∀ p : ℝ × ℝ, ux p = 3 * a * p.1^2 + 2 * b * p.1 * p.2 + c * p.2^2 := by {
+    intro p
+    have h1 := (hasDerivAt_iff_hasPartialDerivX_R2_eps _ _ _).mpr (hx p (Set.mem_univ p))
+    have h2 := hasDerivAt_u_x a b c d p.2 p.1
+    exact HasDerivAt.unique h1 h2
+  }
+  
+  have h_uy_eq : ∀ p : ℝ × ℝ, uy p = b * p.1^2 + 2 * c * p.1 * p.2 + 3 * d * p.2^2 := by {
+    intro p
+    have h1 := (hasDerivAt_iff_hasPartialDerivY_R2_eps _ _ _).mpr (hy p (Set.mem_univ p))
+    have h2 := hasDerivAt_u_y a b c d p.1 p.2
+    exact HasDerivAt.unique h1 h2
+  }
+  
+  have h_uxx_eq : ∀ p : ℝ × ℝ, uxx p = 6 * a * p.1 + 2 * b * p.2 := by {
+    intro p
+    have h1 := (hasDerivAt_iff_hasPartialDerivX_R2_eps _ _ _).mpr (hxx p (Set.mem_univ p))
+    have h2 := hasDerivAt_u_xx a b c p.2 p.1
+    have h_ux_subst : (fun x : ℝ => ux (x, p.2)) = (fun x : ℝ => 3 * a * x^2 + 2 * b * x * p.2 + c * p.2^2) := by {
+      ext x
+      exact h_ux_eq (x, p.2)
+    }
+    rw [h_ux_subst] at h1
+    exact HasDerivAt.unique h1 h2
+  }
+  
+  have h_uyy_eq : ∀ p : ℝ × ℝ, uyy p = 2 * c * p.1 + 6 * d * p.2 := by {
+    intro p
+    have h1 := (hasDerivAt_iff_hasPartialDerivY_R2_eps _ _ _).mpr (hyy p (Set.mem_univ p))
+    have h2 := hasDerivAt_u_yy b c d p.1 p.2
+    have h_uy_subst : (fun y : ℝ => uy (p.1, y)) = (fun y : ℝ => b * p.1^2 + 2 * c * p.1 * y + 3 * d * y^2) := by {
+      ext y
+      exact h_uy_eq (p.1, y)
+    }
+    rw [h_uy_subst] at h1
+    exact HasDerivAt.unique h1 h2
+  }
+  
+  have hlap1 := hlap (1, 0) (Set.mem_univ _)
+  rw [h_uxx_eq (1, 0), h_uyy_eq (1, 0)] at hlap1
+  dsimp at hlap1
+  
+  have hlap2 := hlap (0, 1) (Set.mem_univ _)
+  rw [h_uxx_eq (0, 1), h_uyy_eq (0, 1)] at hlap2
+  dsimp at hlap2
+  
+  constructor
+  · linarith
+  · linarith
+}
+
+lemma exercise_is_harmonic (a b c d : ℝ) (h_b : b = -3 * d) (h_c : c = -3 * a) :
+    Harmonic_R2_eps (fun p : ℝ × ℝ => a * p.1^3 + b * p.1^2 * p.2 + c * p.1 * p.2^2 + d * p.2^3) Set.univ := by {
+  unfold Harmonic_R2_eps
+  let ux := fun p : ℝ × ℝ => 3 * a * p.1^2 + 2 * b * p.1 * p.2 + c * p.2^2
+  let uy := fun p : ℝ × ℝ => b * p.1^2 + 2 * c * p.1 * p.2 + 3 * d * p.2^2
+  let uxx := fun p : ℝ × ℝ => 6 * a * p.1 + 2 * b * p.2
+  let uxy := fun p : ℝ × ℝ => 2 * b * p.1 + 2 * c * p.2
+  let uyx := fun p : ℝ × ℝ => 2 * b * p.1 + 2 * c * p.2
+  let uyy := fun p : ℝ × ℝ => 2 * c * p.1 + 6 * d * p.2
+  
+  refine ⟨?_, ux, uy, uxx, uxy, uyx, uyy, ?_, ?_, ?_, ?_, ?_⟩
+  · unfold TwiceContinuouslyDifferentiable_R2_eps
+    refine ⟨isOpen_univ, ux, uy, uxx, uxy, uyx, uyy, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+    · intro p _
+      rw [← hasDerivAt_iff_hasPartialDerivX_R2_eps]
+      exact hasDerivAt_u_x a b c d p.2 p.1
+    · intro p _
+      rw [← hasDerivAt_iff_hasPartialDerivY_R2_eps]
+      exact hasDerivAt_u_y a b c d p.1 p.2
+    · exact Continuous.continuousOn (by fun_prop)
+    · exact Continuous.continuousOn (by fun_prop)
+    · intro p _
+      rw [← hasDerivAt_iff_hasPartialDerivX_R2_eps]
+      exact hasDerivAt_u_xx a b c p.2 p.1
+    · intro p _
+      rw [← hasDerivAt_iff_hasPartialDerivY_R2_eps]
+      exact hasDerivAt_u_xy a b c p.1 p.2
+    · intro p _
+      rw [← hasDerivAt_iff_hasPartialDerivX_R2_eps]
+      exact hasDerivAt_u_yx b c d p.2 p.1
+    · intro p _
+      rw [← hasDerivAt_iff_hasPartialDerivY_R2_eps]
+      exact hasDerivAt_u_yy b c d p.1 p.2
+    · exact Continuous.continuousOn (by fun_prop)
+    · exact Continuous.continuousOn (by fun_prop)
+    · exact Continuous.continuousOn (by fun_prop)
+    · exact Continuous.continuousOn (by fun_prop)
+  · intro p _
+    rw [← hasDerivAt_iff_hasPartialDerivX_R2_eps]
+    exact hasDerivAt_u_x a b c d p.2 p.1
+  · intro p _
+    rw [← hasDerivAt_iff_hasPartialDerivY_R2_eps]
+    exact hasDerivAt_u_y a b c d p.1 p.2
+  · intro p _
+    rw [← hasDerivAt_iff_hasPartialDerivX_R2_eps]
+    exact hasDerivAt_u_xx a b c p.2 p.1
+  · intro p _
+    rw [← hasDerivAt_iff_hasPartialDerivY_R2_eps]
+    exact hasDerivAt_u_yy b c d p.1 p.2
+  · intro p _
+    dsimp [uxx, uyy]
+    subst h_b
+    subst h_c
+    ring
+}
+
+/--
+If $u(x,y) = ax^3 - 3dx^2y - 3axy^2 + dy^3$, then its harmonic conjugate is
+$v(x,y) = dx^3 + 3ax^2y - 3dxy^2 - ay^3$.
+Both functions satisfy the Cauchy-Riemann equations and are harmonic on all of $\mathbb{C}$.
+-/
+lemma exercise_harmonic_conjugate (a d : ℝ) :
+    HarmonicConjugate_C_eps
+      (fun z => a * z.re^3 - 3 * d * z.re^2 * z.im - 3 * a * z.re * z.im^2 + d * z.im^3)
+      (fun z => d * z.re^3 + 3 * a * z.re^2 * z.im - 3 * d * z.re * z.im^2 - a * z.im^3)
+      Set.univ := by {
+  unfold HarmonicConjugate_C_eps
+  
+  have h_u_harm : Harmonic_R2_eps (fun p => (fun z : ℂ => a * z.re^3 - 3 * d * z.re^2 * z.im - 3 * a * z.re * z.im^2 + d * z.im^3) (p.1 + p.2 * I)) Set.univ := by {
+    have h_apply := exercise_is_harmonic a (-3*d) (-3*a) d rfl rfl
+    have h_eq : (fun p : ℝ × ℝ => a * p.1^3 + -3 * d * p.1^2 * p.2 + -3 * a * p.1 * p.2^2 + d * p.2^3) = (fun p : ℝ × ℝ => (fun z : ℂ => a * z.re^3 - 3 * d * z.re^2 * z.im - 3 * a * z.re * z.im^2 + d * z.im^3) (p.1 + p.2 * I)) := by {
+      ext p
+      simp
+      ring
+    }
+    rw [← h_eq]
+    exact h_apply
+  }
+  
+  have h_v_harm : Harmonic_R2_eps (fun p => (fun z : ℂ => d * z.re^3 + 3 * a * z.re^2 * z.im - 3 * d * z.re * z.im^2 - a * z.im^3) (p.1 + p.2 * I)) Set.univ := by {
+    have h_apply := exercise_is_harmonic d (3*a) (-3*d) (-a) (by ring) (by ring)
+    have h_eq : (fun p : ℝ × ℝ => d * p.1^3 + 3 * a * p.1^2 * p.2 + -3 * d * p.1 * p.2^2 + -a * p.2^3) = (fun p : ℝ × ℝ => (fun z : ℂ => d * z.re^3 + 3 * a * z.re^2 * z.im - 3 * d * z.re * z.im^2 - a * z.im^3) (p.1 + p.2 * I)) := by {
+      ext p
+      simp
+      ring
+    }
+    rw [← h_eq]
+    exact h_apply
+  }
+  
+  let ux := fun z : ℂ => 3 * a * z.re^2 - 6 * d * z.re * z.im - 3 * a * z.im^2
+  let uy := fun z : ℂ => -3 * d * z.re^2 - 6 * a * z.re * z.im + 3 * d * z.im^2
+  let vx := fun z : ℂ => 3 * d * z.re^2 + 6 * a * z.re * z.im - 3 * d * z.im^2
+  let vy := fun z : ℂ => 3 * a * z.re^2 - 6 * d * z.re * z.im - 3 * a * z.im^2
+  
+  have h_u_harm' : Harmonic_R2_eps (fun p => (fun z : ℂ => a * z.re^3 - 3 * d * z.re^2 * z.im - 3 * a * z.re * z.im^2 + d * z.im^3) (p.1 + p.2 * I)) {p | ↑p.1 + ↑p.2 * I ∈ (Set.univ : Set ℂ)} := by {
+    have h_set : {p : ℝ × ℝ | ↑p.1 + ↑p.2 * I ∈ (Set.univ : Set ℂ)} = Set.univ := Set.ext (fun _ => iff_true_intro (Set.mem_univ _))
+    rw [h_set]
+    exact h_u_harm
+  }
+
+  have h_v_harm' : Harmonic_R2_eps (fun p => (fun z : ℂ => d * z.re^3 + 3 * a * z.re^2 * z.im - 3 * d * z.re * z.im^2 - a * z.im^3) (p.1 + p.2 * I)) {p | ↑p.1 + ↑p.2 * I ∈ (Set.univ : Set ℂ)} := by {
+    have h_set : {p : ℝ × ℝ | ↑p.1 + ↑p.2 * I ∈ (Set.univ : Set ℂ)} = Set.univ := Set.ext (fun _ => iff_true_intro (Set.mem_univ _))
+    rw [h_set]
+    exact h_v_harm
+  }
+  
+  refine ⟨h_u_harm', h_v_harm', ?_⟩
+  use ux, uy, vx, vy
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · intro z _
+    rw [HasPartialDerivX_C_to_R_eps_iff_R2_eps, ← hasDerivAt_iff_hasPartialDerivX_R2_eps]
+    have h_deriv := hasDerivAt_u_x a (-3*d) (-3*a) d z.im z.re
+    have h_eq2 : (3 * a * z.re ^ 2 + 2 * (-3 * d) * z.re * z.im + -3 * a * z.im ^ 2) = ux z := by {
+      dsimp [ux]
+      ring
+    }
+    have h_deriv' : HasDerivAt (fun x : ℝ => (fun z : ℂ => a * z.re ^ 3 - 3 * d * z.re ^ 2 * z.im - 3 * a * z.re * z.im ^ 2 + d * z.im ^ 3) (↑(x, (z.re, z.im).2).1 + ↑(x, (z.re, z.im).2).2 * I)) (3 * a * z.re ^ 2 + 2 * (-3 * d) * z.re * z.im + -3 * a * z.im ^ 2) z.re := by {
+      have h_simp : (fun x : ℝ => (fun z : ℂ => a * z.re ^ 3 - 3 * d * z.re ^ 2 * z.im - 3 * a * z.re * z.im ^ 2 + d * z.im ^ 3) (↑(x, (z.re, z.im).2).1 + ↑(x, (z.re, z.im).2).2 * I)) = (fun x : ℝ => a * x ^ 3 + -3 * d * x ^ 2 * z.im + -3 * a * x * z.im ^ 2 + d * z.im ^ 3) := by {
+        ext x
+        simp
+        ring
+      }
+      rw [h_simp]
+      exact h_deriv
+    }
+    rw [h_eq2] at h_deriv'
+    exact h_deriv'
+  · intro z _
+    rw [HasPartialDerivY_C_to_R_eps_iff_R2_eps, ← hasDerivAt_iff_hasPartialDerivY_R2_eps]
+    have h_deriv := hasDerivAt_u_y a (-3*d) (-3*a) d z.re z.im
+    have h_eq2 : (-3 * d * z.re ^ 2 + 2 * (-3 * a) * z.re * z.im + 3 * d * z.im ^ 2) = uy z := by {
+      dsimp [uy]
+      ring
+    }
+    have h_deriv' : HasDerivAt (fun y : ℝ => (fun z : ℂ => a * z.re ^ 3 - 3 * d * z.re ^ 2 * z.im - 3 * a * z.re * z.im ^ 2 + d * z.im ^ 3) (↑((z.re, z.im).1, y).1 + ↑((z.re, z.im).1, y).2 * I)) (-3 * d * z.re ^ 2 + 2 * (-3 * a) * z.re * z.im + 3 * d * z.im ^ 2) z.im := by {
+      have h_simp : (fun y : ℝ => (fun z : ℂ => a * z.re ^ 3 - 3 * d * z.re ^ 2 * z.im - 3 * a * z.re * z.im ^ 2 + d * z.im ^ 3) (↑((z.re, z.im).1, y).1 + ↑((z.re, z.im).1, y).2 * I)) = (fun y : ℝ => a * z.re ^ 3 + -3 * d * z.re ^ 2 * y + -3 * a * z.re * y ^ 2 + d * y ^ 3) := by {
+        ext y
+        simp
+        ring
+      }
+      rw [h_simp]
+      exact h_deriv
+    }
+    rw [h_eq2] at h_deriv'
+    exact h_deriv'
+  · intro z _
+    rw [HasPartialDerivX_C_to_R_eps_iff_R2_eps, ← hasDerivAt_iff_hasPartialDerivX_R2_eps]
+    have h_deriv := hasDerivAt_u_x d (3*a) (-3*d) (-a) z.im z.re
+    have h_eq2 : (3 * d * z.re ^ 2 + 2 * (3 * a) * z.re * z.im + -3 * d * z.im ^ 2) = vx z := by {
+      dsimp [vx]
+      ring
+    }
+    have h_deriv' : HasDerivAt (fun x : ℝ => (fun z : ℂ => d * z.re ^ 3 + 3 * a * z.re ^ 2 * z.im - 3 * d * z.re * z.im ^ 2 - a * z.im ^ 3) (↑(x, (z.re, z.im).2).1 + ↑(x, (z.re, z.im).2).2 * I)) (3 * d * z.re ^ 2 + 2 * (3 * a) * z.re * z.im + -3 * d * z.im ^ 2) z.re := by {
+      have h_simp : (fun x : ℝ => (fun z : ℂ => d * z.re ^ 3 + 3 * a * z.re ^ 2 * z.im - 3 * d * z.re * z.im ^ 2 - a * z.im ^ 3) (↑(x, (z.re, z.im).2).1 + ↑(x, (z.re, z.im).2).2 * I)) = (fun x : ℝ => d * x ^ 3 + 3 * a * x ^ 2 * z.im + -3 * d * x * z.im ^ 2 + -a * z.im ^ 3) := by {
+        ext x
+        simp
+        ring
+      }
+      rw [h_simp]
+      exact h_deriv
+    }
+    rw [h_eq2] at h_deriv'
+    exact h_deriv'
+  · intro z _
+    rw [HasPartialDerivY_C_to_R_eps_iff_R2_eps, ← hasDerivAt_iff_hasPartialDerivY_R2_eps]
+    have h_deriv := hasDerivAt_u_y d (3*a) (-3*d) (-a) z.re z.im
+    have h_eq2 : (3 * a * z.re ^ 2 + 2 * (-3 * d) * z.re * z.im + 3 * -a * z.im ^ 2) = vy z := by {
+      dsimp [vy]
+      ring
+    }
+    have h_deriv' : HasDerivAt (fun y : ℝ => (fun z : ℂ => d * z.re ^ 3 + 3 * a * z.re ^ 2 * z.im - 3 * d * z.re * z.im ^ 2 - a * z.im ^ 3) (↑((z.re, z.im).1, y).1 + ↑((z.re, z.im).1, y).2 * I)) (3 * a * z.re ^ 2 + 2 * (-3 * d) * z.re * z.im + 3 * -a * z.im ^ 2) z.im := by {
+      have h_simp : (fun y : ℝ => (fun z : ℂ => d * z.re ^ 3 + 3 * a * z.re ^ 2 * z.im - 3 * d * z.re * z.im ^ 2 - a * z.im ^ 3) (↑((z.re, z.im).1, y).1 + ↑((z.re, z.im).1, y).2 * I)) = (fun y : ℝ => d * z.re ^ 3 + 3 * a * z.re ^ 2 * y + -3 * d * z.re * y ^ 2 + -a * y ^ 3) := by {
+        ext y
+        simp
+        ring
+      }
+      rw [h_simp]
+      exact h_deriv
+    }
+    rw [h_eq2] at h_deriv'
+    exact h_deriv'
+  · intro z _
+    constructor
+    · dsimp [ux, vy]
+    · dsimp [uy, vx]
+      ring
+}
 
 end Sarason.Ch2
