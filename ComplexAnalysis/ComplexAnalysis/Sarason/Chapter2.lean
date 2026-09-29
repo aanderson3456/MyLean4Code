@@ -2473,6 +2473,11 @@ theorem conformal_implies_holomorphic_II_12 {G : Set ℂ} (hG : IsOpen G)
 
 --II.14  Holomorphic implies Harmonic
 
+/-- 
+This lemma translates the $x$-partial derivative of a complex-valued function (treated as $f : \mathbb{C} \to \mathbb{R}$)
+into the standard Euclidean definition of the $x$-partial derivative for functions on $\mathbb{R}^2$. 
+This equivalence simply unwraps the definition by recognizing $z = x + iy$.
+-/
 lemma HasPartialDerivX_C_to_R_eps_iff_R2_eps (u : ℂ → ℝ) (ux₀ : ℝ) (z₀ : ℂ) :
     HasPartialDerivX_C_to_R_eps u ux₀ z₀ ↔ HasPartialDerivX_R2_eps (fun p => u (p.1 + p.2 * I)) ux₀ (z₀.re, z₀.im) := by {
   unfold HasPartialDerivX_C_to_R_eps HasPartialDerivX_R2_eps
@@ -2480,6 +2485,10 @@ lemma HasPartialDerivX_C_to_R_eps_iff_R2_eps (u : ℂ → ℝ) (ux₀ : ℝ) (z�
   simp_rw [h]
 }
 
+/--
+Similarly, this lemma converts the $y$-partial derivative of a function over $\mathbb{C}$ 
+into its corresponding formulation for $\mathbb{R}^2 \to \mathbb{R}$.
+-/
 lemma HasPartialDerivY_C_to_R_eps_iff_R2_eps (u : ℂ → ℝ) (uy₀ : ℝ) (z₀ : ℂ) :
     HasPartialDerivY_C_to_R_eps u uy₀ z₀ ↔ HasPartialDerivY_R2_eps (fun p => u (p.1 + p.2 * I)) uy₀ (z₀.re, z₀.im) := by {
   unfold HasPartialDerivY_C_to_R_eps HasPartialDerivY_R2_eps
@@ -2487,6 +2496,11 @@ lemma HasPartialDerivY_C_to_R_eps_iff_R2_eps (u : ℂ → ℝ) (uy₀ : ℝ) (z�
   simp_rw [h]
 }
 
+/--
+Uniqueness of the partial derivative over $\mathbb{C}$ along the $y$-axis.
+Since partial derivatives are limits of difference quotients, and limits in Hausdorff spaces 
+are unique, any two values for the partial derivative at a point must be identical.
+-/
 lemma partial_deriv_unique_y (f : ℂ → ℝ) (c d : ℝ) (z₀ : ℂ) (hc : HasPartialDerivY_C_to_R_eps f c z₀) (hd : HasPartialDerivY_C_to_R_eps f d z₀) : c = d := by {
   unfold HasPartialDerivY_C_to_R_eps at hc hd
   -- we know limit is unique
@@ -2501,6 +2515,10 @@ lemma partial_deriv_unique_y (f : ℂ → ℝ) (c d : ℝ) (z₀ : ℂ) (hc : Ha
   exact tendsto_nhds_unique h_lim1 h_lim2
 }
 
+/--
+Uniqueness of the partial derivative with respect to $x$ for a function defined on $\mathbb{R}^2$.
+This relies on the uniqueness of limits in $\mathbb{R}$.
+-/
 lemma partial_deriv_unique_x_R2 (u : ℝ × ℝ → ℝ) (c d : ℝ) (p : ℝ × ℝ)
     (hc : HasPartialDerivX_R2_eps u c p)
     (hd : HasPartialDerivX_R2_eps u d p) : c = d := by {
@@ -2510,6 +2528,9 @@ lemma partial_deriv_unique_x_R2 (u : ℝ × ℝ → ℝ) (c d : ℝ) (p : ℝ ×
   exact tendsto_nhds_unique h_lim1 h_lim2
 }
 
+/--
+Uniqueness of the partial derivative with respect to $y$ for a function defined on $\mathbb{R}^2$.
+-/
 lemma partial_deriv_unique_y_R2 (u : ℝ × ℝ → ℝ) (c d : ℝ) (p : ℝ × ℝ)
     (hc : HasPartialDerivY_R2_eps u c p)
     (hd : HasPartialDerivY_R2_eps u d p) : c = d := by {
@@ -2519,6 +2540,12 @@ lemma partial_deriv_unique_y_R2 (u : ℝ × ℝ → ℝ) (c d : ℝ) (p : ℝ ×
   exact tendsto_nhds_unique h_lim1 h_lim2
 }
 
+/--
+Local equivalence of partial derivatives: If two functions $u$ and $v$ agree everywhere 
+on an open set $G$, then their partial derivatives with respect to $x$ must agree everywhere on $G$.
+This is proved by picking a small enough neighborhood around the point that remains within $G$, 
+where the limits of their difference quotients are identical.
+-/
 lemma partial_deriv_congr_x (u v : ℝ × ℝ → ℝ) (c : ℝ) (p₀ : ℝ × ℝ) (G : Set (ℝ × ℝ)) (hG : IsOpen G) (hp₀ : p₀ ∈ G)
     (h_eq : ∀ q ∈ G, u q = v q)
     (hu : HasPartialDerivX_R2_eps u c p₀) :
@@ -2558,6 +2585,10 @@ lemma partial_deriv_congr_x (u v : ℝ × ℝ → ℝ) (c : ℝ) (p₀ : ℝ × 
   exact h_bound_x
 }
 
+/--
+Analogous local equivalence lemma for the $y$-partial derivative: If $u$ and $v$ match on an 
+open set $G$, their $y$-derivatives coincide.
+-/
 lemma partial_deriv_congr_y (u v : ℝ × ℝ → ℝ) (c : ℝ) (p₀ : ℝ × ℝ) (G : Set (ℝ × ℝ)) (hG : IsOpen G) (hp₀ : p₀ ∈ G)
     (h_eq : ∀ q ∈ G, u q = v q)
     (hu : HasPartialDerivY_R2_eps u c p₀) :
@@ -2594,6 +2625,10 @@ lemma partial_deriv_congr_y (u v : ℝ × ℝ → ℝ) (c : ℝ) (p₀ : ℝ × 
   exact h_bound_y
 }
 
+/--
+Linearity of the derivative with respect to negation along the $y$-axis:
+If $u$ has a partial derivative $c$, then $-u$ has the partial derivative $-c$.
+-/
 lemma partial_deriv_neg_y (u : ℝ × ℝ → ℝ) (c : ℝ) (p : ℝ × ℝ)
     (hu : HasPartialDerivY_R2_eps u c p) :
     HasPartialDerivY_R2_eps (fun q => -u q) (-c) p := by {
@@ -2612,6 +2647,10 @@ lemma partial_deriv_neg_y (u : ℝ × ℝ → ℝ) (c : ℝ) (p : ℝ × ℝ)
   exact h_bound_y
 }
 
+/--
+Linearity of the derivative with respect to negation along the $x$-axis:
+$( -u )_x = -( u_x )$.
+-/
 lemma partial_deriv_neg_x (u : ℝ × ℝ → ℝ) (c : ℝ) (p : ℝ × ℝ)
     (hu : HasPartialDerivX_R2_eps u c p) :
     HasPartialDerivX_R2_eps (fun q => -u q) (-c) p := by {
@@ -2634,6 +2673,8 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
     (h_hol : HolomorphicOn_eps f G)
     (h_twice_diff : TwiceContinuouslyDifferentiable_C_eps f G) :
     Harmonic_C_eps f G := by {
+  -- We start by expanding the definition of harmonicity and the twice continuous differentiability hypotheses.
+  -- This exposes the individual components: u_x, u_y, v_x, v_y, and their second partials.
   unfold Harmonic_C_eps
   have h_twice_diff_copy := h_twice_diff
   unfold TwiceContinuouslyDifferentiable_C_eps at h_twice_diff
@@ -2643,6 +2684,8 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
   rcases h_v with ⟨_, vx, vy, vxx, vxy, vyx, vyy, hv_x, hv_y, h_cont_vx, h_cont_vy, hv_xx, hv_xy, hv_yx, hv_yy, h_cont_vxx, h_cont_vxy, h_cont_vyx, h_cont_vyy⟩
 
   -- Prove ux = vy and uy = -vx on G
+  -- By the assumption that f is holomorphic on G, the Cauchy-Riemann equations must hold everywhere in G.
+  -- We now extract these point-wise constraints for both the x and y directions.
   have h_CR_x : ∀ p ∈ {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}, ux p = vy p := by {
     intro p hp
     have h_diff_z : DifferentiableAt_eps f (p.1 + p.2 * I) := h_hol (p.1 + p.2 * I) hp
@@ -2667,6 +2710,7 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
     rw [h_ux_eq, h_vy_eq]
     exact h1
   }
+  -- Similarly, we extract the second half of the Cauchy-Riemann equations: u_y = -v_x.
   have h_CR_y : ∀ p ∈ {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}, uy p = -vx p := by {
     intro p hp
     have h_diff_z : DifferentiableAt_eps f (p.1 + p.2 * I) := h_hol (p.1 + p.2 * I) hp
@@ -2695,13 +2739,17 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
   constructor
   · refine ⟨h_twice_diff_copy.1, ux, uy, uxx, uxy, uyx, uyy, hu_x, hu_y, hu_xx, hu_yy, ?_⟩
     intro p hp
-    -- Proof of uxx p + uyy p = 0
+    -- Our goal for the real part u is to show the Laplace equation: u_xx + u_yy = 0.
+    -- We do this by cross-substituting the Cauchy-Riemann identities into the second derivatives.
+    
+    -- Step 1: Since u_x = v_y on the open set G, their x-derivatives must be equal: u_xx = v_yx.
     have h_uxx_eq_vyx : uxx p = vyx p := by {
       have h_ux_deriv : HasPartialDerivX_R2_eps ux (uxx p) p := hu_xx p hp
       have h_vy_deriv : HasPartialDerivX_R2_eps vy (vyx p) p := hv_yx p hp
       have h_vy_deriv2 : HasPartialDerivX_R2_eps vy (uxx p) p := partial_deriv_congr_x ux vy (uxx p) p _ hG_R2 hp h_CR_x h_ux_deriv
       exact partial_deriv_unique_x_R2 vy (uxx p) (vyx p) p h_vy_deriv2 h_vy_deriv
     }
+    -- Step 2: Since u_y = -v_x on the open set G, their y-derivatives must be equal: u_yy = -v_xy.
     have h_uyy_eq_neg_vxy : uyy p = -vxy p := by {
       have h_uy_deriv : HasPartialDerivY_R2_eps uy (uyy p) p := hu_yy p hp
       have h_vx_deriv : HasPartialDerivY_R2_eps vx (vxy p) p := hv_xy p hp
@@ -2709,15 +2757,22 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
       have h_neg_vx_deriv2 : HasPartialDerivY_R2_eps (fun p => -vx p) (uyy p) p := partial_deriv_congr_y uy (fun p => -vx p) (uyy p) p _ hG_R2 hp h_CR_y h_uy_deriv
       exact partial_deriv_unique_y_R2 (fun p => -vx p) (uyy p) (-vxy p) p h_neg_vx_deriv2 h_neg_vx_deriv
     }
+    -- Step 3: By Clairaut's theorem (symmetry of mixed partial derivatives) on the twice continuously 
+    -- differentiable function v, we know v_xy = v_yx.
     have h_vxy_eq_vyx : vxy p = vyx p := by {
       have h_mixed := mixed_partials_eq_eps (fun p => (f (p.1 + p.2 * I)).im) vx vy vxx vxy vyx vyy {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} p hG_R2 hp hv_x hv_y hv_xx hv_xy hv_yx hv_yy h_cont_vx h_cont_vy h_cont_vxx h_cont_vxy h_cont_vyx h_cont_vyy
       exact h_mixed
     }
+    -- Step 4: Substitute v_yx for u_xx, and -v_xy for u_yy.
+    -- The Laplace equation then reads v_yx - v_xy = 0, which holds by symmetry.
     rw [h_uxx_eq_vyx, h_uyy_eq_neg_vxy, ← h_vxy_eq_vyx]
     ring
   · refine ⟨h_twice_diff_copy.2, vx, vy, vxx, vxy, vyx, vyy, hv_x, hv_y, hv_xx, hv_yy, ?_⟩
     intro p hp
-    -- Proof of vxx p + vyy p = 0
+    -- Our goal for the imaginary part v is to show its Laplace equation: v_xx + v_yy = 0.
+    -- The logic directly mirrors the procedure for the real part.
+    
+    -- Step 1: Since v_x = -u_y on the open set G, taking the x-derivative yields v_xx = -u_yx.
     have h_vxx_eq_neg_uyx : vxx p = -uyx p := by {
       have h_vx_deriv : HasPartialDerivX_R2_eps vx (vxx p) p := hv_xx p hp
       have h_uy_deriv : HasPartialDerivX_R2_eps uy (uyx p) p := hu_yx p hp
@@ -2730,6 +2785,7 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
       have h_neg_uy_deriv2 : HasPartialDerivX_R2_eps (fun p => -uy p) (vxx p) p := partial_deriv_congr_x vx (fun p => -uy p) (vxx p) p _ hG_R2 hp h_neg_CR_y h_vx_deriv
       exact partial_deriv_unique_x_R2 (fun p => -uy p) (vxx p) (-uyx p) p h_neg_uy_deriv2 h_neg_uy_deriv
     }
+    -- Step 2: Since v_y = u_x on the open set G, taking the y-derivative yields v_yy = u_xy.
     have h_vyy_eq_uxy : vyy p = uxy p := by {
       have h_vy_deriv : HasPartialDerivY_R2_eps vy (vyy p) p := hv_yy p hp
       have h_ux_deriv : HasPartialDerivY_R2_eps ux (uxy p) p := hu_xy p hp
@@ -2741,10 +2797,14 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
       have h_ux_deriv2 : HasPartialDerivY_R2_eps ux (vyy p) p := partial_deriv_congr_y vy ux (vyy p) p _ hG_R2 hp h_CR_x_rev h_vy_deriv
       exact partial_deriv_unique_y_R2 ux (vyy p) (uxy p) p h_ux_deriv2 h_ux_deriv
     }
+    -- Step 3: Apply the symmetry of mixed partials to the twice continuously differentiable function u 
+    -- to obtain u_xy = u_yx.
     have h_uxy_eq_uyx : uxy p = uyx p := by {
       have h_mixed := mixed_partials_eq_eps (fun p => (f (p.1 + p.2 * I)).re) ux uy uxx uxy uyx uyy {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} p hG_R2 hp hu_x hu_y hu_xx hu_xy hu_yx hu_yy h_cont_ux h_cont_uy h_cont_uxx h_cont_uxy h_cont_uyx h_cont_uyy
       exact h_mixed
     }
+    -- Step 4: Substitute -u_yx for v_xx, and u_xy for v_yy. 
+    -- The Laplace equation reads -u_yx + u_xy = 0, which resolves trivially.
     rw [h_vxx_eq_neg_uyx, h_vyy_eq_uxy, ← h_uxy_eq_uyx]
     ring
 }
