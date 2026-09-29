@@ -2473,9 +2473,9 @@ theorem conformal_implies_holomorphic_II_12 {G : Set ℂ} (hG : IsOpen G)
 
 --II.14  Holomorphic implies Harmonic
 
-/-- 
+/--
 This lemma translates the $x$-partial derivative of a complex-valued function (treated as $f : \mathbb{C} \to \mathbb{R}$)
-into the standard Euclidean definition of the $x$-partial derivative for functions on $\mathbb{R}^2$. 
+into the standard Euclidean definition of the $x$-partial derivative for functions on $\mathbb{R}^2$.
 This equivalence simply unwraps the definition by recognizing $z = x + iy$.
 -/
 lemma HasPartialDerivX_C_to_R_eps_iff_R2_eps (u : ℂ → ℝ) (ux₀ : ℝ) (z₀ : ℂ) :
@@ -2486,7 +2486,7 @@ lemma HasPartialDerivX_C_to_R_eps_iff_R2_eps (u : ℂ → ℝ) (ux₀ : ℝ) (z�
 }
 
 /--
-Similarly, this lemma converts the $y$-partial derivative of a function over $\mathbb{C}$ 
+Similarly, this lemma converts the $y$-partial derivative of a function over $\mathbb{C}$
 into its corresponding formulation for $\mathbb{R}^2 \to \mathbb{R}$.
 -/
 lemma HasPartialDerivY_C_to_R_eps_iff_R2_eps (u : ℂ → ℝ) (uy₀ : ℝ) (z₀ : ℂ) :
@@ -2498,7 +2498,7 @@ lemma HasPartialDerivY_C_to_R_eps_iff_R2_eps (u : ℂ → ℝ) (uy₀ : ℝ) (z�
 
 /--
 Uniqueness of the partial derivative over $\mathbb{C}$ along the $y$-axis.
-Since partial derivatives are limits of difference quotients, and limits in Hausdorff spaces 
+Since partial derivatives are limits of difference quotients, and limits in Hausdorff spaces
 are unique, any two values for the partial derivative at a point must be identical.
 -/
 lemma partial_deriv_unique_y (f : ℂ → ℝ) (c d : ℝ) (z₀ : ℂ) (hc : HasPartialDerivY_C_to_R_eps f c z₀) (hd : HasPartialDerivY_C_to_R_eps f d z₀) : c = d := by {
@@ -2541,9 +2541,9 @@ lemma partial_deriv_unique_y_R2 (u : ℝ × ℝ → ℝ) (c d : ℝ) (p : ℝ ×
 }
 
 /--
-Local equivalence of partial derivatives: If two functions $u$ and $v$ agree everywhere 
+Local equivalence of partial derivatives: If two functions $u$ and $v$ agree everywhere
 on an open set $G$, then their partial derivatives with respect to $x$ must agree everywhere on $G$.
-This is proved by picking a small enough neighborhood around the point that remains within $G$, 
+This is proved by picking a small enough neighborhood around the point that remains within $G$,
 where the limits of their difference quotients are identical.
 -/
 lemma partial_deriv_congr_x (u v : ℝ × ℝ → ℝ) (c : ℝ) (p₀ : ℝ × ℝ) (G : Set (ℝ × ℝ)) (hG : IsOpen G) (hp₀ : p₀ ∈ G)
@@ -2586,7 +2586,7 @@ lemma partial_deriv_congr_x (u v : ℝ × ℝ → ℝ) (c : ℝ) (p₀ : ℝ × 
 }
 
 /--
-Analogous local equivalence lemma for the $y$-partial derivative: If $u$ and $v$ match on an 
+Analogous local equivalence lemma for the $y$-partial derivative: If $u$ and $v$ match on an
 open set $G$, their $y$-derivatives coincide.
 -/
 lemma partial_deriv_congr_y (u v : ℝ × ℝ → ℝ) (c : ℝ) (p₀ : ℝ × ℝ) (G : Set (ℝ × ℝ)) (hG : IsOpen G) (hp₀ : p₀ ∈ G)
@@ -2669,6 +2669,7 @@ lemma partial_deriv_neg_x (u : ℝ × ℝ → ℝ) (c : ℝ) (p : ℝ × ℝ)
   exact h_bound_x
 }
 
+--II.14
 theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set ℂ} (hG : IsOpen G)
     (h_hol : HolomorphicOn_eps f G)
     (h_twice_diff : TwiceContinuouslyDifferentiable_C_eps f G) :
@@ -2741,7 +2742,7 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
     intro p hp
     -- Our goal for the real part u is to show the Laplace equation: u_xx + u_yy = 0.
     -- We do this by cross-substituting the Cauchy-Riemann identities into the second derivatives.
-    
+
     -- Step 1: Since u_x = v_y on the open set G, their x-derivatives must be equal: u_xx = v_yx.
     have h_uxx_eq_vyx : uxx p = vyx p := by {
       have h_ux_deriv : HasPartialDerivX_R2_eps ux (uxx p) p := hu_xx p hp
@@ -2757,7 +2758,7 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
       have h_neg_vx_deriv2 : HasPartialDerivY_R2_eps (fun p => -vx p) (uyy p) p := partial_deriv_congr_y uy (fun p => -vx p) (uyy p) p _ hG_R2 hp h_CR_y h_uy_deriv
       exact partial_deriv_unique_y_R2 (fun p => -vx p) (uyy p) (-vxy p) p h_neg_vx_deriv2 h_neg_vx_deriv
     }
-    -- Step 3: By Clairaut's theorem (symmetry of mixed partial derivatives) on the twice continuously 
+    -- Step 3: By Clairaut's theorem (symmetry of mixed partial derivatives) on the twice continuously
     -- differentiable function v, we know v_xy = v_yx.
     have h_vxy_eq_vyx : vxy p = vyx p := by {
       have h_mixed := mixed_partials_eq_eps (fun p => (f (p.1 + p.2 * I)).im) vx vy vxx vxy vyx vyy {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} p hG_R2 hp hv_x hv_y hv_xx hv_xy hv_yx hv_yy h_cont_vx h_cont_vy h_cont_vxx h_cont_vxy h_cont_vyx h_cont_vyy
@@ -2771,7 +2772,7 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
     intro p hp
     -- Our goal for the imaginary part v is to show its Laplace equation: v_xx + v_yy = 0.
     -- The logic directly mirrors the procedure for the real part.
-    
+
     -- Step 1: Since v_x = -u_y on the open set G, taking the x-derivative yields v_xx = -u_yx.
     have h_vxx_eq_neg_uyx : vxx p = -uyx p := by {
       have h_vx_deriv : HasPartialDerivX_R2_eps vx (vxx p) p := hv_xx p hp
@@ -2797,16 +2798,18 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
       have h_ux_deriv2 : HasPartialDerivY_R2_eps ux (vyy p) p := partial_deriv_congr_y vy ux (vyy p) p _ hG_R2 hp h_CR_x_rev h_vy_deriv
       exact partial_deriv_unique_y_R2 ux (vyy p) (uxy p) p h_ux_deriv2 h_ux_deriv
     }
-    -- Step 3: Apply the symmetry of mixed partials to the twice continuously differentiable function u 
+    -- Step 3: Apply the symmetry of mixed partials to the twice continuously differentiable function u
     -- to obtain u_xy = u_yx.
     have h_uxy_eq_uyx : uxy p = uyx p := by {
       have h_mixed := mixed_partials_eq_eps (fun p => (f (p.1 + p.2 * I)).re) ux uy uxx uxy uyx uyy {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} p hG_R2 hp hu_x hu_y hu_xx hu_xy hu_yx hu_yy h_cont_ux h_cont_uy h_cont_uxx h_cont_uxy h_cont_uyx h_cont_uyy
       exact h_mixed
     }
-    -- Step 4: Substitute -u_yx for v_xx, and u_xy for v_yy. 
+    -- Step 4: Substitute -u_yx for v_xx, and u_xy for v_yy.
     -- The Laplace equation reads -u_yx + u_xy = 0, which resolves trivially.
     rw [h_vxx_eq_neg_uyx, h_vyy_eq_uxy, ← h_uxy_eq_uyx]
     ring
 }
+
+
 
 end Sarason.Ch2
