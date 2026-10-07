@@ -9,3 +9,5 @@ import Sarason.Chapter3
 import Contour
 import Laplace
 import Zeta
+import PNT
+import Newman
