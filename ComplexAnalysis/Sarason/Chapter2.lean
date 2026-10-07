@@ -3355,12 +3355,56 @@ theorem nonunique_harmonic_conj (u v : ℂ → ℝ) (G : Set ℂ) (c : ℝ)
     exact HasPartialDerivY_C_to_R_eps_add_const v (vy z) z c (h_vy z hz)
 }
 
+lemma continuousOn_C_of_R2 (u : ℝ × ℝ → ℝ) (G : Set ℂ)
+    (h : ContinuousOn u {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}) :
+    ContinuousOn (fun z : ℂ => u (z.re, z.im)) G := by
+{
+  have h_comp : ContinuousOn (u ∘ (fun z : ℂ => (z.re, z.im))) G := by
+  {
+    refine ContinuousOn.comp h (Continuous.continuousOn (by fun_prop)) ?_
+    intro z hz
+    simp at hz ⊢
+    exact hz
+  }
+  exact h_comp
+}
+
+lemma partial_deriv_unique_x_C_R2 (u : ℂ → ℝ) (ux_C : ℂ → ℝ) (u_R2 : ℝ × ℝ → ℝ) (ux_R2 : ℝ × ℝ → ℝ) (G : Set ℂ)
+    (hu : ∀ p, u_R2 p = u (p.1 + p.2 * I))
+    (hx_C : ∀ z ∈ G, HasPartialDerivX_C_to_R_eps u (ux_C z) z)
+    (hx_R2 : ∀ p ∈ {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}, HasPartialDerivX_R2_eps u_R2 (ux_R2 p) p) :
+    ∀ z ∈ G, ux_C z = ux_R2 (z.re, z.im) := by
+{
+  sorry
+}
+
+lemma partial_deriv_unique_y_C_R2 (u : ℂ → ℝ) (uy_C : ℂ → ℝ) (u_R2 : ℝ × ℝ → ℝ) (uy_R2 : ℝ × ℝ → ℝ) (G : Set ℂ)
+    (hu : ∀ p, u_R2 p = u (p.1 + p.2 * I))
+    (hy_C : ∀ z ∈ G, HasPartialDerivY_C_to_R_eps u (uy_C z) z)
+    (hy_R2 : ∀ p ∈ {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}, HasPartialDerivY_R2_eps u_R2 (uy_R2 p) p) :
+    ∀ z ∈ G, uy_C z = uy_R2 (z.re, z.im) := by
+{
+  sorry
+}
+
+/--
+  Helper lemma for extracting HarmonicConjugate_C_eps from HolomorphicOn_eps and harmonicity.
+-/
+lemma harmonic_conjugate_of_holomorphic (u v : ℂ → ℝ) (G : Set ℂ) (hG : IsOpen G)
+    (h_hol : HolomorphicOn_eps (fun z => (u z : ℂ) + I * (v z : ℂ)) G)
+    (hu : ComplexAnalysis.R2.Harmonic_R2_eps (fun p => u (p.1 + p.2 * I)) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G})
+    (hv : ComplexAnalysis.R2.Harmonic_R2_eps (fun p => v (p.1 + p.2 * I)) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}) :
+    HarmonicConjugate_C_eps u v G := by
+{
+  sorry
+}
+
 /--
   Theorem: u and v are harmonic conjugates if and only if f(z) = u(z) + iv(z) is holomorphic.
 -/
 lemma harmonic_conjugate_iff_holomorphic (u v : ℂ → ℝ) (G : Set ℂ) (hG : IsOpen G) :
     HarmonicConjugate_C_eps u v G ↔
-    (HolomorphicOn_eps (fun z => (u z : ℂ) + (v z : ℂ) * I) G ∧
+    (HolomorphicOn_eps (fun z => (u z : ℂ) + I * (v z : ℂ)) G ∧
      ComplexAnalysis.R2.Harmonic_R2_eps (fun p => u (p.1 + p.2 * I)) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} ∧
      ComplexAnalysis.R2.Harmonic_R2_eps (fun p => v (p.1 + p.2 * I)) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}) := by
 {
@@ -3370,25 +3414,34 @@ lemma harmonic_conjugate_iff_holomorphic (u v : ℂ → ℝ) (G : Set ℂ) (hG :
     rcases h with ⟨hu, hv, ux, uy, vx, vy, hux, huy, hvx, hvy, hcr⟩
     refine ⟨?_, hu, hv⟩
     intro z hz
-    have h_diff : DifferentiableAt_eps (fun z => (u z : ℂ) + (v z : ℂ) * I) z := by
+    have hu_twice := hu.1
+    have hv_twice := hv.1
+    unfold TwiceContinuouslyDifferentiable_R2_eps at hu_twice hv_twice
+    rcases hu_twice with ⟨hG_R2, ux_R2, uy_R2, uxx_R2, uxy_R2, uyx_R2, uyy_R2, hux_R2, huy_R2, h_cont_ux_R2, h_cont_uy_R2, hu_xx_R2, hu_xy_R2, hu_yx_R2, hu_yy_R2, h_cont_uxx_R2, h_cont_uxy_R2, h_cont_uyx_R2, h_cont_uyy_R2⟩
+    rcases hv_twice with ⟨_, vx_R2, vy_R2, vxx_R2, vxy_R2, vyx_R2, vyy_R2, hvx_R2, hvy_R2, h_cont_vx_R2, h_cont_vy_R2, hv_xx_R2, hv_xy_R2, hv_yx_R2, hv_yy_R2, h_cont_vxx_R2, h_cont_vxy_R2, h_cont_vyx_R2, h_cont_vyy_R2⟩
+    have h_diff : DifferentiableAt_eps (fun z => (u z : ℂ) + I * (v z : ℂ)) z := by
     {
-      apply II_7 hG u v ux uy vx vy hux huy hvx hvy ?_ ?_ ?_ ?_ z hz (hcr z hz) (fun z => rfl)
+      apply II_7 hG u v ux uy vx vy hux huy hvx hvy ?_ ?_ ?_ ?_ z hz (hcr z hz) (fun z => (u z : ℂ) + I * (v z : ℂ)) (fun z => rfl)
       -- The remaining goals are continuity of the partial derivatives in the complex plane.
       -- These follow directly from TwiceContinuouslyDifferentiable_R2_eps via Harmonic_R2_eps,
       -- but require mapping the topological definitions from ℝ×ℝ to ℂ.
-      · sorry
-      · sorry
-      · sorry
-      · sorry
+      · have h_uniq := partial_deriv_unique_x_C_R2 u ux (fun p => u (p.1 + p.2 * I)) ux_R2 G (fun p => rfl) hux hux_R2
+        have h_cont_C := continuousOn_C_of_R2 ux_R2 G h_cont_ux_R2
+        exact ContinuousOn.congr h_cont_C h_uniq
+      · have h_uniq := partial_deriv_unique_y_C_R2 u uy (fun p => u (p.1 + p.2 * I)) uy_R2 G (fun p => rfl) huy huy_R2
+        have h_cont_C := continuousOn_C_of_R2 uy_R2 G h_cont_uy_R2
+        exact ContinuousOn.congr h_cont_C h_uniq
+      · have h_uniq := partial_deriv_unique_x_C_R2 v vx (fun p => v (p.1 + p.2 * I)) vx_R2 G (fun p => rfl) hvx hvx_R2
+        have h_cont_C := continuousOn_C_of_R2 vx_R2 G h_cont_vx_R2
+        exact ContinuousOn.congr h_cont_C h_uniq
+      · have h_uniq := partial_deriv_unique_y_C_R2 v vy (fun p => v (p.1 + p.2 * I)) vy_R2 G (fun p => rfl) hvy hvy_R2
+        have h_cont_C := continuousOn_C_of_R2 vy_R2 G h_cont_vy_R2
+        exact ContinuousOn.congr h_cont_C h_uniq
     }
     exact h_diff
   · intro h
     rcases h with ⟨h_hol, hu, hv⟩
-    unfold HarmonicConjugate_C_eps
-    refine ⟨hu, hv, ?_⟩
-    -- The reverse direction requires extracting Cauchy-Riemann point-wise from HolomorphicOn_eps.
-    -- We have `cauchy_riemann_equations_of_differentiable` for this.
-    sorry
+    exact harmonic_conjugate_of_holomorphic u v G hG h_hol hu hv
 }
 
 -- Exercises
@@ -3658,7 +3711,7 @@ lemma exercise_II_15_1 (a d : ℝ) :
 
   have h_u_harm : Harmonic_R2_eps (fun p => (fun z : ℂ => a * z.re^3 - 3 * d * z.re^2 * z.im - 3 * a * z.re * z.im^2 + d * z.im^3) (p.1 + p.2 * I)) Set.univ := by
   {
-    have h_apply := exercise_is_harmonic a (-3*d) (-3*a) d rfl rfl
+    have h_apply := exercise_II_15_1b a (-3*d) (-3*a) d rfl rfl
     have h_eq : (fun p : ℝ × ℝ => a * p.1^3 + -3 * d * p.1^2 * p.2 + -3 * a * p.1 * p.2^2 + d * p.2^3) = (fun p : ℝ × ℝ => (fun z : ℂ => a * z.re^3 - 3 * d * z.re^2 * z.im - 3 * a * z.re * z.im^2 + d * z.im^3) (p.1 + p.2 * I)) := by
     {
       ext p
@@ -3671,7 +3724,7 @@ lemma exercise_II_15_1 (a d : ℝ) :
 
   have h_v_harm : Harmonic_R2_eps (fun p => (fun z : ℂ => d * z.re^3 + 3 * a * z.re^2 * z.im - 3 * d * z.re * z.im^2 - a * z.im^3) (p.1 + p.2 * I)) Set.univ := by
   {
-    have h_apply := exercise_is_harmonic d (3*a) (-3*d) (-a) (by ring) (by ring)
+    have h_apply := exercise_II_15_1b d (3*a) (-3*d) (-a) (by ring) (by ring)
     have h_eq : (fun p : ℝ × ℝ => d * p.1^3 + 3 * a * p.1^2 * p.2 + -3 * d * p.1 * p.2^2 + -a * p.2^3) = (fun p : ℝ × ℝ => (fun z : ℂ => d * z.re^3 + 3 * a * z.re^2 * z.im - 3 * d * z.re * z.im^2 - a * z.im^3) (p.1 + p.2 * I)) := by
     {
       ext p
@@ -3827,6 +3880,19 @@ lemma exercise_II_15_2 (ux uy uxx uxy uyy : ℝ × ℝ → ℝ) (p : ℝ × ℝ)
   rw [h_eq]
   rw [hCS]
   ring
+}
+
+/--
+  On an open connected set, if both first partial derivatives of a real-valued function
+  are identically zero, the function is constant.
+-/
+lemma is_const_of_partial_derivs_zero_on_connected (v : ℂ → ℝ) (G : Set ℂ)
+    (hG : IsOpen G) (h_conn : IsConnected G)
+    (hx : ∀ z ∈ G, HasPartialDerivX_C_to_R_eps v 0 z)
+    (hy : ∀ z ∈ G, HasPartialDerivY_C_to_R_eps v 0 z) :
+    ∃ c : ℝ, ∀ z ∈ G, v z = c := by
+{
+  sorry
 }
 
 /--
