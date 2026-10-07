@@ -1,0 +1,76 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath, amsthm, amssymb, mathrsfs}
+\usepackage{geometry}
+\geometry{letterpaper, margin=1in}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+
+\title{The Original Analytic Proof of the Prime Number Theorem \\ (Hadamard and de la Vall\'ee Poussin, 1896)}
+\author{MathGod Project}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This document outlines the classical 1896 proof of the Prime Number Theorem independently discovered by Jacques Hadamard and Charles Jean de la Vall\'ee Poussin. Unlike Newman's modern Tauberian shortcut, this original method relies on the deep analytic machinery of entire functions, Perron's formula for inverse Mellin transforms, explicit zero-free regions of the Riemann Zeta function, and the exact explicit formula connecting the primes to the nontrivial zeros of $\zeta(s)$.
+\end{abstract}
+
+\section{Introduction}
+The Prime Number Theorem (PNT) asserts that the number of primes up to $x$, denoted $\pi(x)$, satisfies $\pi(x) \sim \frac{x}{\log x}$. It is mathematically more convenient to work with the von Mangoldt function $\Lambda(n)$ and the Chebyshev $\psi$-function:
+\[ \Lambda(n) = \begin{cases} \log p & \text{if } n = p^k \\ 0 & \text{otherwise} \end{cases}, \quad \psi(x) = \sum_{n \le x} \Lambda(n) \]
+The PNT is strictly equivalent to the statement $\psi(x) \sim x$. The 1896 proof attacks this by linking $\psi(x)$ directly to the logarithmic derivative of the Riemann Zeta function via contour integration.
+
+\section{The Riemann Zeta Function}
+For $\Re(s) > 1$, the Riemann Zeta function is defined by the Dirichlet series and Euler product:
+\[ \zeta(s) = \sum_{n=1}^\infty \frac{1}{n^s} = \prod_p \left(1 - \frac{1}{p^s}\right)^{-1} \]
+Taking the logarithmic derivative, we generate the von Mangoldt function:
+\[ -\frac{\zeta'(s)}{\zeta(s)} = \sum_{n=1}^\infty \frac{\Lambda(n)}{n^s} \quad (\Re(s) > 1) \]
+
+Riemann proved that $\zeta(s)$ admits an analytic continuation to the entire complex plane, except for a simple pole at $s = 1$ with residue $1$. The completed zeta function, $\xi(s) = \frac{1}{2} s(s-1) \pi^{-s/2} \Gamma(s/2) \zeta(s)$, is an entire function of order $1$. By the Hadamard factorization theorem, $\xi(s)$ can be factored over its roots $\rho$ (which are the nontrivial zeros of $\zeta(s)$ located in the critical strip $0 \le \Re(s) \le 1$):
+\[ \xi(s) = e^{A + Bs} \prod_{\rho} \left(1 - \frac{s}{\rho}\right) e^{s/\rho} \]
+
+\section{Perron's Formula and Contour Integrals}
+To extract $\psi(x)$ from the Dirichlet series of $-\frac{\zeta'(s)}{\zeta(s)}$, we employ Perron's Formula, a specific instance of the inverse Mellin transform. For any $c > 1$ and $x > 0$ (not an integer):
+\[ \psi(x) = \frac{1}{2\pi i} \int_{c-i\infty}^{c+i\infty} \left(-\frac{\zeta'(s)}{\zeta(s)}\right) \frac{x^s}{s} \, ds \]
+This integral requires heavy analytic care because it only converges conditionally. In practice, we use a truncated version of Perron's formula integrated from $c-iT$ to $c+iT$, which introduces a quantifiable error term depending on $T$.
+
+To evaluate the integral, we shift the vertical contour of integration far to the left (to $\Re(s) = -\infty$). By Cauchy's Residue Theorem, the integral picks up the residues of the poles of the integrand inside the contour.
+The poles of $-\frac{\zeta'(s)}{\zeta(s)} \frac{x^s}{s}$ are:
+\begin{enumerate}
+    \item A simple pole at $s = 1$ (from $\zeta(s)$) with residue $x$.
+    \item Simple poles at $s = \rho$ (the nontrivial zeros of $\zeta(s)$) with residues $-\frac{x^\rho}{\rho}$.
+    \item A simple pole at $s = 0$ (from the $1/s$ factor) with residue $-\frac{\zeta'(0)}{\zeta(0)}$.
+    \item Simple poles at the trivial zeros $s = -2, -4, -6, \dots$ with residues $-\frac{x^{-2m}}{-2m}$.
+\end{enumerate}
+
+Summing these residues yields the celebrated \textbf{Explicit Formula} of Riemann and von Mangoldt:
+\[ \psi(x) = x - \sum_{\rho} \frac{x^\rho}{\rho} - \frac{\zeta'(0)}{\zeta(0)} - \frac{1}{2}\log(1-x^{-2}) \]
+The PNT ($\psi(x) \sim x$) is therefore entirely dictated by the magnitude of the sum over the nontrivial zeros $\rho = \beta + i\gamma$. Since $|x^\rho| = x^\beta$, to show that the sum over roots is $o(x)$, we must prove that $\beta < 1$ for all $\rho$, and importantly, we need a quantitative bound on how close $\beta$ can get to $1$.
+
+\section{The Zero-Free Region}
+The linchpin of the 1896 proof is showing that $\zeta(s)$ has no zeros on the line $\Re(s) = 1$. Both Hadamard and de la Vall\'ee Poussin independently used the trigonometric inequality:
+\[ 3 + 4\cos \theta + \cos 2\theta = 2(1 + \cos \theta)^2 \ge 0 \]
+Applying this to the Euler product yields the inequality:
+\[ \zeta(\sigma)^3 |\zeta(\sigma + it)|^4 |\zeta(\sigma + 2it)| \ge 1 \]
+for $\sigma > 1$. If there were a zero at $1+it$, the order of the zero of $\zeta(\sigma+it)^4$ as $\sigma \to 1^+$ would overpower the simple pole of $\zeta(\sigma)^3$, forcing the product to zero and causing a contradiction. Thus $\zeta(1+it) \neq 0$.
+
+De la Vall\'ee Poussin pushed this further to establish an explicit \textbf{Zero-Free Region}. He proved that there exists a constant $c > 0$ such that $\zeta(\beta + i\gamma) \neq 0$ for all:
+\[ \beta > 1 - \frac{c}{\log(|\gamma| + 2)} \]
+
+\section{Bounding the Integrals and Final Asymptotics}
+With the zero-free region established, the contour of the truncated Perron integral is shifted not to $-\infty$, but to a custom curve lying just inside the zero-free region (e.g., $s = 1 - \frac{c}{\log(|t|+2)} + it$).
+
+Because the contour is kept entirely away from the zeros, the integrand is analytic inside the region. Bounding the integral over the horizontal segments connecting $c+iT$ to the curve, and the integral along the curve itself, requires extremely delicate estimates of $\frac{\zeta'(s)}{\zeta(s)}$ high up in the critical strip. Specifically, one proves bounds like $\frac{\zeta'(s)}{\zeta(s)} = O(\log |t|)$ inside the zero-free region.
+
+By carefully tuning the height $T$ as a function of $x$ (typically choosing $T = \exp(\sqrt{\log x})$), the error terms from the horizontal contours and the integration over the shifted curve are balanced. 
+
+This ultimately yields the Prime Number Theorem with a strong error bound:
+\[ \psi(x) = x + O\left(x \exp(-A \sqrt{\log x})\right) \]
+for some absolute constant $A > 0$. Since the error term is sub-linear, $\psi(x) \sim x$ follows immediately. 
+
+\section{Conclusion}
+The 1896 proof is a tour de force of global analytic number theory. Unlike Newman's proof, which brilliantly isolates the local behavior on the boundary of a small semicircle, the classical proof forces us to globally categorize the entire complex plane: constructing the full analytic continuation, factoring the entire function over its roots, calculating contour integrals that stretch to infinity, and deploying precision bounds on the density of zeros near the boundary of the critical strip.
+\end{document}

@@ -1,6 +1,6 @@
 import re
 
-with open('ComplexAnalysis/Sarason/Chapter2.lean', 'r') as f:
+with open('Sarason/Chapter2.lean', 'r') as f:
     content = f.read()
 
 restore_block = """lemma deriv_eps_eq_del (ux uy vx vy : ℝ) (h_cr : ux = vy ∧ uy = -vx) :
@@ -17,5 +17,5 @@ restore_block = """lemma deriv_eps_eq_del (ux uy vx vy : ℝ) (h_cr : ux = vy �
 
 content = content.replace("lemma conformal_implies_delBar_zero_of_fderiv", restore_block + "lemma conformal_implies_delBar_zero_of_fderiv")
 
-with open('ComplexAnalysis/Sarason/Chapter2.lean', 'w') as f:
+with open('Sarason/Chapter2.lean', 'w') as f:
     f.write(content)

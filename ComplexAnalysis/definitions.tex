@@ -38,7 +38,7 @@
 
 This document provides a comprehensive list of all definitions manually formalized in the \texttt{ComplexAnalysis} project, specifically within \texttt{R2.lean} and the \texttt{Sarason/} directory. For each definition, the raw Lean code is presented first, followed by its mathematical interpretation.
 
-\section{\texttt{ComplexAnalysis/R2.lean}}
+\section{\texttt{R2.lean}}
 
 \begin{itemize}
     \item \textbf{\texttt{sqNorm}} ($x \in \mathbb{R}^2 \to \mathbb{R}$): The squared Euclidean norm.
@@ -167,7 +167,7 @@ def Harmonic_R2_eps (u : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) 
 \end{itemize}
 
 
-\section{\texttt{ComplexAnalysis/Sarason/Definitions.lean}}
+\section{\texttt{Sarason/Definitions.lean}}
 
 \begin{itemize}
     \item \textbf{\texttt{HasLimitAt\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $L \in \mathbb{C}$, $z_0 \in \mathbb{C}$):
@@ -272,6 +272,22 @@ def HolomorphicOn_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}
 \end{lstlisting}
     \[ f \text{ is holomorphic on } G \]
 
+    \item \textbf{\texttt{polar\_partial\_r}} ($ux, uy : \mathbb{R}^2 \to \mathbb{R}$, $p \in \mathbb{R}^2$): Directional derivative in the radial direction for polar coordinates.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def polar_partial_r (ux uy : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) (p : $\mathbb{R}$ $\times$ $\mathbb{R}$) : $\mathbb{R}$ :=
+  ux (p.1 * Real.cos p.2, p.1 * Real.sin p.2) * Real.cos p.2 +
+  uy (p.1 * Real.cos p.2, p.1 * Real.sin p.2) * Real.sin p.2
+\end{lstlisting}
+    \[ U_r(r, \theta) = u_x(r \cos \theta, r \sin \theta) \cos \theta + u_y(r \cos \theta, r \sin \theta) \sin \theta \]
+
+    \item \textbf{\texttt{polar\_partial\_theta}} ($ux, uy : \mathbb{R}^2 \to \mathbb{R}$, $p \in \mathbb{R}^2$): Directional derivative in the angular direction for polar coordinates.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def polar_partial_theta (ux uy : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) (p : $\mathbb{R}$ $\times$ $\mathbb{R}$) : $\mathbb{R}$ :=
+  -ux (p.1 * Real.cos p.2, p.1 * Real.sin p.2) * p.1 * Real.sin p.2 +
+  uy (p.1 * Real.cos p.2, p.1 * Real.sin p.2) * p.1 * Real.cos p.2
+\end{lstlisting}
+    \[ U_\theta(r, \theta) = -r \sin \theta \ u_x(r \cos \theta, r \sin \theta) + r \cos \theta \ u_y(r \cos \theta, r \sin \theta) \]
+
     \item \textbf{\texttt{TwiceContinuouslyDifferentiable\_C\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $G \subset \mathbb{C}$): $f$ is twice continuously differentiable on the open set $G$ if its real and imaginary parts are.
 \begin{lstlisting}[language=Caml, mathescape=true]
 def TwiceContinuouslyDifferentiable_C_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}$) : Prop :=
@@ -303,7 +319,7 @@ def HarmonicConjugate_C_eps (u v : $\mathbb{C}$ $\to$ $\mathbb{R}$) (G : Set $\m
     \[ \Delta u = 0, \quad \Delta v = 0, \quad u_x = v_y, \quad u_y = -v_x \text{ on } G \]
 \end{itemize}
 
-\section{\texttt{ComplexAnalysis/Sarason/Chapter1.lean}}
+\section{\texttt{Sarason/Chapter1.lean}}
 
 \begin{itemize}
     \item \textbf{\texttt{chordalMetric}} ($z, w \in \mathbb{C} \to \mathbb{R}$): The chordal distance between two points in the complex plane mapped to the Riemann sphere.
@@ -336,7 +352,7 @@ def Chordal$\mathbb{C}$ : Type := $\mathbb{C}$
     \[ \text{ChordalC} = \mathbb{C} \text{ (equipped with chordal metric)} \]
 \end{itemize}
 
-\section{\texttt{ComplexAnalysis/Sarason/Chapter2.lean}}
+\section{\texttt{Sarason/Chapter2.lean}}
 
 \begin{itemize}
     \item \textbf{\texttt{del} ($\partial$)}
@@ -462,7 +478,7 @@ noncomputable def centered_line_path (z v : $\mathbb{C}$) : path_in_C (z - v) (z
     \[ \gamma(t) = z + (2t - 1)v \]
 \end{itemize}
 
-\section{\texttt{ComplexAnalysis/Sarason/Chapter3.lean}}
+\section{\texttt{Sarason/Chapter3.lean}}
 
 \begin{itemize}
     \item \textbf{\texttt{translationMatrix}} ($b \in \mathbb{C}$): 

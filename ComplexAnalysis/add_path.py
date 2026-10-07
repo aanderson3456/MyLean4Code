@@ -1,6 +1,6 @@
 import re
 
-with open('ComplexAnalysis/Sarason/Chapter2.lean', 'r') as f:
+with open('Sarason/Chapter2.lean', 'r') as f:
     content = f.read()
 
 path_add_code = """
@@ -46,5 +46,5 @@ lemma pathDeriv_path_add_const {x y : ℂ} (γ : path_in_C x y) (z : ℂ) (t : �
 idx = content.find("lemma path_comp_deriv_R2")
 content = content[:idx] + path_add_code + content[idx:]
 
-with open('ComplexAnalysis/Sarason/Chapter2.lean', 'w') as f:
+with open('Sarason/Chapter2.lean', 'w') as f:
     f.write(content)

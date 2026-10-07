@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNT Formalization Roadmap: Newman to Lean 4</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --text-color: #c9d1d9;
+            --accent-color: #58a6ff;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --lean-color: #d2a8ff;
+            --math-color: #7ee787;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+        h2 {
+            color: #ff7b72;
+            margin-top: 40px;
+        }
+        h3 {
+            color: var(--math-color);
+        }
+        .step {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .level {
+            margin: 15px 0;
+            padding-left: 15px;
+            border-left: 3px solid var(--accent-color);
+        }
+        .level.math { border-color: var(--math-color); }
+        .level.lean { border-color: var(--lean-color); }
+        
+        .code-block {
+            background-color: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            color: #8b949e;
+        }
+        .highlight-lean { color: var(--lean-color); font-weight: bold; }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .tag-math { background-color: rgba(126, 231, 135, 0.2); color: var(--math-color); }
+        .tag-bridge { background-color: rgba(88, 166, 255, 0.2); color: var(--accent-color); }
+        .tag-lean { background-color: rgba(210, 168, 255, 0.2); color: var(--lean-color); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PNT Formalization Roadmap</h1>
+        <p style="text-align: center; font-size: 1.1em; margin-bottom: 40px;">
+            A multi-level translation from D.J. Newman's 1980 "Simple Analytic Proof of the Prime Number Theorem" down to the gritty, verified 50-line bounds of our Lean 4 formalization.
+        </p>
+
+        <!-- Step 1: The Contour Integral -->
+        <div class="step">
+            <h2>Step 1: The Tauberian Contour Integral</h2>
+            
+            <div class="level math">
+                <span class="tag tag-math">Level 1: The Paper (Math)</span>
+                <p>Newman's brilliant 1980 shortcut bounds the inverse Laplace integral over a bounded contour $W$ (the boundary of the truncated domain $\text{Re}(z) \ge -\delta, |z| \le R$). He multiplies the integrand by $(1 + z^2/R^2)$ to force the integral to converge neatly along the imaginary axis without needing infinite depth.</p>
+            </div>
+
+            <div class="level bridge">
+                <span class="tag tag-bridge">Level 2: The Formalization Strategy</span>
+                <p>Instead of relying on abstract Lebesgue measure theory to bind the integral limits, we isolate Newman's modifier into a standalone algebraic algebraic definition. This allows us to prove absolute bounds on the circle entirely within algebraic $\mathbb{C}$ arithmetic before ever touching an integral.</p>
+            </div>
+
+            <div class="level lean">
+                <span class="tag tag-lean">Level 3: The Gritty Lean 4</span>
+                <p>We defined the exact modifier and proved its exact geometric behavior on the boundary circle in <code>ComplexAnalysis/Sarason/Contour.lean</code>:</p>
+                <div class="code-block">
+<span class="highlight-lean">def</span> newmanModifier (s : ℂ) (R : ℝ) : ℂ :=
+  (1 : ℂ) + s^2 / (R^2 : ℂ)
+
+<span class="highlight-lean">lemma</span> newmanModifier_eq_on_circle (s : ℂ) (R : ℝ) ...
+  newmanModifier s R = (s + R^2 / s) / s
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: The Euler Product & Zeta Connection -->
+        <div class="step">
+            <h2>Step 2: Connecting Primes to the Zeta Function</h2>
+            
+            <div class="level math">
+                <span class="tag tag-math">Level 1: The Paper (Math)</span>
+                <p>To analyze the distribution of primes, we rely on Euler's fundamental identity bridging the Riemann Zeta function to the primes: $\zeta(s) = \prod_p (1 - p^{-s})^{-1}$. This implies $-\frac{\zeta'(s)}{\zeta(s)} = \sum_p \frac{\ln p}{p^s - 1}$.</p>
+            </div>
+
+            <div class="level bridge">
+                <span class="tag tag-bridge">Level 2: The Formalization Strategy</span>
+                <p>Infinite products are notoriously difficult to formalize constructively. Instead of chasing infinite bounds and generalized metric spaces, we bound everything into finite <code>Finset</code> structures and strict $N$-truncations. The infinite limit is replaced by classical epsilon-delta definitions on the partial <code>Finset.prod</code>.</p>
+            </div>
+
+            <div class="level lean">
+                <span class="tag tag-lean">Level 3: The Gritty Lean 4</span>
+                <p>We defined Weierstrass limit proxies in <code>Definitions.lean</code> and explicitly constructed the partial geometric bounds in <code>Zeta.lean</code>:</p>
+                <div class="code-block">
+<span class="highlight-lean">def</span> eulerPartialProduct (s : ℂ) (N : ℕ) : ℂ :=
+  ∏ p ∈ (Finset.range N).filter Nat.Prime, (1 - ((p : ℂ) ^ (-s)))⁻¹
+
+<span class="highlight-lean">lemma</span> prime_euler_factor_inv (p : ℕ) (s : ℂ) ...
+  (1 - p^{-s})⁻¹ = (∑ k, p^{-sk}) + p^{-sK} * (1 - p^{-s})⁻¹
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Fundamental Theorem of Arithmetic (FTA) -->
+        <div class="step">
+            <h2>Step 3: Expanding the Prime Combinatorics</h2>
+            
+            <div class="level math">
+                <span class="tag tag-math">Level 1: The Paper (Math)</span>
+                <p>The paper implicitly relies on the Fundamental Theorem of Arithmetic to state that expanding the Euler product generates the sum over all integers $\sum n^{-s}$.</p>
+            </div>
+
+            <div class="level bridge">
+                <span class="tag tag-bridge">Level 2: The Formalization Strategy</span>
+                <p>Lean's compiler cannot "implicitly" expand an infinite product of infinite sums. We must manually bridge the <code>Finsupp</code> prime power mappings to the standard integers. We restrict this to a bounded set $S(N,K)$ (primes $\le N$, powers $\le K$) to avoid topology entirely.</p>
+            </div>
+
+            <div class="level lean">
+                <span class="tag tag-lean">Level 3: The Gritty Lean 4</span>
+                <p>We created a custom bijection verifying that the geometric combinatorial expansion precisely yields the finite integer sums in <code>Zeta.lean</code>:</p>
+                <div class="code-block">
+<span class="highlight-lean">lemma</span> smooth_numbers_fta_bijection (N : ℕ) (n : ℕ) ...
+  ∃! (f : ℕ →₀ ℕ), ... ∧ f.prod (fun p k => p ^ k) = n
+
+<span class="highlight-lean">lemma</span> euler_product_expand_sum (N K : ℕ) (s : ℂ) :
+  ∏ p ∈ P, (∑ k, p^{-sk}) = ∑ n ∈ smoothNumbersBoundedFinset N K, n^{-s}
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: The Chebyshev Function -->
+        <div class="step">
+            <h2>Step 4: The Chebyshev Target $\vartheta(x)$</h2>
+            
+            <div class="level math">
+                <span class="tag tag-math">Level 1: The Paper (Math)</span>
+                <p>Newman proves that $\vartheta(x) = \sum_{p \le x} \ln p \sim x$. He isolates $f(t) = \vartheta(e^t)e^{-t} - 1$ and proves its integral converges.</p>
+            </div>
+
+            <div class="level bridge">
+                <span class="tag tag-bridge">Level 2: The Formalization Strategy</span>
+                <p><em>(Upcoming Work)</em> We need to define $\vartheta(x)$ explicitly using <code>Finset.sum</code> over filtered primes, and map $-\frac{\zeta'(s)}{\zeta(s)}$ to the Laplace transform of $\vartheta(e^t)e^{-t} - 1$.</p>
+            </div>
+
+            <div class="level lean">
+                <span class="tag tag-lean">Level 3: The Gritty Lean 4</span>
+                <p><em>(Next target for implementation)</em> Defining the Chebyshev proxy:</p>
+                <div class="code-block">
+<span class="highlight-lean">noncomputable def</span> chebyshevTheta (x : ℝ) : ℝ :=
+  ∑ p ∈ (Finset.range ⌊x⌋₊).filter Nat.Prime, Real.log p
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

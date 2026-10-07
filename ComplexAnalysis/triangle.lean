@@ -8,13 +8,15 @@
     exact (sq_le_sq₀ hxNormNonneg hyNormNonneg)
 }
 
-lemma addSqsNonnegR (a b : ℝ) : 0 ≤ a^2 + b^2 := by {
+lemma addSqsNonnegR (a b : ℝ) : 0 ≤ a^2 + b^2 := by
+{
   exact Left.add_nonneg (sq_nonneg a) (sq_nonneg b)
 }
 
 lemma sqSqrtEqn (a b c d : ℝ) :
   (√(a ^ 2 + b ^ 2) + √(c ^ 2 + d ^ 2))^2
-  = a^2 + b^2 + c^2 + d^2 + 2*√(a^2+b^2)*√(c^2+d^2) := by {
+  = a^2 + b^2 + c^2 + d^2 + 2*√(a^2+b^2)*√(c^2+d^2) := by
+{
     rw [add_sq']
     rw [Real.sq_sqrt]
     rw [Real.sq_sqrt]
@@ -26,12 +28,14 @@ lemma sqSqrtEqn (a b c d : ℝ) :
 
 #check sq_le_sq₀
 
-lemma algIneq1Rlemma (a b : ℝ) : a ≤ b → 2*a ≤ 2*b := by {
+lemma algIneq1Rlemma (a b : ℝ) : a ≤ b → 2*a ≤ 2*b := by
+{
   intro hyp
   linarith
 }
 
-lemma babyCauchySchwarzR (a b c d : ℝ) : (a*c + b*d)^2 ≤ (a^2 + b^2)*(c^2 + d^2) := by {
+lemma babyCauchySchwarzR (a b c d : ℝ) : (a*c + b*d)^2 ≤ (a^2 + b^2)*(c^2 + d^2) := by
+{
   have h : (a^2 + b^2) * (c^2 + d^2) - (a*c + b*d)^2 = (a*d - b*c)^2 := by ring
   -- Since the right side is a square, it is ≥ 0
   have h_nonneg : 0 ≤ (a*d - b*c)^2 := pow_two_nonneg (a*d - b*c)
@@ -42,7 +46,8 @@ lemma babyCauchySchwarzR (a b c d : ℝ) : (a*c + b*d)^2 ≤ (a^2 + b^2)*(c^2 + 
 #print algIneq1Rlemma
 
 lemma algIneq1R (a b c d : ℝ) :
-  2*a*c + 2*b*d ≤ 2*√((a^2+b^2)*(c^2+d^2)) := by {
+  2*a*c + 2*b*d ≤ 2*√((a^2+b^2)*(c^2+d^2)) := by
+{
   --mul_add has trouble without assoc
   have h2ac : 2*a*c = 2*(a*c) := by
     exact mul_assoc 2 a c
@@ -60,23 +65,27 @@ lemma algIneq1R (a b c d : ℝ) :
   exact babyCauchySchwarzR a b c d
 }
 
-lemma addIneqBothSidesR (a b c : ℝ) : a ≤ b → c + a ≤ c + b := by {
+lemma addIneqBothSidesR (a b c : ℝ) : a ≤ b → c + a ≤ c + b := by
+{
   intro h
   exact (add_le_add_iff_left c).mpr h
 }
 
 lemma hassoc (x y : ℝ × ℝ) :  x.1 ^ 2 + y.1 ^ 2 + 2 * x.1 * y.1 + (x.2 ^ 2 + y.2 ^ 2 + 2 * x.2 * y.2) =
-      x.1 ^ 2 + (y.1 ^ 2 + 2 * x.1 * y.1 + (x.2 ^ 2 + y.2 ^ 2 + 2 * x.2 * y.2)) := by {
+      x.1 ^ 2 + (y.1 ^ 2 + 2 * x.1 * y.1 + (x.2 ^ 2 + y.2 ^ 2 + 2 * x.2 * y.2)) := by
+{
   ring
 }
 
 lemma hassoc2 (x y : ℝ × ℝ) : x.1 ^ 2 + x.2 ^ 2 + y.1 ^ 2 + y.2 ^ 2 + 2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2) =
-  x.1 ^ 2 + (x.2 ^ 2 + y.1 ^ 2 + y.2 ^ 2 + 2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2)) := by {
+  x.1 ^ 2 + (x.2 ^ 2 + y.1 ^ 2 + y.2 ^ 2 + 2 * √(x.1 ^ 2 + x.2 ^ 2) * √(y.1 ^ 2 + y.2 ^ 2)) := by
+{
     ring
 }
 
 theorem euclideanNormTriangle (x y : ℝ × ℝ) :
-  euclideanNorm (x + y) ≤ euclideanNorm x + euclideanNorm y := by {
+  euclideanNorm (x + y) ≤ euclideanNorm x + euclideanNorm y := by
+{
     unfold euclideanNorm
     unfold sqNorm
     simp
@@ -136,7 +145,8 @@ theorem euclideanNormTriangle (x y : ℝ × ℝ) :
 }
 
 lemma euclideanDistTriangle (x y z : ℝ × ℝ) :
-    euclideanDist x z ≤ euclideanDist x y + euclideanDist y z := by {
+    euclideanDist x z ≤ euclideanDist x y + euclideanDist y z := by
+{
   -- 1. Unfold the definition of distance to work with norms
   -- Note: This assumes sqDist x z is defined as sqNorm (x - z)
   rw [euclideanDist, euclideanDist, euclideanDist]

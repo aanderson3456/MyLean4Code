@@ -1,6 +1,6 @@
 import re
 
-with open('ComplexAnalysis/Sarason/Chapter2.lean', 'r') as f:
+with open('Sarason/Chapter2.lean', 'r') as f:
     content = f.read()
 
 old_block = """lemma partial_deriv_unique_x (f : ℂ → ℝ) (c d : ℝ) (z₀ : ℂ) (hc : HasPartialDerivX_C_to_R_eps f c z₀) (hd : HasPartialDerivX_C_to_R_eps f d z₀) : c = d := by {
@@ -62,5 +62,5 @@ new_block = """lemma partial_deriv_unique_x (f : ℂ → ℝ) (c d : ℝ) (z₀ 
 
 content = content.replace(old_block, new_block)
 
-with open('ComplexAnalysis/Sarason/Chapter2.lean', 'w') as f:
+with open('Sarason/Chapter2.lean', 'w') as f:
     f.write(content)

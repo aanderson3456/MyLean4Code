@@ -1,7 +1,7 @@
 import re
 import os
 
-lean_files = ["ComplexAnalysis/R2.lean", "ComplexAnalysis/Sarason/Definitions.lean", "ComplexAnalysis/Sarason/Chapter2.lean"]
+lean_files = ["R2.lean", "Sarason/Definitions.lean", "Sarason/Chapter2.lean"]
 
 def_map = {}
 

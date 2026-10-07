@@ -1,0 +1,140 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+
+\lstset{ 
+    backgroundcolor=\color{backcolour},   
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=none,                    
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    morekeywords={def, noncomputable, Prop, let, in, fun, if, then, else, match, with, where, lemma, theorem, use, constructor, intro, have, exact, rw, let, use, by, change},
+    mathescape=true
+}
+
+\title{Euler Product and Riemann Zeta Function Formalizations}
+\author{Lean Formalization Project}
+\date{\today}
+
+\lstset{
+  literate={×}{{$\times$}}1 {γ}{{$\gamma$}}1 {δ}{{$\delta$}}1 {ε}{{$\varepsilon$}}1 {‖}{{$\|$}}1 {₀}{{$_0$}}1 {ℂ}{{$\mathbb{C}$}}1 {ℕ}{{$\mathbb{N}$}}1 {ℝ}{{$\mathbb{R}$}}1 {→}{{$\to$}}1 {∀}{{$\forall$}}1 {∃}{{$\exists$}}1 {∧}{{$\wedge$}}1 {≤}{{$\le$}}1 {≥}{{$\ge$}}1 {▸}{{$\triangleright$}}1 {⟨}{{$\langle$}}1 {⟩}{{$\rangle$}}1 {≠}{{$\neq$}}1 {∑}{{$\sum$}}1 {∏}{{$\prod$}}1 {∣}{{$\mid$}}1 {⁻}{{$^-$}}1 {¹}{{$^1$}}1
+}
+\begin{document}
+\maketitle
+
+This document provides a comprehensive list of all definitions manually formalized for the analytic proof of the Prime Number Theorem via Newman's Tauberian approach, specifically within \texttt{Contour.lean} and \texttt{Zeta.lean}. For each definition, the raw Lean code is presented first, followed by its mathematical interpretation.
+
+\section{\texttt{Contour.lean}}
+
+\begin{itemize}
+    \item \textbf{\texttt{newmanModifier}} ($s \in \mathbb{C}$, $R \in \mathbb{R}$): The modifying factor in Newman's contour integral to guarantee convergence on the left half-plane.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def newmanModifier (s : $\mathbb{C}$) (R : $\mathbb{R}$) : $\mathbb{C}$ :=
+  (1 : $\mathbb{C}$) + s^2 / (R^2 : $\mathbb{C}$)
+\end{lstlisting}
+    \[ \text{newmanModifier}(s, R) = 1 + \frac{s^2}{R^2} \]
+
+    \item \textbf{\texttt{newmanModifier\_eq\_on\_circle}}: Equality bounding the modifier on the circle $|s|=R$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+lemma newmanModifier_eq_on_circle (s : $\mathbb{C}$) (R : $\mathbb{R}$) (hR : R > 0) (hs : Complex.abs s = R) :
+    newmanModifier s R = (s + R^2 / s) / s
+\end{lstlisting}
+    \[ |s| = R \implies 1 + \frac{s^2}{R^2} = \frac{s + R^2/s}{s} \]
+\end{itemize}
+
+\section{\texttt{Zeta.lean}}
+
+\begin{itemize}
+    \item \textbf{\texttt{zetaPartialSum}} ($s \in \mathbb{C}$, $N \in \mathbb{N}$): Partial sum of the Riemann zeta function up to integer $N$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def zetaPartialSum (s : $\mathbb{C}$) (N : $\mathbb{N}$) : $\mathbb{C}$ :=
+  $\sum$ i $\in$ Finset.range N, if i = 0 then 0 else ((i : $\mathbb{C}$) ^ (-s))
+\end{lstlisting}
+    \[ \zeta_N(s) = \sum_{n=1}^{N-1} n^{-s} \]
+
+    \item \textbf{\texttt{eulerPartialProduct}} ($s \in \mathbb{C}$, $N \in \mathbb{N}$): Partial Euler product over primes up to $N$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def eulerPartialProduct (s : $\mathbb{C}$) (N : $\mathbb{N}$) : $\mathbb{C}$ :=
+  $\prod$ p $\in$ (Finset.range N).filter Nat.Prime, (1 - ((p : $\mathbb{C}$) ^ (-s)))⁻¹
+\end{lstlisting}
+    \[ P_N(s) = \prod_{p < N} \frac{1}{1 - p^{-s}} \]
+
+    \item \textbf{\texttt{IsEulerProductAt\_eps}} / \textbf{\texttt{eulerProduct\_eps}}: The absolute limit of the Euler product as $N \to \infty$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def IsEulerProductAt_eps (s : $\mathbb{C}$) (L : $\mathbb{C}$) : Prop :=
+  $\forall$ $\varepsilon$ > 0, $\exists$ N$_0$, $\forall$ N $\ge$ N$_0$, Complex.abs (eulerPartialProduct s N - L) < $\varepsilon$
+
+noncomputable def eulerProduct_eps (s : $\mathbb{C}$) : $\mathbb{C}$ :=
+  if h : $\exists$ L, IsEulerProductAt_eps s L then Classical.choose h else 0
+\end{lstlisting}
+    \[ P(s) = \lim_{N \to \infty} P_N(s) \]
+
+    \item \textbf{\texttt{zeta\_eq\_eulerProduct}}: Euler product identity for $\operatorname{Re}(s) > 1$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+lemma zeta_eq_eulerProduct (s : $\mathbb{C}$) (hs : s.re > 1) :
+    zeta_eps s = eulerProduct_eps s
+\end{lstlisting}
+    \[ \operatorname{Re}(s) > 1 \implies \zeta(s) = \prod_p \frac{1}{1 - p^{-s}} \]
+
+    \item \textbf{\texttt{geom\_sum\_inv\_expansion}}: Geometric series expansion identity.
+\begin{lstlisting}[language=Caml, mathescape=true]
+lemma geom_sum_inv_expansion (x : $\mathbb{C}$) (hx : Complex.abs x < 1) (K : $\mathbb{N}$) :
+    (1 - x)⁻¹ = ($\sum$ k $\in$ Finset.range K, x^k) + (x^K) * (1 - x)⁻¹
+\end{lstlisting}
+    \[ \frac{1}{1-x} = \sum_{k=0}^{K-1} x^k + \frac{x^K}{1-x} \quad \text{for } |x| < 1 \]
+
+    \item \textbf{\texttt{prime\_euler\_factor\_inv}}: Expansion specifically for prime factors.
+\begin{lstlisting}[language=Caml, mathescape=true]
+lemma prime_euler_factor_inv (p : $\mathbb{N}$) (s : $\mathbb{C}$) (hs : s.re > 0) (K : $\mathbb{N}$) (hp : Nat.Prime p) :
+    (1 - ((p : $\mathbb{C}$) ^ (-s)))⁻¹ = ($\sum$ k $\in$ Finset.range K, ((p : $\mathbb{C}$) ^ (-s))^k) + 
+      (((p : $\mathbb{C}$) ^ (-s))^K) * (1 - ((p : $\mathbb{C}$) ^ (-s)))⁻¹
+\end{lstlisting}
+    \[ \frac{1}{1 - p^{-s}} = \sum_{k=0}^{K-1} (p^{-s})^k + \frac{p^{-sK}}{1 - p^{-s}} \]
+
+    \item \textbf{\texttt{SmoothNumbers}} ($N \in \mathbb{N}$): Integers with prime factors bounded by $N$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def SmoothNumbers (N : $\mathbb{N}$) : Set $\mathbb{N}$ :=
+  {n : $\mathbb{N}$ | n > 0 $\wedge$ $\forall$ p, p.Prime $\to$ p $\mid$ n $\to$ p $\le$ N}
+\end{lstlisting}
+    \[ \text{SmoothNumbers}(N) = \{n \in \mathbb{N}^+ \mid p \mid n \implies p \le N\} \]
+
+    \item \textbf{\texttt{smooth\_numbers\_fta\_bijection}}: The Fundamental Theorem of Arithmetic (FTA) Bijection Lemma for Smooth Numbers.
+\begin{lstlisting}[language=Caml, mathescape=true]
+lemma smooth_numbers_fta_bijection (N : $\mathbb{N}$) (n : $\mathbb{N}$) (hn : n $\in$ SmoothNumbers N) :
+    $\exists$! (f : $\mathbb{N}$ $\to$₀ $\mathbb{N}$), ($\forall$ p $\in$ f.support, p.Prime $\wedge$ p $\le$ N) $\wedge$ f.prod (fun p k => p ^ k) = n
+\end{lstlisting}
+    \[ \text{Every integer in } S(N) \text{ has a unique prime factorization over } p \le N. \]
+
+    \item \textbf{\texttt{smoothNumbersBoundedFinset}} ($N, K \in \mathbb{N}$):
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def smoothNumbersBoundedFinset (N K : $\mathbb{N}$) : Finset $\mathbb{N}$ :=
+  have : DecidablePred (fun n => n > 0 $\wedge$ $\forall$ p, p.Prime $\to$ p $\mid$ n $\to$ p $\le$ N $\wedge$ n.factorization p $\le$ K) := Classical.decPred _
+  (Finset.range ((N.factorial ^ K) + 1)).filter (fun n => n > 0 $\wedge$ $\forall$ p, p.Prime $\to$ p $\mid$ n $\to$ p $\le$ N $\wedge$ n.factorization p $\le$ K)
+\end{lstlisting}
+    \[ \text{SmoothNumbersBounded}(N, K) = \{ n \le (N!)^K \mid p \mid n \implies p \le N \text{ and } v_p(n) \le K \} \]
+
+    \item \textbf{\texttt{euler\_product\_expand\_sum}}: The polynomial expansion of the Euler product into the geometric zeta sum.
+\begin{lstlisting}[language=Caml, mathescape=true]
+lemma euler_product_expand_sum (N K : $\mathbb{N}$) (s : $\mathbb{C}$) :
+    $\prod$ p $\in$ (Finset.range (N + 1)).filter Nat.Prime, ($\sum$ k $\in$ Finset.range (K + 1), ((p : $\mathbb{C}$) ^ (-s)) ^ k) =
+    $\sum$ n $\in$ smoothNumbersBoundedFinset N K, (n : $\mathbb{C}$) ^ (-s)
+\end{lstlisting}
+    \[ \prod_{p \le N} \left( \sum_{k=0}^K p^{-sk} \right) = \sum_{n \in S(N,K)} n^{-s} \]
+
+\end{itemize}
+
+\end{document}

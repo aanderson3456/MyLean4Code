@@ -1,6 +1,6 @@
 import re
 
-with open('ComplexAnalysis/Sarason/Chapter2.lean', 'r') as f:
+with open('Sarason/Chapter2.lean', 'r') as f:
     content = f.read()
 
 # 1. Remove ConformalLinearMap_eps
@@ -75,5 +75,5 @@ new_usage2 = """    have h_del_ne_zero := conformal_implies_del_ne_zero_of_fderi
 content = content.replace(usage2, new_usage2)
 
 
-with open('ComplexAnalysis/Sarason/Chapter2.lean', 'w') as f:
+with open('Sarason/Chapter2.lean', 'w') as f:
     f.write(content)

@@ -1,0 +1,94 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{geometry}
+\geometry{letterpaper, margin=1in}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+
+\title{Analytic Proof of the Prime Number Theorem \\ via Newman's Tauberian Theorem}
+\author{MathGod Project}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document outlines the specific analytic proof of the Prime Number Theorem (PNT) that we intend to formalize in Lean 4. It is based on D.J. Newman's elegant complex integration method, popularized by Don Zagier, which completely avoids the heavy machinery of the Wiener-Ikehara Tauberian theorem.
+\end{abstract}
+
+\section{Introduction}
+The Prime Number Theorem states that $\pi(x) \sim \frac{x}{\log x}$, or equivalently, that Chebyshev's theta function $\vartheta(x) = \sum_{p \le x} \log p$ satisfies $\vartheta(x) \sim x$. 
+
+\section{Newman's Tauberian Theorem}
+
+\begin{theorem}[Newman 1980]
+Let $f: [0, \infty) \to \mathbb{R}$ be a bounded, locally integrable function. Its Laplace transform
+\[ g(z) = \int_0^\infty f(t) e^{-zt} \, dt \]
+is analytic on $\Re(z) > 0$. If $g(z)$ can be analytically continued to the closed right half-plane $\Re(z) \ge 0$, then the improper integral $\int_0^\infty f(t) \, dt$ converges and is equal to $g(0)$.
+\end{theorem}
+
+\begin{proof}
+For $T > 0$, define the truncated integral $g_T(z) = \int_0^T f(t) e^{-zt} \, dt$. This $g_T(z)$ is an entire function. We must show $\lim_{T \to \infty} g_T(0) = g(0)$. 
+
+By Cauchy's Integral Formula, for a path $C$, we can write:
+\[ g(0) - g_T(0) = \frac{1}{2\pi i} \int_{C} \left( g(z) - g_T(z) \right) e^{zT} \left( 1 + \frac{z^2}{R^2} \right) \frac{dz}{z} \]
+Let $R > 0$. Since $g$ is analytic on $\Re(z) \ge 0$, it is analytic on a slightly larger region $\Re(z) \ge -\delta$ for some $\delta > 0$ (depending on $R$). We choose the contour $C$ to be the boundary of the region $\{z \in \mathbb{C} : |z| \le R, \Re(z) \ge -\delta\}$.
+
+The boundary $C$ consists of:
+\begin{itemize}
+    \item $C_+$: the right semicircle arc $|z| = R, \Re(z) > 0$.
+    \item $C_-$: the left semicircle arc inside the analytic region $|z| = R, \Re(z) \le 0, \Re(z) \ge -\delta$.
+    \item Vertical line segments connecting the arcs.
+\end{itemize}
+
+By bounding the integrand on the semicircle $C_+$ and $C_-$ separately:
+\begin{enumerate}
+    \item \textbf{On $C_+$}: Here $|z| = R$ and $\Re(z) > 0$. The geometric factor simplifies cleanly:
+    \[ \left( \frac{1}{z} + \frac{z}{R^2} \right) = \frac{\bar{z} + z}{R^2} = \frac{2 \Re(z)}{R^2} \]
+    This directly cancels the growth of the exponential $e^{zT} = e^{\Re(z)T}$. Using the bound $|f(t)| \le M$, we find the integral over $C_+$ is strictly bounded by $O(1/R)$.
+    
+    \item \textbf{On $C_-$}: We split the integrand. Since $g_T(z)$ is entire, its integral can be shifted to the full left semicircle where $e^{zT}$ decays exponentially rapidly as $T \to \infty$. For $g(z)$, which is independent of $T$, its integral over $C_-$ goes to zero as $T \to \infty$ by basic dominated convergence.
+\end{enumerate}
+
+Thus, taking $\limsup_{T \to \infty}$ and then making $R$ arbitrarily large, the absolute difference $|g(0) - g_T(0)|$ vanishes.
+\end{proof}
+
+\section{The Riemann Zeta Function and Properties}
+We recall the Riemann Zeta function for $\Re(s) > 1$:
+\[ \zeta(s) = \sum_{n=1}^\infty \frac{1}{n^s} = \prod_p \left(1 - \frac{1}{p^s}\right)^{-1} \]
+Taking the logarithmic derivative:
+\[ -\frac{\zeta'(s)}{\zeta(s)} = \sum_p \frac{\log p}{p^s - 1} \]
+By standard methods (subtracting the simple pole at $s=1$), the function $\zeta(s) - \frac{1}{s-1}$ extends analytically to $\Re(s) > 0$. Crucially, using the identity $3 + 4\cos \theta + \cos 2\theta = 2(1+\cos\theta)^2 \ge 0$, one proves that $\zeta(1+it) \neq 0$ for all $t \in \mathbb{R}$.
+
+\section{Proof of the Prime Number Theorem}
+
+\begin{lemma}
+Chebyshev's bound holds: $\vartheta(x) \le Cx$ for some constant $C > 0$.
+\end{lemma}
+
+Define the target function $f(t) = \vartheta(e^t)e^{-t} - 1$. Since $\vartheta(x) = O(x)$, $f(t)$ is strictly bounded. 
+The Laplace transform of $f(t)$ evaluates to:
+\[ g(z) = \int_0^\infty (\vartheta(e^t)e^{-t} - 1) e^{-zt} \, dt = \frac{1}{z+1}\Phi(z+1) - \frac{1}{z} \]
+where $\Phi(s) = \sum_p \frac{\log p}{p^s}$. 
+
+Since $\Phi(s)$ differs from $-\frac{\zeta'(s)}{\zeta(s)}$ by a function analytic for $\Re(s) > 1/2$, and $-\frac{\zeta'(s)}{\zeta(s)}$ has a simple pole at $s=1$ with residue $1$, the pole of $\Phi(z+1)$ at $z=0$ exactly cancels the $-1/z$ term.
+Furthermore, since $\zeta(1+it) \neq 0$, $\Phi(z+1)$ has no other poles on the imaginary axis $\Re(z) = 0$. 
+
+Therefore, $g(z)$ extends analytically to the closed right half-plane $\Re(z) \ge 0$. By Newman's Tauberian Theorem, the improper integral
+\[ \int_0^\infty (\vartheta(e^t)e^{-t} - 1) \, dt \]
+must converge.
+
+\begin{lemma}
+If the integral $\int_0^\infty (\vartheta(e^t)e^{-t} - 1) \, dt$ converges, then $\lim_{x \to \infty} \frac{\vartheta(x)}{x} = 1$.
+\end{lemma}
+\begin{proof}
+Assume $\limsup \frac{\vartheta(x)}{x} > 1$. Then there exists $\lambda > 1$ such that $\vartheta(x) > \lambda x$ for arbitrarily large $x$. Because $\vartheta$ is non-decreasing, for any $y$ in the interval $x \le y \le \lambda x$, we have $\vartheta(y) \ge \vartheta(x) > \lambda x = \lambda (x/y) y \ge y$. 
+The integral of $f(t)$ over the corresponding time interval $[\log x, \log(\lambda x)]$ yields a strictly positive constant bounded away from zero, which contradicts the Cauchy convergence criterion for the improper integral. A symmetric argument handles the $\liminf$ case. 
+\end{proof}
+
+This completes the proof of the Prime Number Theorem.
+
+\end{document}
