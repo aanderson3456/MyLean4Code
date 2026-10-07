@@ -262,3 +262,128 @@ lemma pnt_limsup_contradiction {I : ℝ}
   have h_ge : 0 ≥ L - 1 - Real.log L := ge_of_tendsto h_cauchy (Eventually.of_forall h_lower)
   linarith
 }
+
+lemma chebyshevTheta_nonneg (x : ℝ) : 0 ≤ chebyshevTheta x := by
+{
+  dsimp [chebyshevTheta]
+  apply Finset.sum_nonneg
+  intro p hp
+  rw [Finset.mem_filter] at hp
+  have h1 : (1 : ℝ) ≤ p := by
+  {
+    have h2 : 2 ≤ p := Nat.Prime.two_le hp.2
+    norm_cast
+    linarith
+  }
+  exact Real.log_nonneg h1
+}
+
+lemma cobounded_theta : IsCoboundedUnder (fun x y => x ≤ y) atTop (fun x : ℝ => chebyshevTheta x / x) := by
+{
+  use 0
+  intro a ha
+  have h_pos : ∀ᶠ x : ℝ in atTop, 0 ≤ chebyshevTheta x / x := by
+  {
+    filter_upwards [eventually_gt_atTop 0] with x hx
+    have h1 : 0 ≤ chebyshevTheta x := chebyshevTheta_nonneg x
+    exact div_nonneg h1 (le_of_lt hx)
+  }
+  have h_le : ∀ᶠ x : ℝ in atTop, 0 ≤ a := by
+  {
+    filter_upwards [h_pos, ha] with x h1 h2
+    exact le_trans h1 h2
+  }
+  have h_nonempty : (atTop : Filter ℝ).NeBot := Filter.atTop_neBot
+  exact h_le.frequently.exists.choose_spec
+}
+
+def build_seq_rec (g : ℝ → ℝ) : ℕ → ℝ
+| 0 => g 2
+| n + 1 => g (build_seq_rec g n)
+
+lemma build_seq {f : ℝ → ℝ} {L : ℝ} (hf : ∃ᶠ x in atTop, L < f x) :
+    ∃ seq : ℕ → ℝ, (∀ n, 1 < seq n) ∧ Tendsto seq atTop atTop ∧ ∀ n, L < f (seq n) := by
+{
+  have hf2 : ∀ a, ∃ b, a + 1 ≤ b ∧ L < f b := by
+  {
+    intro a
+    have h1 : ∃ᶠ x in atTop, L < f x := hf
+    rw [Filter.frequently_atTop] at h1
+    rcases h1 (max a 1 + 1) with ⟨b, hb1, hb2⟩
+    use b
+    refine ⟨?_, hb2⟩
+    have h_max : a ≤ max a 1 := le_max_left a 1
+    linarith
+  }
+  choose g hg1 hg2 using hf2
+  let seq := build_seq_rec g
+  have h_seq_ge : ∀ n : ℕ, (n : ℝ) + 2 ≤ seq n := by
+  {
+    intro n
+    induction' n with n ih
+    · dsimp [seq, build_seq_rec]
+      have h1 := hg1 2
+      have h2 : ((0 : ℕ) : ℝ) + 2 = 2 := by push_cast; ring
+      linarith
+    · dsimp [seq, build_seq_rec]
+      have h1 := hg1 (build_seq_rec g n)
+      have h2 : (n:ℝ) + 2 + 1 ≤ seq n + 1 := by linarith
+      have h3 : ((n + 1 : ℕ) : ℝ) + 2 = (n:ℝ) + 2 + 1 := by push_cast; ring
+      linarith
+  }
+  have h_seq : ∀ n, 1 < seq n := by
+  {
+    intro n
+    have h1 := h_seq_ge n
+    have h2 : (1:ℝ) < (n:ℝ) + 2 := by
+    {
+      have h3 : 0 ≤ (n:ℝ) := Nat.cast_nonneg n
+      linarith
+    }
+    linarith
+  }
+  have h_tendsto : Tendsto seq atTop atTop := by
+  {
+    apply tendsto_atTop_mono h_seq_ge
+    have h1 : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop := tendsto_natCast_atTop_atTop
+    exact Tendsto.atTop_add h1 tendsto_const_nhds
+  }
+  have h_eval : ∀ n, L < f (seq n) := by
+  {
+    intro n
+    cases n
+    · dsimp [seq, build_seq_rec]
+      exact hg2 2
+    · dsimp [seq, build_seq_rec]
+      exact hg2 (build_seq_rec g _)
+  }
+  exact ⟨seq, h_seq, h_tendsto, h_eval⟩
+}
+
+lemma limsup_theta_le_one {I : ℝ}
+    (hf_conv : Tendsto (fun T => ∫ t in (0:ℝ)..T, pntTargetFunc t) atTop (nhds I))
+    (hf_int : ∀ T > 0, IntervalIntegrable pntTargetFunc volume 0 T) :
+    limsup (fun x => chebyshevTheta x / x) atTop ≤ 1 := by
+{
+  by_contra h_contra
+  have h1 : 1 < limsup (fun x => chebyshevTheta x / x) atTop := not_le.mp h_contra
+  have h2 : ∃ L > 1, L < limsup (fun x => chebyshevTheta x / x) atTop := by
+  {
+    have h3 := exists_between h1
+    rcases h3 with ⟨L, hL1, hL2⟩
+    use L
+  }
+  rcases h2 with ⟨L, hL1, hL2⟩
+  have h3 : ∃ᶠ x in atTop, L < chebyshevTheta x / x := frequently_lt_of_lt_limsup (hu := cobounded_theta) hL2
+  have h4 : ∃ seq : ℕ → ℝ, (∀ n, 1 < seq n) ∧ Tendsto seq atTop atTop ∧ ∀ n, L < chebyshevTheta (seq n) / seq n := build_seq h3
+  rcases h4 with ⟨seq, hseq1, hseq2, hseq3⟩
+  have h5 : ∃ L > 1, ∃ seq : ℕ → ℝ, (∀ n, 1 < seq n) ∧ Tendsto seq atTop atTop ∧ ∀ n, L * seq n < chebyshevTheta (seq n) := by
+  {
+    use L, hL1, seq, hseq1, hseq2
+    intro n
+    have h6 := hseq3 n
+    have h7 : 0 < seq n := by linarith [hseq1 n]
+    exact (lt_div_iff₀ h7).mp h6
+  }
+  exact pnt_limsup_contradiction hf_conv hf_int h5
+}
