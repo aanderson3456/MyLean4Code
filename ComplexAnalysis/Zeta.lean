@@ -112,7 +112,35 @@ lemma zeta_eps_eq_of_approx (s : ℂ) (hs : 1 < s.re)
     exact Classical.choose_spec h_euler
   }
   -- By metric uniqueness of limits, since the difference tends to 0, they are equal.
-  sorry
+  unfold IsZetaAt_eps at h_zeta_val
+  unfold IsEulerProductAt_eps at h_euler_val
+  
+  apply eq_of_norm_sub_le_zero
+  apply le_of_forall_pos_le_add
+  intro ε hε
+  have hε3 : ε / 3 > 0 := div_pos hε (by norm_num)
+  rcases h_zeta_val (ε / 3) hε3 with ⟨N1, hN1⟩
+  rcases h_euler_val (ε / 3) hε3 with ⟨N2, hN2⟩
+  rcases h_approx (ε / 3) hε3 with ⟨N3, hN3⟩
+  let N := max N1 (max N2 N3)
+  have h1 := hN1 N (le_max_left N1 _)
+  have h2 := hN2 N (le_trans (le_max_left N2 N3) (le_max_right N1 _))
+  have h3 := hN3 N (le_trans (le_max_right N2 N3) (le_max_right N1 _))
+  
+  have ht1 : ‖zeta_eps s - eulerProduct_eps s‖ = ‖(zeta_eps s - zetaPartialSum N s) + (zetaPartialSum N s - eulerPartialProduct N s) + (eulerPartialProduct N s - eulerProduct_eps s)‖ := by { congr 1; ring }
+  have ht2 : ‖(zeta_eps s - zetaPartialSum N s) + (zetaPartialSum N s - eulerPartialProduct N s) + (eulerPartialProduct N s - eulerProduct_eps s)‖ ≤ ‖(zeta_eps s - zetaPartialSum N s) + (zetaPartialSum N s - eulerPartialProduct N s)‖ + ‖eulerPartialProduct N s - eulerProduct_eps s‖ := norm_add_le _ _
+  have ht3 : ‖(zeta_eps s - zetaPartialSum N s) + (zetaPartialSum N s - eulerPartialProduct N s)‖ ≤ ‖zeta_eps s - zetaPartialSum N s‖ + ‖zetaPartialSum N s - eulerPartialProduct N s‖ := norm_add_le _ _
+  have h_triangle : ‖zeta_eps s - eulerProduct_eps s‖ ≤ ‖zeta_eps s - zetaPartialSum N s‖ + ‖zetaPartialSum N s - eulerPartialProduct N s‖ + ‖eulerPartialProduct N s - eulerProduct_eps s‖ := by linarith
+  
+  have h_norm_symm : ‖zeta_eps s - zetaPartialSum N s‖ = ‖zetaPartialSum N s - zeta_eps s‖ := norm_sub_rev _ _
+  rw [h_norm_symm] at h_triangle
+  
+  have h_sum : ‖zetaPartialSum N s - zeta_eps s‖ + ‖zetaPartialSum N s - eulerPartialProduct N s‖ + ‖eulerPartialProduct N s - eulerProduct_eps s‖ < ε := by linarith
+  
+  have h_lt : ‖zeta_eps s - eulerProduct_eps s‖ < ε := lt_of_le_of_lt h_triangle h_sum
+  
+  rw [zero_add]
+  exact le_of_lt h_lt
 }
 
 /--
