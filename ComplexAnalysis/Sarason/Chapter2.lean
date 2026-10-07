@@ -3761,19 +3761,19 @@ lemma exercise_II_15_1 (a d : ℝ) :
   Exercise II.15.2:
   The Laplacian in polar coordinates.
   r^2 * U_rr + r * U_r + U_θθ = r^2 * (u_xx + u_yy).
+  
+  (Note: The second-order polar partials are rigorously defined in Sarason/Definitions.lean
+  and their derivation properties would be proven in R2.lean).
 -/
 lemma exercise_II_15_2 (ux uy uxx uxy uyy : ℝ × ℝ → ℝ) (p : ℝ × ℝ) :
   let U_r := polar_partial_r ux uy p
-  let U_rr := Real.cos p.2 * polar_partial_r uxx uxy p + Real.sin p.2 * polar_partial_r uxy uyy p
-  let U_thetatheta := -p.1 * Real.cos p.2 * ux (p.1 * Real.cos p.2, p.1 * Real.sin p.2)
-                      - p.1 * Real.sin p.2 * polar_partial_theta uxx uxy p
-                      - p.1 * Real.sin p.2 * uy (p.1 * Real.cos p.2, p.1 * Real.sin p.2)
-                      + p.1 * Real.cos p.2 * polar_partial_theta uxy uyy p
+  let U_rr := polar_partial_rr uxx uxy uyy p
+  let U_thetatheta := polar_partial_thetatheta ux uy uxx uxy uyy p
   p.1^2 * U_rr + p.1 * U_r + U_thetatheta =
     p.1^2 * (uxx (p.1 * Real.cos p.2, p.1 * Real.sin p.2) + uyy (p.1 * Real.cos p.2, p.1 * Real.sin p.2)) := by
 {
   intros U_r U_rr U_thetatheta
-  dsimp [U_r, U_rr, U_thetatheta, polar_partial_r, polar_partial_theta]
+  dsimp [U_r, U_rr, U_thetatheta, polar_partial_r, polar_partial_rr, polar_partial_thetatheta, polar_partial_theta]
   set X := uxx (p.1 * Real.cos p.2, p.1 * Real.sin p.2)
   set Y := uyy (p.1 * Real.cos p.2, p.1 * Real.sin p.2)
   set XY := uxy (p.1 * Real.cos p.2, p.1 * Real.sin p.2)

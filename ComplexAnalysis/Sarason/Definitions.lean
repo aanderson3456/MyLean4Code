@@ -372,6 +372,17 @@ noncomputable def polar_partial_theta (ux uy : ℝ × ℝ → ℝ) (p : ℝ × �
   -ux (p.1 * Real.cos p.2, p.1 * Real.sin p.2) * p.1 * Real.sin p.2 +
   uy (p.1 * Real.cos p.2, p.1 * Real.sin p.2) * p.1 * Real.cos p.2
 
+/-- Second partial derivative with respect to r in polar coordinates. -/
+noncomputable def polar_partial_rr (uxx uxy uyy : ℝ × ℝ → ℝ) (p : ℝ × ℝ) : ℝ :=
+  Real.cos p.2 * polar_partial_r uxx uxy p + Real.sin p.2 * polar_partial_r uxy uyy p
+
+/-- Second partial derivative with respect to θ in polar coordinates. -/
+noncomputable def polar_partial_thetatheta (ux uy uxx uxy uyy : ℝ × ℝ → ℝ) (p : ℝ × ℝ) : ℝ :=
+  -p.1 * Real.cos p.2 * ux (p.1 * Real.cos p.2, p.1 * Real.sin p.2)
+  - p.1 * Real.sin p.2 * polar_partial_theta uxx uxy p
+  - p.1 * Real.sin p.2 * uy (p.1 * Real.cos p.2, p.1 * Real.sin p.2)
+  + p.1 * Real.cos p.2 * polar_partial_theta uxy uyy p
+
 
 end Sarason
 
