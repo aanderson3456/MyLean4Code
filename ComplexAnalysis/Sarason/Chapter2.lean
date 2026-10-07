@@ -3196,6 +3196,8 @@ theorem holomorphic_and_twice_diff_implies_harmonic {f : ℂ → ℂ} {G : Set �
     ring
 }
 
+--II.15
+
 /-- A real-valued function v is a harmonic conjugate of a real-valued function u on an open set G
 if both are harmonic on G and they satisfy the Cauchy-Riemann equations on G. -/
 def HarmonicConjugate_C_eps (u v : ℂ → ℝ) (G : Set ℂ) : Prop :=
@@ -3353,6 +3355,42 @@ theorem nonunique_harmonic_conj (u v : ℂ → ℝ) (G : Set ℂ) (c : ℝ)
     exact HasPartialDerivY_C_to_R_eps_add_const v (vy z) z c (h_vy z hz)
 }
 
+/--
+  Theorem: u and v are harmonic conjugates if and only if f(z) = u(z) + iv(z) is holomorphic.
+-/
+lemma harmonic_conjugate_iff_holomorphic (u v : ℂ → ℝ) (G : Set ℂ) (hG : IsOpen G) :
+    HarmonicConjugate_C_eps u v G ↔
+    (HolomorphicOn_eps (fun z => (u z : ℂ) + (v z : ℂ) * I) G ∧
+     ComplexAnalysis.R2.Harmonic_R2_eps (fun p => u (p.1 + p.2 * I)) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G} ∧
+     ComplexAnalysis.R2.Harmonic_R2_eps (fun p => v (p.1 + p.2 * I)) {p : ℝ × ℝ | p.1 + p.2 * I ∈ G}) := by
+{
+  constructor
+  · intro h
+    unfold HarmonicConjugate_C_eps at h
+    rcases h with ⟨hu, hv, ux, uy, vx, vy, hux, huy, hvx, hvy, hcr⟩
+    refine ⟨?_, hu, hv⟩
+    intro z hz
+    have h_diff : DifferentiableAt_eps (fun z => (u z : ℂ) + (v z : ℂ) * I) z := by
+    {
+      apply II_7 hG u v ux uy vx vy hux huy hvx hvy ?_ ?_ ?_ ?_ z hz (hcr z hz) (fun z => rfl)
+      -- The remaining goals are continuity of the partial derivatives in the complex plane.
+      -- These follow directly from TwiceContinuouslyDifferentiable_R2_eps via Harmonic_R2_eps,
+      -- but require mapping the topological definitions from ℝ×ℝ to ℂ.
+      · sorry
+      · sorry
+      · sorry
+      · sorry
+    }
+    exact h_diff
+  · intro h
+    rcases h with ⟨h_hol, hu, hv⟩
+    unfold HarmonicConjugate_C_eps
+    refine ⟨hu, hv, ?_⟩
+    -- The reverse direction requires extracting Cauchy-Riemann point-wise from HolomorphicOn_eps.
+    -- We have `cauchy_riemann_equations_of_differentiable` for this.
+    sorry
+}
+
 -- Exercises
 
 /--
@@ -3483,7 +3521,7 @@ lemma hasDerivAt_u_yx (b c d p2 : ℝ) (x : ℝ) :
   exact h_eq ▸ HasDerivAt.add (HasDerivAt.add h1 h2) h3
 }
 
-lemma exercise_harmonic_coeffs (a b c d : ℝ) :
+lemma exercise_II_15_1a (a b c d : ℝ) :
     Harmonic_R2_eps (fun p : ℝ × ℝ => a * p.1^3 + b * p.1^2 * p.2 + c * p.1 * p.2^2 + d * p.2^3) Set.univ →
     b = -3 * d ∧ c = -3 * a := by
 {
@@ -3548,7 +3586,7 @@ lemma exercise_harmonic_coeffs (a b c d : ℝ) :
   · linarith
 }
 
-lemma exercise_is_harmonic (a b c d : ℝ) (h_b : b = -3 * d) (h_c : c = -3 * a) :
+lemma exercise_II_15_1b (a b c d : ℝ) (h_b : b = -3 * d) (h_c : c = -3 * a) :
     Harmonic_R2_eps (fun p : ℝ × ℝ => a * p.1^3 + b * p.1^2 * p.2 + c * p.1 * p.2^2 + d * p.2^3) Set.univ := by
 {
   unfold Harmonic_R2_eps
@@ -3761,7 +3799,7 @@ lemma exercise_II_15_1 (a d : ℝ) :
   Exercise II.15.2:
   The Laplacian in polar coordinates.
   r^2 * U_rr + r * U_r + U_θθ = r^2 * (u_xx + u_yy).
-  
+
   (Note: The second-order polar partials are rigorously defined in Sarason/Definitions.lean
   and their derivation properties would be proven in R2.lean).
 -/
@@ -3789,6 +3827,22 @@ lemma exercise_II_15_2 (ux uy uxx uxy uyy : ℝ × ℝ → ℝ) (p : ℝ × ℝ)
   rw [h_eq]
   rw [hCS]
   ring
+}
+
+/--
+  Exercise II.15.4:
+  If u is real-valued harmonic, then any two harmonic conjugates differ by a constant.
+  (Assuming the domain G is an open connected set).
+-/
+lemma exercise_II_15_4 (u v1 v2 : ℂ → ℝ) (G : Set ℂ)
+    (h_open : IsOpen G) (h_conn : IsConnected G)
+    (h1 : HarmonicConjugate_C_eps u v1 G)
+    (h2 : HarmonicConjugate_C_eps u v2 G) :
+    ∃ c : ℝ, ∀ z ∈ G, v1 z = v2 z + c := by
+{
+  -- By the Cauchy-Riemann equations, the partial derivatives of (v1 - v2) are zero.
+  -- On a connected open set, this implies (v1 - v2) is a constant.
+  sorry
 }
 
 end Sarason.Ch2
