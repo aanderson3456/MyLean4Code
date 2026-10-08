@@ -387,3 +387,352 @@ lemma limsup_theta_le_one {I : ℝ}
   }
   exact pnt_limsup_contradiction hf_conv hf_int h5
 }
+
+lemma theta_bounded_above {I : ℝ}
+    (hf_conv : Tendsto (fun T => ∫ t in (0:ℝ)..T, pntTargetFunc t) atTop (nhds I))
+    (hf_int : ∀ T > 0, IntervalIntegrable pntTargetFunc volume 0 T) :
+    IsBoundedUnder (fun x y => x ≤ y) atTop (fun x => chebyshevTheta x / x) := by
+{
+  by_contra h_unbdd
+  have h1 : ∀ a, ∃ᶠ x in atTop, a < chebyshevTheta x / x := by
+  {
+    intro a
+    have h2 : ¬ ∀ᶠ x in atTop, chebyshevTheta x / x ≤ a := by
+    {
+      intro h3
+      exact h_unbdd ⟨a, h3⟩
+    }
+    rw [Filter.not_eventually] at h2
+    have eq : (fun x => ¬ (chebyshevTheta x / x ≤ a)) = (fun x => a < chebyshevTheta x / x) := by
+    {
+      ext x
+      exact not_le
+    }
+    rw [eq] at h2
+    exact h2
+  }
+  have h2 : ∃ᶠ x in atTop, 2 < chebyshevTheta x / x := h1 2
+  have h3 := build_seq h2
+  rcases h3 with ⟨seq, hseq1, hseq2, hseq3⟩
+  have h4 : ∃ L > 1, ∃ seq : ℕ → ℝ, (∀ n, 1 < seq n) ∧ Tendsto seq atTop atTop ∧ ∀ n, L * seq n < chebyshevTheta (seq n) := by
+  {
+    use 2, (by linarith), seq, hseq1, hseq2
+    intro n
+    have h5 := hseq3 n
+    have h6 : 0 < seq n := by linarith [hseq1 n]
+    exact (lt_div_iff₀ h6).mp h5
+  }
+  exact pnt_limsup_contradiction hf_conv hf_int h4
+}
+
+def build_seq_lt_rec (g : ℝ → ℝ) (start : ℝ) : ℕ → ℝ
+| 0 => g (start + 1)
+| n + 1 => g (build_seq_lt_rec g start n)
+
+lemma build_seq_lt {f : ℝ → ℝ} {L M : ℝ} (hf : ∃ᶠ x in atTop, f x < L) :
+    ∃ seq : ℕ → ℝ, (∀ n, M < seq n) ∧ Tendsto seq atTop atTop ∧ ∀ n, f (seq n) < L := by
+{
+  have hf2 : ∀ a, ∃ b, a + 1 ≤ b ∧ f b < L := by
+  {
+    intro a
+    have h1 : ∃ᶠ x in atTop, f x < L := hf
+    rw [Filter.frequently_atTop] at h1
+    rcases h1 (max a 1 + 1) with ⟨b, hb1, hb2⟩
+    use b
+    refine ⟨?_, hb2⟩
+    have h_max : a ≤ max a 1 := le_max_left a 1
+    linarith
+  }
+  choose g hg1 hg2 using hf2
+  let seq := build_seq_lt_rec g M
+  have h_seq_ge : ∀ n : ℕ, (n : ℝ) + M + 1 ≤ seq n := by
+  {
+    intro n
+    induction' n with n ih
+    · dsimp [seq, build_seq_lt_rec]
+      have h1 := hg1 (M + 1)
+      have h2 : ((0 : ℕ) : ℝ) + M + 1 = M + 1 := by push_cast; ring
+      linarith
+    · dsimp [seq, build_seq_lt_rec]
+      have h1 := hg1 (build_seq_lt_rec g M n)
+      have h2 : (n:ℝ) + M + 1 + 1 ≤ seq n + 1 := by linarith
+      have h3 : ((n + 1 : ℕ) : ℝ) + M + 1 = (n:ℝ) + M + 1 + 1 := by push_cast; ring
+      linarith
+  }
+  have h_seq : ∀ n, M < seq n := by
+  {
+    intro n
+    have h1 := h_seq_ge n
+    have h2 : M < (n:ℝ) + M + 1 := by
+    {
+      have h3 : 0 ≤ (n:ℝ) := Nat.cast_nonneg n
+      linarith
+    }
+    linarith
+  }
+  have h_tendsto : Tendsto seq atTop atTop := by
+  {
+    apply tendsto_atTop_mono h_seq_ge
+    have h1 : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop := tendsto_natCast_atTop_atTop
+    have h2 : Tendsto (fun n : ℕ => (n : ℝ) + (M + 1)) atTop atTop := Tendsto.atTop_add h1 tendsto_const_nhds
+    have eq : (fun n : ℕ => (n : ℝ) + M + 1) = (fun n : ℕ => (n : ℝ) + (M + 1)) := by
+    {
+      ext n
+      ring
+    }
+    rw [eq]
+    exact h2
+  }
+  have h_eval : ∀ n, f (seq n) < L := by
+  {
+    intro n
+    cases n
+    · dsimp [seq, build_seq_lt_rec]
+      exact hg2 (M + 1)
+    · dsimp [seq, build_seq_lt_rec]
+      exact hg2 (build_seq_lt_rec g M _)
+  }
+  exact ⟨seq, h_seq, h_tendsto, h_eval⟩
+}
+
+lemma pntTargetFunc_upper_bound {x L t : ℝ} (_ : 0 < L) (_ : L < 1) (hx_pos : 0 < x) 
+    (ht : t ∈ Set.Icc (Real.log (L * x)) (Real.log x))
+    (h_theta : chebyshevTheta x < L * x) :
+    pntTargetFunc t < L * x * Real.exp (-t) - 1 := by
+{
+  dsimp [pntTargetFunc]
+  have ht_exp_le : Real.exp t ≤ x := by
+  {
+    have h1 := ht.2
+    rw [← Real.exp_le_exp] at h1
+    rw [Real.exp_log hx_pos] at h1
+    exact h1
+  }
+  have h_mono := chebyshevTheta_mono ht_exp_le
+  have h_strict : chebyshevTheta (Real.exp t) < L * x := lt_of_le_of_lt h_mono h_theta
+  have h_exp_pos : 0 < Real.exp (-t) := Real.exp_pos (-t)
+  nlinarith
+}
+
+lemma pntTargetFunc_integral_upper_bound {x L : ℝ} (hL1 : 0 < L) (hL2 : L < 1) (hx_pos : 0 < x)
+    (h_theta : chebyshevTheta x < L * x)
+    (hf_int : IntervalIntegrable pntTargetFunc volume (Real.log (L * x)) (Real.log x)) :
+    ∫ t in (Real.log (L * x))..(Real.log x), pntTargetFunc t ≤ 1 - L + Real.log L := by
+{
+  let g := fun (t : ℝ) => L * x * Real.exp (-t) - 1
+  have h_le : ∀ t ∈ Set.Icc (Real.log (L * x)) (Real.log x), pntTargetFunc t ≤ g t := by
+  {
+    intro t ht
+    exact le_of_lt (pntTargetFunc_upper_bound hL1 hL2 hx_pos ht h_theta)
+  }
+  have hg_int : IntervalIntegrable g volume (Real.log (L * x)) (Real.log x) := by
+  {
+    have h_cont : Continuous g := by
+    {
+      apply Continuous.sub
+      · apply Continuous.mul continuous_const
+        exact Real.continuous_exp.comp continuous_neg
+      · exact continuous_const
+    }
+    exact Continuous.intervalIntegrable h_cont _ _
+  }
+  have h_log_le : Real.log (L * x) ≤ Real.log x := by
+  {
+    apply Real.log_le_log (mul_pos hL1 hx_pos)
+    have h_one : L * x < 1 * x := by exact mul_lt_mul_of_pos_right hL2 hx_pos
+    rw [one_mul] at h_one
+    exact le_of_lt h_one
+  }
+  have h_int_le : ∫ t in (Real.log (L * x))..(Real.log x), pntTargetFunc t ≤ ∫ t in (Real.log (L * x))..(Real.log x), g t := by
+  {
+    exact intervalIntegral.integral_mono_on h_log_le hf_int hg_int h_le
+  }
+  have h_int_g : ∫ t in (Real.log (L * x))..(Real.log x), g t = 1 - L + Real.log L := by
+  {
+    have h_deriv : ∀ t ∈ Set.uIcc (Real.log (L * x)) (Real.log x),
+      HasDerivAt (fun t => -L * x * Real.exp (-t) - t) (g t) t := by
+    {
+      intro t ht
+      have h0 := HasDerivAt.exp (hasDerivAt_neg t)
+      have h1 : HasDerivAt (fun x => Real.exp (-x)) (-Real.exp (-t)) t := by
+      {
+        have eq : Real.exp (-t) * -1 = -Real.exp (-t) := by ring
+        exact HasDerivAt.congr_deriv h0 eq
+      }
+      have h2 : HasDerivAt (fun t => -L * x * Real.exp (-t)) (-L * x * -Real.exp (-t)) t := by
+      {
+        exact HasDerivAt.const_mul (-L * x) h1
+      }
+      have h3 : HasDerivAt (fun t => -L * x * Real.exp (-t) - t) (-L * x * -Real.exp (-t) - 1) t := by
+      {
+        exact HasDerivAt.sub h2 (hasDerivAt_id t)
+      }
+      have h_eq : -L * x * -Real.exp (-t) - 1 = g t := by
+      {
+        dsimp [g]
+        ring
+      }
+      rw [← h_eq]
+      exact h3
+    }
+    have h_eval : ∫ t in (Real.log (L * x))..(Real.log x), g t
+      = (-L * x * Real.exp (-Real.log x) - Real.log x) - (-L * x * Real.exp (-Real.log (L * x)) - Real.log (L * x)) := by
+    {
+      exact intervalIntegral.integral_eq_sub_of_hasDerivAt h_deriv hg_int
+    }
+    rw [h_eval]
+    have h_exp1 : Real.exp (-Real.log (L * x)) = (L * x)⁻¹ := by
+    {
+      rw [Real.exp_neg, Real.exp_log (mul_pos hL1 hx_pos)]
+    }
+    have h_exp2 : Real.exp (-Real.log x) = x⁻¹ := by
+    {
+      rw [Real.exp_neg, Real.exp_log hx_pos]
+    }
+    have h_log_mul : Real.log (L * x) = Real.log L + Real.log x := by
+    {
+      exact Real.log_mul (ne_of_gt hL1) (ne_of_gt hx_pos)
+    }
+    rw [h_exp1, h_exp2, h_log_mul]
+    have h_Lx_inv : (L * x)⁻¹ = L⁻¹ * x⁻¹ := mul_inv (L) (x)
+    rw [h_Lx_inv]
+    have hL0 : L ≠ 0 := ne_of_gt hL1
+    have hx0 : x ≠ 0 := ne_of_gt hx_pos
+    have h_inv1 : x * x⁻¹ = 1 := mul_inv_cancel₀ hx0
+    have h_inv2 : L * L⁻¹ = 1 := mul_inv_cancel₀ hL0
+    calc
+      (-L * x * x⁻¹ - Real.log x) - (-L * x * (L⁻¹ * x⁻¹) - (Real.log L + Real.log x))
+      _ = (-L * (x * x⁻¹) - Real.log x) - (-(L * L⁻¹) * (x * x⁻¹) - Real.log L - Real.log x) := by ring
+      _ = (-L * 1 - Real.log x) - (-1 * 1 - Real.log L - Real.log x) := by rw [h_inv1, h_inv2]
+      _ = 1 - L + Real.log L := by ring
+  }
+  linarith
+}
+
+lemma pnt_liminf_contradiction {I : ℝ}
+    (hf_conv : Tendsto (fun T => ∫ t in (0:ℝ)..T, pntTargetFunc t) atTop (nhds I))
+    (hf_int : ∀ T > 0, IntervalIntegrable pntTargetFunc volume 0 T)
+    (h_liminf : ∃ L, 0 < L ∧ L < 1 ∧ ∃ seq : ℕ → ℝ, (∀ n, 1/L < seq n) ∧ Tendsto seq atTop atTop ∧ ∀ n, chebyshevTheta (seq n) < L * seq n) :
+    False := by
+{
+  rcases h_liminf with ⟨L, hL1, hL2, seq, hseq_gt, hseq_tendsto, hseq_theta⟩
+  
+  let seq_a := fun n => Real.log (L * seq n)
+  let seq_b := fun n => Real.log (seq n)
+  
+  have ht_L : Tendsto (fun n => L * seq n) atTop atTop := Tendsto.const_mul_atTop hL1 hseq_tendsto
+  have ha_tendsto : Tendsto seq_a atTop atTop := Tendsto.comp Real.tendsto_log_atTop ht_L
+  have hb_tendsto : Tendsto seq_b atTop atTop := Tendsto.comp Real.tendsto_log_atTop hseq_tendsto
+  
+  have ha_pos : ∀ n, 0 < seq_a n := by
+  {
+    intro n
+    have h1 : 1 / L < seq n := hseq_gt n
+    have h2 : 1 < seq n * L := (div_lt_iff₀ hL1).mp h1
+    have h3 : 1 < L * seq n := by linarith
+    exact Real.log_pos h3
+  }
+  
+  have hb_pos : ∀ n, 0 < seq_b n := by
+  {
+    intro n
+    have h1 : 1 / L < seq n := hseq_gt n
+    have h2 : 1 < 1 / L := by
+    {
+      have h3 : 1 * L < 1 := by linarith
+      exact (lt_div_iff₀ hL1).mpr h3
+    }
+    have h3 : 1 < seq n := lt_trans h2 h1
+    exact Real.log_pos h3
+  }
+  
+  have h_cauchy := integral_cauchy_of_converges hf_conv hf_int seq_a seq_b ha_tendsto ha_pos hb_tendsto hb_pos
+  
+  have h_upper : ∀ n, ∫ t in seq_a n..seq_b n, pntTargetFunc t ≤ 1 - L + Real.log L := by
+  {
+    intro n
+    have h1 : 0 < seq n := by
+    {
+      have h_seq_gt_1 : 1 < seq n := by
+      {
+        have h1_div : 1 < 1 / L := by
+        {
+          have h_mul : 1 * L < 1 := by linarith
+          exact (lt_div_iff₀ hL1).mpr h_mul
+        }
+        exact lt_trans h1_div (hseq_gt n)
+      }
+      linarith
+    }
+    have hf_int_n : IntervalIntegrable pntTargetFunc volume (seq_a n) (seq_b n) := by
+    {
+      have ha_int := hf_int (seq_a n) (ha_pos n)
+      have hb_int := hf_int (seq_b n) (hb_pos n)
+      exact ha_int.symm.trans hb_int
+    }
+    exact pntTargetFunc_integral_upper_bound hL1 hL2 h1 (hseq_theta n) hf_int_n
+  }
+  
+  have hc : 1 - L + Real.log L < 0 := by
+  {
+    have hL_ne_1 : L ≠ 1 := ne_of_lt hL2
+    have h_log : Real.log L < L - 1 := Real.log_lt_sub_one_of_pos hL1 hL_ne_1
+    linarith
+  }
+  
+  have h_le : 0 ≤ 1 - L + Real.log L := le_of_tendsto h_cauchy (Eventually.of_forall h_upper)
+  linarith
+}
+
+lemma liminf_theta_ge_one {I : ℝ}
+    (hf_conv : Tendsto (fun T => ∫ t in (0:ℝ)..T, pntTargetFunc t) atTop (nhds I))
+    (hf_int : ∀ T > 0, IntervalIntegrable pntTargetFunc volume 0 T) :
+    1 ≤ liminf (fun x => chebyshevTheta x / x) atTop := by
+{
+  by_contra h_contra
+  have h1 : liminf (fun x => chebyshevTheta x / x) atTop < 1 := not_le.mp h_contra
+  have h2 : ∃ L, liminf (fun x => chebyshevTheta x / x) atTop < L ∧ L < 1 := by
+  {
+    have h3 := exists_between h1
+    rcases h3 with ⟨L, hL1, hL2⟩
+    use L
+  }
+  rcases h2 with ⟨L, hL1, hL2⟩
+  
+  have h_bdd_above := theta_bounded_above hf_conv hf_int
+  have h_cobdd_ge : IsCoboundedUnder (fun x y => x ≥ y) atTop (fun x => chebyshevTheta x / x) := IsBoundedUnder.isCoboundedUnder_ge h_bdd_above
+  
+  have hL0 : 0 < L := by
+  {
+    have h_pos : ∀ᶠ x : ℝ in atTop, 0 ≤ chebyshevTheta x / x := by
+    {
+      filter_upwards [eventually_gt_atTop 0] with x hx
+      have h1 : 0 ≤ chebyshevTheta x := chebyshevTheta_nonneg x
+      exact div_nonneg h1 (le_of_lt hx)
+    }
+    have h_ge_zero : 0 ≤ liminf (fun x => chebyshevTheta x / x) atTop := le_liminf_of_le h_cobdd_ge h_pos
+    linarith
+  }
+  
+  have h3 : ∃ᶠ x in atTop, chebyshevTheta x / x < L := frequently_lt_of_liminf_lt h_cobdd_ge hL1
+  
+  have h4 : ∃ seq : ℕ → ℝ, (∀ n, 1/L < seq n) ∧ Tendsto seq atTop atTop ∧ ∀ n, chebyshevTheta (seq n) / seq n < L := build_seq_lt h3
+  
+  rcases h4 with ⟨seq, hseq_gt, hseq_tendsto, hseq_theta⟩
+  
+  have h5 : ∃ L, 0 < L ∧ L < 1 ∧ ∃ seq : ℕ → ℝ, (∀ n, 1/L < seq n) ∧ Tendsto seq atTop atTop ∧ ∀ n, chebyshevTheta (seq n) < L * seq n := by
+  {
+    use L, hL0, hL2, seq, hseq_gt, hseq_tendsto
+    intro n
+    have h6 := hseq_theta n
+    have h7 : 0 < seq n := by
+    {
+      have h8 : 1 / L < seq n := hseq_gt n
+      have h9 : 0 < 1 / L := one_div_pos.mpr hL0
+      linarith
+    }
+    exact (div_lt_iff₀ h7).mp h6
+  }
+  
+  exact pnt_liminf_contradiction hf_conv hf_int h5
+}
