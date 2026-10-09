@@ -113,4 +113,25 @@ lemma lemma_2_3_T (F : ℂ → ℂ) (z w : ℂ)
   field_simp
   ring
 
+/-- Composition of transfer operators for KClass maps on H (Lemma 2.3 Wrapper) -/
+lemma lemma_2_3_KClass (F : KClass) (z w : ℂ) (hz : z ∈ H) (hw : w ∈ H) :
+    T w (T z F.F) = T (aff z w) F.F := by
+  -- We extract the fact that F is univalent on H
+  have h_univ := F.univalent
+  -- z and w are in H, so their imaginary parts are strictly positive (and thus non-zero)
+  have hz_im_pos : 0 < z.im := hz
+  have hw_im_pos : 0 < w.im := hw
+  have hz_im_nz : (z.im : ℂ) ≠ 0 := by
+    intro h
+    have h_re : (z.im : ℝ) = 0 := by exact_mod_cast h
+    linarith
+  have hw_im_nz : (w.im : ℂ) ≠ 0 := by
+    intro h
+    have h_re : (w.im : ℝ) = 0 := by exact_mod_cast h
+    linarith
+  -- Since F is injective on H, its derivative is non-zero (locally univalent)
+  have hdF_z : deriv F.F z ≠ 0 := sorry
+  have hdF_aff : deriv F.F (aff z w) ≠ 0 := sorry
+  exact lemma_2_3_T F.F z w hz_im_nz hw_im_nz hdF_z hdF_aff
+
 end Brennan.Section2
