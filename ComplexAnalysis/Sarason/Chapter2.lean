@@ -3812,14 +3812,148 @@ lemma exercise_II_15_2 (ux uy uxx uxy uyy : ℝ × ℝ → ℝ) (p : ℝ × ℝ)
   Deferred Exercise II.15.4:
   If u is real-valued harmonic, then any two harmonic conjugates differ by a constant.
   (Assuming the domain G is an open connected set).
-  
-  Note: Sarason provides this exercise here in Chapter 2, before formalizing the 
-  Mean Value Theorem. However, since we are building this repository using raw 
-  epsilon-delta limits without relying on Mathlib's high-level topological and 
-  calculus suites, we cannot currently prove that a function with identically zero 
+
+  Note: Sarason provides this exercise here in Chapter 2, before formalizing the
+  Mean Value Theorem. However, since we are building this repository using raw
+  epsilon-delta limits without relying on Mathlib's high-level topological and
+  calculus suites, we cannot currently prove that a function with identically zero
   partial derivatives is constant (which requires the real 1D Mean Value Theorem).
-  
-  This exercise is therefore deferred to Chapter 7, where the Mean Value Theorem 
+
+  This exercise is therefore deferred to Chapter 7, where the Mean Value Theorem
   will be formally established from scratch.
 -/
+
+--II.16
+/-
+  §II.16 Differential Operators.
+  Note: The differential operators ∂ (`del` and `del_eps`) and ∂̄ (`delBar` and `delBar_eps`)
+  were already defined at the beginning of this chapter (and in §II.12) in order to formulate
+  the Cauchy-Riemann equations and the conformality theorems.
+  Here we connect them back to the complex derivative of a holomorphic function using our
+  established epsilon-delta framework.
+-/
+
+/--
+  If `f` is holomorphic at `z₀` and its real and imaginary parts have partial derivatives
+  `ux, uy, vx, vy` at `z₀`, then the differential operator `del_eps ux uy vx vy` equals
+  the complex derivative `deriv_eps f z₀ h`.
+-/
+lemma del_eps_eq_deriv_eps_of_holomorphicAt {f : ℂ → ℂ} {z₀ : ℂ} (h : HolomorphicAt_eps f z₀)
+    {ux uy vx vy : ℝ}
+    (hu_x : HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).re) ux z₀)
+    (hu_y : HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).re) uy z₀)
+    (hv_x : HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).im) vx z₀)
+    (hv_y : HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).im) vy z₀) :
+    del_eps ux uy vx vy = deriv_eps f z₀ h := by
+{
+  have h_deriv : HasDerivAt_eps f (deriv_eps f z₀ h) z₀ := Classical.choose_spec h
+  rcases hasDerivAt_eps_imp_cauchy_riemann h_deriv with ⟨h_re_x, h_re_y, h_im_x, h_im_y⟩
+  have h_ux : ux = (deriv_eps f z₀ h).re := partial_deriv_unique_x _ _ _ z₀ hu_x h_re_x
+  have h_uy : uy = -(deriv_eps f z₀ h).im := partial_deriv_unique_y _ _ _ z₀ hu_y h_re_y
+  have h_vx : vx = (deriv_eps f z₀ h).im := partial_deriv_unique_x _ _ _ z₀ hv_x h_im_x
+  have h_vy : vy = (deriv_eps f z₀ h).re := partial_deriv_unique_y _ _ _ z₀ hv_y h_im_y
+  have h_cr : ux = vy ∧ uy = -vx := by
+  {
+    refine ⟨by linarith, by linarith⟩
+  }
+  rw [← deriv_eps_eq_del ux uy vx vy h_cr]
+  apply Complex.ext
+  · simp [h_ux]
+  · simp [h_vx]
+}
+
+/--
+  For a function `f` that is holomorphic at `z₀`, the differential operator `del f z₀`
+  coincides with `del_eps` evaluated at the partial derivatives of `f`.
+-/
+lemma del_eq_del_eps_of_holomorphicAt {f : ℂ → ℂ} {z₀ : ℂ} (h : HolomorphicAt_eps f z₀)
+    {ux uy vx vy : ℝ}
+    (hu_x : HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).re) ux z₀)
+    (hu_y : HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).re) uy z₀)
+    (hv_x : HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).im) vx z₀)
+    (hv_y : HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).im) vy z₀) :
+    del f z₀ = del_eps ux uy vx vy := by
+{
+  have h_deriv_eps : HasDerivAt_eps f (deriv_eps f z₀ h) z₀ := Classical.choose_spec h
+  have h_deriv : HasDerivAt f (deriv_eps f z₀ h) z₀ := (hasDerivAt_iff_eps f _ z₀).mpr h_deriv_eps
+  have h_fderiv : fderiv ℝ f z₀ = (deriv_eps f z₀ h) • (1 : ℂ →L[ℝ] ℂ) := h_deriv.complexToReal_fderiv.fderiv
+  have h_del_eps := del_eps_eq_deriv_eps_of_holomorphicAt h hu_x hu_y hv_x hv_y
+  unfold del
+  dsimp only
+  rw [h_fderiv, h_del_eps]
+  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.one_apply, smul_eq_mul]
+  calc (1 / 2 : ℂ) * (deriv_eps f z₀ h * 1 - I * (deriv_eps f z₀ h * I))
+    _ = (1 / 2 : ℂ) * (deriv_eps f z₀ h - (I * I) * deriv_eps f z₀ h) := by ring
+    _ = (1 / 2 : ℂ) * (deriv_eps f z₀ h - (-1) * deriv_eps f z₀ h) := by rw [I_mul_I]
+    _ = deriv_eps f z₀ h := by ring
+}
+
+/--
+  §II.16: If `f` is holomorphic at `z₀`, then `del f z₀ = deriv_eps f z₀ h` (i.e., ∂f = f').
+-/
+lemma del_eq_deriv_eps_of_holomorphicAt {f : ℂ → ℂ} {z₀ : ℂ} (h : HolomorphicAt_eps f z₀) :
+    del f z₀ = deriv_eps f z₀ h := by
+{
+  rcases cauchy_riemann_equations_of_differentiable h with ⟨ux, uy, vx, vy, hu_x, hu_y, hv_x, hv_y, _⟩
+  rw [del_eq_del_eps_of_holomorphicAt h hu_x hu_y hv_x hv_y]
+  exact del_eps_eq_deriv_eps_of_holomorphicAt h hu_x hu_y hv_x hv_y
+}
+
+/--
+  §II.16: If `f` is holomorphic on `G`, then at every point `z ∈ G`, `del f z` equals
+  the complex derivative `deriv_eps f z (h_hol z hz)`.
+-/
+theorem II_16 {f : ℂ → ℂ} {G : Set ℂ} (h_hol : HolomorphicOn_eps f G) :
+    ∀ z (hz : z ∈ G), del f z = deriv_eps f z (h_hol z hz) := by
+{
+  intro z hz
+  exact del_eq_deriv_eps_of_holomorphicAt (h_hol z hz)
+}
+
+/--
+  Helper lemma for Exercise II.16.1:
+  Assuming equality of second-order mixed partial derivatives (`uxy = uyx` and `vxy = vyx`),
+  applying `delBar_eps` to the partial derivatives of `del f` yields `(1/4) * (fxx + fyy)`,
+  where `fxx = uxx + I * vxx` and `fyy = uyy + I * vyy`.
+-/
+lemma delBar_del_eps_eq_laplacian (uxx uxy uyx uyy vxx vxy vyx vyy : ℝ)
+    (h_u_mixed : uxy = uyx) (h_v_mixed : vxy = vyx) :
+    let del_f_x := del_eps uxx uyx vxx vyx
+    let del_f_y := del_eps uxy uyy vxy vyy
+    let fxx : ℂ := uxx + I * vxx
+    let fyy : ℂ := uyy + I * vyy
+    delBar_eps del_f_x.re del_f_y.re del_f_x.im del_f_y.im =
+      (1 / 4 : ℂ) * (fxx + fyy) := by
+{
+  intros del_f_x del_f_y fxx fyy
+  dsimp [del_f_x, del_f_y, fxx, fyy, del_eps, delBar_eps]
+  apply Complex.ext
+  · simp [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im]
+    linarith
+  · simp [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im]
+    linarith
+}
+
+/--
+  Exercise II.16.1:
+  Assuming equality of second-order mixed partial derivatives, Laplace's equation
+  `fxx + fyy = 0` for a complex-valued function `f = u + i*v` can be written as `∂̄ (∂ f) = 0`.
+-/
+lemma exercise_II_16_1 (uxx uxy uyx uyy vxx vxy vyx vyy : ℝ)
+    (h_u_mixed : uxy = uyx) (h_v_mixed : vxy = vyx) :
+    let del_f_x := del_eps uxx uyx vxx vyx
+    let del_f_y := del_eps uxy uyy vxy vyy
+    let fxx : ℂ := uxx + I * vxx
+    let fyy : ℂ := uyy + I * vyy
+    delBar_eps del_f_x.re del_f_y.re del_f_x.im del_f_y.im = 0 ↔
+      fxx + fyy = 0 := by
+{
+  intros del_f_x del_f_y fxx fyy
+  have h_eq := delBar_del_eps_eq_laplacian uxx uxy uyx uyy vxx vxy vyx vyy h_u_mixed h_v_mixed
+  dsimp only at h_eq
+  rw [h_eq]
+  have h_quarter_ne_zero : (1 / 4 : ℂ) ≠ 0 := by norm_num
+  exact mul_eq_zero_iff_left h_quarter_ne_zero
+}
+
 end Sarason.Ch2
