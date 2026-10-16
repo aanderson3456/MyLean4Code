@@ -3829,9 +3829,101 @@ lemma exercise_II_15_2 (ux uy uxx uxy uyy : ℝ × ℝ → ℝ) (p : ℝ × ℝ)
   Note: The differential operators ∂ (`del` and `del_eps`) and ∂̄ (`delBar` and `delBar_eps`)
   were already defined at the beginning of this chapter (and in §II.12) in order to formulate
   the Cauchy-Riemann equations and the conformality theorems.
-  Here we connect them back to the complex derivative of a holomorphic function using our
-  established epsilon-delta framework.
+  Here we connect them back to the Cauchy-Riemann equations, the complex derivative of a
+  holomorphic function, and Laplace's equation using our established epsilon-delta framework.
 -/
+
+/--
+  If the real and imaginary parts of `f : ℂ → ℂ` have continuous first partial derivatives
+  `ux, uy, vx, vy` on an open set `G`, then `f` is real-differentiable at every `z₀ ∈ G`
+  and its directional derivatives along `1` and `I` are `ux z₀ + I * vx z₀` and `uy z₀ + I * vy z₀`.
+-/
+lemma fderiv_apply_of_hasPartialDeriv {G : Set ℂ} (hG : IsOpen G)
+    (f : ℂ → ℂ) (ux uy vx vy : ℂ → ℝ)
+    (hu_x : ∀ z ∈ G, HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).re) (ux z) z)
+    (hu_y : ∀ z ∈ G, HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).re) (uy z) z)
+    (hv_x : ∀ z ∈ G, HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).im) (vx z) z)
+    (hv_y : ∀ z ∈ G, HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).im) (vy z) z)
+    (h_cont_ux : ContinuousOn ux G) (h_cont_uy : ContinuousOn uy G)
+    (h_cont_vx : ContinuousOn vx G) (h_cont_vy : ContinuousOn vy G)
+    (z₀ : ℂ) (hz₀ : z₀ ∈ G) :
+    DifferentiableAt ℝ f z₀ ∧
+    fderiv ℝ f z₀ 1 = (ux z₀ : ℂ) + I * (vx z₀ : ℂ) ∧
+    fderiv ℝ f z₀ I = (uy z₀ : ℂ) + I * (vy z₀ : ℂ) := by
+{
+  have hf : ∀ z, f z = (f z).re + I * (f z).im := by
+  {
+    intro z
+    rw [mul_comm I, re_add_im]
+  }
+  have hu_deriv := hasFDerivAt_of_hasPartialDeriv hG (fun z ↦ (f z).re) ux uy hu_x hu_y h_cont_ux h_cont_uy z₀ hz₀
+  have hv_deriv := hasFDerivAt_of_hasPartialDeriv hG (fun z ↦ (f z).im) vx vy hv_x hv_y h_cont_vx h_cont_vy z₀ hz₀
+  have hu_diff : DifferentiableAt ℝ (fun z ↦ (f z).re) z₀ := hu_deriv.differentiableAt
+  have hv_diff : DifferentiableAt ℝ (fun z ↦ (f z).im) z₀ := hv_deriv.differentiableAt
+  have hf_diff : DifferentiableAt ℝ f z₀ := differentiableAt_real_of_parts hu_diff hv_diff hf
+  have h_fderiv_f := fderiv_parts hu_diff hv_diff hf
+  rw [hu_deriv.fderiv, hv_deriv.fderiv] at h_fderiv_f
+  refine ⟨hf_diff, ?_, ?_⟩
+  · rw [h_fderiv_f]
+    simp [ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply]
+    ring
+  · rw [h_fderiv_f]
+    simp [ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply]
+    ring
+}
+
+/--
+  Under continuous first partial derivatives on an open set `G`, `delBar f z₀` coincides with
+  `delBar_eps (ux z₀) (uy z₀) (vx z₀) (vy z₀)`.
+-/
+lemma delBar_eq_delBar_eps_of_hasPartialDeriv {G : Set ℂ} (hG : IsOpen G)
+    (f : ℂ → ℂ) (ux uy vx vy : ℂ → ℝ)
+    (hu_x : ∀ z ∈ G, HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).re) (ux z) z)
+    (hu_y : ∀ z ∈ G, HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).re) (uy z) z)
+    (hv_x : ∀ z ∈ G, HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).im) (vx z) z)
+    (hv_y : ∀ z ∈ G, HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).im) (vy z) z)
+    (h_cont_ux : ContinuousOn ux G) (h_cont_uy : ContinuousOn uy G)
+    (h_cont_vx : ContinuousOn vx G) (h_cont_vy : ContinuousOn vy G)
+    (z₀ : ℂ) (hz₀ : z₀ ∈ G) :
+    delBar f z₀ = delBar_eps (ux z₀) (uy z₀) (vx z₀) (vy z₀) := by
+{
+  rcases fderiv_apply_of_hasPartialDeriv hG f ux uy vx vy hu_x hu_y hv_x hv_y
+    h_cont_ux h_cont_uy h_cont_vx h_cont_vy z₀ hz₀ with ⟨_, h1, hI⟩
+  unfold delBar delBar_eps
+  dsimp only
+  rw [h1, hI]
+  calc (1 / 2 : ℂ) * ((ux z₀ + I * vx z₀) + I * (uy z₀ + I * vy z₀))
+    _ = (1 / 2 : ℂ) * ((ux z₀ : ℂ) + (I * I) * vy z₀ + I * (vx z₀ + uy z₀)) := by ring
+    _ = (1 / 2 : ℂ) * ((ux z₀ : ℂ) + (-1) * vy z₀ + I * (vx z₀ + uy z₀)) := by rw [I_mul_I]
+    _ = (1 / 2 : ℂ) * ((ux z₀ - vy z₀) + I * (vx z₀ + uy z₀)) := by ring
+}
+
+/--
+  §II.16: The real and imaginary parts of `f` satisfy the Cauchy-Riemann equations at `z₀`
+  if and only if `delBar f z₀ = 0` (i.e., ∂̄f = 0).
+-/
+theorem cr_iff_delBar_eq_zero {G : Set ℂ} (hG : IsOpen G)
+    (f : ℂ → ℂ) (ux uy vx vy : ℂ → ℝ)
+    (hu_x : ∀ z ∈ G, HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).re) (ux z) z)
+    (hu_y : ∀ z ∈ G, HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).re) (uy z) z)
+    (hv_x : ∀ z ∈ G, HasPartialDerivX_C_to_R_eps (fun z ↦ (f z).im) (vx z) z)
+    (hv_y : ∀ z ∈ G, HasPartialDerivY_C_to_R_eps (fun z ↦ (f z).im) (vy z) z)
+    (h_cont_ux : ContinuousOn ux G) (h_cont_uy : ContinuousOn uy G)
+    (h_cont_vx : ContinuousOn vx G) (h_cont_vy : ContinuousOn vy G)
+    (z₀ : ℂ) (hz₀ : z₀ ∈ G) :
+    (ux z₀ = vy z₀ ∧ uy z₀ = -vx z₀) ↔ delBar f z₀ = 0 := by
+{
+  rw [delBar_eq_delBar_eps_of_hasPartialDeriv hG f ux uy vx vy hu_x hu_y hv_x hv_y
+    h_cont_ux h_cont_uy h_cont_vx h_cont_vy z₀ hz₀]
+  constructor
+  · rintro ⟨h_ux, h_uy⟩
+    unfold delBar_eps
+    rw [h_ux, h_uy]
+    push_cast
+    ring
+  · intro h_zero
+    exact cr_of_delBar_zero (ux z₀) (uy z₀) (vx z₀) (vy z₀) h_zero
+}
 
 /--
   If `f` is holomorphic at `z₀` and its real and imaginary parts have partial derivatives
@@ -3911,45 +4003,208 @@ theorem II_16 {f : ℂ → ℂ} {G : Set ℂ} (h_hol : HolomorphicOn_eps f G) :
 }
 
 /--
-  Helper lemma for Exercise II.16.1:
-  Assuming equality of second-order mixed partial derivatives (`uxy = uyx` and `vxy = vyx`),
-  applying `delBar_eps` to the partial derivatives of `del f` yields `(1/4) * (fxx + fyy)`,
-  where `fxx = uxx + I * vxx` and `fyy = uyy + I * vyy`.
+  Converts openness of the corresponding subset of `ℝ × ℝ` into openness of `G : Set ℂ`.
 -/
-lemma delBar_del_eps_eq_laplacian (uxx uxy uyx uyy vxx vxy vyx vyy : ℝ)
-    (h_u_mixed : uxy = uyx) (h_v_mixed : vxy = vyx) :
-    let del_f_x := del_eps uxx uyx vxx vyx
-    let del_f_y := del_eps uxy uyy vxy vyy
-    let fxx : ℂ := uxx + I * vxx
-    let fyy : ℂ := uyy + I * vyy
-    delBar_eps del_f_x.re del_f_y.re del_f_x.im del_f_y.im =
-      (1 / 4 : ℂ) * (fxx + fyy) := by
+lemma isOpen_of_isOpen_R2 {G : Set ℂ} (hG_R2 : IsOpen {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G}) :
+    IsOpen G := by
 {
-  intros del_f_x del_f_y fxx fyy
-  dsimp [del_f_x, del_f_y, fxx, fyy, del_eps, delBar_eps]
-  apply Complex.ext
-  · simp [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im]
-    linarith
-  · simp [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im]
-    linarith
+  have h_eq : G = (fun z : ℂ ↦ (z.re, z.im)) ⁻¹' {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G} := by
+  {
+    ext z
+    simp [re_add_im]
+  }
+  rw [h_eq]
+  exact hG_R2.preimage (Continuous.prodMk continuous_re continuous_im)
+}
+
+/--
+  Converts an `R2` x-partial derivative on `{p | p.1 + p.2 * I ∈ G}` to `HasPartialDerivX_C_to_R_eps` on `G`.
+-/
+lemma hasPartialDerivX_C_of_R2 {G : Set ℂ} (u ux : ℝ × ℝ → ℝ)
+    (hu_x : ∀ p ∈ {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G}, HasPartialDerivX_R2_eps u (ux p) p)
+    (z : ℂ) (hz : z ∈ G) :
+    HasPartialDerivX_C_to_R_eps (fun w ↦ u (w.re, w.im)) (ux (z.re, z.im)) z := by
+{
+  rw [HasPartialDerivX_C_to_R_eps_iff_R2_eps]
+  have h_fn : (fun p : ℝ × ℝ ↦ u (((p.1 : ℂ) + (p.2 : ℂ) * I).re, ((p.1 : ℂ) + (p.2 : ℂ) * I).im)) = u := by
+  { ext p; simp }
+  rw [h_fn]
+  exact hu_x (z.re, z.im) (by simpa [re_add_im] using hz)
+}
+
+/--
+  Converts an `R2` y-partial derivative on `{p | p.1 + p.2 * I ∈ G}` to `HasPartialDerivY_C_to_R_eps` on `G`.
+-/
+lemma hasPartialDerivY_C_of_R2 {G : Set ℂ} (u uy : ℝ × ℝ → ℝ)
+    (hu_y : ∀ p ∈ {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G}, HasPartialDerivY_R2_eps u (uy p) p)
+    (z : ℂ) (hz : z ∈ G) :
+    HasPartialDerivY_C_to_R_eps (fun w ↦ u (w.re, w.im)) (uy (z.re, z.im)) z := by
+{
+  rw [HasPartialDerivY_C_to_R_eps_iff_R2_eps]
+  have h_fn : (fun p : ℝ × ℝ ↦ u (((p.1 : ℂ) + (p.2 : ℂ) * I).re, ((p.1 : ℂ) + (p.2 : ℂ) * I).im)) = u := by
+  { ext p; simp }
+  rw [h_fn]
+  exact hu_y (z.re, z.im) (by simpa [re_add_im] using hz)
+}
+
+/--
+  Given functions `u, v : ℝ × ℝ → ℝ` with continuous `R2` partial derivatives `ux, uy, vx, vy`
+  on `{p | p.1 + p.2 * I ∈ G}`, the complex combination `z ↦ u(z.re, z.im) + I * v(z.re, z.im)`
+  is real-differentiable at `z₀ ∈ G` with directional derivatives along `1` and `I` given by
+  `ux + I * vx` and `uy + I * vy`.
+-/
+lemma fderiv_of_R2_partials {G : Set ℂ}
+    (hG_R2 : IsOpen {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G})
+    (u v ux uy vx vy : ℝ × ℝ → ℝ)
+    (hu_x : ∀ p ∈ {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G}, HasPartialDerivX_R2_eps u (ux p) p)
+    (hu_y : ∀ p ∈ {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G}, HasPartialDerivY_R2_eps u (uy p) p)
+    (hv_x : ∀ p ∈ {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G}, HasPartialDerivX_R2_eps v (vx p) p)
+    (hv_y : ∀ p ∈ {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G}, HasPartialDerivY_R2_eps v (vy p) p)
+    (h_cont_ux : ContinuousOn ux {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G})
+    (h_cont_uy : ContinuousOn uy {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G})
+    (h_cont_vx : ContinuousOn vx {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G})
+    (h_cont_vy : ContinuousOn vy {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G})
+    (g : ℂ → ℂ) (hg : ∀ z ∈ G, g z = (u (z.re, z.im) : ℂ) + I * (v (z.re, z.im) : ℂ))
+    (z₀ : ℂ) (hz₀ : z₀ ∈ G) :
+    DifferentiableAt ℝ g z₀ ∧
+    fderiv ℝ g z₀ 1 = (ux (z₀.re, z₀.im) : ℂ) + I * (vx (z₀.re, z₀.im) : ℂ) ∧
+    fderiv ℝ g z₀ I = (uy (z₀.re, z₀.im) : ℂ) + I * (vy (z₀.re, z₀.im) : ℂ) := by
+{
+  have hG : IsOpen G := isOpen_of_isOpen_R2 hG_R2
+  let G_fn : ℂ → ℂ := fun z ↦ (u (z.re, z.im) : ℂ) + I * (v (z.re, z.im) : ℂ)
+  have h_re : (fun z : ℂ ↦ (G_fn z).re) = (fun z : ℂ ↦ u (z.re, z.im)) := by
+  { ext z; simp [G_fn] }
+  have h_im : (fun z : ℂ ↦ (G_fn z).im) = (fun z : ℂ ↦ v (z.re, z.im)) := by
+  { ext z; simp [G_fn] }
+  rcases fderiv_apply_of_hasPartialDeriv hG G_fn
+    (fun z ↦ ux (z.re, z.im)) (fun z ↦ uy (z.re, z.im))
+    (fun z ↦ vx (z.re, z.im)) (fun z ↦ vy (z.re, z.im))
+    (fun z hz ↦ h_re ▸ hasPartialDerivX_C_of_R2 u ux hu_x z hz)
+    (fun z hz ↦ h_re ▸ hasPartialDerivY_C_of_R2 u uy hu_y z hz)
+    (fun z hz ↦ h_im ▸ hasPartialDerivX_C_of_R2 v vx hv_x z hz)
+    (fun z hz ↦ h_im ▸ hasPartialDerivY_C_of_R2 v vy hv_y z hz)
+    (continuousOn_C_of_R2 ux G h_cont_ux) (continuousOn_C_of_R2 uy G h_cont_uy)
+    (continuousOn_C_of_R2 vx G h_cont_vx) (continuousOn_C_of_R2 vy G h_cont_vy)
+    z₀ hz₀ with ⟨h_diff_G, h1_G, hI_G⟩
+  have h_ev : g =ᶠ[𝓝 z₀] G_fn := Filter.eventuallyEq_iff_exists_mem.mpr ⟨G, hG.mem_nhds hz₀, hg⟩
+  have h_fderiv_eq : fderiv ℝ g z₀ = fderiv ℝ G_fn z₀ := h_ev.fderiv_eq
+  refine ⟨(h_ev.symm.hasFDerivAt_iff.mp h_diff_G.hasFDerivAt).differentiableAt, ?_, ?_⟩
+  · rw [h_fderiv_eq, h1_G]
+  · rw [h_fderiv_eq, hI_G]
+}
+
+/--
+  Extracts real-differentiability of the first partial derivative functions `df_dx` and `df_dy`
+  and the equality of mixed partials `fderiv ℝ df_dx z₀ I = fderiv ℝ df_dy z₀ 1` from
+  `TwiceContinuouslyDifferentiable_C_eps f G` using `mixed_partials_eq_eps`.
+-/
+lemma second_partials_of_twiceContinuouslyDifferentiable {G : Set ℂ} (f : ℂ → ℂ)
+    (h_twice_diff : TwiceContinuouslyDifferentiable_C_eps f G)
+    (z₀ : ℂ) (hz₀ : z₀ ∈ G) :
+    let df_dx := fun z ↦ fderiv ℝ f z 1
+    let df_dy := fun z ↦ fderiv ℝ f z I
+    DifferentiableAt ℝ df_dx z₀ ∧
+    DifferentiableAt ℝ df_dy z₀ ∧
+    fderiv ℝ df_dx z₀ I = fderiv ℝ df_dy z₀ 1 := by
+{
+  intros df_dx df_dy
+  rcases h_twice_diff with ⟨h_u, h_v⟩
+  rcases h_u with ⟨hG_R2, ux, uy, uxx, uxy, uyx, uyy, hu_x, hu_y, h_cont_ux, h_cont_uy,
+    hu_xx, hu_xy, hu_yx, hu_yy, h_cont_uxx, h_cont_uxy, h_cont_uyx, h_cont_uyy⟩
+  rcases h_v with ⟨_, vx, vy, vxx, vxy, vyx, vyy, hv_x, hv_y, h_cont_vx, h_cont_vy,
+    hv_xx, hv_xy, hv_yx, hv_yy, h_cont_vxx, h_cont_vxy, h_cont_vyx, h_cont_vyy⟩
+  have hf_eq : ∀ z ∈ G, f z = ((f (z.re + z.im * I)).re : ℂ) + I * ((f (z.re + z.im * I)).im : ℂ) := by
+  {
+    intro z _
+    rw [re_add_im z, mul_comm I, re_add_im (f z)]
+  }
+  have hdf_dx : ∀ z ∈ G, df_dx z = (ux (z.re, z.im) : ℂ) + I * (vx (z.re, z.im) : ℂ) := by
+  {
+    intro z hz
+    exact (fderiv_of_R2_partials hG_R2 _ _ ux uy vx vy hu_x hu_y hv_x hv_y
+      h_cont_ux h_cont_uy h_cont_vx h_cont_vy f hf_eq z hz).2.1
+  }
+  have hdf_dy : ∀ z ∈ G, df_dy z = (uy (z.re, z.im) : ℂ) + I * (vy (z.re, z.im) : ℂ) := by
+  {
+    intro z hz
+    exact (fderiv_of_R2_partials hG_R2 _ _ ux uy vx vy hu_x hu_y hv_x hv_y
+      h_cont_ux h_cont_uy h_cont_vx h_cont_vy f hf_eq z hz).2.2
+  }
+  rcases fderiv_of_R2_partials hG_R2 ux vx uxx uxy vxx vxy hu_xx hu_xy hv_xx hv_xy
+    h_cont_uxx h_cont_uxy h_cont_vxx h_cont_vxy df_dx hdf_dx z₀ hz₀ with ⟨h_diff_x, _, hx_I⟩
+  rcases fderiv_of_R2_partials hG_R2 uy vy uyx uyy vyx vyy hu_yx hu_yy hv_yx hv_yy
+    h_cont_uyx h_cont_uyy h_cont_vyx h_cont_vyy df_dy hdf_dy z₀ hz₀ with ⟨h_diff_y, hy_1, _⟩
+  have hp₀ : (z₀.re, z₀.im) ∈ {p : ℝ × ℝ | (p.1 : ℂ) + (p.2 : ℂ) * I ∈ G} := by
+  { simpa [re_add_im] using hz₀ }
+  have h_u_mixed := mixed_partials_eq_eps _ ux uy uxx uxy uyx uyy _ (z₀.re, z₀.im) hG_R2 hp₀
+    hu_x hu_y hu_xx hu_xy hu_yx hu_yy h_cont_ux h_cont_uy h_cont_uxx h_cont_uxy h_cont_uyx h_cont_uyy
+  have h_v_mixed := mixed_partials_eq_eps _ vx vy vxx vxy vyx vyy _ (z₀.re, z₀.im) hG_R2 hp₀
+    hv_x hv_y hv_xx hv_xy hv_yx hv_yy h_cont_vx h_cont_vy h_cont_vxx h_cont_vxy h_cont_vyx h_cont_vyy
+  refine ⟨h_diff_x, h_diff_y, ?_⟩
+  rw [hx_I, hy_1, h_u_mixed, h_v_mixed]
+}
+
+/--
+  Helper lemma for Exercise II.16.1:
+  If the first partial derivative functions `df_dx` and `df_dy` of `f : ℂ → ℂ` are
+  real-differentiable at `z₀` and satisfy equality of mixed partials
+  `fderiv ℝ df_dx z₀ I = fderiv ℝ df_dy z₀ 1`, then `delBar (del f) z₀ = (1/4) * (fxx + fyy)`.
+-/
+lemma delBar_del_eq_quarter_laplacian_of_diff (f : ℂ → ℂ) (z₀ : ℂ)
+    (h_diff_x : DifferentiableAt ℝ (fun z ↦ fderiv ℝ f z 1) z₀)
+    (h_diff_y : DifferentiableAt ℝ (fun z ↦ fderiv ℝ f z I) z₀)
+    (h_mixed : fderiv ℝ (fun z ↦ fderiv ℝ f z 1) z₀ I = fderiv ℝ (fun z ↦ fderiv ℝ f z I) z₀ 1) :
+    let df_dx := fun z ↦ fderiv ℝ f z 1
+    let df_dy := fun z ↦ fderiv ℝ f z I
+    let fxx := fderiv ℝ df_dx z₀ 1
+    let fyy := fderiv ℝ df_dy z₀ I
+    delBar (del f) z₀ = (1 / 4 : ℂ) * (fxx + fyy) := by
+{
+  intros df_dx df_dy fxx fyy
+  let L_I : ℂ →L[ℝ] ℂ := I • ContinuousLinearMap.id ℝ ℂ
+  let L_half : ℂ →L[ℝ] ℂ := (1 / 2 : ℂ) • ContinuousLinearMap.id ℝ ℂ
+  have h_I_dy : HasFDerivAt (fun z ↦ I * df_dy z) (L_I.comp (fderiv ℝ df_dy z₀)) z₀ :=
+    L_I.hasFDerivAt.comp z₀ h_diff_y.hasFDerivAt
+  have h_sub : HasFDerivAt (fun z ↦ df_dx z - I * df_dy z)
+      (fderiv ℝ df_dx z₀ - L_I.comp (fderiv ℝ df_dy z₀)) z₀ :=
+    h_diff_x.hasFDerivAt.sub h_I_dy
+  have h_del : HasFDerivAt (del f)
+      (L_half.comp (fderiv ℝ df_dx z₀ - L_I.comp (fderiv ℝ df_dy z₀))) z₀ :=
+    L_half.hasFDerivAt.comp z₀ h_sub
+  unfold delBar
+  dsimp only
+  rw [h_del.fderiv]
+  simp only [L_half, L_I, ContinuousLinearMap.comp_apply, ContinuousLinearMap.sub_apply,
+    ContinuousLinearMap.smul_apply, ContinuousLinearMap.id_apply, smul_eq_mul]
+  change (1 / 2 : ℂ) * ((1 / 2 : ℂ) * (fxx - I * fderiv ℝ df_dy z₀ 1) +
+    I * ((1 / 2 : ℂ) * (fderiv ℝ df_dx z₀ I - I * fyy))) = (1 / 4 : ℂ) * (fxx + fyy)
+  rw [h_mixed]
+  calc (1 / 2 : ℂ) * ((1 / 2 : ℂ) * (fxx - I * fderiv ℝ df_dy z₀ 1) +
+        I * ((1 / 2 : ℂ) * (fderiv ℝ df_dy z₀ 1 - I * fyy)))
+    _ = (1 / 4 : ℂ) * (fxx - (I * I) * fyy) := by ring
+    _ = (1 / 4 : ℂ) * (fxx - (-1) * fyy) := by rw [I_mul_I]
+    _ = (1 / 4 : ℂ) * (fxx + fyy) := by ring
 }
 
 /--
   Exercise II.16.1:
-  Assuming equality of second-order mixed partial derivatives, Laplace's equation
-  `fxx + fyy = 0` for a complex-valued function `f = u + i*v` can be written as `∂̄ (∂ f) = 0`.
+  For a twice continuously differentiable function `f : ℂ → ℂ` on `G` (which guarantees
+  equality of second-order mixed partial derivatives via `mixed_partials_eq_eps`),
+  Laplace's equation `fxx + fyy = 0` at `z₀ ∈ G` can be written as `delBar (del f) z₀ = 0`.
 -/
-lemma exercise_II_16_1 (uxx uxy uyx uyy vxx vxy vyx vyy : ℝ)
-    (h_u_mixed : uxy = uyx) (h_v_mixed : vxy = vyx) :
-    let del_f_x := del_eps uxx uyx vxx vyx
-    let del_f_y := del_eps uxy uyy vxy vyy
-    let fxx : ℂ := uxx + I * vxx
-    let fyy : ℂ := uyy + I * vyy
-    delBar_eps del_f_x.re del_f_y.re del_f_x.im del_f_y.im = 0 ↔
-      fxx + fyy = 0 := by
+theorem exercise_II_16_1 {G : Set ℂ} (f : ℂ → ℂ)
+    (h_twice_diff : TwiceContinuouslyDifferentiable_C_eps f G)
+    (z₀ : ℂ) (hz₀ : z₀ ∈ G) :
+    let df_dx := fun z ↦ fderiv ℝ f z 1
+    let df_dy := fun z ↦ fderiv ℝ f z I
+    let fxx := fderiv ℝ df_dx z₀ 1
+    let fyy := fderiv ℝ df_dy z₀ I
+    delBar (del f) z₀ = 0 ↔ fxx + fyy = 0 := by
 {
-  intros del_f_x del_f_y fxx fyy
-  have h_eq := delBar_del_eps_eq_laplacian uxx uxy uyx uyy vxx vxy vyx vyy h_u_mixed h_v_mixed
+  intros df_dx df_dy fxx fyy
+  rcases second_partials_of_twiceContinuouslyDifferentiable f h_twice_diff z₀ hz₀ with
+    ⟨h_diff_x, h_diff_y, h_mixed⟩
+  have h_eq := delBar_del_eq_quarter_laplacian_of_diff f z₀ h_diff_x h_diff_y h_mixed
   dsimp only at h_eq
   rw [h_eq]
   have h_quarter_ne_zero : (1 / 4 : ℂ) ≠ 0 := by norm_num

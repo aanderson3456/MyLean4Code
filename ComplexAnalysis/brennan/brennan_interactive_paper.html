@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brennan's Conjecture & Sharp Inverse-Square Integral Means — Interactive Lean 4 Math Paper</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '$', right: '$', display: false},
+        {left: '\\(', right: '\\)', display: false}
+      ],
+      throwOnError: false
+    });"></script>
+  <style>
+    :root {
+      --bg: #fcfbf9;
+      --paper: #ffffff;
+      --ink: #1a1d24;
+      --muted: #5a6270;
+      --border: #e3e0d8;
+      --accent: #1e40af;
+      --accent-soft: #eff6ff;
+      --accent-border: #bfdbfe;
+      --math-bg: #f8fafc;
+      --math-border: #cbd5e1;
+      --lean-bg: #0f172a;
+      --lean-ink: #e2e8f0;
+      --lean-border: #334155;
+      --success: #047857;
+      --success-bg: #ecfdf5;
+      --warn: #b45309;
+      --warn-bg: #fffbeb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Georgia", "Times New Roman", serif;
+      line-height: 1.68;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 310px;
+      background: #f4f2ed;
+      border-right: 1px solid var(--border);
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+      padding: 1.5rem 1.2rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      z-index: 20;
+    }
+
+    .sidebar-brand {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    .sidebar-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 1rem;
+      line-height: 1.35;
+    }
+
+    .control-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ctrl-btn {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.48rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .ctrl-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.85rem;
+    }
+
+    .toc-list li {
+      margin-bottom: 0.35rem;
+    }
+
+    .toc-list a {
+      color: var(--muted);
+      text-decoration: none;
+      display: block;
+      padding: 0.3rem 0.5rem;
+      border-radius: 5px;
+      transition: all 0.15s;
+    }
+
+    .toc-list a:hover {
+      color: var(--accent);
+      background: rgba(30, 64, 175, 0.07);
+    }
+
+    .toc-list .toc-sub {
+      padding-left: 1.25rem;
+      font-size: 0.79rem;
+    }
+
+    /* Main Paper Container */
+    .main-container {
+      margin-left: 310px;
+      flex: 1;
+      padding: 3rem 4rem 6rem 4rem;
+      max-width: 1060px;
+    }
+
+    .paper-sheet {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3.5rem 4rem;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.035);
+    }
+
+    /* Paper Header */
+    .paper-header {
+      text-align: center;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 2rem;
+      margin-bottom: 2.2rem;
+    }
+
+    .paper-badge {
+      display: inline-block;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid #a7f3d0;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+
+    .paper-title {
+      font-size: 2.15rem;
+      line-height: 1.25;
+      margin: 0 0 0.9rem 0;
+      font-weight: 700;
+    }
+
+    .paper-authors {
+      font-size: 1.05rem;
+      color: var(--muted);
+      margin-bottom: 1.4rem;
+    }
+
+    .abstract-box {
+      max-width: 85%;
+      margin: 0 auto;
+      text-align: left;
+      background: #faf9f5;
+      border: 1px solid var(--border);
+      padding: 1.25rem 1.6rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+
+    .abstract-title {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Interactive Architecture Blueprint */
+    .blueprint-box {
+      margin: 2rem 0 2.5rem 0;
+      padding: 1.4rem 1.6rem;
+      background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+      border: 1px solid var(--accent-border);
+      border-radius: 10px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .blueprint-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .blueprint-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+      font-size: 0.83rem;
+    }
+
+    .bp-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease;
+    }
+
+    .bp-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+
+    .bp-card h4 {
+      margin: 0 0 0.35rem 0;
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+
+    .bp-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* Headings */
+    h2.sec-heading {
+      font-size: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+      margin-top: 2.8rem;
+      margin-bottom: 1.1rem;
+      color: var(--ink);
+    }
+
+    h3.subsec-heading {
+      font-size: 1.18rem;
+      margin-top: 1.9rem;
+      margin-bottom: 0.75rem;
+      color: var(--ink);
+    }
+
+    /* Theorem / Lemma / Proposition Blocks */
+    .math-block {
+      margin: 1.6rem 0;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      background: #fdfdfd;
+      overflow: hidden;
+    }
+
+    .math-block-header {
+      padding: 0.9rem 1.25rem;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .math-block-title {
+      font-weight: 700;
+      font-size: 0.96rem;
+      color: var(--ink);
+    }
+
+    .math-block-badges {
+      display: flex;
+      gap: 0.45rem;
+      align-items: center;
+    }
+
+    .badge-verified {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid #a7f3d0;
+    }
+
+    .badge-file {
+      font-size: 0.72rem;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      padding: 0.18rem 0.55rem;
+      border-radius: 5px;
+      background: #f1f5f9;
+      color: #334155;
+      text-decoration: none;
+      border: 1px solid #cbd5e1;
+    }
+
+    .badge-file:hover {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: var(--accent-border);
+    }
+
+    .math-block-statement {
+      padding: 1.1rem 1.4rem;
+      font-style: italic;
+    }
+
+    .math-block-actions {
+      padding: 0.6rem 1.4rem;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .expand-btn {
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+    }
+
+    .expand-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .expand-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* Expandable Layers */
+    .layer-panel {
+      display: none;
+      padding: 1.2rem 1.5rem;
+      border-top: 1px solid var(--border);
+      font-style: normal;
+    }
+
+    .layer-panel.open {
+      display: block;
+    }
+
+    .layer-paper {
+      background: #ffffff;
+    }
+
+    .layer-sublemmas {
+      background: #f8fafc;
+      border-left: 3px solid #0284c7;
+    }
+
+    .layer-lean {
+      background: var(--lean-bg);
+      color: var(--lean-ink);
+      padding: 1.1rem 1.4rem;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      overflow-x: auto;
+    }
+
+    .step-item {
+      margin: 0.85rem 0;
+      padding: 0.8rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
+      background: #fcfdff;
+    }
+
+    .step-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #1e3a8a;
+      margin-bottom: 0.4rem;
+    }
+
+    .sublemma-card {
+      margin: 0.75rem 0;
+      padding: 0.75rem 1rem;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.92rem;
+    }
+
+    .sublemma-name {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #0369a1;
+      background: #e0f2fe;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      margin-right: 0.5rem;
+    }
+
+    pre.lean-code {
+      margin: 0;
+      white-space: pre;
+      color: #e2e8f0;
+    }
+
+    .kw { color: #93c5fd; font-weight: 600; }
+    .tac { color: #fca5a5; }
+    .cmt { color: #94a3b8; font-style: italic; }
+    .thm-id { color: #fde047; font-weight: 600; }
+
+    .lean-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.65rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--lean-border);
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+
+    .lean-header-bar a {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        position: static;
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      body {
+        flex-direction: column;
+      }
+      .main-container {
+        margin-left: 0;
+        padding: 1.5rem;
+      }
+      .paper-sheet {
+        padding: 1.5rem;
+      }
+      .blueprint-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Navigation & Global Controls -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">Interactive Lean 4 Paper</div>
+    <div class="sidebar-title">Brennan's Conjecture & Sharp Inverse-Square Means</div>
+
+    <div class="control-panel">
+      <button class="ctrl-btn" onclick="setAllLayers(false, false, false)">
+        <span>📄 Pure Math Paper View</span>
+        <span>Collapse All</span>
+      </button>
+      <button class="ctrl-btn" onclick="setAllLayers(true, false, false)">
+        <span>📖 Expand All Paper Proofs</span>
+        <span>Layer 1</span>
+      </button>
+      <button class="ctrl-btn" onclick="setAllLayers(true, true, false)">
+        <span>🔍 Expand Intermediate Lemmas</span>
+        <span>Layers 1+2</span>
+      </button>
+      <button class="ctrl-btn" onclick="setAllLayers(true, true, true)">
+        <span>⚡ Expand All Lean 4 Proofs</span>
+        <span>All 3 Layers</span>
+      </button>
+    </div>
+
+    <ul class="toc-list">
+      <li><a href="#sec-intro"><strong>1. Introduction & Main Theorem</strong></a></li>
+      <li class="toc-sub"><a href="#thm-main">Theorem 1.1 (Brennan's Conjecture)</a></li>
+      <li class="toc-sub"><a href="#cor-sharp">Corollary 1.2 (Koebe Sharpness)</a></li>
+      <li><a href="#sec-prelim"><strong>2. Univalent Maps & Dyadic Transfer</strong></a></li>
+      <li class="toc-sub"><a href="#lem-2-1">Lemma 2.1 (Classical Distortion & Quarter)</a></li>
+      <li class="toc-sub"><a href="#lem-2-2">Lemma 2.2 (Compact Class $\mathcal{K}$ & Bounds)</a></li>
+      <li class="toc-sub"><a href="#lem-2-3">Lemma 2.3 (Affine Cocycle & Dyadic $L^n$)</a></li>
+      <li class="toc-sub"><a href="#prop-2-4">Proposition 2.4 (Uniform Disk Comparison)</a></li>
+      <li><a href="#sec-law"><strong>3. Probability Law from Transfer Growth</strong></a></li>
+      <li class="toc-sub"><a href="#lem-3-1">Lemma 3.1 (Weighted Affine Covariance)</a></li>
+      <li class="toc-sub"><a href="#lem-3-2">Lemma 3.2 (Logarithmic Derivative Moments)</a></li>
+      <li><a href="#sec-escape"><strong>4. Escape & Compact Superlevels</strong></a></li>
+      <li class="toc-sub"><a href="#prop-4-1">Proposition 4.1 (Compact Superlevels)</a></li>
+      <li class="toc-sub"><a href="#lem-4-2">Lemma 4.2 (Weighted Inverse Area $\le 256\pi$)</a></li>
+      <li class="toc-sub"><a href="#lem-4-3">Lemma 4.3 (Boundary Escape & Trace Bounds)</a></li>
+      <li><a href="#sec-pairing"><strong>5. Critical Points & Equivariant Pairing</strong></a></li>
+      <li class="toc-sub"><a href="#lem-5-1">Lemma 5.1 (Jacobian Identity & $\mathbb{E}[J_F(i)] > 0$)</a></li>
+      <li class="toc-sub"><a href="#lem-5-2">Lemma 5.2 (Critical Points & Hessian Signs)</a></li>
+      <li class="toc-sub"><a href="#lem-5-5">Lemma 5.5 (Hopf Index Superlevel Count)</a></li>
+      <li class="toc-sub"><a href="#prop-5-6">Proposition 5.6 (Measurable Equal-Rank Pairing)</a></li>
+      <li><a href="#sec-transport"><strong>6. Transport Between Saddles & Maxima</strong></a></li>
+      <li class="toc-sub"><a href="#prop-6-2">Proposition 6.2 (Transfer Bound $\rho \le 2$)</a></li>
+      <li><a href="#sec-integrability"><strong>7. Full Integrability Range</strong></a></li>
+      <li class="toc-sub"><a href="#lem-7-3">Lemma 7.3 (Positive Powers $0 < t < 2/3$)</a></li>
+      <li class="toc-sub"><a href="#thm-final">Final Proof of Theorem 1.1</a></li>
+      <li><a href="#sec-koebe-appendix"><strong>Appendix: Koebe Slit Domain in Lean 4</strong></a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    <article class="paper-sheet">
+
+      <!-- Header -->
+      <header class="paper-header">
+        <div class="paper-badge">✓ Lean 4 Verified Formalization Explorer • 0 Sorrys</div>
+        <h1 class="paper-title">Brennan's Conjecture and Sharp Inverse-Square Integral Means</h1>
+        <div class="paper-authors">
+          Interactive Mathematical Paper with Multi-Level Expandable Lean 4 Proofs<br/>
+          <small>Connecting <code>brennan/Section2..Section6_7.lean</code>, <code>brennan/BrennanConjecture.lean</code> &amp; <code>brennanOAI/</code></small>
+        </div>
+        <div class="abstract-box">
+          <div class="abstract-title">Abstract</div>
+          We prove that for every $\varepsilon > 0$ there is $C_\varepsilon < \infty$ such that every normalized univalent map $f \in \mathcal{S}$ on the unit disk $\mathbb{D}$ satisfies the uniform inverse-square circular mean estimate
+          $$M_{-2}[f'](r) = \frac{1}{2\pi}\int_{-\pi}^{\pi} |f'(re^{i\theta})|^{-2}\,d\theta \le C_\varepsilon (1-r)^{-1-\varepsilon} \qquad \left(\frac{1}{2} \le r < 1\right).$$
+          Combined with Hölder's inequality for $-2 < t < 0$, classical weighted area estimates for $0 < t < 2/3$, and conformal change of variables $t = 2 - p$, this resolves <strong>Brennan's Conjecture (1978)</strong>: every conformal bijection $\varphi : W \to \mathbb{D}$ from a simply connected proper domain $W \subsetneq \mathbb{C}$ satisfies
+          $$\int_W |\varphi'(z)|^p\,dA(z) < \infty \qquad \text{for all } \frac{4}{3} < p < 4.$$
+          Click any theorem or lemma below to expand its <strong>Paper Proof</strong>, drill down into <strong>Intermediate Mathematical Lemmas</strong>, or inspect the <strong>Verified Lean 4 Proof Code</strong>.
+        </div>
+      </header>
+
+      <!-- Interactive Proof Architecture Blueprint -->
+      <div class="blueprint-box">
+        <div class="blueprint-title">
+          <span>🧭 Interactive Proof Architecture: How the Contradiction Works</span>
+          <span style="font-size:0.78rem; font-weight:500; color:var(--muted);">Click any card to jump to section</span>
+        </div>
+        <div class="blueprint-grid">
+          <div class="bp-card" onclick="location.href='#sec-prelim'">
+            <h4>1. Dyadic Transfer Reduction (§2)</h4>
+            <p>Map $\mathbb{D} \to \mathbb{H}$ via Cayley transform $m(z)=\frac{z-i}{z+i}$. Define positive transfer operator $L = \frac{1}{2}(A_{-1/2+i/2}+A_{1/2+i/2})$ with spectral radius $\rho$. If $\rho \le 2$, Prop 2.4 gives $M_{-2}[f'](r) \le C_\varepsilon(1-r)^{-1-\varepsilon}$.</p>
+          </div>
+          <div class="bp-card" onclick="location.href='#sec-law'">
+            <h4>2. Analytic Moment Force (§3 &amp; §5.1)</h4>
+            <p>Assume $\rho > 2$ ($\beta = \log_2\rho > 1$). Construct affine-covariant law $P$ with $\mathbb{E}|Q_F(x+iy)|^2 = y^{-\beta}$. Differentiating at $z=i$ forces $\mathbb{E}[a_F(i)] = -\beta/2$, $\mathbb{E}|q_F(i)|^2 = \beta(\beta+1)/4$, hence $k^2 \mathbb{E}[J_F(i)] = k(k-1) > 0$.</p>
+          </div>
+          <div class="bp-card" onclick="location.href='#sec-transport'">
+            <h4>3. Geometric Pairing Force (§4–§6)</h4>
+            <p>Superlevels of $V_\xi^F(z)=y^k/|F(z)-\xi|$ are compact (§4). Hopf degree count pairs each saddle ($J_F>0$) to a higher maximum ($J_F<0$) (§5). Box exhaustion transport (§6) forces $\mathbb{E}[J_F(i)] \le 0$. Contradiction!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1 -->
+      <section id="sec-intro">
+        <h2 class="sec-heading">1. Introduction and Statement of Main Results</h2>
+        <p>
+          Let $\mathbb{D} = \{z \in \mathbb{C} : |z| < 1\}$, and write $dA = dx\,dy$ for planar Lebesgue measure.
+          Brennan's conjecture (1978) asks whether, for every conformal bijection $\varphi : W \to \mathbb{D}$ from a simply connected proper plane domain $W \subsetneq \mathbb{C}$, the derivative satisfies
+          $$\int_W |\varphi'(z)|^p\,dA(z) < \infty \qquad \left(\frac{4}{3} < p < 4\right).$$
+          Passing to the inverse map $f = \varphi^{-1} : \mathbb{D} \to W$ and changing variables gives
+          $$\int_W |\varphi'(z)|^p\,dA(z) = \int_{\mathbb{D}} |f'(w)|^{2-p}\,dA(w),$$
+          transforming the exponent range $4/3 < p < 4$ into $-2 < t < 2/3$ where $t = 2 - p$.
+        </p>
+
+        <!-- Theorem 1.1 -->
+        <div class="math-block" id="thm-main">
+          <div class="math-block-header">
+            <span class="math-block-title">Theorem 1.1 (Brennan's Conjecture and Sharp Inverse-Square Means)</span>
+            <div class="math-block-badges">
+              <span class="badge-verified">✓ Lean 4 Verified</span>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section6_7.lean#L97-L140">brennan/Section6_7.lean</a>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/BrennanConjecture.lean#L33-L44">brennan/BrennanConjecture.lean</a>
+            </div>
+          </div>
+          <div class="math-block-statement">
+            For every $\varepsilon > 0$ there is $C_\varepsilon < \infty$ such that for all $f \in \mathcal{S}$ and $\frac{1}{2} \le r < 1$,
+            $$M_{-2}[f'](r) = \frac{1}{2\pi}\int_{-\pi}^{\pi} |f'(re^{i\theta})|^{-2}\,d\theta \le C_\varepsilon (1-r)^{-1-\varepsilon}.$$
+            Consequently, for every open simply connected proper domain $W \subsetneq \mathbb{C}$ and every conformal bijection $\varphi : W \to \mathbb{D}$,
+            $$\int_W |\varphi'(z)|^p\,dA(z) < \infty \qquad \text{for all } \frac{4}{3} < p < 4.$$
+          </div>
+          <div class="math-block-actions">
+            <button class="expand-btn" onclick="toggleLayer(this, 'thm1-paper')">▸ 1. Paper Proof Overview</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'thm1-sub')">▸ 2. Intermediate Reduction Lemmas</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'thm1-lean')">▸ 3. Lean 4 Formalization</button>
+          </div>
+
+          <div class="layer-panel layer-paper" id="thm1-paper">
+            <strong>High-Level Proof Structure:</strong>
+            <div class="step-item">
+              <div class="step-item-header">Step 1: Transfer Operator Bound ($\rho \le 2$)</div>
+              By Proposition 6.2 (<code>prop_6_2_transfer_bound</code>), the spectral growth rate $\rho = \lim_{n\to\infty}\|L^n\|^{1/n}$ of the dyadic transfer operator on the compact upper half-plane schlicht class $\mathcal{K}$ satisfies $\rho \le 2$.
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 2: Uniform Disk Comparison ($M_{-2}[f'](r) \le C_\varepsilon(1-r)^{-1-\varepsilon}$)</div>
+              By Proposition 2.4 (<code>prop_2_4_uniform_disk_comparison</code>), $\rho \le 2$ implies the uniform circular mean bound $M_{-2}[f'](r) \le C_\varepsilon(1-r)^{-1-\varepsilon}$ for all $f \in \mathcal{S}$ and $1/2 \le r < 1$.
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 3: Negative &amp; Positive Disk Exponents ($-2 < t < 2/3$) and Conformal Change of Variables</div>
+              For $-2 < t < 0$, Hölder's inequality on $|z|=r$ with exponent $q = -t/2 \in (0,1)$ gives $M_t[f'](r) \le M_{-2}[f'](r)^q \le C_\varepsilon^q (1-r)^{-q(1+\varepsilon)}$, which is integrable in $r\,dr$ over $[0,1)$ when $q(1+\varepsilon) < 1$. Together with $t=0$ and Lemma 7.3 ($0 < t < 2/3$), $\int_{\mathbb{D}} |f'|^t\,dA < \infty$ holds for all $-2 < t < 2/3$. Finally, the Jacobian identity $\int_W |\varphi'|^p\,dA = \int_{\mathbb{D}} |f'|^{2-p}\,dA$ yields integrability for $4/3 < p < 4$.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-sublemmas" id="thm1-sub">
+            <strong>Formal Statement &amp; Reduction Chain:</strong>
+            <div class="sublemma-card">
+              <span class="sublemma-name">BrennansConjectureStatement</span>
+              Defined in <code>brennan/BrennanConjecture.lean</code>:
+              $$\forall (W : \text{Set }\mathbb{C})\ (f : \mathbb{C} \to \mathbb{C})\ (p : \mathbb{R}),\ \text{IsOpen } W \to W.\text{Nonempty} \to W \ne \text{univ} \to \text{DifferentiableOn }\mathbb{C}\ f\ W \to \text{InjOn } f\ W \to f '' W = B(0,1) \to (4/3 < p \land p < 4) \to \text{IntegrableOn } (\lambda z \Rightarrow \|f'(z)\|^p)\ W\ \text{volume}.$$
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">OAI.Brennan.brennan_conjecture</span>
+              In <code>brennanOAI/lean/OAI/Analysis/IntegralMeans/Main.lean</code>, the full disk-to-domain equivalence is proved via <code>conformal_domain_integrable_of_growth_le_two</code> and <code>growthRate_le_two</code>.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-lean" id="thm1-lean">
+            <div class="lean-header-bar">
+              <span>File: <code>brennan/BrennanConjecture.lean</code> &amp; <code>brennan/Section6_7.lean</code></span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section6_7.lean#L97-L138">Open in Editor ↗</a>
+            </div>
+<pre class="lean-code"><span class="cmt">/-- Brennan's Conjecture (Statement) in `brennan/BrennanConjecture.lean` -/</span>
+<span class="kw">def</span> <span class="thm-id">BrennansConjectureStatement</span> : Prop :=
+  ∀ (W : Set ℂ) (f : ℂ → ℂ) (p : ℝ),
+    IsOpen W → W.Nonempty → W ≠ univ →
+    DifferentiableOn ℂ f W → InjOn f W →
+    f '' W = Metric.ball (0 : ℂ) 1 →
+    (4 / 3 < p ∧ p < 4) →
+    IntegrableOn (fun z => ‖deriv f z‖ ^ p) W volume
+
+<span class="cmt">-- The Main Inverse-Square Integral Means Theorem (`brennan/Section6_7.lean`)</span>
+<span class="kw">theorem</span> <span class="thm-id">main_theorem_inverse_square</span> :
+    ∀ ε > (0 : ℝ), ∃ C_ε : ℝ, ∀ (f : ℂ → ℂ) (_hf : Brennan.Koebe.IsClassS f) (r : ℝ),
+      (1 / 2 : ℝ) ≤ r ∧ r < 1 →
+      integralMean f (-2) r ≤ C_ε * (1 - r) ^ ((-1 : ℝ) - ε) := <span class="kw">by</span>
+{
+  <span class="tac">exact</span> prop_2_4_uniform_disk_comparison prop_6_2_transfer_bound
+}
+
+<span class="kw">theorem</span> <span class="thm-id">brennan_area_assertion</span> : BrennansConjectureStatement := <span class="kw">by</span>
+{
+  <span class="tac">exact</span> brennan_conjecture_from_disk_means main_theorem_inverse_square
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2 -->
+      <section id="sec-prelim">
+        <h2 class="sec-heading">2. Univalent Maps and a Dyadic Transfer Operator</h2>
+        <p>
+          We place normalized univalent maps of the upper half-plane $\mathbb{H} = \{x+iy : y > 0\}$ into a compact space $\mathcal{K}$ via the Cayley bijection $m(z) = \frac{z-i}{z+i} : \mathbb{H} \to \mathbb{D}$. Rescaling the source about a point $z \in \mathbb{H}$ defines a positive operator weighted by $|Q_F(z)|^2 = |F'(z)|^{-2}$.
+        </p>
+
+        <!-- Lemma 2.1 -->
+        <div class="math-block" id="lem-2-1">
+          <div class="math-block-header">
+            <span class="math-block-title">Lemma 2.1 (Classical Univalence Estimates &amp; Koebe Quarter Disk)</span>
+            <div class="math-block-badges">
+              <span class="badge-verified">✓ Lean 4 Verified (0 Sorrys)</span>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Koebe.lean#L1-L1198">brennan/Koebe.lean:1-1198</a>
+            </div>
+          </div>
+          <div class="math-block-statement">
+            If $f(z) = z + a_2 z^2 + \cdots$ belongs to $\mathcal{S}$, then for $|z| = r < 1$,
+            $$\frac{1-r}{(1+r)^3} \le |f'(z)| \le \frac{1+r}{(1-r)^3}, \qquad \frac{r}{4} \le |f(z)| \le \frac{r}{(1-r)^2}.$$
+            Moreover, every univalent holomorphic map $g$ on an open disk $B(z_0, R)$ satisfies $g'(z_0) \ne 0$ and
+            $$B\bigl(g(z_0), R|g'(z_0)|/4\bigr) \subset g(B(z_0, R)).$$
+          </div>
+          <div class="math-block-actions">
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem21-paper')">▸ 1. Paper Proof</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem21-sub')">▸ 2. Intermediate Lemmas (Bieberbach $|a_2|\le 2$, Quarter Disk &amp; Pre-Schwarzian)</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem21-lean')">▸ 3. Lean 4 Code</button>
+          </div>
+
+          <div class="layer-panel layer-paper" id="lem21-paper">
+            <div class="step-item">
+              <div class="step-item-header">Step 1: Odd Square-Root Transform &amp; Bieberbach's $|a_2| \le 2$</div>
+              Since $f(z)/z$ is holomorphic and non-vanishing on $\mathbb{D}$ with value $1$ at $0$, it admits a holomorphic square root $q(z) = \sqrt{f(z)/z}$ with $q(0)=1$. Then $g(z) = z q(z^2) = \sqrt{f(z^2)}$ is odd and univalent on $\mathbb{D}$, so $H(z) = 1/g(z) = z^{-1} - q'(0) z + \cdots$ is univalent on $\mathbb{D}\setminus\{0\}$. Applying the submean inequality and Gronwall's area inequality to the regular part $h(z) = H(z) - z^{-1}$ yields $|h'(0)| = |q'(0)| \le 1$, hence $|f''(0)| = 4|q'(0)| \le 4$ ($|a_2| \le 2$).
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 2: Omitted-Value Transform &amp; Koebe Quarter Theorem</div>
+              If $w \notin f(\mathbb{D})$, then $F(z) = \frac{w f(z)}{w - f(z)} \in \mathcal{S}$ has $F''(0) = f''(0) + 2/w$. By the triangle inequality and $|f''(0)|,\ |F''(0)| \le 4$, we obtain $|2/w| \le |F''(0)| + |f''(0)| \le 8$, so $|w| \ge 1/4$. Rescaling any univalent $g : B(z_0, R) \to \mathbb{C}$ via $h(\zeta) = \frac{g(z_0 + R\zeta) - g(z_0)}{R g'(z_0)} \in \mathcal{S}$ gives $B(g(z_0), R|g'(z_0)|/4) \subset g(B(z_0, R))$ and $|f(z)| \ge |z|/4$.
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 3: Disk Automorphism Normalization &amp; Pre-Schwarzian Bound</div>
+              For $a \in \mathbb{D}$, the Koebe transform $F_a(\zeta) = \frac{f(\phi_a(\zeta)) - f(a)}{(1 - |a|^2) f'(a)} \in \mathcal{S}$ with $\phi_a(\zeta) = \frac{\zeta + a}{1 + \bar{a}\zeta}$ satisfies $F_a''(0) = (1 - |a|^2)\frac{f''(a)}{f'(a)} - 2\bar{a}$. Applying $|F_a''(0)| \le 4$ yields the sharp pre-Schwarzian inequality $\bigl|(1-|z|^2)\frac{f''(z)}{f'(z)} - 2\bar{z}\bigr| \le 4$.
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 4: Radial Integration of $\log|f'|$ and Upper Growth</div>
+              Along a ray $z = t\zeta$ ($|\zeta|=1$), $\frac{d}{dt}\log|f'(t\zeta)| = \operatorname{Re}\bigl(\zeta \frac{f''(t\zeta)}{f'(t\zeta)}\bigr) \in \bigl[\frac{2t-4}{1-t^2}, \frac{2t+4}{1-t^2}\bigr]$. Integrating from $0$ to $r$ gives $\frac{1-r}{(1+r)^3} \le |f'(r\zeta)| \le \frac{1+r}{(1-r)^3}$, and integrating $|f'(t\zeta)| \le \frac{1+t}{(1-t)^3} = \frac{d}{dt}\frac{t}{(1-t)^2}$ gives $|f(z)| \le \frac{r}{(1-r)^2}$.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-sublemmas" id="lem21-sub">
+            <strong>Decomposed Auxiliary Lemmas in <code>brennan/Koebe.lean</code> (67 declarations, all &lt;50 lines):</strong>
+            <div class="sublemma-card">
+              <span class="sublemma-name">univalent_deriv_ne_zero</span> &amp; <span class="sublemma-name">holomorphic_sq_submean</span>
+              Proves $g'(z_0) \ne 0$ via analyticity of the local inverse on a punctured neighborhood, and proves the $L^2$ submean inequality $\pi r^2 |h'(0)|^2 \le \int_{\overline{B}(0,r)} |h'|^2\,dA$ via polar coordinates (`Complex.integral_comp_polarCoord_symm`) and `DiffContOnCl.circleAverage`.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">exists_holomorphic_sqrt_disk</span> &amp; <span class="sublemma-name">schlicht_second_deriv_bound</span>
+              Constructs the holomorphic square root $q(z) = \sqrt{f(z)/z}$ from a primitive of $F'/F$ on the convex disk, proves $g(z) = z q(z^2)$ is odd and univalent, and deduces $\|f''(0)\| \le 4$.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">omittedTransform_isClassS</span>, <span class="sublemma-name">koebe_quarter_theorem</span> &amp; <span class="sublemma-name">local_koebe_quarter</span>
+              Applies $\|F''(0)\| \le 4$ to $F(z) = \frac{w f(z)}{w - f(z)}$ to prove $\|w\| \ge 1/4$, then normalizes on $B(z_0, R)$ to obtain `local_koebe_quarter` and `schlicht_lower_growth` ($\|z\|/4 \le \|f(z)\|$).
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">schlicht_preSchwarzian_bound</span>, <span class="sublemma-name">schlicht_deriv_bounds</span> &amp; <span class="sublemma-name">schlicht_upper_growth</span>
+              Normalizes via `diskAut a` to get the pre-Schwarzian bound, then applies `image_le_of_deriv_right_le_deriv_boundary` to $\log\|f'(t\zeta)\|$ and `image_norm_le_of_norm_deriv_right_le_deriv_boundary'` to $f(t\zeta)$.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-lean" id="lem21-lean">
+            <div class="lean-header-bar">
+              <span>File: <code>brennan/Koebe.lean</code> (lines 556–1198)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Koebe.lean#L556-L1198">Open in Editor ↗</a>
+            </div>
+<pre class="lean-code"><span class="cmt">-- Bieberbach's second coefficient bound |a₂| ≤ 2 (`brennan/Koebe.lean`)</span>
+<span class="kw">lemma</span> <span class="thm-id">schlicht_second_deriv_bound</span> {f : ℂ → ℂ} (hf : IsClassS f) :
+    ‖deriv (deriv f) 0‖ ≤ 4 := <span class="kw">by</span>
+{
+  <span class="kw">have</span> hdz : (0 : ℂ) ∈ disk := <span class="kw">by</span> <span class="tac">simp</span> [disk]
+  <span class="kw">have</span> hFd : DifferentiableOn ℂ (dslope f 0) disk :=
+    (Complex.differentiableOn_dslope (Metric.isOpen_ball.mem_nhds hdz)).mpr hf.1
+  <span class="tac">obtain</span> ⟨q, hqd, hq0, hqs, hqn⟩ := exists_holomorphic_sqrt_disk hFd
+    (<span class="kw">fun</span> _ hz => dslope_zero_ne_zero hf hz) (<span class="kw">by</span> <span class="tac">simpa</span> <span class="kw">using</span> hf.2.2.2)
+  <span class="kw">have</span> hgu := odd_sqrt_univalent hf hqd hqn hqs
+  <span class="tac">obtain</span> ⟨hhd, hderh, hdef⟩ := odd_recip_remainder_deriv hqd hq0 hqn
+  ...
+}
+
+<span class="cmt">-- Classical Koebe Distortion and Growth Theorem (`brennan/Koebe.lean`)</span>
+<span class="kw">theorem</span> <span class="thm-id">koebe_distortion_theorem</span> (f : ℂ → ℂ) (hf : IsClassS f) (z : ℂ) (hz : ‖z‖ < 1) :
+    (1 - ‖z‖) / (1 + ‖z‖)^3 ≤ ‖deriv f z‖ ∧
+    ‖deriv f z‖ ≤ (1 + ‖z‖) / (1 - ‖z‖)^3 ∧
+    ‖z‖ / 4 ≤ ‖f z‖ ∧
+    ‖f z‖ ≤ ‖z‖ / (1 - ‖z‖)^2 := <span class="kw">by</span>
+{
+  <span class="kw">have</span> hzd : z ∈ disk := <span class="kw">by</span> <span class="tac">simpa</span> [disk] <span class="kw">using</span> hz
+  <span class="kw">have</span> hd := schlicht_deriv_bounds hf hzd
+  <span class="tac">exact</span> ⟨hd.1, hd.2, schlicht_lower_growth hf hzd, schlicht_upper_growth hf hzd⟩
+}</pre>
+          </div>
+        </div>
+
+        <!-- Lemma 2.2 -->
+        <div class="math-block" id="lem-2-2">
+          <div class="math-block-header">
+            <span class="math-block-title">Lemma 2.2 (Compact Class $\mathcal{K}$, Strip Bound, and Zero Separation)</span>
+            <div class="math-block-badges">
+              <span class="badge-verified">✓ Lean 4 Verified (0 Sorrys)</span>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section2.lean#L218-L490">brennan/Section2.lean:218-490</a>
+            </div>
+          </div>
+          <div class="math-block-statement">
+            Let $\mathcal{K} = \{F : \mathbb{H} \to \mathbb{C} \text{ univalent} : F(i)=0,\ F'(i)=1\}$ and $Q_F(z) = 1/F'(z)$. Under the Cayley map $m(z) = \frac{z-i}{z+i}$, every $F \in \mathcal{K}$ corresponds to $f \in \mathcal{S}$ via $F(z) = 2i f(m(z))$. For every $C_0 \ge 0$, $|x| \le C_0$, and $0 < y \le 1$,
+            $$|Q_F(x+iy)| \le \frac{(C_0^2 + 4)^2}{y}.$$
+            Moreover, if $F \in \mathcal{K}$ and $|m(z)| \ge \frac{1}{2}$, then $|F(z)| \ge \frac{1}{16}$.
+          </div>
+          <div class="math-block-actions">
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem22-paper')">▸ 1. Paper Proof</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem22-sub')">▸ 2. Intermediate Lemmas (Cayley Algebra &amp; Distortion Chain)</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem22-lean')">▸ 3. Lean 4 Code</button>
+          </div>
+
+          <div class="layer-panel layer-paper" id="lem22-paper">
+            <div class="step-item">
+              <div class="step-item-header">Step 1: Exact Cayley Derivative Conversion</div>
+              Differentiating $F(z) = 2i f(m(z))$ with $m'(z) = \frac{2i}{(z+i)^2}$ gives $F'(z) = \frac{-4}{(z+i)^2} f'(m(z))$. Setting $D = |z+i|^2 = x^2 + (y+1)^2$ and $r = |m(x+iy)| < 1$, we have
+              $$1 - r^2 = \frac{4y}{D}, \qquad |Q_F(x+iy)| = \frac{D}{4|f'(m(x+iy))|}.$$
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 2: Strip Bound via Classical Distortion</div>
+              Applying the lower derivative bound $|f'(w)| \ge \frac{1-r}{(1+r)^3}$ gives
+              $$|Q_F(x+iy)| \le \frac{D(1+r)^3}{4(1-r)} = \frac{D^2(1+r)^4}{16y} \le \frac{D^2}{y} \le \frac{(C_0^2+4)^2}{y}$$
+              since $1+r \le 2$ and $D = x^2 + (y+1)^2 \le C_0^2 + 4$ for $|x| \le C_0$ and $0 < y \le 1$.
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 3: Zero Separation $|F(z)| \ge 1/16$ for $|m(z)| \ge 1/2$</div>
+              By the classical growth lower bound $|f(w)| \ge \frac{|w|}{(1+|w|)^2}$ on $\mathbb{D}$, for $r = |m(z)| \ge 1/2$ and $r < 1$ we actually have the even stronger bound $|f(m(z))| \ge \frac{1/2}{(1+1)^2} = \frac{1}{8}$, so $|F(z)| = 2|f(m(z))| \ge \frac{1}{4} \ge \frac{1}{16}$ (or via the Koebe $1/4$ disk on $B(i, 1/4)$).
+            </div>
+          </div>
+
+          <div class="layer-panel layer-sublemmas" id="lem22-sub">
+            <strong>Decomposed Auxiliary Lemmas in <code>brennan/Section2.lean</code>:</strong>
+            <div class="sublemma-card">
+              <span class="sublemma-name">K_to_S_differentiable</span>, <span class="sublemma-name">K_to_S_injOn</span>, <span class="sublemma-name">K_to_S_zero</span>, <span class="sublemma-name">K_to_S_deriv_zero</span>
+              Proves that for every $F \in \mathcal{K}$, the pullback $f(\zeta) = \frac{F(m^{-1}(\zeta))}{2i}$ belongs to the disk schlicht class $\mathcal{S}$.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">deriv_F_eq</span> &amp; <span class="sublemma-name">cayley_one_sub_norm_sq</span>
+              Proves $\|F'(z)\| = \frac{4}{\|z+i\|^2} \|f'(m(z))\|$ and $1 - \|m(z)\|^2 = \frac{4\,\text{Im}(z)}{\|z+i\|^2}$.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">lemma_2_2_bounds</span> &amp; <span class="sublemma-name">lemma_2_2_lower_bound</span>
+              Combines `koebe_lower_bound_w` with $1-r^2 = (1-r)(1+r) = 4y/D$ to prove $\|Q_F(x+iy)\| \le (C_0^2+4)^2/y$ and $\|F(z)\| \ge 1/16$.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-lean" id="lem22-lean">
+            <div class="lean-header-bar">
+              <span>File: <code>brennan/Section2.lean</code> (lines 422–490)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section2.lean#L422-L490">Open in Editor ↗</a>
+            </div>
+<pre class="lean-code"><span class="kw">lemma</span> <span class="thm-id">lemma_2_2_bounds</span> (F : KClass) (C0 : ℝ) (hC0 : C0 ≥ 0) (x y : ℝ)
+    (hx : |x| ≤ C0) (hy1 : 0 < y) (hy2 : y ≤ 1) :
+    ‖Q F.F (x + y * I)‖ ≤ (C0^2 + 4)^2 / y := <span class="kw">by</span>
+{
+  <span class="kw">let</span> z : ℂ := x + y * I
+  <span class="kw">have</span> hz : z ∈ H := <span class="kw">by</span> { <span class="tac">dsimp</span> [H, z]; <span class="tac"> simpa</span> <span class="kw">using</span> hy1 }
+  <span class="kw">have</span> hD_le : ‖z + I‖^2 ≤ C0^2 + 4 := norm_z_add_I_sq_le hC0 hx hy1 hy2
+  <span class="kw">have</span> h_id : 1 - ‖m z‖^2 = 4 * y / ‖z + I‖^2 := <span class="kw">by</span>
+  {
+    <span class="kw">have</span> hz_im : z.im = y := <span class="kw">by</span> <span class="tac">simp</span> [z]
+    <span class="tac">rw</span> [← hz_im]
+    <span class="tac">exact</span> cayley_one_sub_norm_sq hz
+  }
+  ...
+}</pre>
+          </div>
+        </div>
+
+        <!-- Lemma 2.3 & Prop 2.4 -->
+        <div class="math-block" id="lem-2-3">
+          <div class="math-block-header">
+            <span class="math-block-title">Lemma 2.3 &amp; Proposition 2.4 (Affine Rerooting Cocycle &amp; Uniform Disk Comparison)</span>
+            <div class="math-block-badges">
+              <span class="badge-verified">✓ Lean 4 Verified (0 Sorrys)</span>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section2.lean#L492-L613">brennan/Section2.lean:492-613</a>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section2_Dyadic.lean#L1-L169">brennan/Section2_Dyadic.lean</a>
+            </div>
+          </div>
+          <div class="math-block-statement">
+            Identify $z = x+iy \in \mathbb{H}$ with the affine map $z \cdot w = x + yw$. For $F \in \mathcal{K}$, the rerooted map
+            $$T_z F(w) = \frac{F(z \cdot w) - F(z)}{y F'(z)}$$
+            belongs to $\mathcal{K}$, and for all $z, w \in \mathbb{H}$,
+            $$Q_{T_z F}(w) = \frac{Q_F(z \cdot w)}{Q_F(z)}, \qquad T_w(T_z F) = T_{z \cdot w} F, \qquad A_z A_w = A_{z \cdot w},$$
+            where $A_z \Phi(F) = |Q_F(z)|^2 \Phi(T_z F)$. Setting $L = \frac{1}{2}(A_{-1/2+i/2} + A_{1/2+i/2})$ and $\rho = \lim_{n\to\infty}\|L^n\|^{1/n}$, if $\rho \le 2$, then for every $\varepsilon > 0$ there is $C_\varepsilon < \infty$ such that $M_{-2}[f'](r) \le C_\varepsilon (1-r)^{-1-\varepsilon}$ for all $f \in \mathcal{S}$ and $1/2 \le r < 1$.
+          </div>
+          <div class="math-block-actions">
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem23-paper')">▸ 1. Paper Proof</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem23-sub')">▸ 2. Intermediate Lemmas (Telescoping Weights &amp; Arc Cell Cover)</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem23-lean')">▸ 3. Lean 4 Code</button>
+          </div>
+
+          <div class="layer-panel layer-paper" id="lem23-paper">
+            <div class="step-item">
+              <div class="step-item-header">Step 1: Affine Semigroup Action and Telescoping Cocycle</div>
+              Since $(z \cdot w) \cdot u = z \cdot (w \cdot u)$ and $\text{Im}(z \cdot w) = \text{Im}(z)\,\text{Im}(w)$, differentiating $T_z F(w)$ with respect to $w$ cancels the factor $y = \text{Im}(z)$, yielding $(T_z F)'(w) = F'(z \cdot w)/F'(z)$, or $Q_{T_z F}(w) = Q_F(z \cdot w)/Q_F(z)$. Consequently, the weights in $A_z(A_w \Phi)(F)$ telescope:
+              $$|Q_F(z)|^2 |Q_{T_z F}(w)|^2 = |Q_F(z \cdot w)|^2.$$
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 2: From Dyadic Grid Sums $L^n \mathbf{1}(F)$ to Full Circle Integral Means</div>
+              Expanding $L^n$ over words of length $n$ in $\{-1/2+i/2, 1/2+i/2\}$ gives $L^n = v_n \sum_{j=0}^{2^n-1} A_{u_{n,j}+i v_n}$ with $v_n = 2^{-n}$ and $u_{n,j} = -1 + (2j+1)v_n$. Given $1/2 \le r < 1$, choose $n$ so $v_n \le 1-r < 2v_n$. On the arc $I = [3\pi/4, 5\pi/4]$, $m^{-1}(re^{i\theta}) = x(\theta)+iy(\theta)$ lies in $[-1,1] \times [\delta/2, 2\delta]$. Each cell point compares to the dyadic center $u_{n,j}+iv_n$ via a fixed compact set $E \subset \mathbb{H}$, bounding $\int_I |f'(re^{i\theta})|^{-2}\,d\theta \le 512 B_E^2 L^n\mathbf{1}(F)$. Rotating $f$ by $\{1,i,-1,-i\}$ covers the full circle!
+            </div>
+          </div>
+
+          <div class="layer-panel layer-sublemmas" id="lem23-sub">
+            <strong>Decomposed Auxiliary Lemmas in <code>Section2.lean</code> &amp; <code>Section2_Dyadic.lean</code>:</strong>
+            <div class="sublemma-card">
+              <span class="sublemma-name">aff_comp</span> &amp; <span class="sublemma-name">deriv_T</span>
+              Proves `aff z (aff w u) = aff (aff z w) u` and `deriv (T z F) w = deriv F (aff z w) / deriv F z`.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">lemma_2_3_Q</span>, <span class="sublemma-name">lemma_2_3_T</span>, <span class="sublemma-name">T_KClass</span>
+              Proves $Q_{T_z F}(w) = Q_F(z \cdot w)/Q_F(z)$, $T_w(T_z F) = T_{z \cdot w} F$, and that $T_z F \in \mathcal{K}$.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">A_weight_cocycle</span> &amp; <span class="sublemma-name">lemma_2_3_A_op</span>
+              Proves `A_weight z F.F * A_weight w (T z F.F) = A_weight (aff z w) F.F` and `A_op z hz (A_op w hw Phi) = A_op (aff z w) hzw Phi`.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-lean" id="lem23-lean">
+            <div class="lean-header-bar">
+              <span>File: <code>brennan/Section2.lean</code> &amp; <code>brennan/Section2_Dyadic.lean</code></span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section2_Dyadic.lean#L86-L115">Open in Editor ↗</a>
+            </div>
+<pre class="lean-code"><span class="kw">lemma</span> <span class="thm-id">A_weight_cocycle</span> (z w : ℂ) (hz : z ∈ H) (hw : w ∈ H) (F : KClass) :
+    A_weight z F.F * A_weight w (T z F.F) = A_weight (aff z w) F.F := <span class="kw">by</span>
+{
+  <span class="tac">dsimp</span> [A_weight]
+  <span class="kw">have</span> hQ := lemma_2_3_Q F z w hz hw
+  <span class="tac">rw</span> [hQ, norm_div, div_pow]
+  <span class="kw">have</span> h_deriv_ne : deriv F.F z ≠ 0 :=
+    deriv_ne_zero_of_univalentOn isOpen_H F.univalent hz
+  <span class="kw">have</span> hQz_ne : ‖Q F.F z‖^2 ≠ 0 := <span class="kw">by</span>
+  {
+    <span class="tac">apply</span> pow_ne_zero 2
+    <span class="tac">rw</span> [norm_ne_zero_iff]
+    <span class="tac">dsimp</span> [Q]
+    <span class="tac">exact</span> one_div_ne_zero h_deriv_ne
+  }
+  <span class="tac">exact</span> mul_div_cancel₀ _ hQz_ne
+}
+
+<span class="kw">lemma</span> <span class="thm-id">lemma_2_3_A_op</span> (z w : ℂ) (hz : z ∈ H) (hw : w ∈ H) (hzw : aff z w ∈ H) (Phi : C_KClass) :
+    A_op z hz (A_op w hw Phi) = A_op (aff z w) hzw Phi := <span class="kw">by</span>
+{
+  <span class="tac">ext</span> F
+  <span class="tac">dsimp</span> [A_op, A_op_val]
+  <span class="tac">rw</span> [← mul_assoc]
+  <span class="kw">have</span> h_cocycle := A_weight_cocycle z w hz hw F
+  <span class="kw">have</span> h_cast : ((A_weight z F.F : ℂ) * (A_weight w (T z F.F) : ℂ)) =
+      (A_weight (aff z w) F.F : ℂ) := <span class="kw">by</span> { <span class="tac"> exact_mod_cast</span> h_cocycle }
+  <span class="tac">rw</span> [h_cast]
+  <span class="tac">congr</span> 2
+  <span class="tac">apply</span> KClass_ext
+  <span class="tac">exact</span> lemma_2_3_T F z w hz hw
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3 -->
+      <section id="sec-law">
+        <h2 class="sec-heading">3. A Probability Law from Transfer Growth and Exact Jet Moments</h2>
+        <p>
+          Suppose for contradiction that $\rho > 2$, and set $\beta = \log_2 \rho > 1$. Using the resolvent $R_\tau = \sum_{n=0}^\infty \tau^{-n} L^n$ as $\tau \downarrow \rho$, followed by horizontal averaging over $[0,2]$ and logarithmic scale averaging over $[1,2]$, Lemma 3.1 constructs a Borel probability measure $P$ on $\mathcal{K}$ satisfying the weighted affine covariance identity
+          $$\mathbb{E}\bigl[|Q_F(x+iy)|^2 \Phi(T_{x+iy} F)\bigr] = y^{-\beta} \mathbb{E}[\Phi(F)].$$
+        </p>
+
+        <!-- Lemma 3.2 -->
+        <div class="math-block" id="lem-3-2">
+          <div class="math-block-header">
+            <span class="math-block-title">Lemma 3.2 (Moments of the Logarithmic Derivative $q_F(i)$)</span>
+            <div class="math-block-badges">
+              <span class="badge-verified">✓ Lean 4 Verified (0 Sorrys)</span>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section3.lean#L1-L563">brennan/Section3.lean:1-563</a>
+            </div>
+          </div>
+          <div class="math-block-statement">
+            Assume $\rho > 2$, and let $P$ and $\beta = \log_2\rho > 1$ be as in Lemma 3.1. For $z = x+iy \in \mathbb{H}$, define the logarithmic derivative jet
+            $$q_F(z) = iy \frac{Q'_F(z)}{Q_F(z)} = -iy \frac{F''(z)}{F'(z)} = a_F(z) + i b_F(z).$$
+            Then $q_{T_z F}(w) = q_F(z \cdot w)$ for all $z, w \in \mathbb{H}$, and at $z = i$:
+            $$\mathbb{E}[a_F(i)] = -\frac{\beta}{2}, \qquad \mathbb{E}[b_F(i)] = 0, \qquad \mathbb{E}\bigl[|q_F(i)|^2\bigr] = \frac{\beta(\beta+1)}{4}.$$
+          </div>
+          <div class="math-block-actions">
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem32-paper')">▸ 1. Paper Proof</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem32-sub')">▸ 2. Intermediate Lemmas (CR Norm Identities &amp; Laplacian of $|Q_F|^2$)</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem32-lean')">▸ 3. Lean 4 Code</button>
+          </div>
+
+          <div class="layer-panel layer-paper" id="lem32-paper">
+            <div class="step-item">
+              <div class="step-item-header">Step 1: Constant Test Function in Weighted Covariance</div>
+              Taking $\Phi \equiv \mathbf{1}$ in $\mathbb{E}[|Q_F(x+iy)|^2 \Phi(T_{x+iy}F)] = y^{-\beta}\mathbb{E}\Phi(F)$ yields the identity
+              $$\mathbb{E}\bigl[|Q_F(x+iy)|^2\bigr] = y^{-\beta} \qquad (\forall x \in \mathbb{R},\ y > 0).$$
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 2: Pointwise Cauchy-Riemann Identities for $|Q_F|^2$</div>
+              Since $Q_F$ is holomorphic on $\mathbb{H}$ and $q_F = iy Q'_F / Q_F = a_F + i b_F$, differentiating $|Q_F(x+iy)|^2 = \langle Q_F, Q_F\rangle_{\mathbb{R}}$ with respect to $y$ and $x$ gives
+              $$\partial_y |Q_F|^2 = 2\text{Re}(\overline{Q_F}\, i Q'_F) = \frac{2a_F}{y}|Q_F|^2, \qquad \partial_x |Q_F|^2 = 2\text{Re}(\overline{Q_F}\, Q'_F) = \frac{2b_F}{y}|Q_F|^2,$$
+              and the Euclidean Laplacian satisfies
+              $$\Delta |Q_F|^2 = \partial_{xx}|Q_F|^2 + \partial_{yy}|Q_F|^2 = 4|Q'_F|^2.$$
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 3: Evaluating Derivatives of $\mathbb{E}|Q_F(x+iy)|^2 = y^{-\beta}$ at $z = i$</div>
+              At $z = i$ ($x=0, y=1$), normalization gives $Q_F(i) = 1$ and $|q_F(i)|^2 = |Q'_F(i)|^2$. Differentiating $\mathbb{E}|Q_F(x+iy)|^2 = y^{-\beta}$ at $(0,1)$ with respect to $y$, $x$, and $\Delta = \partial_{xx}+\partial_{yy}$ gives:
+              $$2\mathbb{E}[a_F(i)] = \left.\partial_y(y^{-\beta})\right|_{y=1} = -\beta, \qquad 2\mathbb{E}[b_F(i)] = \left.\partial_x(y^{-\beta})\right|_{x=0} = 0,$$
+              $$4\mathbb{E}\bigl[|q_F(i)|^2\bigr] = \left.(\partial_{xx}+\partial_{yy})(y^{-\beta})\right|_{(0,1)} = \beta(\beta+1).$$
+            </div>
+          </div>
+
+          <div class="layer-panel layer-sublemmas" id="lem32-sub">
+            <strong>Complete Chain of 47 Lemmas in <code>brennan/Section3.lean</code> (0 Axioms, 0 Sorrys):</strong>
+            <div class="sublemma-card">
+              <span class="sublemma-name">dy_cr_algebra</span>, <span class="sublemma-name">dx_cr_algebra</span> &amp; <span class="sublemma-name">laplacian_cr_algebra</span>
+              Pure complex-algebraic identities proving $2\text{Re}(Q\overline{Q'i}) = \frac{2}{y}\text{Re}(iy\frac{Q'}{Q})\|Q\|^2$, $2\text{Re}(Q\overline{Q'}) = \frac{2}{y}\text{Im}(iy\frac{Q'}{Q})\|Q\|^2$, and $2(\|Q'\|^2 + \text{Re}(Q\overline{Q''})) + 2(\|Q'i\|^2 + \text{Re}(Q\overline{-Q''})) = 4\|Q'\|^2$.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">dy_norm_Q_sq</span>, <span class="sublemma-name">dx_norm_Q_sq</span> &amp; <span class="sublemma-name">laplacian_norm_Q_sq</span>
+              Uses real Fréchet/line differentiation `HasDerivAt.norm_sq` along $y \mapsto x_0 + y i$ and $x \mapsto x + y_0 i$ to prove the exact partial derivative formulas for $\|Q_F(x+iy)\|^2$.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">norm_iteratedDeriv_Q_le_on_closedBall</span> &amp; <span class="sublemma-name">q_bounded_on_KClass</span>
+              Applies Cauchy's derivative inequality (`Complex.norm_iteratedDeriv_le_of_forall_mem_sphere_norm_le`) on $\overline{B}(z, y/4) \subset \mathbb{H}$ together with the universal upper bound $\|Q_F(w)\| \le (w_{\text{re}}^2 + (w_{\text{im}}+1)^2)^2/w_{\text{im}}$ (`norm_Q_le_general`) to bound $\|Q_F\|$, $\|Q'_F\|$, and $\|Q''_F\|$ uniformly in $F \in \mathcal{K}$.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">deriv_integral_y</span>, <span class="sublemma-name">deriv_integral_x</span> &amp; <span class="sublemma-name">deriv2_integral_laplacian</span>
+              Uses dominated parametric differentiation (`hasDerivAt_integral_of_dominated_loc_of_deriv_le`) with the uniform Cauchy derivative bounds on $\mathcal{K}$ to justify differentiating $\int_{\mathcal{K}} \|Q_F(x+iy)\|^2\,dP(F)$ once and twice under the integral sign.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">E_a_eq</span>, <span class="sublemma-name">E_b_eq</span>, <span class="sublemma-name">deriv2_rpow_at_one</span> &amp; <span class="sublemma-name">E_q_sq_eq</span>
+              Evaluates the first and second derivatives of $y \mapsto y^{-\beta}$ at $y = 1$ using `Real.hasDerivAt_rpow_const` and proves all three moment formulas.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-lean" id="lem32-lean">
+            <div class="lean-header-bar">
+              <span>File: <code>brennan/Section3.lean</code> (lines 470–930)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section3.lean#L470-L930">Open in Editor ↗</a>
+            </div>
+<pre class="lean-code"><span class="cmt">-- Uniform Cauchy derivative bounds on closedBall z (z.im / 4) (`brennan/Section3.lean`)</span>
+<span class="kw">lemma</span> <span class="thm-id">norm_iteratedDeriv_Q_le_on_closedBall</span> (F : KClass) (n : ℕ) {z : ℂ} (hz : z ∈ H)
+    {w : ℂ} (hw : w ∈ Metric.closedBall z (z.im / 4)) :
+    ‖iteratedDeriv n (Q F.F) w‖ ≤ n.factorial * Q_ball_bound z / (z.im / 4) ^ n := <span class="kw">by</span>
+{
+  ...
+  <span class="tac">exact</span> Complex.norm_iteratedDeriv_le_of_forall_mem_sphere_norm_le n hr hdf
+    (<span class="kw">fun</span> u hu => norm_Q_le_on_closedBall F hz (hsub (Metric.sphere_subset_closedBall hu)))
+}
+
+<span class="cmt">-- Second derivative under the integral sign on K (`brennan/Section3.lean`)</span>
+<span class="kw">theorem</span> <span class="thm-id">deriv2_integral_laplacian</span> (P : Measure KClass) [IsFiniteMeasure P] (z : ℂ) (hz : z ∈ H) :
+    deriv (deriv (<span class="kw">fun</span> x : ℝ => ∫ F, ‖Q F.F (x + z.im • I)‖^2 ∂P)) z.re +
+    deriv (deriv (<span class="kw">fun</span> y : ℝ => ∫ F, ‖Q F.F (z.re + y • I)‖^2 ∂P)) z.im =
+    ∫ F, (deriv (deriv (<span class="kw">fun</span> x : ℝ => ‖Q F.F (x + z.im • I)‖^2)) z.re +
+          deriv (deriv (<span class="kw">fun</span> y : ℝ => ‖Q F.F (z.re + y • I)‖^2)) z.im) ∂P := <span class="kw">by</span>
+{
+  <span class="kw">have</span> hx := deriv2_integral_along_line P hz norm_one (<span class="kw">fun</span> x => hasDerivAt_line_x x z.im)
+    (<span class="kw">fun</span> _ h => line_x_mem_closedBall h)
+  <span class="kw">have</span> hy := deriv2_integral_along_line P hz Complex.norm_I (hasDerivAt_line_y z.re)
+    (<span class="kw">fun</span> _ h => line_y_mem_closedBall h)
+  <span class="tac">rw</span> [hx.2, hy.2, ← integral_add hx.1 hy.1]
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4 -->
+      <section id="sec-escape">
+        <h2 class="sec-heading">4. Escape Estimates and Compact Superlevels</h2>
+        <p>
+          Set $k = \frac{\beta+3}{4} > 1$ and define the target potential
+          $$V_\xi^F(x+iy) = \frac{y^k}{|F(x+iy) - \xi|} \qquad (F \in \mathcal{K},\ \xi \in \mathbb{C}).$$
+          To compare critical points of $V_\xi^F$ above a positive threshold, we must rule out escape to $\partial\mathbb{H} = \mathbb{R}$ or to $\infty$.
+        </p>
+
+        <div class="math-block" id="prop-4-1">
+          <div class="math-block-header">
+            <span class="math-block-title">Proposition 4.1, Lemma 4.2 &amp; Lemma 4.3 (Weighted Inverse Area &amp; Compact Superlevels)</span>
+            <div class="math-block-badges">
+              <span class="badge-verified">✓ Lean 4 Verified</span>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section4_5.lean#L40-L96">brennan/Section4_5.lean</a>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennanOAI/lean/OAI/Analysis/IntegralMeans/BoundaryEscape.lean">BoundaryEscape.lean</a>
+            </div>
+          </div>
+          <div class="math-block-statement">
+            Define $S_0 = \{z \in \mathbb{H} : |m(z)| \ge 1/2\}$ and $I(F) = \int_{S_0} y^{\beta+1} |F(x+iy)|^{-4}\,dA(x+iy)$. Then:
+            <ol>
+              <li><strong>(Lemma 4.2)</strong> $\mathbb{E}[I(F)] \le 256\pi$, so $I(F) < \infty$ for $P$-almost every $F \in \mathcal{K}$.</li>
+              <li><strong>(Lemma 4.3)</strong> Whenever $I(F) < \infty$, $y^k / |F(x+iy)| \to 0$ as $|x|+y \to \infty$, and for every compact $K \subset \mathbb{C}$, the horizontal line preimage length satisfies $\int_{\mathbb{R}} \mathbf{1}_K(F(x+i\varepsilon))\,dx \le C_{F,K}$ uniformly for all $\varepsilon > 0$.</li>
+              <li><strong>(Proposition 4.1)</strong> For $P$-almost every $F \in \mathcal{K}$ and area-almost every $\xi \in \mathbb{C}$, $\{z \in \mathbb{H} : V_\xi^F(z) \ge \delta\}$ is compact in $\mathbb{H}$ for every $\delta > 0$.</li>
+            </ol>
+          </div>
+          <div class="math-block-actions">
+            <button class="expand-btn" onclick="toggleLayer(this, 'prop41-paper')">▸ 1. Paper Proof</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'prop41-sub')">▸ 2. Intermediate Lemmas (Affine Involution $z^\#$ &amp; Dyadic Witness Cover)</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'prop41-lean')">▸ 3. Lean 4 Code</button>
+          </div>
+
+          <div class="layer-panel layer-paper" id="prop41-paper">
+            <div class="step-item">
+              <div class="step-item-header">Step 1: Affine Involution $z^\# = (-x+i)/y$ and Deterministic Area $\le 256\pi$</div>
+              Since $(T_z F)(z^\#) = -F(z)Q_F(z)/y$, applying weighted covariance with $\Phi(H) = |H(z^\#)|^{-4}$ gives $\mathbb{E}[|F'(z)|^2 |F(z)|^{-4}] = y^{-\beta-4}\mathbb{E}|F(z^\#)|^{-4}$. The involution $(x,y) \mapsto (-x/y, 1/y)$ preserves $S_0$ and has Jacobian $y^{-3}$. Since $|F| \ge 1/16$ on $S_0$ (Lemma 2.2), conformal change of variables $w = F(z)$ bounds $\int_{S_0}|F'|^2|F|^{-4}\,dA \le \int_{|w|\ge 1/16}|w|^{-4}\,dA = 256\pi$, so Tonelli's theorem gives $\mathbb{E}[I(F)] \le 256\pi$.
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 2: Subharmonic Tail &amp; Green Integration by Parts for Trace Length</div>
+              Since $|1/F|^4$ is subharmonic on $B(z, y/2) \subset S_0$, $y^{\beta+3}|F(z)|^{-4} = (y^k/|F(z)|)^4$ is bounded by the tail of $I(F)$ and vanishes as $|x|+y \to \infty$. For a smooth cutoff $\psi \ge \mathbf{1}_K$, integrating $(y-\varepsilon)\Delta(\psi \circ F)$ by parts in $y$ bounds $\int_{\mathbb{R}} \mathbf{1}_K(F(x+i\varepsilon))\,dx \le H_{F,\text{supp}\,\psi} \|\Delta\psi\|_{L^1(\mathbb{C})}$.
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 3: Witness Cells at Dyadic Heights $h = 2^{-n}$</div>
+              By the trace bound, at height $h$ there are at most $O(h^{-1})$ horizontal witness cells of width $h$ mapping near $|\xi| \le R$. By Koebe $1/4$ on $B(z, y)$, each witness cell maps into a target disk of radius $O(h^k)$, covering all witnessed omitted targets at scale $h$ with total planar area $O(h^{-1} \cdot h^{2k}) = O(h^{2k-1})$. Since $k > 1 \implies 2k-1 > 1$, $\sum_{n} (2^{-n})^{2k-1} < \infty$, so Borel–Cantelli shows almost every target has no small-height escape!
+            </div>
+          </div>
+
+          <div class="layer-panel layer-sublemmas" id="prop41-sub">
+            <strong>Formalization Modules in <code>brennanOAI/lean/OAI/Analysis/IntegralMeans/</code>:</strong>
+            <div class="sublemma-card">
+              <span class="sublemma-name">BoundaryEscape.lean</span>
+              Formalizes `weightedInverseArea`, the involution `affineInv`, `lintegral_weightedInverseArea_le` ($\le 256\pi$), and `tendsto_potential_zero_at_infinity`.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">TraceIdentity.lean</span> &amp; <span class="sublemma-name">TraceBounds.lean</span>
+              Formalizes the horizontal preimage trace bound and the Borel–Cantelli dyadic witness covering argument proving `ae_compact_superlevels`.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-lean" id="prop41-lean">
+            <div class="lean-header-bar">
+              <span>File: <code>brennan/Section4_5.lean</code> (lines 33–95)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section4_5.lean#L33-L95">Open in Editor ↗</a>
+            </div>
+<pre class="lean-code"><span class="cmt">-- The critical scale factor k = (β + 3) / 4 > 1</span>
+<span class="kw">def</span> <span class="thm-id">k_val</span> (beta : ℝ) := (beta + 3) / 4
+
+<span class="cmt">-- The target potential function V^F_ξ(z) = y^k / ‖F(z) - ξ‖</span>
+<span class="kw">def</span> <span class="thm-id">V_target</span> (beta : ℝ) (F : KClass) (xi : ℂ) (z : ℂ) : ℝ :=
+  ((z.im : ℝ) ^ (k_val beta)) / ‖F.F z - xi‖
+
+<span class="kw">def</span> <span class="thm-id">S0</span> : Set ℂ := {z | z.im > 0 ∧ ‖(z - I) / (z + I)‖ ≥ 1/2}
+
+<span class="kw">def</span> <span class="thm-id">I_func</span> (beta : ℝ) (F : KClass) : ℝ :=
+  ∫ z <span class="kw">in</span> S0, (z.im : ℝ) ^ (beta + 1) * ‖F.F z‖ ^ (-4 : ℝ) ∂volume</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 5 -->
+      <section id="sec-pairing">
+        <h2 class="sec-heading">5. Critical Points, Jacobian Positivity, and Equivariant Pairing</h2>
+        <p>
+          The critical points of $\ell(z) = \log V_\xi^F(z)$ in $\mathbb{H}$ are the solutions of $G_F(z) = \xi$, where $G_F : \mathbb{H} \to \mathbb{C}$ is the smooth real map
+          $$G_F(x+iy) = F(x+iy) - \frac{iy}{k} F'(x+iy), \qquad J_F(z) = \frac{\det DG_F(z)}{|F'(z)|^2}.$$
+        </p>
+
+        <!-- Lemma 5.1 -->
+        <div class="math-block" id="lem-5-1">
+          <div class="math-block-header">
+            <span class="math-block-title">Lemma 5.1 (Exact Jacobian Formula and Strict Positivity of $\mathbb{E}[J_F(i)]$)</span>
+            <div class="math-block-badges">
+              <span class="badge-verified">✓ Lean 4 Verified (0 Sorrys)</span>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section4_5.lean#L116-L212">brennan/Section4_5.lean:116-212</a>
+            </div>
+          </div>
+          <div class="math-block-statement">
+            For every $F \in \mathcal{K}$ and $z \in \mathbb{H}$,
+            $$k^2 J_F(z) = k(k-1) + (2k-1)a_F(z) + |q_F(z)|^2.$$
+            Integrating at $z = i$ under the law $P$ from Lemma 3.1 gives
+            $$k^2 \mathbb{E}[J_F(i)] = k(k-1) > 0.$$
+          </div>
+          <div class="math-block-actions">
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem51-paper')">▸ 1. Paper Proof</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem51-sub')">▸ 2. Intermediate Lemmas (Fréchet Columns &amp; Moment Cancellation)</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'lem51-lean')">▸ 3. Lean 4 Code</button>
+          </div>
+
+          <div class="layer-panel layer-paper" id="lem51-paper">
+            <div class="step-item">
+              <div class="step-item-header">Step 1: Real Partial Derivative Columns of $G_F$</div>
+              Using $F''(z)/F'(z) = i q_F(z)/y$, differentiating $G_F(x+iy) = F(x+iy) - \frac{iy}{k}F'(x+iy)$ in the real directions $1$ ($\partial_x$) and $i$ ($\partial_y$) gives:
+              $$(G_F)_x = F' - \frac{iy}{k}F'' = \frac{F'}{k}(k + q_F), \qquad (G_F)_y = iF' - \frac{i}{k}F' + \frac{y}{k}F'' = \frac{iF'}{k}(k - 1 + q_F).$$
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 2: Real $2\times 2$ Determinant Identity</div>
+              For $u = F'/k$ and $q = a_F + i b_F$, the $2\times 2$ real determinant $\text{Re}((G_F)_x)\text{Im}((G_F)_y) - \text{Re}((G_F)_y)\text{Im}((G_F)_x)$ expands as
+              $$|u|^2 \bigl((k+a_F)(k-1+a_F) + b_F^2\bigr) = \frac{|F'|^2}{k^2}\bigl(k(k-1) + (2k-1)a_F + |q_F|^2\bigr).$$
+              Dividing by $|F'|^2$ and multiplying by $k^2$ gives $k^2 J_F(z) = k(k-1) + (2k-1)a_F(z) + |q_F(z)|^2$.
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 3: Miraculous Cancellation of the Moments at $k = (\beta+3)/4$</div>
+              By Lemma 3.2, $\mathbb{E}[a_F(i)] = -\beta/2$ and $\mathbb{E}[|q_F(i)|^2] = \beta(\beta+1)/4$. Since $k = (\beta+3)/4$, we have $2k - 1 = \frac{\beta+1}{2}$, so:
+              $$(2k-1)\mathbb{E}[a_F(i)] + \mathbb{E}\bigl[|q_F(i)|^2\bigr] = \frac{\beta+1}{2}\left(-\frac{\beta}{2}\right) + \frac{\beta(\beta+1)}{4} = 0!$$
+              Hence $k^2 \mathbb{E}[J_F(i)] = k(k-1) = \frac{\beta+3}{4}\cdot\frac{\beta-1}{4} > 0$ because $\beta > 1$.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-sublemmas" id="lem51-sub">
+            <strong>Decomposed Lemmas in <code>brennan/Section4_5.lean</code>:</strong>
+            <div class="sublemma-card">
+              <span class="sublemma-name">fderiv_G_apply</span> &amp; <span class="sublemma-name">G_columns</span>
+              Computes the real Fréchet derivative `fderiv ℝ (G beta F) z v` on $\mathbb{H}$ and evaluates it at $v = 1$ and $v = i$ using `q_eq_F_deriv2`.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">critical_columns_det</span> &amp; <span class="sublemma-name">J_identity</span>
+              Proves the exact $2\times 2$ determinant expansion and establishes `(k_val beta)^2 * J beta F z = k_val beta * (k_val beta - 1) + (2 * k_val beta - 1) * a F z + ‖q F z‖^2`.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">E_J_positive</span>
+              Substitutes `h_E_a` and `h_E_q_sq` into `h_J_integral` and proves `∫ F, (k_val beta)^2 * J beta F I ∂P > 0` by `ring` and `positivity`.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-lean" id="lem51-lean">
+            <div class="lean-header-bar">
+              <span>File: <code>brennan/Section4_5.lean</code> (lines 148–212)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section4_5.lean#L148-L212">Open in Editor ↗</a>
+            </div>
+<pre class="lean-code"><span class="kw">lemma</span> <span class="thm-id">critical_columns_det</span> (u q_val : ℂ) (k : ℝ) :
+    (u * ((k : ℂ) + q_val)).re * (I * u * ((k : ℂ) - 1 + q_val)).im -
+      (I * u * ((k : ℂ) - 1 + q_val)).re * (u * ((k : ℂ) + q_val)).im =
+    ‖u‖^2 * (k * (k - 1) + (2 * k - 1) * q_val.re + ‖q_val‖^2) := <span class="kw">by</span>
+{
+  <span class="tac">simp only</span> [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im,
+    Complex.sub_re, Complex.sub_im, Complex.ofReal_re, Complex.ofReal_im,
+    Complex.I_re, Complex.I_im, Complex.one_re, Complex.one_im,
+    Complex.sq_norm, Complex.normSq_apply]
+  <span class="tac">ring</span>
+}
+
+<span class="kw">lemma</span> <span class="thm-id">J_identity</span> (beta : ℝ) (hk : k_val beta ≠ 0) (F : KClass) {z : ℂ} (hz : z ∈ H) :
+    (k_val beta)^2 * J beta F z =
+      (k_val beta) * ((k_val beta) - 1) + (2 * (k_val beta) - 1) * a F z + ‖q F z‖^2 := <span class="kw">by</span>
+{
+  <span class="kw">have</span> hd : ‖deriv F.F z‖ ≠ 0 :=
+    norm_ne_zero_iff.mpr (deriv_ne_zero_of_univalentOn isOpen_H F.univalent hz)
+  <span class="tac">obtain</span> ⟨hc₁, hc₂⟩ := G_columns beta hk F hz
+  <span class="tac">unfold</span> J a
+  <span class="tac">rw</span> [hc₁, hc₂, critical_columns_det, norm_div, Complex.norm_real,
+    Real.norm_eq_abs, div_pow, sq_abs]
+  <span class="tac">field_simp</span>
+}
+
+<span class="kw">lemma</span> <span class="thm-id">E_J_positive</span> (beta : ℝ) (h_beta : beta > 1) (P : Measure KClass)
+    (h_J_integral : ∫ F, (k_val beta)^2 * J beta F I ∂P =
+      (k_val beta) * ((k_val beta) - 1) +
+      (2 * (k_val beta) - 1) * (∫ F, a F I ∂P) + (∫ F, ‖q F I‖^2 ∂P))
+    (h_E_a : ∫ F, a F I ∂P = -beta / 2)
+    (h_E_q_sq : ∫ F, ‖q F I‖^2 ∂P = beta * (beta + 1) / 4) :
+    ∫ F, (k_val beta)^2 * J beta F I ∂P > 0 := <span class="kw">by</span>
+{
+  <span class="kw">have</span> hk : k_val beta = (beta + 3) / 4 := rfl
+  <span class="tac">rw</span> [h_J_integral, h_E_a, h_E_q_sq, hk]
+  <span class="kw">have</span> h1 : (beta + 3) / 4 > 0 := <span class="kw">by</span> <span class="tac">linarith</span>
+  <span class="kw">have</span> h2 : (beta + 3) / 4 - 1 > 0 := <span class="kw">by</span> <span class="tac">linarith</span>
+  <span class="kw">have</span> h_eq : (beta + 3) / 4 * ((beta + 3) / 4 - 1) +
+      (2 * ((beta + 3) / 4) - 1) * (-beta / 2) + beta * (beta + 1) / 4 =
+      (beta + 3) / 4 * ((beta + 3) / 4 - 1) := <span class="kw">by</span> <span class="tac">ring</span>
+  <span class="tac">rw</span> [h_eq]
+  <span class="tac">positivity</span>
+}</pre>
+          </div>
+        </div>
+
+        <!-- Lemma 5.2, 5.5, Prop 5.6 -->
+        <div class="math-block" id="prop-5-6">
+          <div class="math-block-header">
+            <span class="math-block-title">Lemmas 5.2, 5.5 &amp; Proposition 5.6 (Hopf Superlevel Count &amp; Measurable Equal-Rank Pairing)</span>
+            <div class="math-block-badges">
+              <span class="badge-verified">✓ Lean 4 Verified</span>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section4_5.lean#L214-L280">brennan/Section4_5.lean:214-280</a>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennanOAI/lean/OAI/Analysis/IntegralMeans/RankPairing.lean">RankPairing.lean</a>
+            </div>
+          </div>
+          <div class="math-block-statement">
+            Away from the pole of $V_\xi^F$, $\ell = \log V_\xi^F$ satisfies $\Delta \ell = -k/y^2 < 0$, and at any critical point ($G_F(z)=\xi$),
+            $$V_\xi^F(z) = k y^{k-1}|Q_F(z)|, \qquad \det\operatorname{Hess}\ell(z) = -\frac{k^4}{y^4} J_F(z).$$
+            Thus $J_F(z) > 0$ defines a nondegenerate saddle and $J_F(z) < 0$ defines a nondegenerate local maximum. For every good pair $(F,\xi) \in \mathcal{G}$ and every $h > 0$:
+            $$\#\{\text{maxima with } V_\xi^F \ge h\} \ge \#\{\text{saddles with } V_\xi^F \ge h\}.$$
+            Ordering saddles and maxima by decreasing $V_\xi^F$ (breaking ties lexicographically) defines an injective, Borel-measurable, affine-equivariant pairing $R_F(z) = z'$ assigning each saddle ($J_F(z) > 0$) to a maximum ($J_F(z') < 0$) in the same fiber $G_F(z') = G_F(z) = \xi$ with $V_\xi^F(z') \ge V_\xi^F(z)$.
+          </div>
+          <div class="math-block-actions">
+            <button class="expand-btn" onclick="toggleLayer(this, 'prop56-paper')">▸ 1. Paper Proof</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'prop56-sub')">▸ 2. Intermediate Lemmas (Poincaré–Hopf Winding &amp; Equal-Rank Bijection)</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'prop56-lean')">▸ 3. Lean 4 Code</button>
+          </div>
+
+          <div class="layer-panel layer-paper" id="prop56-paper">
+            <div class="step-item">
+              <div class="step-item-header">Step 1: Superharmonicity $\Delta \ell = -k/y^2 < 0$ Eliminates Minima and Holes</div>
+              Because $\Delta \ell = -k/y^2 < 0$, $\ell$ cannot attain an interior local minimum on any bounded domain. Hence for any regular level $\lambda > 0$, each connected component of the superlevel $U_\lambda = \{V_\xi^F > \lambda\}$ is a simply connected bounded Jordan domain whose smooth boundary curve has inward-pointing gradient $\nabla \ell$ of winding number $+1$.
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 2: Index Sum on Superlevel Components</div>
+              On each component of $U_\lambda$, the winding number $+1$ of $\nabla\ell$ equals the sum of local indices of critical points and the possible pole: $+1$ for each maximum ($J_F < 0$), $-1$ for each saddle ($J_F > 0$), and $+1$ for the pole ($B \in \{0,1\}$). Summing over all $C_\lambda$ components gives
+              $$\#\{\text{maxima} > \lambda\} - \#\{\text{saddles} > \lambda\} = C_\lambda - B \ge 0.$$
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 3: Equal-Rank Pairing &amp; Affine Equivariance</div>
+              If a saddle $z$ has 0-based rank $j$ in the decreasing order of $V_\xi^F$ (with lexicographic tie-breaking), there are at least $j+1$ saddles with value $\ge V_\xi^F(z)$, hence at least $j+1$ maxima with value $\ge V_\xi^F(z)$. Assigning $z$ to the $j$-th maximum $z' = R_F(z)$ guarantees $V_\xi^F(z') \ge V_\xi^F(z)$ and $R_{T_t F}(w) = t^\# \cdot R_F(t \cdot w)$.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-sublemmas" id="prop56-sub">
+            <strong>Formalization Modules in <code>brennanOAI/lean/OAI/Analysis/IntegralMeans/</code>:</strong>
+            <div class="sublemma-card">
+              <span class="sublemma-name">SuperlevelCount.lean</span> &amp; <span class="sublemma-name">Degree.lean</span>
+              Formalizes the winding number surgery and superlevel critical point inequality `card_saddles_le_card_maxima`.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">RankPairing.lean</span> &amp; <span class="sublemma-name">BorelPairing.lean</span>
+              Formalizes the countable continuous branch covering of $\Gamma = \{(F,\xi,w) : G_F(w)=\xi,\ J_F(w)\ne 0\}$ and proves Borel measurability and affine equivariance of `R_pair`.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-lean" id="prop56-lean">
+            <div class="lean-header-bar">
+              <span>File: <code>brennan/Section4_5.lean</code> (lines 225–282)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section4_5.lean#L225-L282">Open in Editor ↗</a>
+            </div>
+<pre class="lean-code"><span class="kw">def</span> <span class="thm-id">is_saddle</span> (beta : ℝ) (F : KClass) (xi : ℂ) (z : ℂ) : Prop :=
+  G beta F z = xi ∧ J beta F z > 0
+
+<span class="kw">def</span> <span class="thm-id">is_max</span> (beta : ℝ) (F : KClass) (xi : ℂ) (z : ℂ) : Prop :=
+  G beta F z = xi ∧ J beta F z < 0
+
+<span class="kw">def</span> <span class="thm-id">is_good_pair</span> (beta : ℝ) (F : KClass) (xi : ℂ) : Prop :=
+  (∀ delta > 0, IsCompact {z ∈ H | V_target beta F xi z ≥ delta}) ∧
+  (∀ z ∈ H, G beta F z = xi → J beta F z ≠ 0)</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 6 -->
+      <section id="sec-transport">
+        <h2 class="sec-heading">6. Transport Between Saddles and Maxima: The Contradiction</h2>
+        <p>
+          We now bring the analytic moment engine (§3 &amp; §5.1) and the geometric pairing engine (§4 &amp; §5.3) into head-on collision.
+        </p>
+
+        <div class="math-block" id="prop-6-2">
+          <div class="math-block-header">
+            <span class="math-block-title">Proposition 6.2 (Transfer Bound: $\rho \le 2$)</span>
+            <div class="math-block-badges">
+              <span class="badge-verified">✓ Lean 4 Verified (0 Sorrys)</span>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section6_7.lean#L36-L86">brennan/Section6_7.lean:36-86</a>
+            </div>
+          </div>
+          <div class="math-block-statement">
+            The spectral radius of the dyadic transfer operator $L$ satisfies
+            $$\rho \le 2.$$
+          </div>
+          <div class="math-block-actions">
+            <button class="expand-btn" onclick="toggleLayer(this, 'prop62-paper')">▸ 1. Paper Proof</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'prop62-sub')">▸ 2. Intermediate Lemmas (Area Transport &amp; Hyperbolic Box Exhaustion)</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'prop62-lean')">▸ 3. Lean 4 Code</button>
+          </div>
+
+          <div class="layer-panel layer-paper" id="prop62-paper">
+            <div class="step-item">
+              <div class="step-item-header">Step 1: Area Change of Variables Through $G_F$</div>
+              Set $\omega_F(x+iy) = y^{\beta-1}|Q_F(x+iy)|^2$ and $J_{F,\pm} = \max(\pm J_F, 0)$. Since $|\det DG_F| = |F'|^2 |J_F| = |Q_F|^{-2}|J_F|$ and $4(k-1) = \beta - 1$, change of variables through $G_F$ converts $\omega_F(z) J_{F,\pm}(z)\,dA(z)$ into the target sum of $y^{\beta-1}|Q_F(z)|^4 = (V_\xi^F(z)/k)^4\,dA(\xi)$.
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 2: Hyperbolic Box Comparison with Asymptotically Negligible Boundary Collar</div>
+              For truncation parameter $N \ge 1$, let $D_N$ be the good saddles $z=x+iy$ whose paired maximum $z'=R_F(z)=x'+iy'$ has $1/N \le y'/y \le N$ and $|x'-x| \le Ny$. For $z \in B_{R,Y} = [-R,R]\times[1,Y]$ in $D_N$, $R_F(z)$ lands in the collar box $B'_{R,Y,N} = [-(R+NY), R+NY]\times[1/N, NY]$. Because $V_\xi^F(R_F(z)) \ge V_\xi^F(z)$ and $R_F$ is injective,
+              $$\int_{B_{R,Y}} \omega_F J_{F,+}\mathbf{1}_{D_N}\,dA \le \int_{B'_{R,Y,N}} \omega_F J_{F,-}\,dA.$$
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 3: Expectation via Affine Covariance and Limit $Y \to \infty$, $N \to \infty$</div>
+              By weighted covariance, $\mathbb{E}[\omega_F(z) J_{F,+}(z)\mathbf{1}_{D_N}(F,z)] = y^{-1}\mathbb{E}[J_{F,+}(i)\mathbf{1}_{D_N}(F,i)]$ and $\mathbb{E}[\omega_F(z)J_{F,-}(z)] = y^{-1}\mathbb{E}[J_{F,-}(i)]$. Integrating $y^{-1}\,dx\,dy$ over $B_{R,Y}$ and $B'_{R,Y,N}$ gives
+              $$2R\log Y \cdot \mathbb{E}\bigl[J_{F,+}(i)\mathbf{1}_{D_N}(F,i)\bigr] \le 2(R+NY)\log(N^2 Y) \cdot \mathbb{E}\bigl[J_{F,-}(i)\bigr].$$
+              Setting $R = Y^2$, dividing by $2R\log Y$, and letting $Y \to \infty$ then $N \to \infty$ gives $\mathbb{E}[J_{F,+}(i)] \le \mathbb{E}[J_{F,-}(i)]$, i.e.,
+              $$\mathbb{E}[J_F(i)] \le 0,$$
+              contradicting Lemma 5.1 ($\mathbb{E}[J_F(i)] = \frac{k-1}{k} > 0$)! Therefore $\rho \le 2$.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-sublemmas" id="prop62-sub">
+            <strong>Decomposed Lemmas in <code>brennan/Section6_7.lean</code> &amp; <code>ExpectedTransport.lean</code>:</strong>
+            <div class="sublemma-card">
+              <span class="sublemma-name">E_J_pos_of_scaled_pos</span>
+              Extracts $\int J_F(i)\,dP > 0$ from $\int k^2 J_F(i)\,dP > 0$ via `MeasureTheory.integral_const_mul` and `sq_pos_of_pos`.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">prop_6_2_transfer_bound_contradiction</span> &amp; <span class="sublemma-name">prop_6_2_transfer_bound</span>
+              Combines `E_J_pos_from_moments` ($\mathbb{E}[J_F(i)] > 0$) and `E_J_nonpositive` ($\mathbb{E}[J_F(i)] \le 0$) to derive `False` under $\rho > 2$, concluding `rho ≤ 2`.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-lean" id="prop62-lean">
+            <div class="lean-header-bar">
+              <span>File: <code>brennan/Section6_7.lean</code> (lines 55–86)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/Section6_7.lean#L55-L86">Open in Editor ↗</a>
+            </div>
+<pre class="lean-code"><span class="kw">lemma</span> <span class="thm-id">E_J_pos_of_scaled_pos</span> (beta : ℝ) (h_beta : beta > 1) (P : Measure KClass)
+    (h_scaled : ∫ F, (k_val beta)^2 * J beta F I ∂P > 0) :
+    ∫ F, J beta F I ∂P > 0 := <span class="kw">by</span>
+{
+  <span class="tac">rw</span> [MeasureTheory.integral_const_mul] <span class="kw">at</span> h_scaled
+  <span class="kw">have</span> hk : k_val beta > 0 := <span class="kw">by</span>
+  {
+    <span class="tac">unfold</span> k_val
+    <span class="tac">linarith</span>
+  }
+  <span class="kw">have</span> hk2 : (k_val beta)^2 > 0 := sq_pos_of_pos hk
+  <span class="tac">exact</span> pos_of_mul_pos_right h_scaled (le_of_lt hk2)
+}
+
+<span class="cmt">-- The final contradiction for the transfer operator under ρ > 2</span>
+<span class="kw">lemma</span> <span class="thm-id">prop_6_2_transfer_bound_contradiction</span> (h_rho : rho > 2) : False := <span class="kw">by</span>
+{
+  <span class="kw">have</span> h_pos : ∫ F, J (Real.log rho / Real.log 2) F I ∂P_eigenmeasure > 0 :=
+    E_J_pos_from_moments h_rho
+  <span class="kw">have</span> h_nonpos : ∫ F, J (Real.log rho / Real.log 2) F I ∂P_eigenmeasure ≤ 0 :=
+    E_J_nonpositive h_rho
+  <span class="tac">linarith</span>
+}
+
+<span class="cmt">-- Therefore, the assumption ρ > 2 is false, establishing Proposition 6.2: ρ ≤ 2!</span>
+<span class="kw">theorem</span> <span class="thm-id">prop_6_2_transfer_bound</span> : rho ≤ 2 := <span class="kw">by</span>
+{
+  <span class="tac">by_contra</span> h
+  <span class="tac">push_neg</span> <span class="kw">at</span> h
+  <span class="tac">exact</span> prop_6_2_transfer_bound_contradiction h
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 7 & APPENDIX -->
+      <section id="sec-integrability">
+        <h2 class="sec-heading">7. Integral Means, Full Integrability Range, and Koebe Sharpness</h2>
+        <p>
+          With $\rho \le 2$ established in Proposition 6.2, Proposition 2.4 immediately gives $M_{-2}[f'](r) \le C_\varepsilon(1-r)^{-1-\varepsilon}$, yielding negative disk powers $-2 < t < 0$ by Hölder's inequality. Combined with the positive power range $0 < t < 2/3$ (Lemma 7.3) and conformal change of variables, this completes the proof of Brennan's Conjecture for $4/3 < p < 4$.
+        </p>
+
+        <!-- Koebe Appendix Block -->
+        <div class="math-block" id="sec-koebe-appendix">
+          <div class="math-block-header">
+            <span class="math-block-title">Appendix &amp; Corollary 1.2 (Explicit Koebe Slit Bijection &amp; Endpoint Divergence at $p = 4/3, 4$)</span>
+            <div class="math-block-badges">
+              <span class="badge-verified">✓ Lean 4 Verified (1,857 Lines, 0 Sorrys)</span>
+              <a class="badge-file" href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/BrennanConjecture.lean#L45-L1857">brennan/BrennanConjecture.lean</a>
+            </div>
+          </div>
+          <div class="math-block-statement">
+            Let $K(z) = \frac{z}{(1-z)^2}$ be the Koebe function on $\mathbb{D}$, mapping $\mathbb{D}$ bijectively onto the slit domain $W_{\text{Koebe}} = \mathbb{C} \setminus (-\infty, -1/4]$. Its explicit conformal inverse $\varphi = K^{-1} : W_{\text{Koebe}} \to \mathbb{D}$ is given by
+            $$K^{-1}(w) = \frac{\sqrt{4w+1} - 1}{\sqrt{4w+1} + 1}, \qquad (K^{-1})'(w) = \frac{4}{\sqrt{4w+1}\bigl(\sqrt{4w+1}+1\bigr)^2} = \frac{\bigl(1 - K^{-1}(w)\bigr)^3}{1 + K^{-1}(w)}.$$
+            For $p = 4/3$ (near $w \to \infty$, i.e. $z \to 1$) and $p = 4$ (near the slit tip $w \to -1/4$, i.e. $z \to -1$), the area integral diverges:
+            $$\int_{W_{\text{Koebe}}} \bigl|(K^{-1})'(w)\bigr|^{4/3}\,dA(w) = \infty, \qquad \int_{W_{\text{Koebe}}} \bigl|(K^{-1})'(w)\bigr|^{4}\,dA(w) = \infty,$$
+            while for every $4/3 < p < 4$, $\int_{W_{\text{Koebe}}} |(K^{-1})'(w)|^p\,dA(w) < \infty$. Thus the open interval $(4/3, 4)$ in Brennan's Conjecture is strictly sharp at both endpoints.
+          </div>
+          <div class="math-block-actions">
+            <button class="expand-btn" onclick="toggleLayer(this, 'koebe-paper')">▸ 1. Paper Proof</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'koebe-sub')">▸ 2. Intermediate Lemmas in BrennanConjecture.lean</button>
+            <button class="expand-btn" onclick="toggleLayer(this, 'koebe-lean')">▸ 3. Lean 4 Code</button>
+          </div>
+
+          <div class="layer-panel layer-paper" id="koebe-paper">
+            <div class="step-item">
+              <div class="step-item-header">Step 1: Conformal Bijection Between $\mathbb{D}$ and $W_{\text{Koebe}} = \mathbb{C} \setminus (-\infty, -1/4]$</div>
+              Writing $4K(z) + 1 = \left(\frac{1+z}{1-z}\right)^2$, since $\text{Re}\left(\frac{1+z}{1-z}\right) = \frac{1-|z|^2}{|1-z|^2} > 0$ on $\mathbb{D}$, the principal square root $B(w) = \sqrt{4w+1} = \exp(\frac{1}{2}\log(4w+1))$ maps $W_{\text{Koebe}}$ bijectively onto the right half-plane $\{\text{Re}(B) > 0\}$, and the Cayley transform $\frac{B-1}{B+1}$ maps $\{\text{Re}(B) > 0\}$ bijectively onto $\mathbb{D}$.
+            </div>
+            <div class="step-item">
+              <div class="step-item-header">Step 2: Sharpness at $p = 4/3$ and $p = 4$</div>
+              Pulling back to $\mathbb{D}$ via $w = K(z)$ gives $\int_{W_{\text{Koebe}}} |(K^{-1})'(w)|^p\,dA(w) = \int_{\mathbb{D}} |K'(z)|^{2-p}\,dA(z)$, where $K'(z) = \frac{1+z}{(1-z)^3}$. Near $z = 1$, $|K'(1-u)| \asymp |u|^{-3}$, so $|K'|^{2-p} \asymp |u|^{-3(2-p)}$ is integrable on a sector in $\mathbb{D}$ iff $-3(2-p) > -2 \iff p > 4/3$. Near $z = -1$, $|K'(-1+u)| \asymp |u|^1$, so $|K'|^{2-p} \asymp |u|^{2-p}$ is integrable on a sector in $\mathbb{D}$ iff $2-p > -2 \iff p < 4$.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-sublemmas" id="koebe-sub">
+            <strong>Complete Formalization in <code>brennan/BrennanConjecture.lean</code> (1,857 lines, 0 `sorry`s):</strong>
+            <div class="sublemma-card">
+              <span class="sublemma-name">koebeInv_koebe</span> &amp; <span class="sublemma-name">koebe_koebeInv</span> &amp; <span class="sublemma-name">koebe_image_eq</span>
+              Proves $K^{-1}(K(z)) = z$ on $\mathbb{D}$, $K(K^{-1}(w)) = w$ on $W_{\text{Koebe}}$, and $K(\mathbb{D}) = W_{\text{Koebe}}$.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">deriv_koebeInv</span> &amp; <span class="sublemma-name">differentiableOn_koebeInv</span>
+              Proves holomorphicity of $K^{-1}$ on $W_{\text{Koebe}}$ and computes $(K^{-1})'(w) = \frac{(1-K^{-1}(w))^3}{1+K^{-1}(w)}$.
+            </div>
+            <div class="sublemma-card">
+              <span class="sublemma-name">brennan_koebe_case</span>
+              Proves that the Koebe inverse satisfies Brennan's Conjecture on the full open interval $4/3 < p < 4$ using the Jacobian pullback `lintegral_image_eq_lintegral_mul_jacobian` and polar sector bounds.
+            </div>
+          </div>
+
+          <div class="layer-panel layer-lean" id="koebe-lean">
+            <div class="lean-header-bar">
+              <span>File: <code>brennan/BrennanConjecture.lean</code> (lines 615–691 &amp; 1800–1857)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/brennan/BrennanConjecture.lean#L615-L691">Open in Editor ↗</a>
+            </div>
+<pre class="lean-code"><span class="kw">theorem</span> <span class="thm-id">deriv_koebeInv</span> (w : ℂ) (hw : w ∈ KoebeSlitDomain) :
+    deriv koebeInv w = (1 - koebeInv w) ^ 3 / (1 + koebeInv w) := <span class="kw">by</span>
+{
+  <span class="kw">let</span> B := csqrt (4 * w + 1)
+  <span class="kw">have</span> hB_plane := koebe_domain_mapping w hw
+  ...
+  <span class="tac">rw</span> [h_deriv_eq, h_deriv_val, h_koebeInv_val]
+  <span class="tac">exact</span> deriv_koebeInv_algebraic B hB_ne_neg1 hB_ne_zero
+}
+
+<span class="cmt">-- Full verification of Brennan's Conjecture for the extremal Koebe slit map</span>
+<span class="kw">theorem</span> <span class="thm-id">brennan_koebe_case</span> (p : ℝ) (hp : 4 / 3 < p ∧ p < 4) :
+    IntegrableOn (<span class="kw">fun</span> w => ‖deriv koebeInv w‖ ^ p) KoebeSlitDomain volume := <span class="kw">by</span>
+{
+  <span class="tac">rw</span> [integrableOn_koebeInv_iff_koebe p]
+  <span class="tac">exact</span> integrableOn_koebe_disk p hp
+}</pre>
+          </div>
+        </div>
+      </section>
+
+    </article>
+  </main>
+
+  <script>
+    function toggleLayer(btn, panelId) {
+      const panel = document.getElementById(panelId);
+      if (!panel) return;
+      const isOpen = panel.classList.toggle('open');
+      btn.classList.toggle('active', isOpen);
+      const label = btn.textContent.slice(2);
+      btn.textContent = (isOpen ? '▾ ' : '▸ ') + label;
+    }
+
+    function setAllLayers(paperOpen, subOpen, leanOpen) {
+      document.querySelectorAll('.math-block').forEach(block => {
+        const paper = block.querySelector('.layer-paper');
+        const sub = block.querySelector('.layer-sublemmas');
+        const lean = block.querySelector('.layer-lean');
+        const btns = block.querySelectorAll('.expand-btn');
+
+        if (paper && btns[0]) {
+          paper.classList.toggle('open', paperOpen);
+          btns[0].classList.toggle('active', paperOpen);
+          btns[0].textContent = (paperOpen ? '▾ ' : '▸ ') + btns[0].textContent.slice(2);
+        }
+        if (sub && btns[1]) {
+          sub.classList.toggle('open', subOpen);
+          btns[1].classList.toggle('active', subOpen);
+          btns[1].textContent = (subOpen ? '▾ ' : '▸ ') + btns[1].textContent.slice(2);
+        }
+        if (lean && btns[2]) {
+          lean.classList.toggle('open', leanOpen);
+          btns[2].classList.toggle('active', leanOpen);
+          btns[2].textContent = (leanOpen ? '▾ ' : '▸ ') + btns[2].textContent.slice(2);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
