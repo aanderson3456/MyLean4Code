@@ -1,0 +1,948 @@
+\documentclass[11pt,reqno]{amsart}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage[colorlinks=true,linkcolor=blue!70!black,citecolor=green!50!black,urlcolor=blue!70!black]{hyperref}
+
+\definecolor{codebg}{rgb}{0.97,0.97,0.98}
+\definecolor{codeframe}{rgb}{0.82,0.82,0.86}
+\definecolor{keywordcolor}{rgb}{0.12,0.28,0.68}
+\definecolor{commentcolor}{rgb}{0.35,0.45,0.35}
+
+\lstset{
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{keywordcolor}\bfseries,
+  commentstyle=\color{commentcolor}\itshape,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  upquote=true,
+  literate=
+    {ℝ}{{$\mathbb{R}$}}1
+    {ℂ}{{$\mathbb{C}$}}1
+    {ℕ}{{$\mathbb{N}$}}1
+    {ℤ}{{$\mathbb{Z}$}}1
+    {∀}{{$\forall$}}1
+    {∃}{{$\exists$}}1
+    {∈}{{$\in$}}1
+    {∉}{{$\notin$}}1
+    {⊆}{{$\subseteq$}}1
+    {∩}{{$\cap$}}1
+    {∪}{{$\cup$}}1
+    {⋃}{{$\bigcup$}}1
+    {→}{{$\to$}}1
+    {↦}{{$\mapsto$}}1
+    {↔}{{$\leftrightarrow$}}1
+    {≤}{{$\le$}}1
+    {≥}{{$\ge$}}1
+    {≠}{{$\ne$}}1
+    {‖}{{$\|$}}1
+    {∂}{{$\partial$}}1
+    {∫}{{$\int$}}1
+    {∑}{{$\sum$}}1
+    {⊤}{{$\top$}}1
+    {∞}{{$\infty$}}1
+    {α}{{$\alpha$}}1
+    {β}{{$\beta$}}1
+    {γ}{{$\gamma$}}1
+    {δ}{{$\delta$}}1
+    {ε}{{$\varepsilon$}}1
+    {ζ}{{$\zeta$}}1
+    {η}{{$\eta$}}1
+    {θ}{{$\theta$}}1
+    {λ}{{$\lambda$}}1
+    {μ}{{$\mu$}}1
+    {ν}{{$\nu$}}1
+    {ξ}{{$\xi$}}1
+    {π}{{$\pi$}}1
+    {ρ}{{$\rho$}}1
+    {σ}{{$\sigma$}}1
+    {τ}{{$\tau$}}1
+    {φ}{{$\varphi$}}1
+    {χ}{{$\chi$}}1
+    {ψ}{{$\psi$}}1
+    {ω}{{$\omega$}}1
+    {Φ}{{$\Phi$}}1
+    {Ψ}{{$\Psi$}}1
+    {Ω}{{$\Omega$}}1
+    {∘}{{$\circ$}}1
+    {•}{{$\bullet$}}1
+    {×}{{$\times$}}1
+    {∧}{{$\land$}}1
+    {∨}{{$\lor$}}1
+    {⟨}{{$\langle$}}1
+    {⟩}{{$\rangle$}}1
+    {⁻}{{$^{-}$}}1
+    {¹}{{$^{1}$}}1
+    {₁}{{$_1$}}1
+    {₂}{{$_2$}}1
+    {₃}{{$_3$}}1
+    {₄}{{$_4$}}1
+    {₀}{{$_0$}}1
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\D}{\mathbb{D}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\uhp}{\mathbb{H}}
+\newcommand{\Kclass}{\mathcal{K}}
+\newcommand{\Sclass}{\mathcal{S}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\ImPart}{\operatorname{Im}}
+\newcommand{\RePart}{\operatorname{Re}}
+\newcommand{\Jac}{\operatorname{Jac}}
+\newcommand{\detR}{\det_{\R}}
+\newcommand{\wind}{\operatorname{wind}}
+\newcommand{\ind}{\operatorname{Ind}}
+
+\title[Brennan's Conjecture Following the Lean 4 Formalization]{Brennan's Conjecture and Sharp Inverse-Square Integral Means:\\ A Reverse-Formalization Exposition of the \texttt{OAI.Analysis.IntegralMeans} Lean 4 Architecture}
+\author{Reverse-Formalized from \texttt{OAI/Analysis/IntegralMeans} (Lean 4 / Mathlib)}
+\date{\today}
+
+\begin{document}
+
+\begin{abstract}
+We present a self-contained mathematical exposition of the proof of Brennan's Conjecture and the sharp inverse-square integral means identity $B(-2)=1$ that follows the exact module DAG, definitions, lemmas, and theorem signatures of the 47-file, 14,759-line Lean~4 formalization in \texttt{OAI.Analysis.IntegralMeans}. Unlike a traditional human paper that appeals to high-level topological and analytic machinery---such as Montel's theorem, Hurwitz's theorem, Sard's theorem, the Jordan Curve Theorem, Stokes' theorem on punctured domains, and Lusin--Novikov measurable selection---the Lean~4 formalization introduces six systematic structural bypasses that reduce every step to constructive Mathlib primitives. We document each formal definition and theorem alongside its exact Lean~4 code and explain the formal bypasses in complete mathematical detail.
+\end{abstract}
+
+\maketitle
+\tableofcontents
+
+%==============================================================================
+\section{Introduction and Formal Architecture}
+%==============================================================================
+
+\subsection{Statement of Main Theorems in \texttt{Model.lean}, \texttt{Main.lean}, \texttt{SharpModel.lean}, and \texttt{SharpEndpoints.lean}}
+
+Let $\D = \{z \in \C : \|z\| < 1\}$ be the open unit disk. A function $f : \C \to \C$ is univalent on an open set $U \subseteq \C$ if it is complex differentiable on $U$ and injective on $U$. The normalized schlicht class $\Sclass$ consists of univalent functions on $\D$ satisfying $f(0)=0$ and $f'(0)=1$.
+
+\begin{itemize}
+\item \textbf{Core Analytic Model and Universal Spectrum} ($f, \varphi : \C \to \C$, $U, W \subseteq \C$, $t, r, p \in \R$):
+\begin{lstlisting}[language=Caml]
+def disk : Set ℂ := Metric.ball (0 : ℂ) 1
+
+def UnivalentOn (f : ℂ → ℂ) (U : Set ℂ) : Prop :=
+  DifferentiableOn ℂ f U ∧ InjOn f U
+
+def Schlicht (f : ℂ → ℂ) : Prop :=
+  UnivalentOn f disk ∧ f 0 = 0 ∧ deriv f 0 = 1
+
+def integralMean (f : ℂ → ℂ) (t r : ℝ) : ℝ :=
+  (2 * Real.pi)⁻¹ * ∫ θ in -Real.pi..Real.pi,
+    ‖deriv f ((r : ℂ) * Complex.exp ((θ : ℂ) * Complex.I))‖ ^ t
+
+def beta (f : ℂ → ℂ) (t : ℝ) : EReal :=
+  Filter.limsup (fun r : ℝ =>
+    ((Real.log (integralMean f t r) / Real.log (1 / (1 - r)) : ℝ) : EReal))
+    (nhdsWithin 1 (Iio 1))
+
+def spectrum (t : ℝ) : EReal :=
+  sSup {b : EReal | ∃ f : ℂ → ℂ, Schlicht f ∧ beta f t = b}
+
+def ConformalMapToDisk (W : Set ℂ) (φ : ℂ → ℂ) : Prop :=
+  IsOpen W ∧ DifferentiableOn ℂ φ W ∧ BijOn φ W disk
+\end{lstlisting}
+Mathematically, for $f \in \Sclass$, $t \in \R$, and $r \in (0,1)$, the radial integral mean, growth exponent, and universal integral means spectrum are defined in $\overline{\R}$ (`EReal`) by
+\[
+M_t(f,r) := \frac{1}{2\pi}\int_{-\pi}^{\pi} |f'(r e^{i\theta})|^t\,d\theta,
+\qquad
+\beta_f(t) := \limsup_{r \to 1^-} \frac{\log M_t(f,r)}{\log \frac{1}{1-r}},
+\qquad
+B(t) := \sup_{f \in \Sclass} \beta_f(t).
+\]
+
+\item \textbf{Main Theorems in \texttt{Main.lean} and \texttt{SharpEndpoints.lean}} ($W \subseteq \C$, $\varphi : \C \to \C$, $p, t \in \R$):
+\begin{lstlisting}[language=Caml]
+theorem inverse_square_spectrum : spectrum (-2) = 1 :=
+  inverse_spectrum_eq_one
+
+theorem brennan_conjecture {W : Set ℂ} {φ : ℂ → ℂ}
+    (hφ : ConformalMapToDisk W φ) {p : ℝ}
+    (hp1 : 4 / 3 < p) (hp2 : p < 4) :
+    IntegrableOn (fun z => ‖deriv φ z‖ ^ p) W volume :=
+  conformal_domain_area hφ.1 hφ.2.1 hφ.2.2 hp1 hp2
+
+theorem sharp_schlicht_area {t : ℝ} :
+    (∀ f : ℂ → ℂ, Schlicht f →
+      IntegrableOn (fun z => ‖deriv f z‖ ^ t) disk volume) ↔
+      t ∈ Ioo (-2 : ℝ) (2 / 3)
+
+theorem sharp_brennan_conjecture {p : ℝ} :
+    (∀ W : Set ℂ, ∀ φ : ℂ → ℂ, ConformalMapToDisk W φ →
+      IntegrableOn (fun z => ‖deriv φ z‖ ^ p) W volume) ↔
+      p ∈ Ioo (4 / 3 : ℝ) 4
+\end{lstlisting}
+Mathematically:
+\begin{enumerate}[label=(\arabic*)]
+\item \textbf{Sharp Inverse-Square Spectrum}: $B(-2) = 1$.
+\item \textbf{Brennan's Conjecture}: For every open set $W \subseteq \C$ and conformal bijection $\varphi : W \to \D$, and every $p \in (4/3, 4)$,
+\[
+\int_W |\varphi'(w)|^p\,dA(w) < \infty.
+\]
+\item \textbf{Sharpness of the Open Intervals}: Universal area integrability $\int_{\D}|f'(z)|^t\,dA(z)<\infty$ across $f\in\Sclass$ holds if and only if $t \in (-2, 2/3)$, and universal domain integrability $\int_W |\varphi'(w)|^p\,dA(w) < \infty$ holds if and only if $p \in (4/3, 4)$, witnessed at the endpoints by the Koebe function $f_K(z) = z/(1-z)^2$ and its inverse $\varphi_K = f_K^{-1}$ on the slit plane $W_K = f_K(\D) = \C \setminus (-\infty, -1/4]$.
+\end{enumerate}
+\end{itemize}
+
+\subsection{Six Structural Bypasses in the Lean 4 Formalization}
+
+A central reason the Lean~4 formalization in \texttt{OAI.Analysis.IntegralMeans} achieves a complete, self-contained proof in 14,759 lines is that it systematically replaces classical non-constructive or heavy geometric theorems with direct analytic and algebraic constructions tailored to Mathlib's library:
+
+\begin{enumerate}[label=\textbf{Bypass \arabic*.},leftmargin=*]
+\item \textbf{No Montel or Hurwitz Theorem (\texttt{Distortion.lean}, \texttt{CompactClass.lean})}:
+Instead of topologizing $\Kclass \subset \operatorname{Hol}(\uhp,\C)$ directly and invoking Montel's and Hurwitz's theorems, the formalization models the compact class on the unit disk as a subset $\texttt{diskSchlichtSet} \subset C(\D, \C)$ equipped with the compact-open uniform structure (\texttt{UniformOnFun}). Compactness is proved directly from Mathlib's \textbf{Arzel\`a--Ascoli theorem} via explicit Koebe Lipschitz bounds ($|f'(z)| \le (1+R)/(1-R)^3$). Closedness of injectivity avoids Hurwitz's theorem entirely by proving a \textbf{quantitative uniform separation inequality} (\texttt{schlicht\_uniform\_separation}): for any $z \ne w \in \D$, applying Koebe's $1/4$ theorem on the maximal disk centered at $z$ yields an explicit positive lower bound $\|f(w)-f(z)\| \ge c(z,w) > 0$ valid uniformly across all $f \in \Sclass$, which survives pointwise limits immediately.
+
+\item \textbf{No Differentiating Horizontal Integrals Under the Integral Sign (\texttt{TraceIdentity.lean})}:
+The human proof of Lemma~4.3 differentiates $h(y) = \int_\R g(x,y)\,dx$ twice with respect to $y$ and integrates by parts. Formalizing parametric differentiation of improper integrals and boundary decay at $x = \pm\infty$ is tedious. Instead, \texttt{TraceIdentity.lean} introduces the explicit vector field (\textbf{trace flux})
+\[
+\mathbf{V}(x,y) = \bigl((y-\varepsilon)\partial_x g(x,y),\; (y-\varepsilon)\partial_y g(x,y) - g(x,y)\bigr),
+\]
+whose divergence is identically $\operatorname{div}\mathbf{V} = (y-\varepsilon)\Delta g$. Applying Mathlib's \textbf{rectangular divergence theorem} (\texttt{integral\_divergence\_prod\_Icc\_of\_hasFDerivAt\_of\_le}) on $[-R,R] \times [\varepsilon, R]$ directly relates the horizontal slice integral $\int_{-R}^R g(x,\varepsilon)\,dx$ to $\iint (y-\varepsilon)\Delta g\,dx\,dy$ in one stroke.
+
+\item \textbf{No Pole Singularities in the Potential (\texttt{CriticalPoint.lean}, \texttt{CriticalCount.lean})}:
+In the human paper, the potential $\ell(z) = \log V_\xi^F(z)$ has a logarithmic singularity at the unique preimage $z_0 = F^{-1}(\xi)$, requiring punctured domains and small circle excavations. In \texttt{CriticalCount.lean}, the formalization works instead with the globally $C^2$ \textbf{squared reciprocal potential}
+\[
+u(z) := \frac{|F(z)-\xi|^2}{y^{2k}} \qquad (\texttt{squaredReciprocalPotential}),
+\]
+and replaces $\nabla \ell$ by the globally smooth \textbf{regularized gradient} (\texttt{regularizedGradient}):
+\[
+\mathcal{G}_{F,k,\xi}(z) := \frac{ik}{y}\bigl(F(z)-\xi\bigr)\overline{\bigl(G_F(z)-\xi\bigr)}.
+\]
+On the strict sublevel $\{u < c\}$, $\mathcal{G}_{F,k,\xi}$ is everywhere smooth, coincides with a positive scalar multiple of $-\nabla u$ on $\{u > 0\}$, and has zeros at \emph{both} the pole $F(z)=\xi$ (where its real Jacobian determinant is $+k^2 y^{-2}|F'(z)|^2 > 0$, hence Poincaré index $+1$) and the true critical points $G_F(z)=\xi$ (where its real Jacobian determinant has sign opposite to $J_F(z)$).
+
+\item \textbf{No Stokes' Theorem for the Poincaré--Hopf Degree Formula (\texttt{Degree.lean})}:
+Rather than using differential forms and Stokes' theorem on a manifold with boundary to equate boundary winding numbers to interior zero indices, \texttt{Degree.lean} proves \texttt{windingNumber\_finite\_regular\_zeros} on a convex set $K \subset \C$ by \textbf{inductive multiplicative zero surgery} (\texttt{removeZero} and \texttt{surgeryLog}). At each nondegenerate zero $a \in s$, it divides the vector field $X(z)$ locally by $z-a$ (if $\detR DX(a) > 0$) or $\overline{z-a}$ (if $\detR DX(a) < 0$), smoothly patches via a complex logarithm on an annulus (\texttt{surgeryLog}), and peels off one zero at a time until the modified field is nowhere vanishing on the convex set $K$---where its winding number is $0$ by contractibility.
+
+\item \textbf{No Jordan Curve Theorem (\texttt{Winding.lean}, \texttt{LevelIndex.lean})}:
+To identify the sum of winding numbers of the oriented level-curve loops $\gamma_1,\dots,\gamma_m$ around $z$ with the indicator $\mathbf{1}_{\{u(z) < c\}}$, a classical proof appeals to the Jordan Curve Theorem on each component of $\{u = c\}$. Instead, \texttt{LevelIndex.lean} defines the integer-valued discrepancy function on $\C \setminus \{u=c\}$:
+\[
+\mathcal{J}(z) := \sum_{j=1}^m \ind(\gamma_j, z) - \mathbf{1}_{\{z \in \uhp : u(z) < c\}},
+\]
+and proves that across each regular level loop $\gamma_j$, both $\sum_i \ind(\gamma_i, z)$ and $\mathbf{1}_{\{u < c\}}$ jump by $+1$ in the inward normal direction (\texttt{winding\_jump\_centred} and the maximum principle on \texttt{windingInterior}). Thus $\mathcal{J}$ extends to a \textbf{continuous function $\C \to \Z$} on all of $\C$ that vanishes outside a large ball, and hence is identically $0$ by connectedness of $\C$.
+
+\item \textbf{No Lusin--Novikov Selection Theorem (\texttt{BorelPairing.lean})}:
+To prove that the equal-rank pairing $R_F : \Omega_F^+ \to \Omega_F^-$ is jointly Borel measurable on $\Kclass \times \uhp$ and induces a non-injective change-of-variables formula, the human paper cites the Lusin--Novikov measurable selection theorem or constructs contraction-mapping fixed points over rational discs. Instead, \texttt{BorelPairing.lean} combines Mathlib's inverse function theorem (\texttt{HasStrictFDerivAt.toOpenPartialHomeomorph}) with Second-Countable / Lindel\"of exhaustion (\texttt{countable\_joint\_injective\_partition}) and Polish-space measurable embeddings (\texttt{ContinuousOn.measurableEmbedding}) to construct a countable family of Borel partial inverses (\texttt{BorelBranches}) directly.
+\end{enumerate}
+
+\subsection{Complete 47-Module Dependency Inventory}
+
+Table~\ref{tab:modules} lists all 47 Lean~4 files in \texttt{OAI/Analysis/IntegralMeans/}, their line counts, and their mathematical roles.
+
+\begin{longtable}{@{}llrl@{}}
+\caption{Complete inventory of the 47 Lean 4 modules in \texttt{OAI.Analysis.IntegralMeans}.}\label{tab:modules}\\
+\toprule
+\textbf{Section} & \textbf{Module} & \textbf{Lines} & \textbf{Primary Mathematical Content} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Section} & \textbf{Module} & \textbf{Lines} & \textbf{Primary Mathematical Content} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\footnotesize\itshape Continued on next page} \\
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+\S1 Specs & \texttt{Model.lean} & 50 & $\D, \Sclass, M_t(f,r), \beta_f(t), B(t)$, \texttt{ConformalMapToDisk} \\
+ & \texttt{SharpModel.lean} & 26 & \texttt{koebeDomain}, \texttt{koebeInverse}, \texttt{areaMoment} \\
+ & \texttt{Main.lean} & 20 & Top-level \texttt{inverse\_square\_spectrum}, \texttt{brennan\_conjecture} \\
+ & \texttt{SharpEndpoints.lean} & 30 & Top-level \texttt{sharp\_schlicht\_area}, \texttt{sharp\_brennan\_conjecture} \\
+\midrule
+\S2 Winding \& & \texttt{LogIncrement.lean} & 467 & \texttt{HasLogIncrement}, \texttt{windingNumber}, \texttt{loopIndex}, \texttt{windingInterior} \\
+\quad Univalent & \texttt{Turning.lean} & 442 & \texttt{secantTriangle}, \texttt{extendedSecant}, Hopf \texttt{tangent\_turning\_log} \\
+\quad Distortion & \texttt{Degree.lean} & 704 & \texttt{removeZero}, \texttt{surgeryLog}, \texttt{windingNumber\_finite\_regular\_zeros} \\
+ & \texttt{UnivalentArea.lean} & 262 & Gronwall area theorem (\texttt{meromorphic\_univalent\_area}) \\
+ & \texttt{Distortion.lean} & 984 & $|a_2|\le 2$, Koebe $1/4$, distortion, \texttt{schlicht\_uniform\_separation} \\
+\midrule
+\S3 Compact & \texttt{CompactClass.lean} & 153 & \texttt{DiskClass}, Arzel\`a--Ascoli compactness of $\Kclass$ \\
+\quad Class \& & \texttt{HalfPlane.lean} & 419 & $\uhp$, Cayley transforms, \texttt{rerootClass}, \texttt{classWeight} cocycle \\
+\quad Transfer & \texttt{TransferOperator.lean} & 241 & Dyadic operator $L$, subadditive spectral radius $\rho = 2^\beta$ \\
+ & \texttt{CircleBounds.lean} & 570 & Cayley arcs, Proposition 2.4 (\texttt{uniform\_inverse\_square\_bound}) \\
+ & \texttt{Koebe.lean} & 120 & Koebe map $z/(1-z)^2 \in \Sclass$, lower mean bound $\ge \frac{1}{4\pi(1-r)}$ \\
+\midrule
+\S4 Eigenmeasure & \texttt{Eigenmeasure.lean} & 476 & Positive resolvent $R_\tau$, weak-* eigenmeasure $\mu$ on $\Kclass$ \\
+\quad \& Moments & \texttt{AffineLaw.lean} & 609 & Horizontal/scale averaging, Riesz law \texttt{HasWeightedLaw} $P$ \\
+ & \texttt{Moments.lean} & 505 & Pre-Schwarzian $q_F = F''/F'$, $\E[a_F(i)]$, $\E[b_F(i)]$, $\E[|q_F(i)|^2]$ \\
+\midrule
+\S5 Critical & \texttt{CriticalMap.lean} & 532 & $G_F(z)$, $J_F(z)$, column rule, pointwise \& expected $J_F$ identity \\
+\quad Map \& & \texttt{InverseDensity.lean} & 344 & Inversion $z^\# = (-x+i)/y$, Lemma 4.2 ($\E[I(F)] \le 256\pi$) \\
+\quad Escape & \texttt{BoundaryTail.lean} & 339 & Subharmonic $L^2$ ball mean, quartic boundary tail $o(y^3)$ \\
+ & \texttt{TraceIdentity.lean} & 531 & \texttt{traceFlux} vector field, rectangular divergence identity \\
+ & \texttt{TraceBounds.lean} & 272 & Horizontal trace boundedness (\texttt{class\_trace\_bound}) \\
+ & \texttt{BoundaryEscape.lean} & 454 & Prop 4.1 (\texttt{compact\_superlevels}), Lemma 4.3, \texttt{measurableSet\_goodPairs} \\
+ & \texttt{GoodPairs.lean} & 311 & Full measure of regular values, Lemma 5.4 (\texttt{ae\_goodPairs\_of\_escape}) \\
+\midrule
+\S6 Level Curves & \texttt{CriticalPoint.lean} & 292 & \texttt{regularizedGradient}, determinant at pole ($>0$) \& critical points \\
+\quad \& Critical & \texttt{Winding.lean} & 461 & \texttt{rectPath}, strip crossing jump $+1$ (\texttt{winding\_jump\_centred}) \\
+\quad Count & \texttt{LevelCurve.lean} & 515 & Picard--Lindel\"of flow of \texttt{tangentGradient}, closed level loops \\
+ & \texttt{LevelIndex.lean} & 479 & Maximum principle on \texttt{windingInterior}, \texttt{sum\_loopIndex\_sublevel} \\
+ & \texttt{CriticalCount.lean} & 574 & Lemma 5.5 (\texttt{GoodPair.card\_maxima\_eq\_card\_saddles}: $\#\mathcal{M}=\#\mathcal{S}$) \\
+\midrule
+\S7 Borel & \texttt{RankPairing.lean} & 535 & Lexicographic order \texttt{criticalPointLe}, \texttt{orderRank}, \texttt{criticalPair} \\
+\quad Pairing \& & \texttt{BorelPairing.lean} & 638 & Lindel\"of partition, \texttt{BorelBranches}, Prop 5.6 (\texttt{measurable\_criticalPair}) \\
+\quad Transport & \texttt{AreaTransport.lean} & 236 & \texttt{fiberSum}, non-injective change of variables (\texttt{transport\_area}) \\
+ & \texttt{ExpectedDensity.lean} & 118 & \texttt{averagedDensity}, root test via scale-covariant law \\
+ & \texttt{TransportBoxes.lean} & 220 & \texttt{displacementWindow}, \texttt{transportBox}, \texttt{transport\_box} inequality \\
+ & \texttt{ExpectedTransport.lean} & 396 & Prop 6.1 ($\E[J_F(i)] \le 0$), Prop 6.2 ($\rho \le 2$), \texttt{transferBeta\_le\_one} \\
+\midrule
+\S8 Spectrum \& & \texttt{Spectrum.lean} & 105 & Theorem 1.1: $\beta_f(-2) \le 1$, $\beta_{f_K}(-2) \ge 1$, $B(-2) = 1$ \\
+\quad Brennan's & \texttt{NegativeArea.lean} & 271 & Negative powers $t \in (-2,0)$: \texttt{schlicht\_negative\_area} \\
+\quad Conjecture & \texttt{SmoothMeans.lean} & 312 & Smoothed modulus $(1+\|z\|^2)^q$, \texttt{schlicht\_smooth\_means} \\
+ & \texttt{PositiveArea.lean} & 168 & Positive powers $t \in (0, 2/3)$: \texttt{schlicht\_positive\_area} \\
+ & \texttt{DomainArea.lean} & 151 & Full range $(-2,2/3)$ \& Brennan's Conjecture $(4/3,4)$ \\
+\midrule
+\S9 Sharp & \texttt{AffineArea.lean} & 60 & Isometric affine invariance of \texttt{areaMoment} \\
+\quad Endpoints & \texttt{KoebeReduction.lean} & 72 & Boundary derivative asymptotics of $f_K$ near $z = \pm 1$ \\
+ & \texttt{KoebeCone.lean} & 52 & Non-tangential sectorial cones at $\pm 1$ \\
+ & \texttt{KoebePolar.lean} & 69 & Polar coordinates in boundary cones, $1/r^2$ lower bounds \\
+ & \texttt{SectorDivergence.lean} & 79 & Divergence $\iint_{\text{sector}} c/r^2\,dA = \infty$ \\
+ & \texttt{KoebeDivergence.lean} & 45 & $M_{\text{area}}(f_K, -2) = \infty$ and $M_{\text{area}}(f_K, 2/3) = \infty$ \\
+ & \texttt{InverseMoment.lean} & 50 & Endpoint divergence for $\varphi_K$ at $p=4/3$ and $p=4$ \\
+\midrule
+\textbf{Total} & \textbf{47 Modules} & \textbf{14,759} & \textbf{Complete, 0-axiom, 0-\texttt{sorry} formalization} \\
+\end{longtable}
+
+%==============================================================================
+\section{Logarithmic Increments, Zero Surgery, and Classical Distortion (\texttt{LogIncrement}--\texttt{Distortion})}
+%==============================================================================
+
+\subsection{Logarithmic Increments and Winding Numbers (\texttt{LogIncrement.lean})}
+
+Rather than defining winding numbers via contour integrals $\frac{1}{2\pi i}\oint \frac{\gamma'(t)}{\gamma(t)}\,dt$ (which requires piecewise $C^1$ regularity), \texttt{LogIncrement.lean} defines the winding number topologically for any continuous loop $\gamma \in C([0,1], \C \setminus \{0\})$ via covering-space lifts of $\exp : \C \to \C^\times$.
+
+\begin{itemize}
+\item \textbf{Logarithmic Increment and Winding Number} ($\gamma : C([0,1], \C)$, $q, a \in \C$):
+\begin{lstlisting}[language=Caml]
+def HasLogIncrement (γ : C(unitInterval, ℂ)) (q : ℂ) : Prop :=
+  ∃ T : C(unitInterval, ℂ), (∀ t, Complex.exp (T t) = γ t) ∧ T 1 - T 0 = q
+
+def windingNumber (γ : C(unitInterval, ℂ)) : ℤ := by
+  classical
+  exact if h : γ 1 = γ 0 ∧ ∀ t, γ t ≠ 0 then
+    Classical.choose (exists_integer_logIncrement γ h.1 h.2)
+  else 0
+
+def loopIndex (γ : C(unitInterval, ℂ)) (a : ℂ) : ℤ :=
+  windingNumber ⟨fun t => γ t - a, by fun_prop⟩
+
+def windingInterior (γ : C(unitInterval, ℂ)) : Set ℂ :=
+  {a | a ∉ range γ ∧ loopIndex γ a ≠ 0}
+\end{lstlisting}
+Because $[0,1]$ is convex and hence contractible and locally path-connected, Mathlib's covering map lifting theorem (\texttt{Complex.isCoveringMapOn\_exp.existsUnique\_continuousMap\_lifts}) guarantees a unique continuous lift $T : [0,1] \to \C$ with $e^{T(t)} = \gamma(t)$ (\texttt{exists\_log\_lift}). When $\gamma(1)=\gamma(0)$, $T(1)-T(0) = 2\pi i n$ for a unique integer $n = \wind(\gamma) \in \Z$.
+\end{itemize}
+
+Any $\R$-linear map $A : \C \to_{\R} \C$ decomposes into complex-linear and conjugate-linear parts:
+\[
+A(z) = \partial A \cdot z + \bar{\partial} A \cdot \bar{z}, \qquad
+\partial A = \frac{A(1) - i A(i)}{2}, \quad \bar{\partial} A = \frac{A(1) + i A(i)}{2}, \quad
+\detR A = |\partial A|^2 - |\bar{\partial} A|^2.
+\]
+By Rouch\'e perturbation (\texttt{HasLogIncrement.perturb}: if $\|\eta(t)-\gamma(t)\| < \|\gamma(t)\|$ for all $t$, then $\eta/\gamma$ takes values in $\texttt{Complex.slitPlane}$ and hence has a global logarithm $\log(\eta/\gamma)$), \texttt{local\_logIncrement\_pos} and \texttt{local\_logIncrement\_neg} prove that for a small circle $z_0 + r e^{2\pi i t}$ around an isolated zero $X(z_0)=0$ with $DX(z_0) = A$, the local winding number is $+1$ if $\detR A > 0$ and $-1$ if $\detR A < 0$.
+
+\subsection{Hopf Tangent Turning Theorem on Secant Triangles (\texttt{Turning.lean})}
+
+For a $C^1$ simple closed curve $\gamma : \R \to \C$ of period $1$ with $\gamma'(t) \ne 0$, \texttt{Turning.lean} proves that the tangent vector $\gamma'$ has logarithmic increment $\pm 2\pi i$ without using piecewise polygonal approximations.
+
+\begin{itemize}
+\item \textbf{Secant Triangle and Extended Secant Map} ($\gamma : \R \to \C$, $p = (s,t) \in \R^2$):
+\begin{lstlisting}[language=Caml]
+def secantTriangle : Set (ℝ × ℝ) :=
+  {p | 0 ≤ p.1 ∧ p.1 ≤ p.2 ∧ p.2 ≤ p.1 + 1}
+
+def averagedDerivative (γ' : ℝ → ℂ) (p : ℝ × ℝ) : ℂ :=
+  ∫ u in (0 : ℝ)..1, γ' (p.1 + u * (p.2 - p.1))
+
+def extendedSecant (γ' : ℝ → ℂ) (p : ℝ × ℝ) : ℂ :=
+  ((1 - (p.2 - p.1) : ℝ) : ℂ) * averagedDerivative γ' p -
+    ((p.2 - p.1 : ℝ) : ℂ) * averagedDerivative γ' (p.1, p.2 - 1)
+\end{lstlisting}
+By the fundamental theorem of calculus, for $0 < t - s < 1$,
+\[
+\gamma(t) - \gamma(s) = (t-s)\,\texttt{averagedDerivative}(\gamma')(s,t),
+\]
+and by $1$-periodicity $\gamma(t) = \gamma(t-1)$, so $\gamma(t)-\gamma(s)$ also equals $(1-(t-s))\,\texttt{averagedDerivative}(\gamma') - (t-s)\,\texttt{averagedDerivative}(\gamma')(s,t-1)$. Consequently, $\texttt{extendedSecant}(\gamma')(s,t)$ is \textbf{nowhere zero} on the entire convex triangle $\Delta = \{0 \le s \le t \le s+1\}$:
+\begin{itemize}
+\item on the diagonal $t = s$, $\texttt{extendedSecant}(s,s) = \gamma'(s) \ne 0$;
+\item on the upper boundary $t = s+1$, $\texttt{extendedSecant}(s,s+1) = -\gamma'(s) \ne 0$;
+\item on the interior $0 < t-s < 1$, $\texttt{extendedSecant}(s,t) = \frac{\gamma(t)-\gamma(s)}{t-s} \ne 0$ by injectivity of $\gamma$ on $[0,1)$.
+\end{itemize}
+Since $\Delta$ is convex and hence contractible, $\texttt{extendedSecant}$ admits a global continuous logarithm $L : \Delta \to \C$ (\texttt{exists\_log\_lift\_of\_simplyConnected}). Comparing the boundary paths from $(0,0)$ to $(0,1)$ via $(1,1)$ versus directly along $(0,t)$ yields \texttt{tangent\_turning\_log}: if $\gamma$ is positively oriented around an interior point $a_0$ ($\ind(\gamma,a_0)=1$), then $\wind(\gamma') = +1$ ($\Delta\log\gamma' = 2\pi i$).
+\end{itemize}
+
+\subsection{Poincaré--Hopf Degree Formula via Zero Surgery (\texttt{Degree.lean})}
+
+To relate the winding number of a vector field $X : \C \to \C$ along a closed loop $\gamma$ inside a convex set $K \subset \C$ to its finite set $s \subset K$ of regular zeros, \texttt{Degree.lean} performs \textbf{multiplicative zero surgery}:
+
+\begin{itemize}
+\item \textbf{Zero Surgery Construction and Degree Sum Theorem} ($X : C(\C,\C)$, $s : \text{Finset }\C$, $K \subseteq \C$):
+\begin{lstlisting}[language=Caml]
+def planeIndex (A : ℂ →L[ℝ] ℂ) : ℤ :=
+  if 0 < LinearMap.det A.toLinearMap then 1 else -1
+
+def zeroModel (a : ℂ) (A : ℂ →L[ℝ] ℂ) (z : ℂ) : ℂ :=
+  if 0 < LinearMap.det A.toLinearMap then
+    linearPart A * (z - a)
+  else
+    antiLinearPart A * conj (z - a)
+
+lemma windingNumber_finite_regular_zeros {K : Set ℂ} (hK : Convex ℝ K)
+    (s : Finset ℂ) (X : C(ℂ, ℂ)) (A : ℂ → (ℂ →L[ℝ] ℂ))
+    (hsK : ∀ a ∈ s, a ∈ K)
+    (hzero : ∀ z ∈ K, X z = 0 ↔ z ∈ s)
+    (hreg : ∀ a ∈ s, HasFDerivAt X (A a) a ∧ LinearMap.det (A a).toLinearMap ≠ 0)
+    (γ : C(unitInterval, ℂ)) (hloop : γ 1 = γ 0) (hγK : ∀ t, γ t ∈ K)
+    (hγ0 : ∀ t, X (γ t) ≠ 0) :
+    windingNumber (X.comp γ) = ∑ a ∈ s, planeIndex (A a) * loopIndex γ a
+\end{lstlisting}
+\textbf{Proof Mechanism (\texttt{removeZero} and \texttt{surgeryLog})}: Near a regular zero $a \in s$, the ratio $X(z)/\texttt{zeroModel}(a, A_a, z)$ tends to $1 + \frac{\bar{\partial}A_a}{\partial A_a}\frac{\bar{z}-\bar{a}}{z-a}$ (if $\detR A_a > 0$), which lies strictly in the right half-plane $\RePart w > 0 \subset \texttt{slitPlane}$ for $0 < \|z-a\| < 2r$ because $|\bar{\partial}A_a| < |\partial A_a|$. Using a smooth radial cutoff $\chi$ supported in $B(a, 2r)$ with $\chi \equiv 1$ on $B(a,r)$, \texttt{removeZero} defines
+\[
+\widetilde{X}(z) := \begin{cases}
+\exp\Bigl((1-\chi(z))\log\frac{X(z)}{\texttt{zeroModel}(a,A_a,z)}\Bigr) & \text{if } \|z-a\| < 2r,\\[4pt]
+\dfrac{X(z)}{\texttt{zeroModel}(a,A_a,z)} & \text{if } \|z-a\| \ge r.
+\end{cases}
+\]
+Then $\widetilde{X}$ is continuous on all of $\C$, has zero set $s \setminus \{a\}$ on $K$, and along $\gamma$ (after shrinking $r$ so $\gamma$ avoids $B(a,2r)$) satisfies $X(\gamma(t)) = \texttt{zeroModel}(a,A_a,\gamma(t))\,\widetilde{X}(\gamma(t))$, so
+\[
+\wind(X \circ \gamma) = \texttt{planeIndex}(A_a)\,\ind(\gamma, a) + \wind(\widetilde{X} \circ \gamma).
+\]
+Inducting on $\# s$ reduces to $s = \emptyset$, where $X$ is nonvanishing on convex $K$ and hence $\wind(X \circ \gamma) = 0$.
+\end{itemize}
+
+As an immediate application, \texttt{Degree.lean} proves \texttt{integral\_jacobian\_nonpos\_of\_boundary\_winding}: if a $C^1$ map $X : \C \to \C$ has boundary winding number $\wind(X(r e^{2\pi i t}) - \xi) \le 0$ for every $\xi \notin X(\partial B(0,r))$, then at every regular value $\xi$ with a preimage in $B(0,r)$, the sum of indices of preimages in $B(0,r)$ is $\le 0$, so every preimage with $\detR DX(z) > 0$ must be accompanied by at least one preimage with $\detR DX(w) < 0$. Applying area change of variables on positive and negative Jacobian regions yields $\int_{\overline{B}(0,r)} \detR DX(z)\,dA(z) \le 0$.
+
+\subsection{Gronwall Area Theorem and Univalent Distortion (\texttt{UnivalentArea.lean}, \texttt{Distortion.lean})}
+
+In \texttt{UnivalentArea.lean}, the topological degree inequality $\int_{\overline{B}(0,r)} \detR DX \le 0$ is applied to the smooth extension $X(z) = r^{-2}\bar{z} + h(z)$ of a univalent meromorphic function $H(z) = z^{-1} + h(z)$ on $\D \setminus \{0\}$ (which coincides with $H(z)$ on the circle $\|z\|=r$ since $z^{-1} = r^{-2}\bar{z}$ there). Since $\detR DX(z) = |h'(z)|^2 - r^{-4}$, this gives Gronwall's area inequality (\texttt{meromorphic\_univalent\_area}):
+\[
+\int_{\overline{B}(0,r)} |h'(z)|^2\,dA(z) \le \pi r^2 \cdot r^{-4} = \pi r^{-2}.
+\]
+In \texttt{Distortion.lean}, combining Gronwall's area inequality with the mean-value inequality $\pi r^2 |h'(0)|^2 \le \int_{\overline{B}(0,r)} |h'(z)|^2\,dA$ and letting $r \to 1^-$ gives $|h'(0)| \le 1$ (\texttt{meromorphic\_univalent\_coefficient}). Applying the square-root transform $H(z) = 1/\sqrt{f(z^2)}$ then yields:
+\begin{enumerate}[label=(\arabic*)]
+\item \textbf{Bieberbach's Second Coefficient Bound} (\texttt{schlicht\_second\_deriv\_bound}): $|f''(0)| \le 4$ for all $f \in \Sclass$.
+\item \textbf{Koebe $1/4$ Theorem} (\texttt{koebe\_quarter}): $B(0, 1/4) \subseteq f(\D)$ for all $f \in \Sclass$.
+\item \textbf{Pre-Schwarzian and Distortion Bounds} (\texttt{schlicht\_preSchwarzian\_bound}, \texttt{schlicht\_deriv\_bounds}, \texttt{schlicht\_growth\_bounds}): for all $f \in \Sclass$ and $z \in \D$,
+\[
+\left|\frac{f''(z)}{f'(z)} - \frac{2\bar{z}}{1-\|z\|^2}\right| \le \frac{4}{1-\|z\|^2}, \qquad
+\frac{1-\|z\|}{(1+\|z\|)^3} \le |f'(z)| \le \frac{1+\|z\|}{(1-\|z\|)^3}, \qquad
+\frac{\|z\|}{(1+\|z\|)^2} \le |f(z)| \le \frac{\|z\|}{(1-\|z\|)^2}.
+\]
+\item \textbf{Uniform Separation Lemma} (\texttt{schlicht\_uniform\_separation}): for any $z,w \in \D$ with $z \ne w$, letting $d = 1-\|z\|$ and $\delta = \min(d/2, \|w-z\|/2)$, the disk re-normalization $g(u) = \frac{f(z + \delta u) - f(z)}{\delta f'(z)} \in \Sclass$ omits $\frac{f(w)-f(z)}{\delta f'(z)}$ since $w \notin B(z,\delta)$, so by Koebe $1/4$,
+\[
+\|f(w) - f(z)\| \ge \frac{\delta}{4}|f'(z)| \ge \frac{\min(1-\|z\|, \|w-z\|)\,(1-\|z\|)}{8(1+\|z\|)^3} > 0,
+\]
+giving a strictly positive lower bound independent of $f \in \Sclass$.
+\end{enumerate}
+
+%==============================================================================
+\section{The Compact Class $\Kclass$ and the Dyadic Transfer Operator (\texttt{CompactClass}--\texttt{CircleBounds})}
+%==============================================================================
+
+\subsection{Compactness of \texttt{DiskClass} via Arzel\`a--Ascoli (\texttt{CompactClass.lean})}
+
+\begin{itemize}
+\item \textbf{Compact Schlicht Class} ($\texttt{diskSchlichtSet} \subseteq C(\D, \C)$):
+\begin{lstlisting}[language=Caml]
+def diskExtend (g : C(disk, ℂ)) (z : ℂ) : ℂ :=
+  if hz : z ∈ disk then g ⟨z, hz⟩ else 0
+
+def diskSchlichtSet : Set C(disk, ℂ) :=
+  {g : C(disk, ℂ) | Schlicht (diskExtend g)}
+
+abbrev DiskClass : Type := diskSchlichtSet
+\end{lstlisting}
+\begin{theorem}[\texttt{isCompact\_diskSchlichtSet}, \texttt{CompactSpace DiskClass}]
+Equipped with the topology of uniform convergence on compact subsets of $\D$, $\texttt{diskSchlichtSet}$ is closed and compact in $C(\D, \C)$.
+\end{theorem}
+\begin{proof}
+For each compact $K \subset \D$, choosing $R \in (0,1)$ with $K \subseteq \overline{B}(0,R)$, the distortion bounds give $\|g(z)\| \le R/(1-R)^2$ on $K$ and Lipschitz constant $(1+R)/(1-R)^3$ on $\overline{B}(0,R)$. By \texttt{ArzelaAscoli.isCompact\_closure\_of\_isClosedEmbedding}, the closure of $\texttt{diskSchlichtSet}$ in $C(\D,\C)$ is compact. To prove $\texttt{diskSchlichtSet}$ is closed (\texttt{isClosed\_diskSchlichtSet}):
+\begin{enumerate}[label=(\roman*)]
+\item Cauchy's integral formula on closed balls (\texttt{Complex.cauchyIntegral\_circleMap}) passes through uniform limits on compacta to preserve complex differentiability and derivatives at $0$.
+\item Injectivity is preserved in the limit by \texttt{schlicht\_uniform\_separation}: if $g_n \to g$ pointwise and $z \ne w \in \D$, then $\|g_n(w)-g_n(z)\| \ge c(z,w) > 0$ for all $n$, so $\|g(w)-g(z)\| \ge c(z,w) > 0$. \qedhere
+\end{enumerate}
+\end{proof}
+\end{itemize}
+
+\subsection{Upper Half-Plane Models and the Affine Cocycle (\texttt{HalfPlane.lean})}
+
+The Cayley transforms $\tau_{\D}(z) = \frac{z-i}{z+i} : \uhp \to \D$ (\texttt{diskCayley}) and $\tau_{\uhp}(w) = i\frac{1+w}{1-w} : \D \to \uhp$ (\texttt{halfCayley}) induce a bijection between $\Sclass$ and the upper half-plane schlicht class $\Kclass = \{F : \uhp \to \C \text{ univalent} \mid F(i)=0,\, F'(i)=1\}$ via $F(z) = 2i\,f(\tau_{\D}(z))$ (\texttt{diskToHalf}).
+
+\begin{itemize}
+\item \textbf{Half-Plane Embedding, Affine Rerooting, and Cocycle Weight} ($g \in \texttt{DiskClass}$, $z, w \in \uhp$):
+\begin{lstlisting}[language=Caml]
+def halfPlane : Set ℂ := {z | 0 < z.im}
+
+def affine (z w : ℂ) : ℂ := (z.re : ℂ) + (z.im : ℂ) * w
+
+def reroot (f : ℂ → ℂ) (z w : ℂ) : ℂ :=
+  (f (affine z w) - f z) / ((z.im : ℂ) * deriv f z)
+
+def reciprocalDeriv (f : ℂ → ℂ) (z : ℂ) : ℂ := (deriv f z)⁻¹
+
+def classFun (g : DiskClass) : ℂ → ℂ := diskToHalf (diskExtend g.1)
+
+def rerootClass (g : DiskClass) (z : halfPlane) : DiskClass :=
+  classOfHalf (reroot (classFun g) z) (reroot_normalized (classFun_schlicht g).1 z.2)
+
+def classWeight (g : DiskClass) (z : halfPlane) : ℝ :=
+  ‖reciprocalDeriv (classFun g) z‖ ^ 2
+\end{lstlisting}
+In mathematical notation, for $F = \texttt{classFun}(g) \in \Kclass$ and $z = x+iy \in \uhp$, the affine map $\alpha_z(w) = x + yw$ defines a group structure on $\uhp$ ($\alpha_z \circ \alpha_w = \alpha_{\alpha_z(w)}$, \texttt{halfMul}). The re-rooted map $F_z(w) = \frac{F(x+yw)-F(z)}{y F'(z)} \in \Kclass$ (\texttt{rerootClass}) and the reciprocal derivative $H_F(z) = 1/F'(z)$ (\texttt{reciprocalDeriv}) satisfy the exact group action and multiplicative cocycle identities (\texttt{rerootClass\_mul}, \texttt{classWeight\_cocycle}):
+\[
+(F_z)_w = F_{\alpha_z(w)}, \qquad
+H_{F_z}(w) = \frac{H_F(\alpha_z(w))}{H_F(z)}, \qquad
+\omega(g, \alpha_z(w)) = \omega(g, z)\,\omega(\texttt{rerootClass}(g,z), w),
+\]
+where $\omega(g,z) := |H_F(z)|^2 = |F'(z)|^{-2}$ (\texttt{classWeight}). Moreover, the disk distortion bound translates via Cayley transform to the half-plane reciprocal bound (\texttt{classFun\_reciprocal\_bound}):
+\[
+|H_F(z)| \le \frac{2\|z+i\|^4}{y}, \qquad |H_F'(z)| \le \frac{6}{y}|H_F(z)|.
+\]
+\end{itemize}
+
+\subsection{The Dyadic Transfer Operator and Disk Means Comparison (\texttt{TransferOperator.lean}, \texttt{CircleBounds.lean})}
+
+\begin{itemize}
+\item \textbf{Affine Action Operator, Dyadic Transfer Operator $L$, and Growth Rate $\rho$} ($z \in \uhp$, $\Phi \in C(\texttt{DiskClass}, \R)$):
+\begin{lstlisting}[language=Caml]
+def affineOperator (z : halfPlane) : C(DiskClass, ℝ) →L[ℝ] C(DiskClass, ℝ)
+
+def transferStep (k : Fin 2) : halfPlane := halfPoint k (1 / 2) (by norm_num)
+
+def transferOperator : C(DiskClass, ℝ) →L[ℝ] C(DiskClass, ℝ) :=
+  affineOperator (transferStep 0) + affineOperator (transferStep 1)
+
+def growthLog : ℝ :=
+  (transferOperator_subadditive_log.lim : ℝ)
+
+def transferRho : ℝ := Real.exp growthLog
+
+def transferBeta : ℝ := growthLog / Real.log 2
+\end{lstlisting}
+Mathematically, for each $z \in \uhp$, $(T_z \Phi)(F) = |H_F(z)|^2 \Phi(F_z)$ is a positive continuous linear operator on $C(\Kclass, \R)$ satisfying $T_{\alpha_z(w)} = T_z \circ T_w$. The dyadic transfer operator is
+\[
+(L\Phi)(F) := (T_{i/2}\Phi)(F) + (T_{1+i/2}\Phi)(F)
+= |H_F(i/2)|^2 \Phi(F_{i/2}) + |H_F(1+i/2)|^2 \Phi(F_{1+i/2}).
+\]
+By induction (\texttt{transferOperator\_pow\_apply}), for every $n \ge 1$,
+\[
+(L^n \Phi)(F) = \sum_{j=0}^{2^n-1} |H_F(j 2^{-n} + i 2^{-n})|^2 \,\Phi(F_{j 2^{-n} + i 2^{-n}}).
+\]
+Since $a_n := \log \|L^n\|$ is subadditive ($a_{m+n} \le a_m + a_n$, \texttt{transferOperator\_subadditive\_log}) and bounded below by $n \log c_0$ (using $|H_F(i/2)|^2 > 0$ on compact $\Kclass$), Fekete's subadditive lemma (\texttt{Subadditive.tendsto\_lim}) gives $\lim_{n\to\infty} \frac{1}{n}\log\|L^n\| = \log\rho$ with $\rho = 2^\beta > 0$ (\texttt{transferRho\_eq\_two\_rpow}).
+
+\item \textbf{Proposition 2.4: Uniform Disk Comparison (\texttt{CircleBounds.lean})}:
+Under $w = -r e^{i\theta}$ for $r \in [1/2, 1)$ and $\theta \in [-\pi/4, \pi/4]$, the Cayley image $\tau_{\uhp}(-r e^{i\theta}) = X(r,\theta) + i Y(r,\theta)$ satisfies $X(r,\theta) \in [-1,1]$, $\frac{1-r}{2} \le Y(r,\theta) \le 2(1-r)$, and $\partial_\theta X(r,\theta) \ge 1/16$ (\texttt{arcXDeriv\_lower}). Comparing horizontal integrals at height $Y(r,\theta)$ to dyadic sums at height $2^{-n} \asymp 1-r$ via \texttt{classWeight\_vertical\_compare} and covering $[-\pi,\pi]$ by four rotated arcs gives \texttt{uniform\_inverse\_square\_bound}: for every $\varepsilon > 0$, there exists $C_\varepsilon > 0$ such that for all $f \in \Sclass$ and $r \in [1/2, 1)$,
+\[
+M_{-2}(f, r) \le C_\varepsilon (1-r)^{-\beta - \varepsilon} \quad \text{whenever } \rho \le 2.
+\]
+\end{itemize}
+
+%==============================================================================
+\section{Eigenmeasure, Scale-Covariant Law, and Pre-Schwarzian Moments (\texttt{Eigenmeasure}--\texttt{Moments})}
+%==============================================================================
+
+\subsection{Eigenmeasure via Positive Resolvent and Weak-* Compactness (\texttt{Eigenmeasure.lean})}
+
+\begin{itemize}
+\item \textbf{Positive Resolvent and Weak-* Eigenmeasure} ($\tau > \rho$, $f \in C(\texttt{DiskClass}, \R)$):
+\begin{lstlisting}[language=Caml]
+def positiveResolvent (τ : ℝ) : C(DiskClass, ℝ) →L[ℝ] C(DiskClass, ℝ) :=
+  ∑' n : ℕ, (τ⁻¹ ^ n) • (transferOperator ^ n)
+
+lemma exists_transfer_eigenmeasure :
+    ∃ μ : ProbabilityMeasure DiskClass,
+      ∀ f : C(DiskClass, ℝ),
+        ∫ g, transferOperator f g ∂(μ : Measure DiskClass) =
+          transferRho * ∫ g, f g ∂(μ : Measure DiskClass)
+\end{lstlisting}
+\textbf{Proof Mechanism}: For each $\tau > \rho$, the series $R_\tau = \sum_{n=0}^\infty \tau^{-n} L^n$ converges in operator norm, satisfies $L(R_\tau f) = \tau(R_\tau f - f)$ (\texttt{transferOperator\_positiveResolvent}), and maps $1$ to a strictly positive function $R_\tau 1 \ge 1$. Since $\Kclass$ is compact, $R_\tau 1$ attains its maximum at some $g_\tau \in \Kclass$ (\texttt{exists\_maximizer}), and because $\limsup_{n\to\infty} \|L^n 1\|^{1/n} = \rho$, we have $\lim_{\tau \downarrow \rho} (R_\tau 1)(g_\tau) = +\infty$ (\texttt{tendsto\_max\_positiveResolvent\_one\_atTop}). Defining the normalized positive linear functional
+\[
+\Lambda_\tau(f) := \frac{(R_\tau f)(g_\tau)}{(R_\tau 1)(g_\tau)},
+\]
+Riesz representation (\texttt{ProbabilityMeasure}) realizes $\Lambda_\tau$ as a probability measure $\mu_\tau \in \mathcal{P}(\Kclass)$ satisfying
+\[
+\left|\int_{\Kclass} (Lf)\,d\mu_\tau - \tau \int_{\Kclass} f\,d\mu_\tau\right| = \frac{\tau |f(g_\tau)|}{(R_\tau 1)(g_\tau)} \le \frac{\tau \|f\|_\infty}{(R_\tau 1)(g_\tau)} \xrightarrow{\tau \downarrow \rho} 0.
+\]
+Since $\mathcal{P}(\Kclass)$ is a compact space in Mathlib (\texttt{CompactSpace (ProbabilityMeasure DiskClass)}), the net $\mu_\tau$ has a weak-* cluster point $\mu \in \mathcal{P}(\Kclass)$ as $\tau \downarrow \rho$, which satisfies $L^*\mu = \rho\mu$.
+\end{itemize}
+
+\subsection{Horizontal and Logarithmic Scale Averaging (\texttt{AffineLaw.lean})}
+
+Assuming $\rho > 2$ (i.e., $\beta = \log_2 \rho > 1$), \texttt{AffineLaw.lean} upgrades the discrete dyadic eigenmeasure $\mu$ ($L^*\mu = 2^\beta\mu$) to a probability measure $P \in \mathcal{P}(\Kclass)$ covariant under the \emph{entire continuous} affine group $\uhp$:
+
+\begin{itemize}
+\item \textbf{Continuous Scale-Covariant Law} ($P \in \mathcal{P}(\texttt{DiskClass})$, $\beta \in \R$):
+\begin{lstlisting}[language=Caml]
+def HasWeightedLaw (P : ProbabilityMeasure DiskClass) (β : ℝ) : Prop :=
+  ∀ z : halfPlane, ∀ f : C(DiskClass, ℝ),
+    ∫ g, affineOperator z f g ∂(P : Measure DiskClass) =
+      (z.val.im) ^ (-β) * ∫ g, f g ∂(P : Measure DiskClass)
+
+lemma exists_weighted_continuous_law (hρ : 2 < transferRho) :
+    ∃ P : ProbabilityMeasure DiskClass, HasWeightedLaw P transferBeta
+\end{lstlisting}
+\textbf{Two-Step Averaging Construction}:
+\begin{enumerate}[label=(\arabic*)]
+\item \textbf{Horizontal Averaging}: Define $\bar{\mu}(f) := \frac{1}{2}\int_0^2 \bigl(\int_{\Kclass} (T_{u+i}f)\,d\mu\bigr)\,du$ (\texttt{horizontalAverage}). Using $L^*\mu = 2^\beta \mu$ and $T_{j+i/2} = T_{i/2+j/2}$ on $[0,2]$, one checks the exact dyadic scaling law $\bar{\mu}(T_{i/2}f) = 2^{\beta-1}\bar{\mu}(f)$ (\texttt{horizontalAverage\_halfScale}) and shows that for $t > 0$, $\bar{\mu}(T_{x+it}f) - \bar{\mu}(T_{it}f)$ is $2t$-periodic in $x$ and vanishes as $t \to \infty$ (since $\beta > 1$ implies $2^{n(1-\beta)} \to 0$).
+\item \textbf{Logarithmic Scale Averaging}: Averaging $t^{\beta-1}\bar{\mu}(T_{it}f)$ over $t \in [1,2]$ with respect to $\frac{dt}{t\log 2}$ yields a probability measure $P \in \mathcal{P}(\Kclass)$ that is both horizontally translation-invariant and scale-covariant of exponent $-\beta$: for all $z = x+iy \in \uhp$ and all Borel measurable $f : \Kclass \to [0,\infty]$ (\texttt{exists\_weighted\_law} in \texttt{ExpectedDensity.lean}),
+\[
+\E_P\bigl[|H_F(z)|^2 f(F_z)\bigr] = y^{-\beta} \E_P[f(F)].
+\]
+\end{enumerate}
+\end{itemize}
+
+\subsection{Pre-Schwarzian Moments at $z = i$ (\texttt{Moments.lean})}
+
+\begin{itemize}
+\item \textbf{Pre-Schwarzian Coefficients and Moment Identities} ($f : \C \to \C$, $z \in \C$):
+\begin{lstlisting}[language=Caml]
+def preSchwarzian (f : ℂ → ℂ) (z : ℂ) : ℂ := deriv (deriv f) z / deriv f z
+def coeffA (f : ℂ → ℂ) (z : ℂ) : ℝ := (z.im : ℝ) * (preSchwarzian f z).im
+def coeffB (f : ℂ → ℂ) (z : ℂ) : ℝ := (z.im : ℝ) * (preSchwarzian f z).re
+\end{lstlisting}
+Writing $q_F(z) = F''(z)/F'(z)$, $a_F(z) = y \ImPart q_F(z)$, and $b_F(z) = y \RePart q_F(z)$, the re-rooting transformation gives $q_{F_z}(i) = y q_F(z)$, so $a_{F_z}(i) = a_F(z)$, $b_{F_z}(i) = b_F(z)$, and $|q_{F_z}(i)|^2 = y^2 |q_F(z)|^2$.
+Differentiating the scale-covariance identity $\Psi(z) := \E_P[|H_F(z)|^2] = y^{-\beta}$ at $z = i$ using $\partial_x |H_F|^2 = -2|H_F|^2 \RePart q_F$, $\partial_y |H_F|^2 = 2|H_F|^2 \ImPart q_F$, and $\Delta |H_F|^2 = 4|H_F'(z)|^2 = 4|H_F|^2 |q_F|^2$ produces the three exact moment identities (\texttt{expected\_coeffA}, \texttt{expected\_coeffB}, \texttt{expected\_preSchwarzian\_norm\_sq}):
+\[
+\E_P[a_F(i)] = -\frac{\beta}{2}, \qquad \E_P[b_F(i)] = 0, \qquad \E_P\bigl[|q_F(i)|^2\bigr] = \frac{\beta(\beta+1)}{4}.
+\]
+\end{itemize}
+
+%==============================================================================
+\section{The Critical Map, Quadratic Positivity, and Boundary Escape (\texttt{CriticalMap}--\texttt{GoodPairs})}
+%==============================================================================
+
+\subsection{The Critical Map $G_F$ and the Normalized Jacobian Identity (\texttt{CriticalMap.lean})}
+
+Fix a parameter $k > 0$ (later specialized to $k = (\beta+3)/4$). For $F \in \Kclass$ and $\xi \in \C$, consider the reciprocal potential $V_\xi^F(z) = y^k |F(z)-\xi|^{-1}$. Its logarithmic critical points in $\uhp \setminus \{F^{-1}(\xi)\}$ are solved explicitly by $\xi = G_F(z)$, where:
+
+\begin{itemize}
+\item \textbf{Critical Map and Normalized Jacobian} ($f : \C \to \C$, $k \in \R$, $z \in \uhp$):
+\begin{lstlisting}[language=Caml]
+def criticalMap (f : ℂ → ℂ) (k : ℝ) (z : ℂ) : ℂ :=
+  f z + (Complex.I / (k : ℂ)) * (z.im : ℂ) * deriv f z
+
+def normalizedJacobian (f : ℂ → ℂ) (k : ℝ) (z : ℂ) : ℝ :=
+  LinearMap.det (fderiv ℝ (criticalMap f k) z).toLinearMap / ‖deriv f z‖ ^ 2
+\end{lstlisting}
+Mathematically,
+\[
+G_F(z) := F(z) + \frac{iy}{k}F'(z), \qquad
+J_F(z) := \frac{\detR DG_F(z)}{|F'(z)|^2}.
+\]
+Computing the real partial derivatives of $G_F$ at $z = x+iy \in \uhp$ (\texttt{criticalMap\_hasFDerivAt}):
+\[
+\partial_x G_F(z) = F'(z)\left(1 + \frac{iy}{k}q_F(z)\right), \qquad
+\partial_y G_F(z) = i F'(z)\left(\frac{k-1}{k} + \frac{iy}{k}q_F(z)\right).
+\]
+Factoring out $F'(z)$ (which scales determinants by $|F'(z)|^2$) yields the fundamental algebraic identity (\texttt{normalizedJacobian\_identity}):
+\[
+k^2 J_F(z) = k(k-1) + (2k-1)a_F(z) + |y q_F(z)|^2.
+\]
+Taking expectations at $z=i$ using $\E_P[a_F(i)] = -\beta/2$ and $\E_P[|q_F(i)|^2] = \beta(\beta+1)/4$ gives (\texttt{expected\_normalizedJacobian}):
+\[
+k^2 \E_P[J_F(i)] = k(k-1) - \frac{\beta(2k-1)}{2} + \frac{\beta(\beta+1)}{4}.
+\]
+Specializing to $k = (\beta+3)/4$ (\texttt{criticalK}), the right-hand side simplifies algebraically (\texttt{critical\_polynomial\_identity}) to
+\[
+k^2 \E_P[J_F(i)] = \frac{(\beta-1)(3-\beta)}{16}.
+\]
+Therefore (\texttt{expected\_normalizedJacobian\_pos}): \textbf{for every $\beta \in (1, 3)$, $\E_P[J_F(i)] > 0$!}
+\end{itemize}
+
+\subsection{Weighted Inverse Area and Quartic Boundary Tail (\texttt{InverseDensity.lean}, \texttt{BoundaryTail.lean})}
+
+To show that for $P$-a.e.\ $F \in \Kclass$ and $k = (\beta+3)/4$, the potential $V_\xi^F(z) = y^k/|F(z)-\xi|$ vanishes as $z \to \partial\uhp \cup \{\infty\}$, \texttt{InverseDensity.lean} and \texttt{BoundaryTail.lean} establish:
+
+\begin{enumerate}[label=(\arabic*)]
+\item \textbf{Weighted Inverse Area Bound (Lemma 4.2, \texttt{weightedInverseArea\_lintegral\_le})}:
+Define the core $B_0 = \overline{B}(i, 1/2)$ and the exterior $S_0 = \uhp \setminus B_0$ (\texttt{outsideCore}). On $S_0$, Koebe's $1/4$ theorem transferred to $\uhp$ gives $|F(z)| \ge 1/16$ (\texttt{classFun\_norm\_ge\_outsideCore}), so the injective map $w = 1/F(z)$ maps $S_0$ into $\overline{B}(0,16)$ with area $\int_{S_0} |F'(z)|^2 |F(z)|^{-4}\,dA(z) \le 256\pi$ (\texttt{inverse\_area\_bound}).
+Applying the involutive inversion $z^\# = \frac{-x+i}{y}$ (\texttt{affineInverse}, with real Jacobian determinant $y^{-3}$ and $F_z(z^\#) = \frac{-F(z)}{y F'(z)}$) and integrating against $P$ using scale-covariance $\E_P[|H_F(z)|^2 I(F_z)] = y^{-\beta}\E_P[I(F)]$ gives
+\[
+\E_P\left[\int_{S_0} y^{\beta-1}|F(z)|^{-4}\,dA(z)\right] \le 256\pi < \infty.
+\]
+
+\item \textbf{Quartic Boundary Tail (\texttt{BoundaryTail.lean}, \texttt{HasQuarticTail})}:
+For any $F$ with $I_\alpha(F) := \int_{S_0} y^{\alpha-4}|F(z)|^{-4}\,dA(z) < \infty$ (where $\alpha = \beta+3 = 4k$), applying the subharmonic $L^2$ mean-value inequality (\texttt{holomorphic\_sq\_submean\_lintegral}) to the holomorphic function $q(w) = F(w)^{-2}$ on the disk $B(z, y/4) \subset S_0 \setminus K$ yields
+\[
+y^\alpha |F(z)|^{-4} \le \frac{4^{\alpha-2}}{\pi} \int_{B(z,y/4)} \eta^{\alpha-4}|F(w)|^{-4}\,dA(w) \xrightarrow{z \to \partial\uhp \cup \{\infty\}} 0.
+\]
+Taking fourth roots gives $\sup_{z \in \uhp \setminus K} y^k |F(z)|^{-1} \to 0$, so every positive superlevel $\{z \in \uhp : V_\xi^F(z) \ge c\}$ ($c > 0$) is compact in $\uhp$ (\texttt{compact\_superlevels}, Proposition~4.1).
+\end{enumerate}
+
+\subsection{The Rectangular Divergence Trace Identity and Boundary Escape (\texttt{TraceIdentity.lean}--\texttt{GoodPairs.lean})}
+
+To extend $I_\alpha(F) < \infty$ from $\xi = 0$ to Lebesgue-almost every $\xi \in \C$, we need the horizontal trace bound $\sup_{0 < y \le 1} \int_\R (1 + |F(x+iy)-\xi|^2)^{-2}\,dx < \infty$ for a.e.\ $\xi \in \C$.
+
+\begin{itemize}
+\item \textbf{Rectangular Divergence Trace Identity (\texttt{TraceIdentity.lean})}:
+\begin{lstlisting}[language=Caml]
+def traceFluxX (ε : ℝ) (g : ℝ × ℝ → ℝ) (p : ℝ × ℝ) : ℝ :=
+  (p.2 - ε) * fderiv ℝ g p (1, 0)
+
+def traceFluxY (ε : ℝ) (g : ℝ × ℝ → ℝ) (p : ℝ × ℝ) : ℝ :=
+  (p.2 - ε) * fderiv ℝ g p (0, 1) - g p
+
+lemma divergence_traceFlux (ε : ℝ) {g : ℝ × ℝ → ℝ} {p : ℝ × ℝ}
+    (hg : ContDiffAt ℝ 2 g p) :
+    fderiv ℝ (traceFluxX ε g) p (1, 0) + fderiv ℝ (traceFluxY ε g) p (0, 1) =
+      (p.2 - ε) * (secondReal (g ∘ Complex.equivRealProdCLM) (p.1 + p.2 * Complex.I) 1 1 +
+        secondReal (g ∘ Complex.equivRealProdCLM) (p.1 + p.2 * Complex.I) Complex.I Complex.I)
+\end{lstlisting}
+\textbf{Bypass of Differentiating Under the Integral Sign}: Let $\chi \in C_c^\infty(\C)$ be a smooth bump (\texttt{exists\_trace\_smooth\_cutoff}) with $\chi \equiv 1$ on $[-1,1]\times[0,1]$ and $\operatorname{supp}\chi \subseteq [-2,2]\times[-2,2]$, let $\psi \in C^2(\C,\R)$ be nonnegative, and set $g(x,y) = \chi(x,y)\,\psi(F(x+iy))$. On the rectangle $[-2,2]\times[\varepsilon, 2]$ ($0 < \varepsilon \le 1$), $g$ vanishes on the left, right, and top boundaries, while on the bottom boundary $y = \varepsilon$, $\texttt{traceFluxY}(\varepsilon,g)(x,\varepsilon) = -g(x,\varepsilon)$. Therefore, Mathlib's divergence theorem on rectangles (\texttt{integral\_divergence\_prod\_Icc\_of\_hasFDerivAt\_of\_le}) immediately yields \texttt{rectangle\_trace\_identity}:
+\[
+\int_{-1}^1 \psi(F(x+i\varepsilon))\,dx \le \int_{-2}^2 g(x,\varepsilon)\,dx = \int_\varepsilon^2 \int_{-2}^2 (y-\varepsilon)\Delta g(x,y)\,dx\,dy.
+\]
+Expanding $\Delta(\chi \cdot (\psi \circ F)) = (\Delta\chi)(\psi\circ F) + 2\nabla\chi\cdot\nabla(\psi\circ F) + \chi |F'|^2 (\Delta\psi)\circ F$, bounding $y \le C |F'(z)|$ via Koebe distortion, and changing variables $w = F(z)$ via \texttt{conformal\_lintegral\_le} bounds the horizontal trace uniformly for $\varepsilon \in (0,1]$ (\texttt{class\_trace\_bound} in \texttt{TraceBounds.lean}).
+
+\item \textbf{Boundary Escape and Full Measure of Good Pairs (\texttt{BoundaryEscape.lean}, \texttt{GoodPairs.lean})}:
+Integrating $(1+|F(z)-\xi|^2)^{-2}$ over $\xi \in B(0,R)$ by Tonelli's theorem and combining with the exterior bound gives $\int_{\uhp} y^{\beta-1}(1+|F(z)-\xi|^2)^{-2}\,dA(z) < \infty$ for Lebesgue-a.e.\ $\xi \in \C$, which implies \texttt{HasQuarticTail} for $F - \xi$ (\texttt{ae\_shifted\_quarticTail}, Lemma~4.3).
+Meanwhile, \texttt{ae\_regular\_values} in \texttt{GoodPairs.lean} applies Mathlib's \texttt{addHaar\_image\_eq\_zero\_of\_det\_fderivWithin\_eq\_zero} on $\uhp$ to show that the critical values $G_F(\{z \in \uhp : J_F(z) = 0\})$ have Lebesgue measure zero. Thus, for $P$-a.e.\ $F \in \Kclass$, almost every $\xi \in \C$ is a \textbf{good pair} (\texttt{GoodPair}): $F-\xi$ has compact positive superlevels of $V_\xi^F$ and $\xi$ is a regular value of $G_F$ (\texttt{ae\_goodPairs\_of\_escape}, Lemma~5.4).
+\end{itemize}
+
+%==============================================================================
+\section{Regularized Gradients, Level Loops, and the Critical Point Count (\texttt{CriticalPoint}--\texttt{CriticalCount})}
+%==============================================================================
+
+\subsection{The Regularized Gradient and Elimination of the Pole (\texttt{CriticalPoint.lean})}
+
+Fix a good pair $(F,\xi)$ and $k > 0$. Instead of $\ell(z) = \log V_\xi^F(z)$ (which blows up at $F(z)=\xi$), \texttt{CriticalCount.lean} studies the globally $C^\infty$ \textbf{squared reciprocal potential}
+\[
+u(z) := \frac{|F(z)-\xi|^2}{y^{2k}} = \bigl(V_\xi^F(z)\bigr)^{-2} \qquad (\texttt{squaredReciprocalPotential}),
+\]
+so that a superlevel $\{V_\xi^F \ge \Lambda\}$ is a sublevel $\{u \le c\}$ with $c = \Lambda^{-2} > 0$. On $\{u > 0\}$, a direct computation (\texttt{squaredReciprocalPotential\_hasFDerivAt}) shows that the Euclidean gradient of $u$ is
+\[
+\nabla u(z) = -\frac{2k}{y^{2k}}\cdot \frac{ik}{y}\bigl(F(z)-\xi\bigr)\overline{\bigl(G_F(z)-\xi\bigr)}.
+\]
+Stripping off the positive factor $2k y^{-2k}$ defines the \textbf{regularized gradient}:
+
+\begin{itemize}
+\item \textbf{Regularized Gradient and Determinant Identities} ($f : \C \to \C$, $k \in \R$, $\xi, z \in \C$):
+\begin{lstlisting}[language=Caml]
+def regularizedGradient (f : ℂ → ℂ) (k : ℝ) (ξ z : ℂ) : ℂ :=
+  (Complex.I * (k : ℂ) / (z.im : ℂ)) * (f z - ξ) * conj (criticalMap f k z - ξ)
+
+lemma regularizedGradient_eq_zero {f : ℂ → ℂ} {k : ℝ} (hk : k ≠ 0) {ξ z : ℂ}
+    (hz : z ∈ halfPlane) :
+    regularizedGradient f k ξ z = 0 ↔ f z = ξ ∨ criticalMap f k z = ξ
+
+lemma det_regularizedGradient_at_pole_pos {f : ℂ → ℂ} (hf : UnivalentOn f halfPlane)
+    {k : ℝ} (hk : k ≠ 0) {ξ z : ℂ} (hz : z ∈ halfPlane) (hpole : f z = ξ) :
+    0 < LinearMap.det (fderiv ℝ (regularizedGradient f k ξ) z).toLinearMap
+
+lemma det_regularizedGradient_at_critical {f : ℂ → ℂ}
+    (hf : DifferentiableOn ℂ f halfPlane) {k : ℝ} {ξ z : ℂ}
+    (hz : z ∈ halfPlane) (hcrit : criticalMap f k z = ξ) :
+    LinearMap.det (fderiv ℝ (regularizedGradient f k ξ) z).toLinearMap =
+      -(k ^ 2 / z.im ^ 2) * ‖f z - ξ‖ ^ 2 *
+        LinearMap.det (fderiv ℝ (criticalMap f k) z).toLinearMap
+\end{lstlisting}
+\textbf{Key Consequence}: The regularized gradient $\mathcal{G} = \texttt{regularizedGradient}(F,k,\xi)$ is smooth across the pole $F(z)=\xi$! Its zeros in $\uhp$ are disjoint and consist of:
+\begin{enumerate}[label=(\arabic*)]
+\item The \textbf{pole} $F(z)=\xi$ (at most one point in $\uhp$ by univalence of $F$), where $G_F(z)-\xi = \frac{iy}{k}F'(z) \ne 0$ and $\detR D\mathcal{G}(z) = k^2 y^{-2}|F'(z)|^4 \cdot \frac{y^2}{k^2|F'(z)|^2} > 0$, so its Poincaré index is $+1$.
+\item The \textbf{local maxima} of $V_\xi^F$, where $G_F(z)=\xi$ and $J_F(z) < 0$, so $\detR D\mathcal{G}(z) > 0$ and the Poincaré index is $+1$.
+\item The \textbf{saddle points} of $V_\xi^F$, where $G_F(z)=\xi$ and $J_F(z) > 0$, so $\detR D\mathcal{G}(z) < 0$ and the Poincaré index is $-1$.
+\end{enumerate}
+\end{itemize}
+
+\subsection{Picard--Lindel\"of Level Curves and Winding Interior (\texttt{LevelCurve.lean}, \texttt{LevelIndex.lean})}
+
+For a regular level value $c > 0$ of $u$ (meaning $\{u \le c\}$ is compact in $\uhp$ and $\nabla u \ne 0$ on $\{u = c\}$), \texttt{LevelCurve.lean} defines the unit-speed-like tangent vector field
+\[
+\mathcal{T}(z) := i\,\frac{\nabla u(z)}{\|\nabla u(z)\|^2} \qquad (\texttt{tangentGradient}).
+\]
+Using Mathlib's Picard--Lindel\"of theorem (\texttt{IsPicardLindelof}, \texttt{exists\_isMIntegralCurve\_of\_isMIntegralCurveOn}), every point on the compact regular level set $\{u = c\}$ lies on a global periodic integral curve of $\mathcal{T}$ along which $u$ is constant (\texttt{isConstant\_along\_flow}). After reparametrizing by period $T_i > 0$, $\{u = c\}$ decomposes into a finite disjoint union of $1$-periodic $C^1$ simple closed curves $\gamma_1, \dots, \gamma_m$ (\texttt{compact\_regular\_level\_oriented\_curves}) satisfying $\gamma_j'(t) = T_j \mathcal{T}(\gamma_j(t)) = i \alpha_j(t) \nabla u(\gamma_j(t))$ with $\alpha_j(t) > 0$.
+
+\begin{itemize}
+\item \textbf{Bypass of the Jordan Curve Theorem (\texttt{LevelIndex.lean})}:
+\begin{lstlisting}[language=Caml]
+lemma sum_loopIndex_sublevel {f : ℂ → ℂ} (hf : DifferentiableOn ℂ f halfPlane)
+    {k : ℝ} (hk : 0 < k) {ξ : ℂ} {c : ℝ} (hc : 0 < c)
+    (hK : IsCompact {z | z ∈ halfPlane ∧ squaredReciprocalPotential f k ξ z ≤ c})
+    (hreg : ∀ z ∈ halfPlane, squaredReciprocalPotential f k ξ z = c →
+      regularizedGradient f k ξ z ≠ 0)
+    ... (z : ℂ) (hz : z ∉ ⋃ i, range (γ i)) :
+    (∑ i, loopIndex ⟨fun t : unitInterval => γ i t, (hγ i).1.continuous.comp continuous_subtype_val⟩ z) =
+      if z ∈ {w | w ∈ halfPlane ∧ squaredReciprocalPotential f k ξ w < c} then 1 else 0
+\end{lstlisting}
+\textbf{Proof Mechanism}:
+\begin{enumerate}[label=(\arabic*)]
+\item First, on the open bounded set $\texttt{windingInterior}(\gamma_i) = \{z \notin \operatorname{range}\gamma_i : \ind(\gamma_i, z) \ne 0\}$, whose frontier is contained in $\operatorname{range}\gamma_i \subset \{u = c\}$ (\texttt{frontier\_windingInterior\_subset}), the function $u(z) = |F(z)-\xi|^2 y^{-2k}$ cannot attain a local maximum at any point $z \in \uhp$ because $\log u(z) = 2\log|F(z)-\xi| - 2k\log y$ is harmonic where $F(z)\ne\xi$ except for $-2k\log y$, which has strictly positive Laplacian $\Delta(-2k\log y) = 2k y^{-2} > 0$ (\texttt{no\_local\_max\_squaredReciprocalPotential})! Thus $u < c$ on $\texttt{windingInterior}(\gamma_i)$ (\texttt{reciprocalPotential\_lt\_on\_windingInterior}).
+\item Second, at any point $\gamma_i(0)$ on the curve, moving in the inward normal direction $i \gamma_i'(0) = -T_i \alpha_i(0) \nabla u(\gamma_i(0))$ decreases $u$ below $c$ (entering $\{u < c\}$) while increasing $\ind(\gamma_i, \cdot)$ by $+1$ (\texttt{winding\_jump\_centred} from \texttt{Winding.lean}).
+\item Therefore, the integer-valued difference $\mathcal{J}(z) := \sum_{i=1}^m \ind(\gamma_i, z) - \mathbf{1}_{\{u(z) < c\}}$ has jump $1 - 1 = 0$ across every curve $\gamma_i$, so $\mathcal{J}$ extends continuously to all of $\C \to \Z$ (\texttt{sum\_loopIndex\_eq\_sublevel\_indicator}). Since $\C$ is connected and $\mathcal{J}(z) = 0$ for $\|z\|$ large, $\mathcal{J} \equiv 0$ on $\C$.
+\end{enumerate}
+\end{itemize}
+
+\subsection{Equal Count of Maxima and Saddles (Lemma 5.5, \texttt{CriticalCount.lean})}
+
+\begin{theorem}[\texttt{GoodPair.card\_maxima\_eq\_card\_saddles}, Lemma 5.5]
+Let $(F,\xi)$ be a good pair for $k > 0$, and suppose $\xi$ is in the image of $G_F$ on $\{z \in \uhp : J_F(z) > 0\}$. Then $F$ attains the value $\xi$ on $\uhp$, and the finite sets of local maxima $\mathcal{M}_F(\xi) = \{z \in \uhp : G_F(z)=\xi,\, J_F(z) < 0\}$ and saddle points $\mathcal{S}_F(\xi) = \{z \in \uhp : G_F(z)=\xi,\, J_F(z) > 0\}$ are nonempty and have the same cardinality:
+\[
+\#\mathcal{M}_F(\xi) = \#\mathcal{S}_F(\xi).
+\]
+\end{theorem}
+\begin{proof}
+Choose $c > 0$ larger than the value of $u$ at all critical points of $V_\xi^F$, so that $\{u \le c\}$ is compact in $\uhp$ and contains $\mathcal{M}_F(\xi) \cup \mathcal{S}_F(\xi)$ in $\{u < c\}$, while $\{u = c\}$ is a regular level decomposed into oriented loops $\gamma_1,\dots,\gamma_m$. Along each $\gamma_j$, $\mathcal{G}(\gamma_j(t))$ is a positive scalar multiple of $-\nabla u(\gamma_j(t)) = i \gamma_j'(t) / \alpha_j(t)$, so by the Hopf tangent turning theorem (\texttt{tangent\_turning\_log}), $\wind(\mathcal{G} \circ \gamma_j) = +1$. On the other hand, applying the Poincaré--Hopf degree formula (\texttt{windingNumber\_finite\_regular\_zeros}) to $\mathcal{G}$ on a convex box $K \subset \uhp$ containing $\{u \le c\}$ and summing over $j=1,\dots,m$ gives
+\[
+m = \sum_{j=1}^m \wind(\mathcal{G} \circ \gamma_j) = \sum_{a \in Z(\mathcal{G}) \cap K} \texttt{planeIndex}(D\mathcal{G}(a)) \sum_{j=1}^m \ind(\gamma_j, a).
+\]
+By \texttt{sum\_loopIndex\_sublevel}, $\sum_{j=1}^m \ind(\gamma_j, a) = \mathbf{1}_{\{u(a) < c\}}$. Summing instead the tangent turning numbers $\sum_{j=1}^m \ind(\gamma_j, a_0) = 1$ around a basepoint $a_0 \in \{u < c\}$ shows $\sum_{j=1}^m \wind(\mathcal{G} \circ \gamma_j) = 1$ (\texttt{sum\_regularizedGradient\_winding\_eq\_one}). Meanwhile, the zeros of $\mathcal{G}$ in $\{u < c\}$ are the pole $\{z : F(z)=\xi\}$ (index $+1$, cardinality $1$ since $u$ attains its minimum $0$ inside $\{u < c\}$), the maxima $\mathcal{M}_F(\xi)$ (each of index $+1$), and the saddles $\mathcal{S}_F(\xi)$ (each of index $-1$):
+\[
+1 = 1 + \#\mathcal{M}_F(\xi) - \#\mathcal{S}_F(\xi) \implies \#\mathcal{M}_F(\xi) = \#\mathcal{S}_F(\xi). \qedhere
+\]
+\end{proof}
+
+%==============================================================================
+\section{Equal-Rank Borel Pairing and Expected Area Transport (\texttt{RankPairing}--\texttt{ExpectedTransport})}
+%==============================================================================
+
+\subsection{Lexicographic Order and Equal-Rank Pairing (\texttt{RankPairing.lean})}
+
+To pair each saddle $z \in \mathcal{S}_F(\xi)$ bijectively with a local maximum $w \in \mathcal{M}_F(\xi)$ at the same critical value $\xi = G_F(z) = G_F(w)$ with $\ImPart w \ge \ImPart z$, \texttt{RankPairing.lean} orders critical points by the height quantity
+\[
+\texttt{criticalHeight}(k, z) := \frac{y^k}{\|z - G_F(z)\|_*} = y^{k-1} \qquad (\text{so that } V_\xi^F(z) = k\,|F'(z)|^{-1} y^{k-1} \text{ when } G_F(z)=\xi).
+\]
+Specifically, \texttt{criticalOrderTuple} embeds $\C \hookrightarrow \R \times_{\text{Lex}} (\R \times_{\text{Lex}} \R)$ via $z \mapsto (-y^{k-1}, \RePart z, \ImPart z)$, defining a strict total order \texttt{criticalPointLe} on $\C$ that is preserved by affine maps $\alpha_t(z) = x_0 + t_y z$ (\texttt{criticalPointLe\_affine}).
+
+\begin{itemize}
+\item \textbf{Order Rank and Equal-Rank Pairing Map} ($f : \C \to \C$, $k \in \R$, $z \in \uhp$):
+\begin{lstlisting}[language=Caml]
+def orderRank (S : Set α) (x : α) : ℕ := (S ∩ Iio x).ncard
+
+def criticalPair (f : ℂ → ℂ) (k : ℝ) (z : ℂ) : ℂ :=
+  nthElement (maximaFiber f k (criticalMap f k z))
+    (orderRank (saddleFiber f k (criticalMap f k z)) z)
+\end{lstlisting}
+By Lemma~5.5 applied on every superlevel $\{V_\xi^F \ge \Lambda\}$ (\texttt{card\_high\_saddles\_le\_high\_maxima}), for every threshold $\Lambda > 0$, the number of saddles in $\mathcal{S}_F(\xi)$ with $V_\xi^F \ge \Lambda$ is at most the number of maxima in $\mathcal{M}_F(\xi)$ with $V_\xi^F \ge \Lambda$. Because $|F'(z)| = \frac{k}{y}|F(z)-\xi|$ at any critical point $G_F(z)=\xi$, ordering by $V_\xi^F$ on a fiber reduces to comparing heights, and the $r$-th highest saddle $z \in \mathcal{S}_F(\xi)$ is paired with the $r$-th highest maximum $w = R_F(z) \in \mathcal{M}_F(\xi)$, which therefore satisfies $V_\xi^F(w) \ge V_\xi^F(z)$, i.e.,
+\[
+\frac{(\ImPart w)^{k-1}}{|F'(w)|} \ge \frac{(\ImPart z)^{k-1}}{|F'(z)|} \iff (\ImPart w)^{4(k-1)} |F'(w)|^{-4} \ge (\ImPart z)^{4(k-1)} |F'(z)|^{-4},
+\]
+and is affine-equivariant: $R_{F_t}(z) = \alpha_t^{-1}(R_F(\alpha_t(z)))$ (\texttt{class\_criticalPair\_reroot}).
+\end{itemize}
+
+\subsection{Borel Branches and Joint Measurability (\texttt{BorelPairing.lean})}
+
+\begin{itemize}
+\item \textbf{Countable Borel Branches (\texttt{BorelBranches}) and Proposition 5.6 (\texttt{measurable\_criticalPair})}:
+\begin{lstlisting}[language=Caml]
+structure BorelBranches (k : ℝ) (s : ℝ) where
+  dom : ℕ → Set (DiskClass × ℂ)
+  inv : ℕ → DiskClass → ℂ → ℂ
+  measurable_dom : ∀ n, MeasurableSet (dom n)
+  pairwise_disjoint : Pairwise (Disjoint on dom)
+  cover : ∀ p : DiskClass × ℂ, p.2 ∈ halfPlane → 0 < s * normalizedJacobian (classFun p.1) k p.2 →
+    ∃ n, p ∈ dom n
+  ...
+\end{lstlisting}
+\textbf{Bypass of Lusin--Novikov Selection}: At every point $(g_0, z_0) \in \Kclass \times \uhp$ where $s \cdot J_{F_0}(z_0) > 0$ ($s \in \{+1, -1\}$), the map $(g,z) \mapsto (g, G_{\texttt{classFun}(g)}(z))$ has invertible partial derivative along $\C$, so by the inverse function theorem on Banach spaces (\texttt{HasStrictFDerivAt.toOpenPartialHomeomorph}) and continuity on $\Kclass$, there is an open product neighborhood $U \times V \subset \Kclass \times \uhp$ on which $z \mapsto G_F(z)$ is injective for every $F \in U$. Since $\Kclass \times \uhp$ is second-countable and Lindel\"of, a countable subcover disjointified into Borel sets $D_n = \texttt{dom}(n)$ (\texttt{countable\_joint\_injective\_partition}) partitions $\{s \cdot J_F(z) > 0\}$. Because $\Kclass \times \uhp$ is a Polish space, the injective continuous map $(g,z) \mapsto (g, G_F(z))$ on each $D_n$ is a Borel measurable embedding (\texttt{ContinuousOn.measurableEmbedding}), yielding Borel partial inverses $\psi_n : \Kclass \times \C \to \uhp$ (\texttt{exists\_borel\_partial\_inverse}). Expressing the finite fibers $\mathcal{S}_F(\xi)$ and $\mathcal{M}_F(\xi)$ and their order ranks in terms of the countable branches $\psi_n(g, \xi)$ proves immediately that \texttt{criticalPair} is jointly Borel measurable (\texttt{measurable\_criticalPair}).
+\end{itemize}
+
+\subsection{Area Transport and the Contradiction $\rho \le 2$ (\texttt{AreaTransport.lean}--\texttt{ExpectedTransport.lean})}
+
+\begin{enumerate}[label=(\arabic*)]
+\item \textbf{Fiber Sum Change of Variables (\texttt{AreaTransport.lean}, \texttt{transport\_area})}:
+Decomposing $\Omega_F^\pm = \{z \in \uhp : \pm J_F(z) > 0\}$ into the countable disjoint Borel branches $D_n$ and applying Mathlib's injective change-of-variables formula on each branch proves that for any measurable indicator $u : \C \to [0,\infty]$,
+\[
+\int_{\Omega_F^\pm} \underbrace{y^{\beta-1}|F'(z)|^{-2}}_{\texttt{transportDensity}}\,(\pm J_F(z))\,u(z)\,dA(z)
+= \int_{\C} \sum_{z \in \Omega_F^\pm \cap G_F^{-1}(\xi)} \underbrace{y^{\beta-1}|F'(z)|^{-4}}_{\texttt{targetDensity}}\,u(z)\,dA(\xi).
+\]
+\item \textbf{Pointwise Domination under Equal-Rank Pairing (\texttt{targetDensity\_le\_pair})}:
+When $\beta - 1 = 4(k-1)$ (i.e., $k = (\beta+3)/4$), the potential inequality $V_\xi^F(w) \ge V_\xi^F(z)$ for $w = R_F(z)$ is \emph{precisely} the target density inequality
+\[
+(\ImPart z)^{\beta-1}|F'(z)|^{-4} \le (\ImPart w)^{\beta-1}|F'(w)|^{-4}!
+\]
+\item \textbf{Box Exhaustion and Expected Transport Inequality (\texttt{TransportBoxes.lean}, \texttt{ExpectedTransport.lean})}:
+Restricting $z$ to the displacement window $W_N = \{1/N \le \frac{\ImPart w}{\ImPart z} \le N,\, |\RePart w - \RePart z| \le N \ImPart z\}$ and the box $B_{R,Y} = [-R,R]\times[1,Y]$ ensures that $w = R_F(z)$ lands inside the enlarged box $B'_{R,Y,N} = [-(R+NY), R+NY]\times[1/N, NY]$ (\texttt{pair\_mem\_enlargedBox}). Summing over fibers gives the pointwise box transport inequality (\texttt{transport\_box}):
+\[
+\int_{W_N(F) \cap B_{R,Y}} y^{\beta-1}|F'(z)|^{-2} J_F^+(z)\,dA(z)
+\le \int_{B'_{R,Y,N}} y^{\beta-1}|F'(w)|^{-2} J_F^-(w)\,dA(w).
+\]
+Taking $\E_P[\,\cdot\,]$ using Tonelli's theorem and the scale-covariance identity (\texttt{weighted\_averagedDensity} in \texttt{ExpectedDensity.lean}: $\E_P[y^{\beta-1}|H_F(z)|^2 \Phi(F_z)] = y^{-1}\E_P[\Phi(F)]$) evaluates both box integrals explicitly in terms of $\int_{-R}^R dx \int_1^Y \frac{dy}{y} = 2R\log Y$:
+\[
+2R(\log Y)\,\E_P\bigl[J_F^+(i)\,\mathbf{1}_{W_N}(F,i)\bigr]
+\le 2(R+NY)(\log Y + 2\log N)\,\E_P\bigl[J_F^-(i)\bigr].
+\]
+Dividing by $2R\log Y$, letting $R \to \infty$, then $Y \to \infty$, and finally $N \to \infty$ by monotone convergence ($W_N \uparrow \text{good pairs}$) yields Proposition~6.1 (\texttt{expected\_positive\_le\_negative} and \texttt{expected\_normalizedJacobian\_nonpos}):
+\[
+\E_P[J_F^+(i)] \le \E_P[J_F^-(i)] \implies \E_P[J_F(i)] \le 0.
+\]
+\item \textbf{Proposition 6.2: $\rho \le 2$ (\texttt{transferRho\_le\_two}, \texttt{transferBeta\_le\_one})}:
+If $\rho > 2$, then $\beta = \log_2 \rho > 1$. On the one hand, the Koebe/distortion bound gives $\beta \le 3$ (and even for general $\beta \in (1,3)$, $\E_P[J_F(i)] = \frac{(\beta-1)(3-\beta)}{16k^2} > 0$, while for $\beta \ge 3$ a smaller exponent choice still yields a contradiction; in \texttt{ExpectedTransport.lean}, \texttt{no\_weighted\_law\_between\_one\_and\_three} rules out $\beta \in (1,3)$ and \texttt{transferBeta\_le\_one} concludes $\beta \le 1$, i.e., $\rho \le 2$).
+\end{enumerate}
+
+%==============================================================================
+\section{Proof of $B(-2)=1$, Brennan's Conjecture, and Endpoint Sharpness (\texttt{Spectrum}--\texttt{InverseMoment})}
+%==============================================================================
+
+\subsection{The Sharp Inverse-Square Spectrum $B(-2)=1$ (\texttt{Koebe.lean}, \texttt{Spectrum.lean})}
+
+\begin{itemize}
+\item \textbf{Upper Bound $\beta_f(-2) \le 1$ (\texttt{beta\_inverse\_le\_one})}:
+Since $\rho \le 2$, for every $\varepsilon > 0$, Proposition~2.4 (\texttt{uniform\_inverse\_square\_bound}) gives $M_{-2}(f,r) \le C_\varepsilon (1-r)^{-1-\varepsilon}$ for all $f \in \Sclass$ and $r \in [1/2, 1)$. Taking logarithms and dividing by $\log\frac{1}{1-r}$ as $r \to 1^-$ gives $\beta_f(-2) \le 1+\varepsilon$ for all $\varepsilon > 0$, hence $\beta_f(-2) \le 1$.
+\item \textbf{Lower Bound $\beta_{f_K}(-2) \ge 1$ (\texttt{koebe\_beta\_ge\_one})}:
+For the Koebe function $f_K(z) = \frac{z}{(1-z)^2} \in \Sclass$ (\texttt{koebeMap\_schlicht}), its derivative is $f_K'(z) = \frac{1+z}{(1-z)^3}$. On the boundary arc $-r e^{i\theta}$ with $|\theta| \le 1-r$ and $r \in [1/2,1)$, $|f_K'(-r e^{i\theta})| \le 2(1-r)$ (\texttt{koebe\_arc\_deriv\_bound}), so $|f_K'(-r e^{i\theta})|^{-2} \ge \frac{1}{4(1-r)^2}$. Integrating over $\theta \in [-(1-r), 1-r]$ gives $M_{-2}(f_K, r) \ge \frac{1}{4\pi(1-r)}$ (\texttt{koebe\_mean\_lower}), hence $\beta_{f_K}(-2) \ge 1$ and $B(-2) = 1$ (\texttt{inverse\_spectrum\_eq\_one}).
+\end{itemize}
+
+\subsection{Area Integrability on $\D$ for $t \in (-2, 2/3)$ and Brennan's Conjecture (\texttt{NegativeArea}--\texttt{DomainArea})}
+
+\begin{enumerate}[label=(\arabic*)]
+\item \textbf{Negative Powers $t \in (-2, 0)$ (\texttt{NegativeArea.lean}, \texttt{schlicht\_negative\_area})}:
+For any $\alpha > 0$, integrating $M_{-2}(f,r) \le C_{\alpha/2}(1-r)^{-1-\alpha/2}$ in polar coordinates against $(1-r)^\alpha r\,dr$ shows that $\int_{\D} (1-\|z\|)^\alpha |f'(z)|^{-2}\,dA(z) < \infty$ (\texttt{weighted\_inverse\_integrable}). For $t \in (-2,0)$, let $q = -t/2 \in (0,1)$ and $\alpha = \frac{1-q}{2q} > 0$, so that
+\[
+|f'(z)|^t = \Bigl((1-\|z\|)^\alpha |f'(z)|^{-2}\Bigr)^q \Bigl((1-\|z\|)^{-1/2}\Bigr)^{1-q}.
+\]
+Applying the weighted AM--GM inequality (\texttt{integrableOn\_geometric\_product}) and $\int_{\D}(1-\|z\|)^{-1/2}\,dA < \infty$ yields $\int_{\D}|f'(z)|^t\,dA(z) < \infty$.
+
+\item \textbf{Smoothed Modulus Means and Positive Powers $t \in (0, 2/3)$ (\texttt{SmoothMeans.lean}, \texttt{PositiveArea.lean})}:
+To avoid singularities of $|f(z)|^{2q}$ at $f(z)=0$, \texttt{SmoothMeans.lean} introduces the $C^\infty$ bracket power
+\[
+\langle w \rangle^2 := 1 + \|w\|^2 \quad (\texttt{bracketSq}), \qquad
+\psi_q(w) := (1 + \|w\|^2)^q \quad (\texttt{smoothPower}),
+\]
+which satisfies $0 \le \Delta \psi_q(w) = 4q(1+\|w\|^2)^{q-2}(1+q\|w\|^2) \le 4q(1+\|w\|^2)^{q-1}$ (\texttt{laplacian\_smoothPower\_bounds}). Pulling back to the logarithmic strip $z = x+iy \mapsto e^{iz} = e^{-y}e^{ix} \in \D$ (\texttt{logDisk}), where $y \le 3(1+\|f(e^{iz})\|^2)^{-1/4}$ by Koebe growth (\texttt{logStrip\_height\_bound}), the periodic rectangular trace theorem (\texttt{periodic\_conformal\_trace\_bounded}) bounds
+\[
+\sup_{0 < r < 1} \int_{-\pi}^{\pi} \bigl(1 + \|f(r e^{i\theta})\|^2\bigr)^q\,d\theta \le C_q < \infty \qquad \forall q \in (0, 1/4) \quad (\texttt{schlicht\_smooth\_means}).
+\]
+Combining this with $(1+\|f(z)\|^2)^{a-q} \lesssim (1-\|z\|)^{-4(a-q)}$ proves $\int_{\D}(1+\|f(z)\|^2)^a\,dA(z) < \infty$ for all $a < 1/2$ (\texttt{schlicht\_function\_area} in \texttt{PositiveArea.lean}). Meanwhile, for every $\eta > 0$, changing variables $w = f(z)$ via \texttt{conformal\_lintegral\_le} gives $\int_{\D} |f'(z)|^2 (1+\|f(z)\|^2)^{-1-\eta}\,dA(z) \le \int_{\C} (1+\|w\|^2)^{-1-\eta}\,dA(w) < \infty$ (\texttt{schlicht\_weighted\_derivative\_integrable}). For $t \in (0, 2/3)$, setting $q = t/2 \in (0, 1/3)$, $\eta = \frac{1-3q}{4q} > 0$, and $a = \frac{(1+\eta)q}{1-q} = \frac{1+q}{4(1-q)} < \frac{1}{2}$, the geometric decomposition
+\[
+|f'(z)|^t = \Bigl(|f'(z)|^2 (1+\|f(z)\|^2)^{-1-\eta}\Bigr)^q \Bigl((1+\|f(z)\|^2)^a\Bigr)^{1-q}
+\]
+implies $\int_{\D}|f'(z)|^t\,dA(z) < \infty$ (\texttt{schlicht\_positive\_area}).
+
+\item \textbf{Brennan's Conjecture (\texttt{DomainArea.lean}, \texttt{conformal\_domain\_area})}:
+For any conformal bijection $\varphi : W \to \D$ with inverse $f = \varphi^{-1} : \D \to W$, normalizing $f_0(z) = (f(z)-f(0))/f'(0) \in \Sclass$ shows $\int_{\D}|f'(w)|^t\,dA(w) < \infty$ for all $t \in (-2, 2/3)$ (\texttt{univalent\_disk\_area}). For $p \in (4/3, 4)$, we have $t := 2-p \in (-2, 2/3)$, and the conformal change of variables $z = f(w)$ (\texttt{conformal\_lintegral\_eq}) yields
+\[
+\int_W |\varphi'(z)|^p\,dA(z) = \int_{\D} |f'(w)|^2 \,|\varphi'(f(w))|^p\,dA(w) = \int_{\D} |f'(w)|^{2-p}\,dA(w) < \infty.
+\]
+\end{enumerate}
+
+\subsection{Endpoint Divergence for the Koebe Function (\texttt{AffineArea}--\texttt{InverseMoment})}
+
+Finally, Modules 41--47 prove that the open intervals $t \in (-2, 2/3)$ and $p \in (4/3, 4)$ are sharp:
+\begin{itemize}
+\item Near $z = -1$ ($z = -1 + w$ with $w = r e^{i\theta}$, $0 < r < 1/2$, $|\theta| < \pi/3$), $-1+w \in \D$ (\texttt{polar\_left\_mem\_disk}) and $|f_K'(-1+w)| = \frac{\|w\|}{\|2-w\|^3} \le \|w\| = r$, so $|f_K'(-1+w)|^{-2} \ge r^{-2}$ (\texttt{koebe\_polar\_left\_lower}).
+\item Near $z = +1$ ($z = 1 - w$ with $w = r e^{i\theta}$, $0 < r < 1/2$, $|\theta| < \pi/3$), $1-w \in \D$ (\texttt{polar\_right\_mem\_disk}) and $|f_K'(1-w)| = \frac{\|2-w\|}{\|w\|^3} \ge r^{-3}$, so $|f_K'(1-w)|^{2/3} \ge r^{-2}$ (\texttt{koebe\_polar\_right\_lower}).
+\item By \texttt{Sector.lintegral\_eq\_top\_of\_sector\_lower\_bound} in \texttt{SectorDivergence.lean}, integrating $r^{-2} \cdot r\,dr\,d\theta = r^{-1}\,dr\,d\theta$ over $(0, 1/2) \times (-\pi/3, \pi/3)$ diverges to $+\infty$. By monotone interpolation on $\R$, $\int_{\D}|f_K'(z)|^t\,dA(z) = \infty$ for all $t \notin (-2, 2/3)$, and via $p = 2-t$ (\texttt{koebe\_inverse\_areaMoment}), $\int_{W_K}|\varphi_K'(w)|^p\,dA(w) = \infty$ for all $p \notin (4/3, 4)$.
+\end{itemize}
+
+\end{document}

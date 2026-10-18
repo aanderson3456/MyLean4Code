@@ -3,6 +3,8 @@ import Mathlib
 open Set Complex Metric MeasureTheory Filter
 open scoped Topology
 
+namespace Brennan.Translation
+
 def disk : Set ℂ := Metric.ball 0 1
 
 def SphericalBoundaryNontrivial (W : Set ℂ) : Prop :=
@@ -29,7 +31,7 @@ def BrennansConjectureStatement : Prop :=
     IntegrableOn (fun z => ‖deriv f z‖ ^ p) W volume
 
 /-- Your formulation directly implies OpenAI's geometric formulation -/
-theorem yours_implies_theirs (h : BrennansConjectureStatement) : GeometricBrennan := by
+theorem yours_implies_theirs (h : BrennansConjectureStatement) : GeometricBrennan := by {
   intro W hW_open hW_conn hW_simp hW_sph φ h_diff h_bij s hs_lower hs_upper
   apply h W φ s
   · exact hW_open
@@ -41,9 +43,11 @@ theorem yours_implies_theirs (h : BrennansConjectureStatement) : GeometricBrenna
     have h_diff_univ : Differentiable ℂ φ := differentiableOn_univ.mp (hW_univ ▸ h_diff)
     have h_bij_univ : BijOn φ univ disk := hW_univ ▸ h_bij
     have h_bound : Bornology.IsBounded (range φ) := by
+    {
       have h_range : range φ = disk := by
+      {
         ext y
-        simp only [mem_range, mem_image]
+        simp only [mem_range]
         constructor
         · rintro ⟨x, rfl⟩
           exact h_bij_univ.mapsTo (mem_univ x)
@@ -51,11 +55,17 @@ theorem yours_implies_theirs (h : BrennansConjectureStatement) : GeometricBrenna
           have hy_img := h_bij_univ.surjOn hy
           simp only [mem_image, mem_univ, true_and] at hy_img
           exact hy_img
+      }
       rw [h_range]
       exact Metric.isBounded_ball
+    }
     have h_const : ∀ x y, φ x = φ y := h_diff_univ.apply_eq_apply_of_bounded h_bound
     have h0 : (0 : ℂ) ∈ disk := by simp [disk, ball]
-    have hhalf : (1/2 : ℂ) ∈ disk := by simp [disk, ball]; norm_num
+    have hhalf : (1/2 : ℂ) ∈ disk := by
+    {
+      simp [disk, ball]
+      norm_num
+    }
     rcases h_bij_univ.surjOn h0 with ⟨x1, _, hx1⟩
     rcases h_bij_univ.surjOn hhalf with ⟨x2, _, hx2⟩
     have heq := h_const x1 x2
@@ -67,4 +77,6 @@ theorem yours_implies_theirs (h : BrennansConjectureStatement) : GeometricBrenna
   · -- A bijection maps exactly to its target
     exact h_bij.image_eq
   · exact ⟨hs_lower, hs_upper⟩
+}
 
+end Brennan.Translation

@@ -143,18 +143,6 @@ lemma univalent_deriv_ne_zero {f : ℂ → ℂ} {U : Set ℂ}
 
 /-! ### 2. Submean inequality and Gronwall's Area Inequality -/
 
-/-- Gronwall's Area Theorem for meromorphic univalent maps `H(z) = z⁻¹ + h(z)` on `𝔻 \ {0}`
-(proved via boundary winding in `brennanOAI/lean/OAI/Analysis/IntegralMeans/UnivalentArea.lean`). -/
-axiom meromorphic_univalent_area {h H : ℂ → ℂ}
-    (hh : DifferentiableOn ℂ h (Metric.ball 0 1))
-    (hH : DifferentiableOn ℂ H (Metric.ball 0 1 \ {0}))
-    (hdef : ∀ z ∈ Metric.ball (0 : ℂ) 1, z ≠ 0 → H z = z⁻¹ + h z)
-    (hHd : ∀ z ∈ Metric.ball (0 : ℂ) 1 \ {0}, deriv H z ≠ 0)
-    (hHi : InjOn H (Metric.ball 0 1 \ {0}))
-    {r : ℝ} (hr : 0 < r) (hr1 : r < 1) :
-    ∫ z in Metric.closedBall 0 r, ‖deriv h z‖^2 ∂volume ≤
-      volume.real (Metric.closedBall (0 : ℂ) r) * (r^2)⁻¹^2
-
 lemma polar_symm_eq_circleMap (r θ : ℝ) :
     Complex.polarCoord.symm (r, θ) = circleMap 0 r θ := by
 {
@@ -322,6 +310,886 @@ lemma holomorphic_sq_submean {f : ℂ → ℂ} {R r : ℝ}
     integral_closedBall_holomorphic hf hr hrR, real_inner_smul_right,
     real_inner_self_eq_norm_sq, smul_eq_mul] at hnonneg
   dsimp only [K] at hnonneg ⊢
+  linarith
+}
+
+lemma integral_annulus_polar_step1 {f : ℂ → ℝ} {ε R : ℝ} (hε : 0 < ε)
+    (hf : ContinuousOn f (Metric.closedBall 0 R \ Metric.ball 0 ε)) :
+    IntegrableOn (fun p : ℝ × ℝ => p.1 • f (Complex.polarCoord.symm p))
+      (Ioo ε R ×ˢ Ioo (-Real.pi) Real.pi) := by
+{
+  let g : ℝ × ℝ → ℝ := fun p => p.1 • f (Complex.polarCoord.symm p)
+  refine (show IntegrableOn g (Icc ε R ×ˢ Icc (-Real.pi) Real.pi) from ?_).mono_set
+    (prod_mono Ioo_subset_Icc_self Ioo_subset_Icc_self)
+  apply ContinuousOn.integrableOn_compact (isCompact_Icc.prod isCompact_Icc)
+  have hpolar : Continuous (fun p : ℝ × ℝ => Complex.polarCoord.symm p) := by
+  {
+    simp only [Complex.polarCoord_symm_apply]
+    fun_prop
+  }
+  apply continuousOn_fst.smul (hf.comp hpolar.continuousOn ?_)
+  intro p hp
+  have hp0 : 0 ≤ p.1 := hε.le.trans hp.1.1
+  simp only [mem_diff, Metric.mem_closedBall, Metric.mem_ball, dist_zero_right,
+    Complex.norm_polarCoord_symm, abs_of_nonneg hp0, not_lt]
+  exact ⟨hp.1.2, hp.1.1⟩
+}
+
+lemma integral_annulus_polar_step2 {f : ℂ → ℝ} {ε R : ℝ} (hε : 0 < ε) :
+    ∫ z in Metric.ball (0 : ℂ) R \ Metric.closedBall 0 ε, f z =
+      ∫ p in Ioo ε R ×ˢ Ioo (-Real.pi) Real.pi,
+        p.1 • f (Complex.polarCoord.symm p) := by
+{
+  let s : Set ℂ := Metric.ball (0 : ℂ) R \ Metric.closedBall 0 ε
+  have hs : MeasurableSet s :=
+    (Metric.isOpen_ball.sdiff Metric.isClosed_closedBall).measurableSet
+  let g : ℝ × ℝ → ℝ := fun p => p.1 • f (Complex.polarCoord.symm p)
+  rw [← integral_indicator hs, ← Complex.integral_comp_polarCoord_symm, polarCoord_target]
+  have heq : (fun p : ℝ × ℝ => p.1 • s.indicator f (Complex.polarCoord.symm p)) =ᶠ[
+      ae (volume.restrict (Ioi (0 : ℝ) ×ˢ Ioo (-Real.pi) Real.pi))]
+    (Ioo ε R ×ˢ (univ : Set ℝ)).indicator g := by
+  {
+    filter_upwards [ae_restrict_mem (measurableSet_Ioi.prod measurableSet_Ioo)] with p hp
+    have hp1 : 0 < p.1 := hp.1
+    have hmem : Complex.polarCoord.symm p ∈ s ↔ p.1 ∈ Ioo ε R := by
+    {
+      simp only [s, mem_diff, Metric.mem_ball, Metric.mem_closedBall, dist_zero_right,
+        Complex.norm_polarCoord_symm, abs_of_pos hp1, not_le, mem_Ioo, and_comm]
+    }
+    by_cases hr : p.1 ∈ Ioo ε R
+    · rw [indicator_of_mem (hmem.mpr hr),
+        indicator_of_mem (show p ∈ Ioo ε R ×ˢ (univ : Set ℝ) from ⟨hr, mem_univ _⟩)]
+    · rw [indicator_of_notMem (mt hmem.mp hr),
+        indicator_of_notMem (show p ∉ Ioo ε R ×ˢ (univ : Set ℝ) from fun h => hr h.1), smul_zero]
+  }
+  rw [integral_congr_ae heq, integral_indicator (measurableSet_Ioo.prod MeasurableSet.univ),
+    Measure.restrict_restrict (measurableSet_Ioo.prod MeasurableSet.univ)]
+  congr 2
+  ext p
+  simp only [mem_inter_iff, mem_prod, mem_Ioi, mem_Ioo, mem_univ, and_true]
+  exact ⟨fun h => ⟨h.1, h.2.2⟩, fun h => ⟨h.1, hε.trans h.1.1, h.2⟩⟩
+}
+
+lemma circleAverage_real_eq_integral_neg_pi (f : ℂ → ℝ) (c : ℂ) (r : ℝ) :
+    Real.circleAverage f c r =
+      (2 * Real.pi)⁻¹ * ∫ θ in -Real.pi..Real.pi, f (circleMap c r θ) := by
+{
+  rw [Real.circleAverage_eq_integral_add (-Real.pi)]
+  rw [intervalIntegral.integral_comp_add_right (fun θ => f (circleMap c r θ)), smul_eq_mul]
+  congr 2 <;> ring
+}
+
+lemma integral_annulus_polar {f : ℂ → ℝ} {ε R : ℝ} (hε : 0 < ε) (hεR : ε < R)
+    (hf : ContinuousOn f (Metric.closedBall 0 R \ Metric.ball 0 ε)) :
+    ∫ z in Metric.ball (0 : ℂ) R \ Metric.closedBall 0 ε, f z =
+      ∫ r in ε..R, (2 * Real.pi * r) * Real.circleAverage f 0 r := by
+{
+  have hg := integral_annulus_polar_step1 hε hf
+  rw [integral_annulus_polar_step2 hε, Measure.volume_eq_prod, setIntegral_prod _ hg]
+  rw [intervalIntegral.integral_of_le hεR.le, integral_Ioc_eq_integral_Ioo]
+  apply setIntegral_congr_fun measurableSet_Ioo
+  intro r _hr
+  dsimp only
+  rw [circleAverage_real_eq_integral_neg_pi,
+    intervalIntegral.integral_of_le (neg_le_self Real.pi_pos.le),
+    integral_Ioc_eq_integral_Ioo, ← mul_assoc]
+  have he : (2 * Real.pi * r) * (2 * Real.pi)⁻¹ = r := by field_simp
+  rw [he, ← integral_const_mul]
+  apply setIntegral_congr_fun measurableSet_Ioo
+  intro θ _hθ
+  simp only [polar_symm_eq_circleMap, smul_eq_mul]
+}
+
+lemma circleAverage_re_sq_mul_deriv {h : ℂ → ℂ}
+    (hh : DifferentiableOn ℂ h (Metric.ball 0 1)) {ρ : ℝ} (hρ : 0 < ρ) (hρ1 : ρ < 1) :
+    Real.circleAverage (fun z : ℂ => (z^2 * deriv h z).re) 0 ρ = 0 := by
+{
+  let g : ℂ → ℂ := fun z => z^2 * deriv h z
+  have hg : DifferentiableOn ℂ g (Metric.ball 0 1) :=
+    (differentiableOn_id.pow 2).mul (hh.deriv Metric.isOpen_ball)
+  have hgi : IntervalIntegrable (fun θ => g (circleMap 0 ρ θ)) volume 0 (2 * Real.pi) := by
+  {
+    apply Continuous.intervalIntegrable
+    apply hg.continuousOn.comp_continuous (continuous_circleMap 0 ρ)
+    intro θ
+    simp [circleMap, abs_of_pos hρ, hρ1]
+  }
+  have havg : Real.circleAverage g 0 ρ = 0 := by
+  {
+    have hm : Real.circleAverage g 0 ρ = g 0 := by
+    {
+      apply DiffContOnCl.circleAverage
+      rw [abs_of_pos hρ]
+      apply DifferentiableOn.diffContOnCl
+      rw [closure_ball 0 hρ.ne']
+      exact hg.mono (Metric.closedBall_subset_ball hρ1)
+    }
+    simpa [g] using hm
+  }
+  have hcomm : Real.circleAverage (fun z => Complex.reCLM (g z)) 0 ρ =
+      Complex.reCLM (Real.circleAverage g 0 ρ) := by
+  {
+    simp only [Real.circleAverage_def, smul_eq_mul, map_smul]
+    congr 1
+    exact Complex.reCLM.intervalIntegral_comp_comm hgi
+  }
+  simpa [g, havg] using hcomm
+}
+
+lemma sphere_singular_cross_eq {h : ℂ → ℂ} {ρ : ℝ} {z : ℂ}
+    (hz : z ∈ Metric.sphere (0 : ℂ) ρ) :
+    ‖(z^2)⁻¹‖^2 - 2 * inner ℝ ((z^2)⁻¹) (deriv h z) =
+      (ρ^4)⁻¹ - 2 * (ρ^4)⁻¹ * (z^2 * deriv h z).re := by
+{
+  have hn : ‖z‖ = ρ := by simpa using hz
+  have hnsq : Complex.normSq z = ρ^2 := by rw [Complex.normSq_eq_norm_sq, hn]
+  have hinv2 : (z^2)⁻¹ = ((ρ^4)⁻¹ : ℝ) • conj (z^2) := by
+  {
+    rw [Complex.inv_def, map_pow, map_pow, hnsq, Complex.real_smul]
+    push_cast
+    ring
+  }
+  have hnorm : ‖(z^2)⁻¹‖^2 = (ρ^4)⁻¹ := by
+  {
+    rw [norm_inv, norm_pow, hn, ← inv_pow]
+    ring
+  }
+  have hinner : inner ℝ ((z^2)⁻¹) (deriv h z) = (ρ^4)⁻¹ * (z^2 * deriv h z).re := by
+  {
+    rw [hinv2, real_inner_smul_left]
+    congr 1
+    simp only [Complex.inner, RingHomCompTriple.comp_apply, RingHom.id_apply]
+    rw [mul_comm]
+  }
+  rw [hnorm, hinner]
+  ring
+}
+
+lemma circleAverage_singular_cross {h : ℂ → ℂ}
+    (hh : DifferentiableOn ℂ h (Metric.ball 0 1)) {ρ : ℝ} (hρ : 0 < ρ) (hρ1 : ρ < 1) :
+    Real.circleAverage (fun z : ℂ => ‖(z^2)⁻¹‖^2 - 2 * inner ℝ ((z^2)⁻¹) (deriv h z)) 0 ρ =
+      (ρ^4)⁻¹ := by
+{
+  have hcongr : Real.circleAverage (fun z : ℂ => ‖(z^2)⁻¹‖^2 - 2 * inner ℝ ((z^2)⁻¹) (deriv h z)) 0 ρ =
+      Real.circleAverage (fun z : ℂ => (ρ^4)⁻¹ - 2 * (ρ^4)⁻¹ * (z^2 * deriv h z).re) 0 ρ := by
+  {
+    apply Real.circleAverage_congr_sphere
+    intro z hz
+    rw [abs_of_pos hρ] at hz
+    exact sphere_singular_cross_eq hz
+  }
+  rw [hcongr]
+  have hg : Continuous (fun θ : ℝ => ((circleMap 0 ρ θ)^2 * deriv h (circleMap 0 ρ θ)).re) := by
+  {
+    apply Complex.continuous_re.comp
+    apply (((differentiableOn_id.pow 2).mul (hh.deriv Metric.isOpen_ball)).continuousOn).comp_continuous
+      (continuous_circleMap 0 ρ)
+    intro θ
+    simp [circleMap, abs_of_pos hρ, hρ1]
+  }
+  have hzero := circleAverage_re_sq_mul_deriv hh hρ hρ1
+  simp only [Real.circleAverage_def, smul_eq_mul] at hzero ⊢
+  rw [intervalIntegral.integral_sub intervalIntegrable_const
+    ((hg.intervalIntegrable _ _).const_mul _),
+    intervalIntegral.integral_const, intervalIntegral.integral_const_mul]
+  have hint0 : ∫ x in 0..2 * Real.pi, ((circleMap 0 ρ x)^2 * deriv h (circleMap 0 ρ x)).re = 0 := by
+  {
+    have h2pi : (2 * Real.pi)⁻¹ ≠ 0 := inv_ne_zero (mul_ne_zero two_ne_zero Real.pi_ne_zero)
+    exact (mul_eq_zero.mp hzero).resolve_left h2pi
+  }
+  rw [hint0, mul_zero, sub_zero, sub_zero, smul_eq_mul]
+  have h2pi : 2 * Real.pi ≠ 0 := mul_ne_zero two_ne_zero Real.pi_ne_zero
+  field_simp
+}
+
+lemma integral_inv_cube_eq_sub {ε r : ℝ} (hε : 0 < ε) (hεr : ε < r) :
+    ∫ ρ in ε..r, 2 * Real.pi * (ρ^3)⁻¹ =
+      (-Real.pi * (r^2)⁻¹) - (-Real.pi * (ε^2)⁻¹) := by
+{
+  apply intervalIntegral.integral_eq_sub_of_hasDerivAt
+  · intro ρ hρ
+    rw [uIcc_of_le hεr.le] at hρ
+    have hρ0 : ρ ≠ 0 := (lt_of_lt_of_le hε hρ.1).ne'
+    have hd := ((hasDerivAt_pow 2 ρ).inv (pow_ne_zero 2 hρ0)).const_mul (-Real.pi)
+    have heq : 2 * Real.pi * (ρ ^ 3)⁻¹ = -Real.pi * (-(↑2 * ρ ^ (2 - 1)) / (ρ ^ 2) ^ 2) := by
+    {
+      have h1 : (ρ ^ 3)⁻¹ * ρ ^ 4 = ρ := by
+        rw [show ρ ^ 4 = ρ ^ 3 * ρ by ring, ← mul_assoc, inv_mul_cancel₀ (pow_ne_zero 3 hρ0), one_mul]
+      have h2 : (ρ ^ 2) ^ 2 = ρ ^ 4 := by ring
+      norm_num
+      rw [h2, div_eq_mul_inv]
+      apply mul_right_cancel₀ (pow_ne_zero 4 hρ0)
+      linear_combination (2 * Real.pi) * h1 - (2 * Real.pi * ρ) * inv_mul_cancel₀ (pow_ne_zero 4 hρ0)
+    }
+    exact heq ▸ hd
+  · apply ContinuousOn.intervalIntegrable
+    rw [uIcc_of_le hεr.le]
+    exact continuousOn_const.mul ((continuousOn_id.pow 3).inv₀
+      (fun ρ hρ => pow_ne_zero 3 (lt_of_lt_of_le hε hρ.1).ne'))
+}
+
+lemma integral_annulus_singular_cross {h : ℂ → ℂ}
+    (hh : DifferentiableOn ℂ h (Metric.ball 0 1))
+    {ε r : ℝ} (hε : 0 < ε) (hεr : ε < r) (hr1 : r < 1) :
+    ∫ z in Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε,
+      (‖(z^2)⁻¹‖^2 - 2 * inner ℝ ((z^2)⁻¹) (deriv h z)) =
+      Real.pi * ((ε^2)⁻¹ - (r^2)⁻¹) := by
+{
+  let K : Set ℂ := Metric.closedBall 0 r \ Metric.ball 0 ε
+  have hK0 : ∀ z ∈ K, z ≠ 0 := by
+  {
+    intro z hz he
+    simp [K, he, hε] at hz
+  }
+  have hf : ContinuousOn (fun z : ℂ => ‖(z^2)⁻¹‖^2 - 2 * inner ℝ ((z^2)⁻¹) (deriv h z)) K := by
+  {
+    have hd : ContinuousOn (deriv h) K :=
+      (hh.deriv Metric.isOpen_ball).continuousOn.mono
+        (diff_subset.trans (Metric.closedBall_subset_ball hr1))
+    have hi : ContinuousOn (fun z : ℂ => (z^2)⁻¹) K :=
+      (continuousOn_id.pow 2).inv₀ (fun z hz => pow_ne_zero 2 (hK0 z hz))
+    exact (hi.norm.pow 2).sub (continuousOn_const.mul (hi.inner hd))
+  }
+  rw [integral_annulus_polar hε hεr hf]
+  have hcongr : ∫ ρ in ε..r, (2 * Real.pi * ρ) *
+      Real.circleAverage (fun z : ℂ => ‖(z^2)⁻¹‖^2 - 2 * inner ℝ ((z^2)⁻¹) (deriv h z)) 0 ρ =
+      ∫ ρ in ε..r, 2 * Real.pi * (ρ^3)⁻¹ := by
+  {
+    apply intervalIntegral.integral_congr
+    intro ρ hρ
+    rw [uIcc_of_le hεr.le] at hρ
+    have hρ0 : 0 < ρ := lt_of_lt_of_le hε hρ.1
+    dsimp only
+    rw [circleAverage_singular_cross hh hρ0 (lt_of_le_of_lt hρ.2 hr1)]
+    have hne : ρ ≠ 0 := hρ0.ne'
+    field_simp
+  }
+  rw [hcongr, integral_inv_cube_eq_sub hε hεr]
+  ring
+}
+
+lemma hasDerivAt_H_punctured {h H : ℂ → ℂ}
+    (hh : DifferentiableOn ℂ h (Metric.ball 0 1))
+    (hdef : ∀ z ∈ Metric.ball (0 : ℂ) 1, z ≠ 0 → H z = z⁻¹ + h z)
+    {z : ℂ} (hz : z ∈ Metric.ball (0 : ℂ) 1 \ {0}) :
+    HasDerivAt H (deriv h z - (z^2)⁻¹) z := by
+{
+  have hopen : IsOpen (Metric.ball (0 : ℂ) 1 \ {0}) :=
+    Metric.isOpen_ball.sdiff isClosed_singleton
+  have heq : H =ᶠ[𝓝 z] fun w => w⁻¹ + h w := by
+  {
+    filter_upwards [hopen.mem_nhds hz] with w hw
+    exact hdef w hw.1 hw.2
+  }
+  have hdh := ((hh z hz.1).differentiableAt (Metric.isOpen_ball.mem_nhds hz.1)).hasDerivAt
+  have hd := (hasDerivAt_inv (show z ≠ 0 from hz.2)).add hdh
+  rw [ neg_add_eq_sub] at hd
+  exact hd.congr_of_eventuallyEq heq
+}
+
+lemma integral_annulus_norm_deriv_H_sq {h H : ℂ → ℂ}
+    (hh : DifferentiableOn ℂ h (Metric.ball 0 1))
+    (hdef : ∀ z ∈ Metric.ball (0 : ℂ) 1, z ≠ 0 → H z = z⁻¹ + h z)
+    {ε r : ℝ} (hε : 0 < ε) (hεr : ε < r) (hr1 : r < 1) :
+    ∫ z in Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε, ‖deriv H z‖^2 =
+      (∫ z in Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε, ‖deriv h z‖^2) +
+        Real.pi * ((ε^2)⁻¹ - (r^2)⁻¹) := by
+{
+  let A : Set ℂ := Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε
+  let K : Set ℂ := Metric.closedBall 0 r \ Metric.ball 0 ε
+  have hAK : A ⊆ K := diff_subset_diff Metric.ball_subset_closedBall Metric.ball_subset_closedBall
+  have hK0 : ∀ z ∈ K, z ≠ 0 := by
+  {
+    intro z hz he
+    simp [K, he, hε] at hz
+  }
+  have hd : ContinuousOn (deriv h) K :=
+    (hh.deriv Metric.isOpen_ball).continuousOn.mono
+      (diff_subset.trans (Metric.closedBall_subset_ball hr1))
+  have hi : ContinuousOn (fun z : ℂ => (z^2)⁻¹) K :=
+    (continuousOn_id.pow 2).inv₀ (fun z hz => pow_ne_zero 2 (hK0 z hz))
+  have hint1 : IntegrableOn (fun z => ‖deriv h z‖^2) A :=
+    ((hd.norm.pow 2).integrableOn_compact
+      (isCompact_closedBall 0 r |>.diff Metric.isOpen_ball)).mono_set hAK
+  have hint2 : IntegrableOn (fun z => ‖(z^2)⁻¹‖^2 - 2 * inner ℝ ((z^2)⁻¹) (deriv h z)) A :=
+    (((hi.norm.pow 2).sub (continuousOn_const.mul (hi.inner hd))).integrableOn_compact
+      (isCompact_closedBall 0 r |>.diff Metric.isOpen_ball)).mono_set hAK
+  have hcongr : ∫ z in A, ‖deriv H z‖^2 =
+      ∫ z in A, (‖deriv h z‖^2 + (‖(z^2)⁻¹‖^2 - 2 * inner ℝ ((z^2)⁻¹) (deriv h z))) := by
+  {
+    apply setIntegral_congr_fun (Metric.isOpen_ball.sdiff Metric.isClosed_closedBall).measurableSet
+    intro z hz
+    have hz' : z ∈ Metric.ball (0 : ℂ) 1 \ {0} :=
+      ⟨Metric.ball_subset_ball hr1.le hz.1, hK0 z (hAK hz)⟩
+    dsimp only
+    rw [(hasDerivAt_H_punctured hh hdef hz').deriv, norm_sub_sq_real, real_inner_comm]
+    ring
+  }
+  rw [hcongr, integral_add hint1 hint2, integral_annulus_singular_cross hh hε hεr hr1]
+}
+
+lemma frontier_annulus_subset {ε r : ℝ} :
+    frontier (Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε) ⊆
+      Metric.sphere 0 ε ∪ Metric.sphere 0 r := by
+{
+  intro z hz
+  have hopen : IsOpen (Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε) :=
+    Metric.isOpen_ball.sdiff Metric.isClosed_closedBall
+  rw [hopen.frontier_eq] at hz
+  have hcl : closure (Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε) ⊆
+      Metric.closedBall 0 r \ Metric.ball 0 ε :=
+    closure_minimal (diff_subset_diff Metric.ball_subset_closedBall Metric.ball_subset_closedBall)
+      (Metric.isClosed_closedBall.sdiff Metric.isOpen_ball)
+  have hz1 := hcl hz.1
+  have hz2 := hz.2
+  simp only [mem_diff, Metric.mem_closedBall, Metric.mem_ball, dist_zero_right,
+    not_lt, not_and_or, not_le] at hz1 hz2
+  simp only [mem_union, Metric.mem_sphere, dist_zero_right]
+  rcases hz2 with hge | hle
+  · exact Or.inr (le_antisymm hz1.1 hge)
+  · exact Or.inl (le_antisymm hle hz1.2)
+}
+
+lemma closure_annulus_subset_punctured_ball {ε r : ℝ} (hε : 0 < ε) (hr1 : r < 1) :
+    closure (Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε) ⊆ Metric.ball 0 1 \ {0} := by
+{
+  refine (closure_minimal (diff_subset_diff Metric.ball_subset_closedBall Metric.ball_subset_closedBall)
+    (Metric.isClosed_closedBall.sdiff Metric.isOpen_ball)).trans
+    (fun w hw => ⟨Metric.closedBall_subset_ball hr1 hw.1, ?_⟩)
+  intro hw0
+  rw [mem_singleton_iff] at hw0
+  simp [hw0, hε] at hw
+}
+
+lemma exp_norm_harmonic_aux (c a b : ℂ) :
+    (c * a + conj c * b).re = (c * (a + conj b)).re := by
+{
+  rw [mul_add, Complex.add_re, Complex.add_re]
+  congr 1
+  have hconj : conj (conj c * b) = c * conj b := by simp
+  rw [← hconj, Complex.conj_re]
+}
+
+lemma harmonic_max_principle_annulus {f g : ℂ → ℂ} {ε r M : ℝ}
+    (hε : 0 < ε) (hr1 : r < 1)
+    (hf : DifferentiableOn ℂ f (Metric.ball 0 1 \ {0}))
+    (hg : DifferentiableOn ℂ g (Metric.ball 0 1 \ {0}))
+    (hM : ∀ w ∈ Metric.sphere (0 : ℂ) ε ∪ Metric.sphere 0 r, ‖f w + conj (g w)‖ ≤ M)
+    {z : ℂ} (hz : z ∈ Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε) :
+    ‖f z + conj (g z)‖ ≤ M := by
+{
+  let U : Set ℂ := Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε
+  let u₀ : ℂ := f z + conj (g z)
+  let c : ℂ := if u₀ = 0 then 1 else conj u₀ / ‖u₀‖
+  have hc_norm : ‖c‖ = 1 := by
+  {
+    dsimp only [c]
+    split_ifs with h0
+    · simp
+    · rw [norm_div, RCLike.norm_conj, Complex.norm_real, Real.norm_of_nonneg (norm_nonneg _),
+        div_self (norm_ne_zero_iff.mpr h0)]
+  }
+  have hc_re : (c * u₀).re = ‖u₀‖ := by
+  {
+    dsimp only [c]
+    split_ifs with h0
+    · simp [h0]
+    · have hn : (‖u₀‖ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr h0)
+      have he : conj u₀ / (‖u₀‖ : ℂ) * u₀ = (‖u₀‖ : ℂ) := by
+        rw [div_mul_eq_mul_div, Complex.conj_mul']; field_simp [hn]
+      rw [he, Complex.ofReal_re]
+  }
+  let Φ : ℂ → ℂ := fun w => Complex.exp (c * f w + conj c * g w)
+  have hΦ_norm (w : ℂ) : ‖Φ w‖ ≤ Real.exp ‖f w + conj (g w)‖ := by
+  {
+    simp only [Φ, Complex.norm_exp, exp_norm_harmonic_aux]
+    exact Real.exp_le_exp.mpr ((Complex.re_le_norm _).trans (by rw [norm_mul, hc_norm, one_mul]))
+  }
+  have hΦd : DiffContOnCl ℂ Φ U :=
+    ((((hf.const_mul c).add (hg.const_mul (conj c))).cexp).mono
+      (closure_annulus_subset_punctured_ball hε hr1)).diffContOnCl
+  have hbound := Complex.norm_le_of_forall_mem_frontier_norm_le
+    (Metric.isBounded_ball.subset diff_subset) hΦd
+    (fun w hw => (hΦ_norm w).trans (Real.exp_le_exp.mpr (hM w (frontier_annulus_subset hw))))
+    (subset_closure hz)
+  have hΦz : ‖Φ z‖ = Real.exp ‖u₀‖ := by
+    simp only [Φ, Complex.norm_exp, exp_norm_harmonic_aux, u₀, hc_re]
+  exact Real.exp_le_exp.mp (hΦz ▸ hbound)
+}
+
+def shearCLM (b : ℂ) : ℂ →L[ℝ] ℂ :=
+  ContinuousLinearMap.id ℝ ℂ -
+    (ContinuousLinearMap.mulLeftRight ℝ ℂ b 1).comp Complex.conjCLE.toContinuousLinearMap
+
+@[simp] lemma shearCLM_apply (b w : ℂ) : shearCLM b w = w - b * conj w := by
+{
+  simp [shearCLM]
+}
+
+lemma det_shearCLM (b : ℂ) :
+    LinearMap.det (shearCLM b).toLinearMap = 1 - ‖b‖^2 := by
+{
+  rw [← LinearMap.det_toMatrix Complex.basisOneI, Matrix.det_fin_two]
+  simp [shearCLM, LinearMap.toMatrix_apply, Complex.coe_basisOneI,
+    Complex.coe_basisOneI_repr, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
+  ring
+}
+
+lemma shearCLM_injective {b : ℂ} (hb : ‖b‖ < 1) : Function.Injective (shearCLM b) := by
+{
+  intro w₁ w₂ he
+  have hsub : shearCLM b (w₁ - w₂) = 0 := by rw [map_sub, he, sub_self]
+  rw [shearCLM_apply, sub_eq_zero] at hsub
+  have hn : ‖w₁ - w₂‖ = ‖b‖ * ‖w₁ - w₂‖ := by
+    simpa only [norm_mul, ← map_sub, RCLike.norm_conj] using congrArg norm hsub
+  have hzero : ‖w₁ - w₂‖ = 0 := by nlinarith [norm_nonneg (w₁ - w₂)]
+  exact sub_eq_zero.mp (norm_eq_zero.mp hzero)
+}
+
+lemma det_fderiv_complex_at {f : ℂ → ℂ} {z : ℂ} (hd : DifferentiableAt ℂ f z) :
+    LinearMap.det (fderiv ℝ f z).toLinearMap = ‖deriv f z‖^2 := by
+{
+  rw [(hd.hasDerivAt.hasFDerivAt.restrictScalars ℝ).fderiv,
+    ← LinearMap.det_toMatrix Complex.basisOneI, Matrix.det_fin_two]
+  simp [LinearMap.toMatrix_apply, Complex.coe_basisOneI, Complex.coe_basisOneI_repr,
+    ← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
+}
+
+lemma det_fderiv_shearCLM_comp {f : ℂ → ℂ} {b z : ℂ} (hd : DifferentiableAt ℂ f z) :
+    LinearMap.det (fderiv ℝ (fun w => shearCLM b (f w)) z).toLinearMap =
+      (1 - ‖b‖^2) * ‖deriv f z‖^2 := by
+{
+  have hfD : HasFDerivAt (fun w => shearCLM b (f w))
+      ((shearCLM b).comp (fderiv ℝ f z)) z :=
+    (shearCLM b).hasFDerivAt.comp z (hd.restrictScalars ℝ).hasFDerivAt
+  rw [hfD.fderiv, ContinuousLinearMap.coe_comp, LinearMap.det_comp,
+    det_shearCLM, det_fderiv_complex_at hd]
+}
+
+def dslope2 (h : ℂ → ℂ) : ℂ → ℂ := dslope (dslope h 0) 0
+
+lemma differentiableOn_dslope2 {h : ℂ → ℂ} (hh : DifferentiableOn ℂ h (Metric.ball 0 1)) :
+    DifferentiableOn ℂ (dslope2 h) (Metric.ball 0 1) := by
+{
+  have h0 : (0 : ℂ) ∈ Metric.ball (0 : ℂ) 1 := by simp
+  have hd1 : DifferentiableOn ℂ (dslope h 0) (Metric.ball 0 1) :=
+    (Complex.differentiableOn_dslope (Metric.isOpen_ball.mem_nhds h0)).mpr hh
+  exact (Complex.differentiableOn_dslope (Metric.isOpen_ball.mem_nhds h0)).mpr hd1
+}
+
+lemma h_sub_eq_linear_add_sq_dslope2 (h : ℂ → ℂ) (z : ℂ) :
+    h z - h 0 = deriv h 0 * z + z^2 * dslope2 h z := by
+{
+  have h1 : z * dslope h 0 z = h z - h 0 := by
+    simpa only [sub_zero, smul_eq_mul] using sub_smul_dslope h 0 z
+  have h2 : z * dslope2 h z = dslope h 0 z - deriv h 0 := by
+    simpa only [dslope2, sub_zero, smul_eq_mul, dslope_same] using sub_smul_dslope (dslope h 0) 0 z
+  linear_combination -h1 - z * h2
+}
+
+lemma shearCLM_H_sphere_inner {h H : ℂ → ℂ}
+    (hdef : ∀ z ∈ Metric.ball (0 : ℂ) 1, z ≠ 0 → H z = z⁻¹ + h z)
+    {ε : ℝ} (hε : 0 < ε) (hε1 : ε < 1) {w : ℂ} (hw : w ∈ Metric.sphere (0 : ℂ) ε) :
+    shearCLM ((ε^2 : ℂ) * deriv h 0) (H w - h 0) =
+      w⁻¹ + w^2 * dslope2 h w - ((ε^2 : ℂ) * deriv h 0) * conj (h w - h 0) := by
+{
+  have hw_norm : ‖w‖ = ε := by simpa using hw
+  have hw0 : w ≠ 0 := norm_pos_iff.mp (hw_norm.symm ▸ hε)
+  have hw_ball : w ∈ Metric.ball (0 : ℂ) 1 := by simpa [hw_norm] using hε1
+  have hinv : (ε^2 : ℂ) * conj (w⁻¹) = w := by
+  {
+    have hmul : w * conj w = (ε^2 : ℂ) := by rw [Complex.mul_conj', hw_norm]
+    rw [← hmul, map_inv₀, mul_inv_cancel_right₀ (by simpa using hw0)]
+  }
+  have h1 := h_sub_eq_linear_add_sq_dslope2 h w
+  rw [shearCLM_apply, hdef w hw_ball hw0, add_sub_assoc, map_add]
+  linear_combination h1 - deriv h 0 * hinv
+}
+
+lemma shearCLM_eq_add_conj (b w : ℂ) :
+    shearCLM b w = w + conj (-conj b * w) := by
+{
+  simp [shearCLM_apply, sub_eq_add_neg]
+}
+
+lemma norm_shearCLM_H_sphere_inner_le {h H : ℂ → ℂ}
+    (hdef : ∀ z ∈ Metric.ball (0 : ℂ) 1, z ≠ 0 → H z = z⁻¹ + h z)
+    {ε r C₁ C₂ : ℝ} (hε : 0 < ε) (hεr : ε < r) (hr1 : r < 1) (hC₁ : 0 ≤ C₁)
+    (h1 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope h 0 w‖ ≤ C₁)
+    (h2 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope2 h w‖ ≤ C₂)
+    {w : ℂ} (hw : w ∈ Metric.sphere (0 : ℂ) ε) :
+    ‖shearCLM ((ε^2 : ℂ) * deriv h 0) (H w - h 0)‖ ≤
+      ε⁻¹ + (C₂ + ‖deriv h 0‖ * C₁) * ε^2 := by
+{
+  have hw_norm : ‖w‖ = ε := by simpa using hw
+  have hw_cb : w ∈ Metric.closedBall (0 : ℂ) r := by simp [hw_norm, hεr.le]
+  rw [shearCLM_H_sphere_inner hdef hε (hεr.trans hr1) hw]
+  have ht1 := norm_sub_le (w⁻¹ + w^2 * dslope2 h w) (((ε^2 : ℂ) * deriv h 0) * conj (h w - h 0))
+  have ht2 := norm_add_le (w⁻¹) (w^2 * dslope2 h w)
+  have hn1 : ‖w⁻¹‖ = ε⁻¹ := by rw [norm_inv, hw_norm]
+  have hn2 : ‖w^2 * dslope2 h w‖ ≤ C₂ * ε^2 := by
+  {
+    rw [norm_mul, norm_pow, hw_norm, mul_comm]
+    exact mul_le_mul_of_nonneg_right (h2 w hw_cb) (sq_nonneg ε)
+  }
+  have hsub : ‖h w - h 0‖ ≤ C₁ := by
+  {
+    have hf : h w - h 0 = w * dslope h 0 w := by
+      simpa only [sub_zero, smul_eq_mul] using (sub_smul_dslope h 0 w).symm
+    rw [hf, norm_mul, hw_norm]
+    have hle1 : ε ≤ 1 := (hεr.trans hr1).le
+    nlinarith [h1 w hw_cb]
+  }
+  have hn3 : ‖((ε^2 : ℂ) * deriv h 0) * conj (h w - h 0)‖ ≤ ‖deriv h 0‖ * C₁ * ε^2 := by
+  {
+    rw [norm_mul, norm_mul, Complex.norm_pow, Complex.norm_real, Real.norm_of_nonneg hε.le,
+      RCLike.norm_conj]
+    have hmul := mul_le_mul_of_nonneg_left hsub (mul_nonneg (sq_nonneg ε) (norm_nonneg (deriv h 0)))
+    linarith
+  }
+  linarith
+}
+
+lemma norm_shearCLM_H_sphere_outer_le {h H : ℂ → ℂ}
+    (hdef : ∀ z ∈ Metric.ball (0 : ℂ) 1, z ≠ 0 → H z = z⁻¹ + h z)
+    {ε r C₁ : ℝ} (hε : 0 < ε) (hεr : ε < r) (hr1 : r < 1) (hC₁ : 0 ≤ C₁)
+    (h1 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope h 0 w‖ ≤ C₁)
+    {w : ℂ} (hw : w ∈ Metric.sphere (0 : ℂ) r) :
+    ‖shearCLM ((ε^2 : ℂ) * deriv h 0) (H w - h 0)‖ ≤
+      (1 + ‖deriv h 0‖) * (r⁻¹ + C₁) := by
+{
+  have hr : 0 < r := hε.trans hεr
+  have hw_norm : ‖w‖ = r := by simpa using hw
+  have hw0 : w ≠ 0 := norm_pos_iff.mp (hw_norm.symm ▸ hr)
+  have hw_ball : w ∈ Metric.ball (0 : ℂ) 1 := by simpa [hw_norm] using hr1
+  have hw_cb : w ∈ Metric.closedBall (0 : ℂ) r := Metric.sphere_subset_closedBall hw
+  have hHw : H w - h 0 = w⁻¹ + w * dslope h 0 w := by
+  {
+    rw [hdef w hw_ball hw0, add_sub_assoc]
+    congr 1
+    simpa only [sub_zero, smul_eq_mul] using (sub_smul_dslope h 0 w).symm
+  }
+  have hnH : ‖H w - h 0‖ ≤ r⁻¹ + C₁ := by
+  {
+    rw [hHw]
+    refine (norm_add_le _ _).trans ?_
+    rw [norm_inv, norm_mul, hw_norm]
+    have hle1 : r ≤ 1 := hr1.le
+    nlinarith [h1 w hw_cb]
+  }
+  rw [shearCLM_apply]
+  refine (norm_sub_le _ _).trans ?_
+  rw [norm_mul, norm_mul, Complex.norm_pow, Complex.norm_real, Real.norm_of_nonneg hε.le,
+    RCLike.norm_conj]
+  have hε2 : ε^2 ≤ 1 := by nlinarith [hεr.trans hr1]
+  have hm1 : ε^2 * ‖deriv h 0‖ * ‖H w - h 0‖ ≤ 1 * ‖deriv h 0‖ * ‖H w - h 0‖ :=
+    mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hε2 (norm_nonneg _)) (norm_nonneg _)
+  have hm2 : (1 + ‖deriv h 0‖) * ‖H w - h 0‖ ≤ (1 + ‖deriv h 0‖) * (r⁻¹ + C₁) :=
+    mul_le_mul_of_nonneg_left hnH (by positivity)
+  linarith
+}
+
+lemma norm_shearCLM_H_annulus_le {h H : ℂ → ℂ}
+    (hH : DifferentiableOn ℂ H (Metric.ball 0 1 \ {0}))
+    (hdef : ∀ z ∈ Metric.ball (0 : ℂ) 1, z ≠ 0 → H z = z⁻¹ + h z)
+    {ε r C₁ C₂ : ℝ} (hε : 0 < ε) (hεr : ε < r) (hr1 : r < 1)
+    (hC₁ : 0 ≤ C₁) (hC₂ : 0 ≤ C₂)
+    (h1 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope h 0 w‖ ≤ C₁)
+    (h2 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope2 h w‖ ≤ C₂)
+    (hout : (1 + ‖deriv h 0‖) * (r⁻¹ + C₁) ≤ ε⁻¹)
+    {z : ℂ} (hz : z ∈ Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε) :
+    ‖shearCLM ((ε^2 : ℂ) * deriv h 0) (H z - h 0)‖ ≤
+      ε⁻¹ + (C₂ + ‖deriv h 0‖ * C₁) * ε^2 := by
+{
+  let b : ℂ := (ε^2 : ℂ) * deriv h 0
+  let f : ℂ → ℂ := fun w => H w - h 0
+  let g : ℂ → ℂ := fun w => -conj b * f w
+  have hf : DifferentiableOn ℂ f (Metric.ball 0 1 \ {0}) := hH.sub_const (h 0)
+  have hg : DifferentiableOn ℂ g (Metric.ball 0 1 \ {0}) := hf.const_mul (-conj b)
+  have hnonneg : 0 ≤ (C₂ + ‖deriv h 0‖ * C₁) * ε^2 := by positivity
+  rw [shearCLM_eq_add_conj]
+  apply harmonic_max_principle_annulus hε hr1 hf hg ?_ hz
+  intro w hw
+  rw [← shearCLM_eq_add_conj]
+  rcases hw with hw | hw
+  · exact norm_shearCLM_H_sphere_inner_le hdef hε hεr hr1 hC₁ h1 h2 hw
+  · exact (norm_shearCLM_H_sphere_outer_le hdef hε hεr hr1 hC₁ h1 hw).trans (by linarith)
+}
+
+lemma annulus_subset_punctured_unit_ball {ε r : ℝ} (hε : 0 < ε) (hr1 : r < 1) :
+    Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε ⊆ Metric.ball (0 : ℂ) 1 \ {0} := by
+{
+  intro z hz
+  refine ⟨Metric.ball_subset_ball hr1.le hz.1, fun hz0 => ?_⟩
+  rw [mem_singleton_iff] at hz0
+  simp [hz0, hε.le] at hz
+}
+
+lemma lintegral_shearCLM_H_annulus_le {h H : ℂ → ℂ}
+    (hH : DifferentiableOn ℂ H (Metric.ball 0 1 \ {0}))
+    (hdef : ∀ z ∈ Metric.ball (0 : ℂ) 1, z ≠ 0 → H z = z⁻¹ + h z)
+    (hHi : InjOn H (Metric.ball 0 1 \ {0}))
+    {ε r C₁ C₂ : ℝ} (hε : 0 < ε) (hεr : ε < r) (hr1 : r < 1)
+    (hC₁ : 0 ≤ C₁) (hC₂ : 0 ≤ C₂)
+    (h1 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope h 0 w‖ ≤ C₁)
+    (h2 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope2 h w‖ ≤ C₂)
+    (hout : (1 + ‖deriv h 0‖) * (r⁻¹ + C₁) ≤ ε⁻¹)
+    (hb1 : ε^2 * ‖deriv h 0‖ < 1) :
+    (∫⁻ z in Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε,
+      ENNReal.ofReal ((1 - (ε^2 * ‖deriv h 0‖)^2) * ‖deriv H z‖^2)) ≤
+      volume (Metric.closedBall (0 : ℂ) (ε⁻¹ + (C₂ + ‖deriv h 0‖ * C₁) * ε^2)) := by
+{
+  let A : Set ℂ := Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε
+  let b : ℂ := (ε^2 : ℂ) * deriv h 0
+  let u : ℂ → ℂ := fun z => shearCLM b (H z - h 0)
+  have hb_norm : ‖b‖ = ε^2 * ‖deriv h 0‖ := by
+  {
+    simp [b, Complex.norm_real, Real.norm_of_nonneg hε.le]
+  }
+  have hb_lt : ‖b‖ < 1 := hb_norm.symm ▸ hb1
+  have hA_open : IsOpen A := Metric.isOpen_ball.sdiff Metric.isClosed_closedBall
+  have hA_sub := annulus_subset_punctured_unit_ball hε hr1
+  have hu_inj : InjOn u A := fun z₁ hz₁ z₂ hz₂ he =>
+    hHi (hA_sub hz₁) (hA_sub hz₂) (sub_left_inj.mp (shearCLM_injective hb_lt he))
+  have hdH (z : ℂ) (hz : z ∈ A) : DifferentiableAt ℂ (fun w => H w - h 0) z :=
+    ((hH z (hA_sub hz)).differentiableAt
+      ((Metric.isOpen_ball.sdiff isClosed_singleton).mem_nhds (hA_sub hz))).sub_const (h 0)
+  have hu_fderiv (z : ℂ) (hz : z ∈ A) : HasFDerivWithinAt u (fderiv ℝ u z) A z :=
+    ((shearCLM b).hasFDerivAt.comp z ((hdH z hz).restrictScalars ℝ).hasFDerivAt).differentiableAt.hasFDerivAt.hasFDerivWithinAt
+  have harea := lintegral_abs_det_fderiv_eq_addHaar_image volume hA_open.measurableSet hu_fderiv hu_inj
+  have hdet : ∀ z ∈ A, ENNReal.ofReal ((1 - (ε^2 * ‖deriv h 0‖)^2) * ‖deriv H z‖^2) =
+      ENNReal.ofReal |LinearMap.det (fderiv ℝ u z).toLinearMap| := by
+  {
+    intro z hz
+    have h1m : 0 ≤ 1 - ‖b‖^2 := by nlinarith [norm_nonneg b]
+    rw [det_fderiv_shearCLM_comp (hdH z hz), deriv_sub_const, abs_of_nonneg (mul_nonneg h1m (sq_nonneg _)), hb_norm]
+  }
+  rw [setLIntegral_congr_fun hA_open.measurableSet hdet, harea]
+  exact measure_mono (fun _ ⟨z, hz, hw⟩ => hw ▸ (Metric.mem_closedBall.mpr
+    ((dist_zero_right _).trans_le (norm_shearCLM_H_annulus_le hH hdef hε hεr hr1 hC₁ hC₂ h1 h2 hout hz))))
+}
+
+lemma annulus_area_ineq {h H : ℂ → ℂ}
+    (hH : DifferentiableOn ℂ H (Metric.ball 0 1 \ {0}))
+    (hdef : ∀ z ∈ Metric.ball (0 : ℂ) 1, z ≠ 0 → H z = z⁻¹ + h z)
+    (hHi : InjOn H (Metric.ball 0 1 \ {0}))
+    {ε r C₁ C₂ : ℝ} (hε : 0 < ε) (hεr : ε < r) (hr1 : r < 1)
+    (hC₁ : 0 ≤ C₁) (hC₂ : 0 ≤ C₂)
+    (h1 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope h 0 w‖ ≤ C₁)
+    (h2 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope2 h w‖ ≤ C₂)
+    (hout : (1 + ‖deriv h 0‖) * (r⁻¹ + C₁) ≤ ε⁻¹)
+    (hb1 : ε^2 * ‖deriv h 0‖ < 1) :
+    (1 - (ε^2 * ‖deriv h 0‖)^2) *
+      ∫ z in Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε, ‖deriv H z‖^2 ≤
+      Real.pi * (ε⁻¹ + (C₂ + ‖deriv h 0‖ * C₁) * ε^2)^2 := by
+{
+  let A : Set ℂ := Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε
+  let R_ε : ℝ := ε⁻¹ + (C₂ + ‖deriv h 0‖ * C₁) * ε^2
+  have hR_pos : 0 < R_ε := by positivity
+  have h1m : 0 ≤ 1 - (ε^2 * ‖deriv h 0‖)^2 := by
+    nlinarith [mul_nonneg (sq_nonneg ε) (norm_nonneg (deriv h 0))]
+  have hintH : IntegrableOn (fun z => (1 - (ε^2 * ‖deriv h 0‖)^2) * ‖deriv H z‖^2) A := by
+  {
+    let K : Set ℂ := Metric.closedBall 0 r \ Metric.ball 0 ε
+    have hAK : A ⊆ K := diff_subset_diff Metric.ball_subset_closedBall Metric.ball_subset_closedBall
+    have hKsub : K ⊆ Metric.ball (0 : ℂ) 1 \ {0} := fun z hz =>
+      ⟨Metric.closedBall_subset_ball hr1 hz.1, fun hz0 => by
+        rw [mem_singleton_iff] at hz0; simp [K, hz0, hε] at hz⟩
+    have hd : ContinuousOn (fun z => ‖deriv H z‖^2) K :=
+      (((hH.deriv (Metric.isOpen_ball.sdiff isClosed_singleton)).continuousOn.mono hKsub).norm.pow 2)
+    exact ((hd.const_mul _).integrableOn_compact ((isCompact_closedBall 0 r).diff Metric.isOpen_ball)).mono_set hAK
+  }
+  have hle : ENNReal.ofReal ((1 - (ε^2 * ‖deriv h 0‖)^2) * ∫ z in A, ‖deriv H z‖^2) ≤
+      volume (Metric.closedBall (0 : ℂ) R_ε) := by
+  {
+    rw [← integral_const_mul, ofReal_integral_eq_lintegral_ofReal hintH
+      (ae_of_all _ (fun z => mul_nonneg h1m (sq_nonneg _)))]
+    exact lintegral_shearCLM_H_annulus_le hH hdef hHi hε hεr hr1 hC₁ hC₂ h1 h2 hout hb1
+  }
+  have hvol : (volume (Metric.closedBall (0 : ℂ) R_ε)).toReal = Real.pi * R_ε^2 := by
+  {
+    rw [Complex.volume_closedBall, ENNReal.toReal_mul, ENNReal.toReal_pow,
+      ENNReal.toReal_ofReal hR_pos.le, ENNReal.coe_toReal]
+    exact mul_comm _ _
+  }
+  have htoReal := ENNReal.toReal_mono (isCompact_closedBall (0 : ℂ) R_ε).measure_ne_top hle
+  rwa [ENNReal.toReal_ofReal (mul_nonneg h1m (integral_nonneg (fun _ => sq_nonneg _))), hvol] at htoReal
+}
+
+lemma integral_closedBall_le_annulus_add_small {h : ℂ → ℂ}
+    (hh : DifferentiableOn ℂ h (Metric.ball 0 1))
+    {ε r D₀ : ℝ} (hε : 0 < ε) (hεr : ε < r) (hr1 : r < 1)
+    (hD : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖deriv h w‖^2 ≤ D₀) :
+    (∫ z in Metric.closedBall 0 r, ‖deriv h z‖^2) - Real.pi * ε^2 * D₀ ≤
+      ∫ z in Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε, ‖deriv h z‖^2 := by
+{
+  let A : Set ℂ := Metric.ball (0 : ℂ) r \ Metric.closedBall 0 ε
+  let E : Set ℂ := Metric.closedBall (0 : ℂ) ε
+  have hcont : ContinuousOn (fun z => ‖deriv h z‖^2) (Metric.closedBall 0 r) :=
+    ((hh.deriv Metric.isOpen_ball).continuousOn.mono (Metric.closedBall_subset_ball hr1)).norm.pow 2
+  have hintR : IntegrableOn (fun z => ‖deriv h z‖^2) (Metric.closedBall 0 r) :=
+    hcont.integrableOn_compact (isCompact_closedBall 0 r)
+  have hintA : IntegrableOn (fun z => ‖deriv h z‖^2) A :=
+    hintR.mono_set (diff_subset.trans Metric.ball_subset_closedBall)
+  have hintE : IntegrableOn (fun z => ‖deriv h z‖^2) E :=
+    hintR.mono_set (Metric.closedBall_subset_closedBall hεr.le)
+  have hunion : A ∪ E = Metric.ball (0 : ℂ) r :=
+    diff_union_of_subset (Metric.closedBall_subset_ball hεr)
+  have hsplit : ∫ z in Metric.closedBall (0 : ℂ) r, ‖deriv h z‖^2 =
+      (∫ z in A, ‖deriv h z‖^2) + ∫ z in E, ‖deriv h z‖^2 := by
+  {
+    rw [← setIntegral_congr_set (ball_closedBall_ae_eq r), ← hunion,
+      setIntegral_union disjoint_sdiff_self_left measurableSet_closedBall hintA hintE]
+  }
+  have hE_le : ∫ z in E, ‖deriv h z‖^2 ≤ Real.pi * ε^2 * D₀ := by
+  {
+    have hm := setIntegral_mono_on hintE (integrableOn_const (isCompact_closedBall 0 ε).measure_ne_top)
+      measurableSet_closedBall (fun z hz => hD z (Metric.closedBall_subset_closedBall hεr.le hz))
+    rw [setIntegral_const, smul_eq_mul, measureReal_def, Complex.volume_closedBall,
+      ENNReal.toReal_mul, ENNReal.toReal_pow, ENNReal.toReal_ofReal hε.le,
+      ENNReal.coe_toReal] at hm
+    change ∫ z in E, ‖deriv h z‖^2 ≤ (ε^2 * Real.pi) * D₀ at hm
+    linarith
+  }
+  linarith
+}
+
+lemma meromorphic_area_eps_poly_ineq {h H : ℂ → ℂ}
+    (hh : DifferentiableOn ℂ h (Metric.ball 0 1))
+    (hH : DifferentiableOn ℂ H (Metric.ball 0 1 \ {0}))
+    (hdef : ∀ z ∈ Metric.ball (0 : ℂ) 1, z ≠ 0 → H z = z⁻¹ + h z)
+    (hHi : InjOn H (Metric.ball 0 1 \ {0}))
+    {ε r C₁ C₂ D₀ : ℝ} (hε : 0 < ε) (hεr : ε < r) (hr1 : r < 1)
+    (hC₁ : 0 ≤ C₁) (hC₂ : 0 ≤ C₂)
+    (h1 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope h 0 w‖ ≤ C₁)
+    (h2 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope2 h w‖ ≤ C₂)
+    (hD : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖deriv h w‖^2 ≤ D₀)
+    (hout : (1 + ‖deriv h 0‖) * (r⁻¹ + C₁) ≤ ε⁻¹)
+    (hb1 : ε^2 * ‖deriv h 0‖ < 1) :
+    (1 - (ε^2 * ‖deriv h 0‖)^2) *
+      ((∫ z in Metric.closedBall 0 r, ‖deriv h z‖^2) - Real.pi * (r^2)⁻¹ - Real.pi * ε^2 * D₀) ≤
+      Real.pi * (2 * (C₂ + ‖deriv h 0‖ * C₁) * ε +
+        (C₂ + ‖deriv h 0‖ * C₁)^2 * ε^4 + ε^2 * ‖deriv h 0‖^2) := by
+{
+  let a : ℝ := ‖deriv h 0‖
+  let K : ℝ := C₂ + a * C₁
+  have h1m : 0 ≤ 1 - (ε^2 * a)^2 := by nlinarith [mul_nonneg (sq_nonneg ε) (norm_nonneg (deriv h 0))]
+  have hsub := integral_closedBall_le_annulus_add_small hh hε hεr hr1 hD
+  have hH_eq := integral_annulus_norm_deriv_H_sq hh hdef hε hεr hr1
+  have harea := annulus_area_ineq hH hdef hHi hε hεr hr1 hC₁ hC₂ h1 h2 hout hb1
+  have hm := mul_le_mul_of_nonneg_left
+    (add_le_add_left hsub (Real.pi * ((ε^2)⁻¹ - (r^2)⁻¹))) h1m
+  rw [← hH_eq] at hm
+  have hcomb := hm.trans harea
+  have hi1 : ε * ε⁻¹ = 1 := mul_inv_cancel₀ hε.ne'
+  have hi2 : ε^2 * (ε^2)⁻¹ = 1 := mul_inv_cancel₀ (pow_ne_zero 2 hε.ne')
+  have hi3 : (ε⁻¹)^2 = (ε^2)⁻¹ := inv_pow ε 2
+  have halg : Real.pi * (ε⁻¹ + K * ε^2)^2 - (1 - (ε^2 * a)^2) * Real.pi * (ε^2)⁻¹ =
+      Real.pi * (2 * K * ε + K^2 * ε^4 + ε^2 * a^2) := by
+  {
+    linear_combination Real.pi * hi3 + 2 * Real.pi * K * ε * hi1 + Real.pi * a^2 * ε^2 * hi2
+  }
+  dsimp only [a, K] at hcomb halg ⊢
+  linarith
+}
+
+lemma meromorphic_area_small_eps_conds {ε r a C₁ : ℝ}
+    (hr : 0 < r) (hr1 : r < 1) (ha : 0 ≤ a) (hC₁ : 0 ≤ C₁) (hε0 : 0 < ε)
+    (hεr : ε < r) (hεM : ε < ((1 + a) * (r⁻¹ + C₁) + 1)⁻¹) (hεa : ε < (a + 1)⁻¹) :
+    (1 + a) * (r⁻¹ + C₁) ≤ ε⁻¹ ∧ ε^2 * a < 1 := by
+{
+  have hM_pos : 0 < (1 + a) * (r⁻¹ + C₁) + 1 := by positivity
+  have hltM : (1 + a) * (r⁻¹ + C₁) + 1 < ε⁻¹ := (lt_inv_comm₀ hε0 hM_pos).mp hεM
+  have h1le : ε ≤ 1 := hεr.le.trans hr1.le
+  have hlta : a + 1 < ε⁻¹ := (lt_inv_comm₀ hε0 (by positivity)).mp hεa
+  have hm := mul_lt_mul_of_pos_left hlta hε0
+  rw [mul_inv_cancel₀ hε0.ne'] at hm
+  exact ⟨by linarith, by nlinarith⟩
+}
+
+lemma meromorphic_area_limit_step {h H : ℂ → ℂ}
+    (hh : DifferentiableOn ℂ h (Metric.ball 0 1))
+    (hH : DifferentiableOn ℂ H (Metric.ball 0 1 \ {0}))
+    (hdef : ∀ z ∈ Metric.ball (0 : ℂ) 1, z ≠ 0 → H z = z⁻¹ + h z)
+    (hHi : InjOn H (Metric.ball 0 1 \ {0}))
+    {r C₁ C₂ D₀ : ℝ} (hr : 0 < r) (hr1 : r < 1)
+    (hC₁ : 0 ≤ C₁) (hC₂ : 0 ≤ C₂) (_hD₀ : 0 ≤ D₀)
+    (h1 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope h 0 w‖ ≤ C₁)
+    (h2 : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖dslope2 h w‖ ≤ C₂)
+    (hD : ∀ w ∈ Metric.closedBall (0 : ℂ) r, ‖deriv h w‖^2 ≤ D₀) :
+    ∫ z in Metric.closedBall 0 r, ‖deriv h z‖^2 ≤ Real.pi * (r^2)⁻¹ := by
+{
+  let a : ℝ := ‖deriv h 0‖
+  let K : ℝ := C₂ + a * C₁
+  let I_r : ℝ := ∫ z in Metric.closedBall 0 r, ‖deriv h z‖^2
+  let M_out : ℝ := (1 + a) * (r⁻¹ + C₁) + 1
+  have hε₀ : 0 < min r (min M_out⁻¹ (a + 1)⁻¹) :=
+    lt_min hr (lt_min (inv_pos.mpr (by positivity)) (inv_pos.mpr (by positivity)))
+  have hev : ∀ᶠ ε in 𝓝[>] (0 : ℝ),
+      (1 - (ε^2 * a)^2) * (I_r - Real.pi * (r^2)⁻¹ - Real.pi * ε^2 * D₀) ≤
+        Real.pi * (2 * K * ε + K^2 * ε^4 + ε^2 * a^2) := by
+  {
+    filter_upwards [Ioo_mem_nhdsGT hε₀] with ε hε
+    have hεr : ε < r := hε.2.trans_le (min_le_left _ _)
+    have hcond := meromorphic_area_small_eps_conds hr hr1 (norm_nonneg _) hC₁ hε.1 hεr
+      (hε.2.trans_le ((min_le_right _ _).trans (min_le_left _ _)))
+      (hε.2.trans_le ((min_le_right _ _).trans (min_le_right _ _)))
+    exact meromorphic_area_eps_poly_ineq hh hH hdef hHi hε.1 hεr hr1 hC₁ hC₂ h1 h2 hD hcond.1 hcond.2
+  }
+  have htL : Tendsto (fun ε : ℝ => (1 - (ε^2 * a)^2) * (I_r - Real.pi * (r^2)⁻¹ - Real.pi * ε^2 * D₀))
+      (𝓝[>] 0) (𝓝 (I_r - Real.pi * (r^2)⁻¹)) := by
+  {
+    have hc : Continuous (fun ε : ℝ => (1 - (ε^2 * a)^2) * (I_r - Real.pi * (r^2)⁻¹ - Real.pi * ε^2 * D₀)) := by fun_prop
+    simpa using hc.tendsto 0 |>.mono_left nhdsWithin_le_nhds
+  }
+  have htR : Tendsto (fun ε : ℝ => Real.pi * (2 * K * ε + K^2 * ε^4 + ε^2 * a^2))
+      (𝓝[>] 0) (𝓝 0) := by
+  {
+    have hc : Continuous (fun ε : ℝ => Real.pi * (2 * K * ε + K^2 * ε^4 + ε^2 * a^2)) := by fun_prop
+    simpa using hc.tendsto 0 |>.mono_left nhdsWithin_le_nhds
+  }
+  have hle0 : I_r - Real.pi * (r^2)⁻¹ ≤ 0 := le_of_tendsto_of_tendsto htL htR hev
+  dsimp only [I_r] at hle0
+  linarith
+}
+
+/-- Gronwall's Area Theorem for meromorphic univalent maps `H(z) = z⁻¹ + h(z)` on `𝔻 \ {0}`. -/
+lemma meromorphic_univalent_area {h H : ℂ → ℂ}
+    (hh : DifferentiableOn ℂ h (Metric.ball 0 1))
+    (hH : DifferentiableOn ℂ H (Metric.ball 0 1 \ {0}))
+    (hdef : ∀ z ∈ Metric.ball (0 : ℂ) 1, z ≠ 0 → H z = z⁻¹ + h z)
+    (_hHd : ∀ z ∈ Metric.ball (0 : ℂ) 1 \ {0}, deriv H z ≠ 0)
+    (hHi : InjOn H (Metric.ball 0 1 \ {0}))
+    {r : ℝ} (hr : 0 < r) (hr1 : r < 1) :
+    ∫ z in Metric.closedBall 0 r, ‖deriv h z‖^2 ∂volume ≤
+      volume.real (Metric.closedBall (0 : ℂ) r) * (r^2)⁻¹^2 := by
+{
+  let B : Set ℂ := Metric.closedBall 0 r
+  have hBc : IsCompact B := isCompact_closedBall 0 r
+  have hBsub : B ⊆ Metric.ball 0 1 := Metric.closedBall_subset_ball hr1
+  have h0B : (0 : ℂ) ∈ Metric.ball (0 : ℂ) 1 := by simp
+  have hd1 : DifferentiableOn ℂ (dslope h 0) (Metric.ball 0 1) :=
+    (Complex.differentiableOn_dslope (Metric.isOpen_ball.mem_nhds h0B)).mpr hh
+  obtain ⟨C₁', hC₁'⟩ := hBc.exists_bound_of_continuousOn (hd1.continuousOn.mono hBsub)
+  obtain ⟨C₂', hC₂'⟩ := hBc.exists_bound_of_continuousOn
+    ((differentiableOn_dslope2 hh).continuousOn.mono hBsub)
+  obtain ⟨D₀', hD₀'⟩ := hBc.exists_bound_of_continuousOn
+    (((hh.deriv Metric.isOpen_ball).continuousOn.mono hBsub).norm.pow 2)
+  have hD' (w : ℂ) (hw : w ∈ B) : ‖deriv h w‖^2 ≤ D₀' := by
+    simpa only [Real.norm_eq_abs, abs_sq] using hD₀' w hw
+  have hle := meromorphic_area_limit_step hh hH hdef hHi hr hr1
+    (le_max_right C₁' 0) (le_max_right C₂' 0) (le_max_right D₀' 0)
+    (fun w hw => (hC₁' w hw).trans (le_max_left _ _))
+    (fun w hw => (hC₂' w hw).trans (le_max_left _ _))
+    (fun w hw => (hD' w hw).trans (le_max_left _ _))
+  have hvol : volume.real (Metric.closedBall (0 : ℂ) r) * (r^2)⁻¹^2 = Real.pi * (r^2)⁻¹ := by
+  {
+    rw [measureReal_def, Complex.volume_closedBall, ENNReal.toReal_mul, ENNReal.toReal_pow,
+      ENNReal.toReal_ofReal hr.le, ENNReal.coe_toReal]
+    change (r^2 * Real.pi) * (r^2)⁻¹^2 = Real.pi * (r^2)⁻¹
+    have hr2 : r^2 ≠ 0 := pow_ne_zero 2 hr.ne'
+    field_simp [hr2]
+  }
   linarith
 }
 
@@ -969,6 +1837,22 @@ lemma logarithmic_distortion_alg {x : ℝ} (h1 : 0 < 1 - x) (h2 : 0 < 1 + x) (h3
   constructor <;> field_simp [h1.ne', h2.ne', h3.ne'] <;> ring
 }
 
+lemma hasDerivAt_log_distortion_aux {L : ℝ → ℝ} {d x : ℝ}
+    (hL : HasDerivAt L d x) (h1 : 0 < 1 - x) (h2 : 0 < 1 + x) :
+    HasDerivAt (fun y => L y - Real.log (1 + y) + 3 * Real.log (1 - y))
+      (d - 1 / (1 + x) - 3 / (1 - x)) x ∧
+    HasDerivAt (fun y => L y - Real.log (1 - y) + 3 * Real.log (1 + y))
+      (d + 1 / (1 - x) + 3 / (1 + x)) x := by
+{
+  have hlogp := ((hasDerivAt_id x).const_add 1).log (ne_of_gt h2)
+  have hlogm := ((hasDerivAt_id x).const_sub 1).log (ne_of_gt h1)
+  constructor
+  · convert (hL.sub hlogp).add (hlogm.const_mul 3) using 1 <;> try rfl
+    simp; ring
+  · convert (hL.sub hlogm).add (hlogp.const_mul 3) using 1 <;> try rfl
+    simp; ring
+}
+
 lemma logarithmic_distortion {L D : ℝ → ℝ} {r : ℝ} (hr : 0 ≤ r) (hr1 : r < 1)
     (hL : ∀ x ∈ Icc 0 r, HasDerivAt L (D x) x) (hL0 : L 0 = 0)
     (hbound : ∀ x ∈ Icc 0 r,
@@ -980,20 +1864,8 @@ lemma logarithmic_distortion {L D : ℝ → ℝ} {r : ℝ} (hr : 0 ≤ r) (hr1 :
     ⟨by linarith [hx.2], by linarith [hx.1], by nlinarith [hx.1, hx.2]⟩
   let U := fun x => L x - Real.log (1 + x) + 3 * Real.log (1 - x)
   let V := fun x => L x - Real.log (1 - x) + 3 * Real.log (1 + x)
-  have hU (x) (hx : x ∈ Icc 0 r) : HasDerivAt U (D x - 1 / (1 + x) - 3 / (1 - x)) x := by
-  {
-    have hlogp := ((hasDerivAt_id x).const_add 1).log (ne_of_gt (hp x hx).2.1)
-    have hlogm := ((hasDerivAt_id x).const_sub 1).log (ne_of_gt (hp x hx).1)
-    convert ((hL x hx).sub hlogp).add (hlogm.const_mul 3) using 1 <;> try rfl
-    simp; ring
-  }
-  have hV (x) (hx : x ∈ Icc 0 r) : HasDerivAt V (D x + 1 / (1 - x) + 3 / (1 + x)) x := by
-  {
-    have hlogp := ((hasDerivAt_id x).const_add 1).log (ne_of_gt (hp x hx).2.1)
-    have hlogm := ((hasDerivAt_id x).const_sub 1).log (ne_of_gt (hp x hx).1)
-    convert ((hL x hx).sub hlogm).add (hlogp.const_mul 3) using 1 <;> try rfl
-    simp; ring
-  }
+  have hU (x) (hx : x ∈ Icc 0 r) := (hasDerivAt_log_distortion_aux (hL x hx) (hp x hx).1 (hp x hx).2.1).1
+  have hV (x) (hx : x ∈ Icc 0 r) := (hasDerivAt_log_distortion_aux (hL x hx) (hp x hx).1 (hp x hx).2.1).2
   have hUa : AntitoneOn U (Icc 0 r) :=
     antitoneOn_of_deriv_nonpos (convex_Icc 0 r)
       (fun x hx => (hU x hx).continuousAt.continuousWithinAt)
@@ -1193,6 +2065,68 @@ theorem koebe_distortion_theorem (f : ℂ → ℂ) (hf : IsClassS f) (z : ℂ) (
   have hzd : z ∈ disk := by simpa [disk] using hz
   have hd := schlicht_deriv_bounds hf hzd
   exact ⟨hd.1, hd.2, schlicht_lower_growth hf hzd, schlicht_upper_growth hf hzd⟩
+}
+
+lemma schlicht_deriv_compact_bound {f : ℂ → ℂ} (hf : IsClassS f)
+    {R : ℝ} (hR : R < 1) {z : ℂ} (hz : ‖z‖ ≤ R) :
+    ‖deriv f z‖ ≤ 2 / (1 - R)^3 := by
+{
+  have hzm : z ∈ disk := by simpa [disk] using hz.trans_lt hR
+  apply (schlicht_deriv_bounds hf hzm).2.trans
+  have hd : 0 < 1 - R := sub_pos.mpr hR
+  apply div_le_div₀ (by positivity) (by linarith [norm_nonneg z]) (by positivity)
+  exact pow_le_pow_left₀ hd.le (by linarith) 3
+}
+
+lemma schlicht_lipschitz_bound {f : ℂ → ℂ} (hf : IsClassS f)
+    {R : ℝ} (hR : R < 1) {z w : ℂ} (hz : ‖z‖ ≤ R) (hw : ‖w‖ ≤ R) :
+    ‖f z - f w‖ ≤ (2 / (1 - R)^3) * ‖z - w‖ := by
+{
+  apply Convex.norm_image_sub_le_of_norm_deriv_le (s := Metric.closedBall 0 R)
+    (𝕜 := ℂ) _ _ (convex_closedBall 0 R)
+    (by simpa using hw) (by simpa using hz)
+  · intro x hx
+    apply (hf.1 x _).differentiableAt
+      (Metric.isOpen_ball.mem_nhds (show x ∈ disk from ?_))
+    all_goals simpa [disk] using (show ‖x‖ ≤ R by simpa using hx).trans_lt hR
+  · intro x hx
+    exact schlicht_deriv_compact_bound hf hR (by simpa using hx)
+}
+
+lemma schlicht_local_bound {f : ℂ → ℂ} (hf : IsClassS f)
+    {R : ℝ} (hR : R < 1) {z : ℂ} (hz : ‖z‖ ≤ R) :
+    ‖f z‖ ≤ (2 / (1 - R)^3) * R := by
+{
+  have h := schlicht_lipschitz_bound hf hR hz
+    (show ‖(0 : ℂ)‖ ≤ R by simpa using (norm_nonneg z).trans hz)
+  simp only [hf.2.2.1, sub_zero] at h
+  exact h.trans (mul_le_mul_of_nonneg_left hz (by positivity))
+}
+
+lemma schlicht_uniform_separation {z w : ℂ} (hz : z ∈ disk) (hw : w ∈ disk)
+    (hne : z ≠ w) : ∃ c : ℝ, 0 < c ∧ ∀ f : ℂ → ℂ, IsClassS f → c ≤ ‖f w - f z‖ := by
+{
+  have hz1 : ‖z‖ < 1 := by simpa [disk] using hz
+  let R := min ((1 - ‖z‖) / 2) (‖w - z‖ / 2)
+  have hR : 0 < R := lt_min (by linarith)
+    (div_pos (norm_pos_iff.mpr (sub_ne_zero.mpr hne.symm)) (by norm_num))
+  have hR1 : R ≤ (1 - ‖z‖) / 2 := min_le_left _ _
+  have hR2 : R ≤ ‖w - z‖ / 2 := min_le_right _ _
+  have hsub : Metric.ball z R ⊆ disk := by
+  {
+    intro v hv
+    have hvR : ‖v - z‖ < R := by simpa [dist_eq_norm] using hv
+    have ht := norm_add_le (v - z) z
+    rw [sub_add_cancel] at ht
+    simp only [disk, Metric.mem_ball, dist_zero_right]
+    linarith
+  }
+  refine ⟨R * ((1 - ‖z‖) / (1 + ‖z‖)^3) / 4, by positivity, ?_⟩
+  intro f hf
+  have h := schlicht_separation hf hz hw hR hsub (by linarith [norm_nonneg (w - z)])
+  apply le_trans _ h
+  exact div_le_div_of_nonneg_right
+    (mul_le_mul_of_nonneg_left (schlicht_deriv_bounds hf hz).1 hR.le) (by norm_num)
 }
 
 end Brennan.Koebe
