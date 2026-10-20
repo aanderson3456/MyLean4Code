@@ -87,8 +87,10 @@ def inv_cayley (z : ℂ) : ℂ := (z - I) / (z + I)
 def K_to_S (F : KClass) (w : ℂ) : ℂ :=
   (F.F (cayley w)) / (2 * I)
 
-lemma isOpen_H : IsOpen H :=
-  isOpen_lt continuous_const Complex.continuous_im
+lemma isOpen_H : IsOpen H := by
+{
+  exact isOpen_lt continuous_const Complex.continuous_im
+}
 
 lemma inv_cayley_den_ne_zero {z : ℂ} (hz : z ∈ H) : z + I ≠ 0 := by
 {

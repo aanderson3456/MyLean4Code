@@ -950,7 +950,7 @@ lemma chain_rule_R2 {u v : ℝ × ℝ → ℝ} {ux₀ uy₀ vx₀ vy₀ : ℝ} {
       {
         calc M * ((ε / (2 * M)) * |t - t₀|)
           _ = M * (ε / (2 * M)) * |t - t₀| := by ring
-          _ = M * (1 / M) * (ε / 2) * |t - t₀| := by ring
+          _ = M * (1 / M) * (ε / 2) * |t - t₀| := by ring_nf
           _ = (M * (1 / M)) * (ε / 2) * |t - t₀| := by ring
           _ = 1 * (ε / 2) * |t - t₀| := by
           {
@@ -1079,7 +1079,7 @@ lemma chain_rule_R2 {u v : ℝ × ℝ → ℝ} {ux₀ uy₀ vx₀ vy₀ : ℝ} {
       {
         calc M * ((ε / (2 * M)) * |t - t₀|)
           _ = M * (ε / (2 * M)) * |t - t₀| := by ring
-          _ = M * (1 / M) * (ε / 2) * |t - t₀| := by ring
+          _ = M * (1 / M) * (ε / 2) * |t - t₀| := by ring_nf
           _ = (M * (1 / M)) * (ε / 2) * |t - t₀| := by ring
           _ = 1 * (ε / 2) * |t - t₀| := by
           {

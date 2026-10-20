@@ -759,9 +759,8 @@ lemma koebe_mapping {z : ℂ} (hz : ‖z‖ < 1) : koebe z ∈ KoebeSlitDomain :
   · left
     have h_re : (4 * (z / (1 - z) ^ 2)).re = 4 * (z / (1 - z) ^ 2).re := by
     {
-      have : (4 : ℂ).im = 0 := by rfl
       rw [mul_re]
-      simp [this]
+      simp
     }
     simp only [add_re, one_re] at h1
     rw [h_re] at h1
@@ -1289,7 +1288,7 @@ theorem cusp_divergence (p : ℝ) (hp : p ≥ 4) :
       ext w
       simp only [Function.comp_apply]
       congr 3
-      ring
+      ring_nf
     }
     rw [h_eq]
     exact measurePreserving_add_one.setLIntegral_comp_preimage_emb add_one_measurableEmbedding (fun z : ℂ ↦ (‖‖deriv koebe (z - 1)‖ ^ (2 - p)‖₊ : ℝ≥0∞)) S0
@@ -1605,7 +1604,7 @@ theorem pole_divergence (p : ℝ) (hp : p ≤ 4 / 3) :
       ext z
       simp only [Function.comp_apply]
       congr 3
-      ring
+      ring_nf
     }
     rw [h_eq]
     exact measurePreserving_sub_one.setLIntegral_comp_preimage_emb sub_one_measurableEmbedding (fun z : ℂ ↦ (‖‖deriv koebe (1 - z)‖ ^ (2 - p)‖₊ : ℝ≥0∞)) S0

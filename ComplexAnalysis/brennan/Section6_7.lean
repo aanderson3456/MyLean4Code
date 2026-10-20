@@ -1,5 +1,6 @@
 import Mathlib
 import brennan.Section4_5
+import brennan.Section6_Transport
 import brennan.BrennanConjecture
 
 open Complex Set MeasureTheory Topology Filter Function
@@ -47,8 +48,11 @@ PAPER: EJF,+(i) ≤ EJF,−(i), EJF (i) ≤ 0.
 (Verified in `brennanOAI/lean/OAI/Analysis/IntegralMeans/ExpectedTransport.lean` and `Spectrum.lean`)
 -/
 -- The integrated pairing over exhausting hyperbolic boxes forces E[J_F(i)] ≤ 0 when ρ > 2
-axiom E_J_nonpositive (h_rho : rho > 2) :
-  ∫ F, J (Real.log rho / Real.log 2) F I ∂P_eigenmeasure ≤ 0
+theorem E_J_nonpositive (h_rho : rho > 2) :
+  ∫ F, J (Real.log rho / Real.log 2) F I ∂P_eigenmeasure ≤ 0 := by
+{
+  exact E_J_nonpositive_proof h_rho
+}
 
 -- Extracting positivity of E[J_F(i)] from E[k^2 * J_F(i)] > 0
 lemma E_J_pos_of_scaled_pos (beta : ℝ) (h_beta : beta > 1) (P : Measure KClass)
@@ -430,6 +434,22 @@ lemma rectangle_conformal_lintegral_le {F : ℂ → ℂ} {R ε Y : ℝ} (hε : 0
     exact ⟨hz.1.1, hz.1.2, hε.trans hz.2.1⟩
 }
 
+lemma periodic_box_pointwise_le {F : ℂ → ℂ} {ψ b : ℂ → ℝ} {K ε : ℝ}
+    (hlap : ∀ z : ℂ, 0 < z.im → z.im ≤ 1 →
+      0 ≤ complexLaplacian (ψ ∘ F) z ∧
+      z.im * complexLaplacian (ψ ∘ F) z ≤ K * ‖deriv F z‖^2 * b (F z))
+    (hε : 0 < ε) (hK : 0 ≤ K) {p : ℝ × ℝ} (hp : p ∈ Icc (-Real.pi, ε) (Real.pi, (1 : ℝ))) :
+    ENNReal.ofReal ((p.2 - ε) * pairLaplacian ((ψ ∘ F) ∘ Complex.equivRealProdCLM.symm) p) ≤
+      ENNReal.ofReal K * (ENNReal.ofReal (‖deriv F (Complex.equivRealProdCLM.symm p)‖^2) *
+        ENNReal.ofReal (b (F (Complex.equivRealProdCLM.symm p)))) := by
+{
+  have hx := hlap (Complex.equivRealProdCLM.symm p) (hε.trans_le hp.1.2) hp.2.2
+  have him : (Complex.equivRealProdCLM.symm p).im = p.2 := rfl
+  rw [him] at hx; rw [← ENNReal.ofReal_mul (sq_nonneg _), ← ENNReal.ofReal_mul hK]
+  apply ENNReal.ofReal_le_ofReal; rw [pairLaplacian_complex, ← mul_assoc]
+  exact (mul_le_mul_of_nonneg_right (by linarith) hx.1).trans hx.2
+}
+
 lemma periodic_box_laplacian_integral_le {F : ℂ → ℂ} {ψ b : ℂ → ℝ} {K ε : ℝ}
     (hF : ∀ z : ℂ, 0 < z.im → AnalyticAt ℂ F z)
     (hi : InjOn F {z : ℂ | -Real.pi < z.re ∧ z.re < Real.pi ∧ 0 < z.im})
@@ -442,8 +462,7 @@ lemma periodic_box_laplacian_integral_le {F : ℂ → ℂ} {ψ b : ℂ → ℝ} 
       (p.2 - ε) * pairLaplacian ((ψ ∘ F) ∘ Complex.equivRealProdCLM.symm) p) ≤
       K * ∫ w, b w := by
 {
-  let E := Complex.equivRealProdCLM.symm
-  let g := (ψ ∘ F) ∘ E
+  let E := Complex.equivRealProdCLM.symm; let g := (ψ ∘ F) ∘ E
   let S := Icc (-Real.pi, ε) (Real.pi, (1 : ℝ))
   let U : ℝ × ℝ → ℝ := fun p => (p.2 - ε) * pairLaplacian g p
   have hbox (p : ℝ × ℝ) (hp : p ∈ S) : ContDiffAt ℝ 2 g p :=
@@ -455,8 +474,7 @@ lemma periodic_box_laplacian_integral_le {F : ℂ → ℂ} {ψ b : ℂ → ℝ} 
         (continuousAt_pairLaplacian (hbox p hp))))
   have hUn (p : ℝ × ℝ) (hp : p ∈ S) : 0 ≤ U p := by
   {
-    dsimp [U, g, E]
-    rw [pairLaplacian_complex]
+    dsimp [U, g, E]; rw [pairLaplacian_complex]
     exact mul_nonneg (by linarith [hp.1.2]) (hlap _ (hε.trans_le hp.1.2) hp.2.2).1
   }
   have he := ofReal_integral_eq_lintegral_ofReal hUi (ae_restrict_of_forall_mem measurableSet_Icc hUn)
@@ -465,18 +483,8 @@ lemma periodic_box_laplacian_integral_le {F : ℂ → ℂ} {ψ b : ℂ → ℝ} 
   {
     calc
       _ ≤ ∫⁻ p in S, ENNReal.ofReal K *
-          (ENNReal.ofReal (‖deriv F (E p)‖^2) * ENNReal.ofReal (b (F (E p)))) := by
-      {
-        refine setLIntegral_mono' measurableSet_Icc (fun p hp => ?_)
-        have hx := hlap (E p) (hε.trans_le hp.1.2) hp.2.2
-        have him : (E p).im = p.2 := rfl
-        rw [him] at hx
-        rw [← ENNReal.ofReal_mul (sq_nonneg _), ← ENNReal.ofReal_mul hK]
-        apply ENNReal.ofReal_le_ofReal
-        dsimp only [U, g]
-        rw [pairLaplacian_complex, ← mul_assoc]
-        exact (mul_le_mul_of_nonneg_right (by linarith) hx.1).trans hx.2
-      }
+          (ENNReal.ofReal (‖deriv F (E p)‖^2) * ENNReal.ofReal (b (F (E p)))) :=
+        setLIntegral_mono' measurableSet_Icc (fun p hp => periodic_box_pointwise_le hlap hε hK hp)
       _ = ENNReal.ofReal K * ∫⁻ p in S,
           ENNReal.ofReal (‖deriv F (E p)‖^2) * ENNReal.ofReal (b (F (E p))) :=
         lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
@@ -487,6 +495,21 @@ lemma periodic_box_laplacian_integral_le {F : ℂ → ℂ} {ψ b : ℂ → ℝ} 
   }
   rw [← he] at hL
   exact (ENNReal.ofReal_le_ofReal_iff (mul_nonneg hK (integral_nonneg hbn))).mp hL
+}
+
+lemma neg_traceFluxY_le {g : ℝ × ℝ → ℝ} {ε x : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1) :
+    -traceFluxY g ε (x, 1) ≤ |g (x, 1)| + |fderiv ℝ g (x, 1) (0, 1)| := by
+{
+  dsimp [traceFluxY]
+  have hmul : -(1 - ε) * fderiv ℝ g (x, 1) (0, 1) ≤ |fderiv ℝ g (x, 1) (0, 1)| := by
+  {
+    calc
+      _ = (1 - ε) * (-fderiv ℝ g (x, 1) (0, 1)) := by ring
+      _ ≤ (1 - ε) * |fderiv ℝ g (x, 1) (0, 1)| :=
+        mul_le_mul_of_nonneg_left (neg_le_abs _) (by linarith)
+      _ ≤ |fderiv ℝ g (x, 1) (0, 1)| := mul_le_of_le_one_left (abs_nonneg _) (by linarith)
+  }
+  linarith [le_abs_self (g (x, 1))]
 }
 
 lemma periodic_conformal_trace_bounded {F : ℂ → ℂ} {ψ b : ℂ → ℝ} {K : ℝ}
@@ -502,8 +525,7 @@ lemma periodic_conformal_trace_bounded {F : ℂ → ℂ} {ψ b : ℂ → ℝ} {K
     ∃ C : ℝ, ∀ ε : ℝ, 0 < ε → ε ≤ 1 →
       (∫ x in -Real.pi..Real.pi, ψ (F (x + ε * I))) ≤ C := by
 {
-  let E := Complex.equivRealProdCLM.symm
-  let g := (ψ ∘ F) ∘ E
+  let E := Complex.equivRealProdCLM.symm; let g := (ψ ∘ F) ∘ E
   have hg (p : ℝ × ℝ) (hp : 0 < p.2) : ContDiffAt ℝ 2 g p :=
     (hψ.contDiffAt.comp _ ((hF (E p) hp).contDiffAt.restrict_scalars ℝ)).comp _ E.contDiff.contDiffAt
   have hc (x : ℝ) : ContinuousAt (fun x : ℝ => g (x, 1)) x :=
@@ -530,25 +552,13 @@ lemma periodic_conformal_trace_bounded {F : ℂ → ℂ} {ψ b : ℂ → ℝ} {K
       exact ((continuous_const.mul (continuous_iff_continuousAt.mpr hd)).sub
         (continuous_iff_continuousAt.mpr hc)).neg
     }
-    refine intervalIntegral.integral_mono_on (by linarith [Real.pi_pos])
-      (htopc.intervalIntegrable _ _) hAint (fun x _ => ?_)
-    dsimp [traceFluxY]
-    have hmul : -(1 - ε) * fderiv ℝ g (x, 1) (0, 1) ≤ |fderiv ℝ g (x, 1) (0, 1)| := by
-    {
-      calc
-        _ = (1 - ε) * (-fderiv ℝ g (x, 1) (0, 1)) := by ring
-        _ ≤ (1 - ε) * |fderiv ℝ g (x, 1) (0, 1)| :=
-          mul_le_mul_of_nonneg_left (neg_le_abs _) (by linarith)
-        _ ≤ |fderiv ℝ g (x, 1) (0, 1)| := mul_le_of_le_one_left (abs_nonneg _) (by linarith)
-    }
-    linarith [le_abs_self (g (x, 1))]
+    exact intervalIntegral.integral_mono_on (by linarith [Real.pi_pos])
+      (htopc.intervalIntegrable _ _) hAint (fun x _ => neg_traceFluxY_le hε hε1)
   }
   have hid : (∫ x in -Real.pi..Real.pi, ψ (F (x + ε * I))) = ∫ x in -Real.pi..Real.pi, g (x, ε) :=
     intervalIntegral.integral_congr (fun x _ => by
       simp only [g, E, Function.comp_apply, Complex.equivRealProdCLM_symm_apply])
-  rw [hid]
-  dsimp only [g, E] at ht htop
-  linarith
+  rw [hid]; dsimp only [g, E] at ht htop; linarith
 }
 
 def logDisk (z : ℂ) : ℂ := Complex.exp (z * I)
@@ -858,16 +868,12 @@ lemma schlicht_smooth_means {f : ℂ → ℂ} (hf : Brennan.Koebe.IsClassS f) {q
   · have hb (θ : ℝ) : smoothPower q (f (circlePoint r θ)) ≤ (5 : ℝ) ^ q := by
     {
       have hm : circlePoint r θ ∈ disk := by
-      {
         simpa [disk, Brennan.Koebe.disk, circlePoint_norm, abs_of_pos hr] using hr1
-      }
-      have hg := schlicht_growth_upper hf hm
-      rw [circlePoint_norm, abs_of_pos hr] at hg
+      have hg := schlicht_growth_upper hf hm; rw [circlePoint_norm, abs_of_pos hr] at hg
       have hv : ‖f (circlePoint r θ)‖ ≤ 2 :=
         hg.trans ((div_le_iff₀ (sq_pos_of_pos (by linarith))).mpr (by nlinarith))
       apply Real.rpow_le_rpow (bracketSq_pos _).le _ hq.le
-      rw [bracketSq_eq]
-      nlinarith [norm_nonneg (f (circlePoint r θ))]
+      rw [bracketSq_eq]; nlinarith [norm_nonneg (f (circlePoint r θ))]
     }
     have hi := intervalIntegral.integral_mono_on (a := -Real.pi) (b := Real.pi) (by linarith [Real.pi_pos])
       ((continuous_circle_smoothPower hf q r hr.le hr1).intervalIntegrable _ _)
@@ -880,22 +886,18 @@ lemma schlicht_smooth_means {f : ℂ → ℂ} (hf : Brennan.Koebe.IsClassS f) {q
     {
       have hexp : Real.exp (-1) ≤ (1 / 2 : ℝ) := by
       {
-        rw [Real.exp_neg]
-        have he := Real.add_one_le_exp (1 : ℝ)
+        rw [Real.exp_neg]; have he := Real.add_one_le_exp (1 : ℝ)
         exact inv_le_comm₀ (Real.exp_pos _) (by norm_num) |>.mpr (by norm_num; linarith)
       }
       have hlog : -1 ≤ Real.log r := (Real.le_log_iff_exp_le hr).mpr (hexp.trans (by linarith))
-      dsimp [y]
-      linarith
+      dsimp [y]; linarith
     }
     have he (x : ℝ) : logDisk ((x : ℂ) + y * I) = circlePoint r x := by
     {
-      have hh := logDisk_realProd x y
-      rw [Complex.equivRealProdCLM_symm_apply] at hh
+      have hh := logDisk_realProd x y; rw [Complex.equivRealProdCLM_symm_apply] at hh
       simpa only [y, neg_neg, Real.exp_log hr] using hh
     }
-    have hs := hC y hy hy1
-    simp_rw [he] at hs
+    have hs := hC y hy hy1; simp_rw [he] at hs
     have hn : 0 ≤ 2 * Real.pi * (5 : ℝ) ^ q := by positivity
     linarith [le_abs_self C]
 }

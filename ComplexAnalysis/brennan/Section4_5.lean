@@ -1,5 +1,6 @@
 import Mathlib
 import brennan.Section3
+import brennan.Section5_LevelIndex
 
 open Complex Set MeasureTheory Topology Filter Classical Function
 open scoped ComplexConjugate Topology ENNReal NNReal CompactlySupported
@@ -711,23 +712,17 @@ lemma weighted_submean_ball_le {q : ℂ → ℂ} {s K : Set ℂ} {a : ℝ} (ha :
       z.im ^ a * ‖q w‖^2 ≤ (2 : ℝ) ^ a * (w.im ^ a * ‖q w‖^2) := by
   {
     have hd : ‖w - z‖ ≤ z.im / 4 := by simpa only [Metric.mem_closedBall, dist_eq_norm] using hw
-    have hi := Complex.abs_im_le_norm (w - z)
-    rw [Complex.sub_im] at hi
-    have hle : z.im ≤ 2 * w.im := by linarith [neg_le_of_abs_le hi]
-    have hh := Real.rpow_le_rpow hy.le hle ha
-    rw [Real.mul_rpow (by norm_num) (hwi w hw).le] at hh
-    nlinarith [sq_nonneg ‖q w‖]
+    have hi := Complex.abs_im_le_norm (w - z); rw [Complex.sub_im] at hi
+    have hh := Real.rpow_le_rpow hy.le (by linarith [neg_le_of_abs_le hi] : z.im ≤ 2 * w.im) ha
+    rw [Real.mul_rpow (by norm_num) (hwi w hw).le] at hh; nlinarith [sq_nonneg ‖q w‖]
   }
   have hweighted : ENNReal.ofReal (z.im ^ a) *
       (∫⁻ w in Metric.closedBall z (z.im / 4), ENNReal.ofReal (‖q w‖^2)) ≤
       ENNReal.ofReal ((2 : ℝ) ^ a) * (∫⁻ w in s \ K, ENNReal.ofReal (w.im ^ a * ‖q w‖^2)) := by
   {
-    rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top,
-      ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
-    refine le_trans (setLIntegral_mono' measurableSet_closedBall (fun w hw => ?_))
-      (lintegral_mono_set hsub)
-    rw [← ENNReal.ofReal_mul (Real.rpow_nonneg hy.le _),
-      ← ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)]
+    rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
+    refine le_trans (setLIntegral_mono' measurableSet_closedBall (fun w hw => ?_)) (lintegral_mono_set hsub)
+    rw [← ENNReal.ofReal_mul (Real.rpow_nonneg hy.le _), ← ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)]
     exact ENNReal.ofReal_le_ofReal (hcomp w hw)
   }
   have hmean := holomorphic_sq_submean_lintegral hhol (by linarith : 0 < z.im / 4) (by linarith)
@@ -745,8 +740,7 @@ lemma weighted_submean_ball_le {q : ℂ → ℂ} {s K : Set ℂ} {a : ℝ} (ha :
   have he : ENNReal.ofReal (Real.pi / 16) * ENNReal.ofReal (16 * (2 : ℝ) ^ a / Real.pi) =
       ENNReal.ofReal ((2 : ℝ) ^ a) := by
   {
-    rw [← ENNReal.ofReal_mul (by positivity)]
-    congr 1; field_simp
+    rw [← ENNReal.ofReal_mul (by positivity)]; congr 1; field_simp
   }
   rwa [← mul_assoc, he]
 }
@@ -1929,20 +1923,16 @@ lemma omitted_targets_cover {F : ℂ → ℂ} {k L R δ : ℝ}
   let center (j : ℤ) := F ((((j : ℝ) + 1 / 2) * h : ℝ) + h * I)
   have hsub (j : ℤ) (hj : j ∈ W) : realCell h j ⊆ {x : ℝ | F (x + h * I) ∈ K} := by
   {
-    rcases hj with ⟨ξ, hξ, x, y, hx, hy, hyy, hFw⟩
-    intro x' hx'
+    rcases hj with ⟨ξ, hξ, x, y, hx, hy, hyy, hFw⟩; intro x' hx'
     have hhB := omittedTargets_cell_bound hk hL hδ hh hh1 hcell hξ hx hy hyy hFw hx'
-    have hn := norm_add_le (F (x' + h * I) - ξ) ξ
-    simp only [sub_add_cancel] at hn
+    have hn := norm_add_le (F (x' + h * I) - ξ) ξ; simp only [sub_add_cancel] at hn
     change F (x' + h * I) ∈ Metric.closedBall (0 : ℂ) (R + D)
-    rw [Metric.mem_closedBall, dist_zero_right]
-    dsimp only [D] at hhB ⊢
+    rw [Metric.mem_closedBall, dist_zero_right]; dsimp only [D] at hhB ⊢
     nlinarith [hξ.2.1, mul_le_of_le_one_right hD hh1]
   }
   have hcovered : omittedTargets F k R δ h ⊆ ⋃ j : W, Metric.closedBall (center j) (D * h) := by
   {
-    intro ξ hξ
-    obtain ⟨x, y, hy, hyy, hFw⟩ := hξ.2.2
+    intro ξ hξ; obtain ⟨x, y, hy, hyy, hFw⟩ := hξ.2.2
     let j : ℤ := ⌊x / h⌋
     have hx : x ∈ realCell h j := mem_realCell_floor hh _
     refine mem_iUnion.mpr ⟨⟨j, ⟨ξ, hξ, x, y, hx, hy, hyy, hFw⟩⟩, ?_⟩
@@ -1958,8 +1948,7 @@ lemma omitted_targets_cover {F : ℂ → ℂ} {k L R δ : ℝ}
     {
       rw [← ENNReal.ofReal_div_of_pos hh]
       have he : Real.pi * (D * h) ^ 2 / h = (Real.pi * D ^ 2) * h := by field_simp
-      rw [he, ENNReal.ofReal_mul (by positivity)]
-      ring
+      rw [he, ENNReal.ofReal_mul (by positivity)]; ring
     }
 }
 
@@ -2552,11 +2541,124 @@ PAPER: #{maxima with V^F_ξ ≥ h} ≥ #{saddles with V^F_ξ ≥ h}. (5.12)
 PAPER: The possible pole is excluded from the maximum count.
 (Verified in `brennanOAI/lean/OAI/Analysis/IntegralMeans/CriticalCount.lean`)
 -/
-axiom lemma_5_5_count (beta : ℝ) (h_beta : beta > 1) (F : KClass) (xi : ℂ)
+lemma critical_fiber_discrete (beta : ℝ) (F : KClass) (xi : ℂ)
+    (hreg : ∀ z ∈ H, G beta F z = xi → J beta F z ≠ 0) :
+    IsDiscrete {z ∈ H | G beta F z = xi} := by
+{
+  rw [isDiscrete_iff_nhdsNE]
+  intro z hz
+  have hdet_eq : ((fderiv ℝ (G beta F) z 1).re * (fderiv ℝ (G beta F) z I).im -
+      (fderiv ℝ (G beta F) z I).re * (fderiv ℝ (G beta F) z 1).im) =
+      LinearMap.det (fderiv ℝ (G beta F) z).toLinearMap :=
+    (determinant_complex_real (fderiv ℝ (G beta F) z).toLinearMap).symm
+  have hd : LinearMap.det (fderiv ℝ (G beta F) z).toLinearMap ≠ 0 := by
+  {
+    have hJ := hreg z hz.1 hz.2
+    unfold J at hJ
+    rw [hdet_eq] at hJ
+    exact (div_ne_zero_iff.mp hJ).1
+  }
+  let e : ℂ ≃L[ℝ] ℂ :=
+    (LinearMap.equivOfIsUnitDet (isUnit_iff_ne_zero.mpr hd)).toContinuousLinearEquiv
+  have he : (e : ℂ → ℂ) = fderiv ℝ (G beta F) z :=
+    funext (fun w => LinearMap.equivOfIsUnitDet_apply (isUnit_iff_ne_zero.mpr hd) w)
+  have ha : ∃ C, AntilipschitzWith C (fderiv ℝ (G beta F) z) := by
+  {
+    rw [← he]
+    exact ⟨_, e.antilipschitz⟩
+  }
+  rw [Filter.inf_principal_eq_bot]
+  filter_upwards [(differentiableAt_G beta F hz.1).hasFDerivAt.eventually_ne ha] with w hw
+  exact fun h => hw h.2
+}
+
+lemma finite_critical_superlevel_KClass (beta : ℝ) (F : KClass) (xi : ℂ)
+    (h_good : is_good_pair beta F xi) (h : ℝ) (hh : h > 0) :
+    {z ∈ H | V_target beta F xi z ≥ ENNReal.ofReal h ∧ G beta F z = xi}.Finite := by
+{
+  let P := {z ∈ H | V_target beta F xi z ≥ ENNReal.ofReal h}
+  have hP : IsCompact P := h_good.1 h hh
+  have hc : ContinuousOn (G beta F) P :=
+    fun z hz => (differentiableAt_G beta F hz.1).continuousAt.continuousWithinAt
+  have hclosed := hc.preimage_isClosed_of_isClosed hP.isClosed (isClosed_singleton (x := xi))
+  have hcompact : IsCompact (P ∩ (G beta F) ⁻¹' {xi}) :=
+    hP.of_isClosed_subset hclosed inter_subset_left
+  have hdiscrete := (critical_fiber_discrete beta F xi h_good.2).mono
+    (show P ∩ (G beta F) ⁻¹' {xi} ⊆ {z ∈ H | G beta F z = xi} from fun _ hz => ⟨hz.1.1, hz.2⟩)
+  convert hcompact.finite hdiscrete using 1
+  ext z
+  simp only [P, mem_setOf_eq, mem_inter_iff, mem_preimage, mem_singleton_iff, and_assoc]
+}
+
+lemma G_eq_criticalMap (beta : ℝ) (F : KClass) :
+    G beta F = criticalMap F.F (k_val beta) := by
+{
+  rfl
+}
+
+lemma J_eq_normalizedJacobian (beta : ℝ) (F : KClass) (z : ℂ) :
+    J beta F z = normalizedJacobian F.F (k_val beta) z := by
+{
+  unfold J normalizedJacobian
+  rw [G_eq_criticalMap, determinant_complex_real]
+  rfl
+}
+
+lemma V_target_eq_potential (beta : ℝ) (hk : 0 ≤ k_val beta)
+    (F : KClass) (xi : ℂ) {z : ℂ} (hz : z ∈ H) :
+    V_target beta F xi z = potential F.F (k_val beta) xi z := by
+{
+  simp only [V_target, hz, ↓reduceIte, potential, ENNReal.ofReal_rpow_of_nonneg hz.le hk]
+}
+
+lemma is_good_pair_to_GoodPair (beta : ℝ) (hk : 0 ≤ k_val beta)
+    (F : KClass) (xi : ℂ) (hg : is_good_pair beta F xi) :
+    GoodPair F.F (k_val beta) xi := by
+{
+  refine ⟨fun δ hδ => ?_, fun z hz hG => ?_⟩
+  · convert hg.1 δ hδ using 1
+    ext z
+    exact and_congr_right (fun hz => by rw [V_target_eq_potential beta hk F xi hz, ge_iff_le])
+  · rw [← J_eq_normalizedJacobian]
+    exact hg.2 z hz hG
+}
+
+theorem lemma_5_5_count (beta : ℝ) (h_beta : beta > 1) (F : KClass) (xi : ℂ)
     (h_good : is_good_pair beta F xi) (h : ℝ) (hh : h > 0) :
   {z ∈ H | V_target beta F xi z ≥ ENNReal.ofReal h ∧ G beta F z = xi}.Finite ∧
   Nat.card {z ∈ H | is_max beta F xi z ∧ V_target beta F xi z ≥ ENNReal.ofReal h} ≥
-  Nat.card {z ∈ H | is_saddle beta F xi z ∧ V_target beta F xi z ≥ ENNReal.ofReal h}
+  Nat.card {z ∈ H | is_saddle beta F xi z ∧ V_target beta F xi z ≥ ENNReal.ofReal h} := by
+{
+  have hk : 0 < k_val beta := by
+  {
+    unfold k_val; linarith
+  }
+  have hc := (critical_count F.univalent hk
+    (is_good_pair_to_GoodPair beta hk.le F xi h_good) hh).2
+  refine ⟨finite_critical_superlevel_KClass beta F xi h_good h hh, ?_⟩
+  have hmax : {z ∈ H | is_max beta F xi z ∧ V_target beta F xi z ≥ ENNReal.ofReal h} =
+      {z ∈ {z | z ∈ H ∧ criticalMap F.F (k_val beta) z = xi ∧
+        ENNReal.ofReal h ≤ potential F.F (k_val beta) xi z} |
+        normalizedJacobian F.F (k_val beta) z < 0} := by
+  {
+    ext z
+    simp only [mem_setOf_eq, is_max, G_eq_criticalMap, J_eq_normalizedJacobian, ge_iff_le]
+    exact ⟨fun ⟨hz, ⟨hG, hJ⟩, hV⟩ => ⟨⟨hz, hG, V_target_eq_potential beta hk.le F xi hz ▸ hV⟩, hJ⟩,
+      fun ⟨⟨hz, hG, hV⟩, hJ⟩ => ⟨hz, ⟨hG, hJ⟩, (V_target_eq_potential beta hk.le F xi hz).symm ▸ hV⟩⟩
+  }
+  have hsad : {z ∈ H | is_saddle beta F xi z ∧ V_target beta F xi z ≥ ENNReal.ofReal h} =
+      {z ∈ {z | z ∈ H ∧ criticalMap F.F (k_val beta) z = xi ∧
+        ENNReal.ofReal h ≤ potential F.F (k_val beta) xi z} |
+        0 < normalizedJacobian F.F (k_val beta) z} := by
+  {
+    ext z
+    simp only [mem_setOf_eq, is_saddle, G_eq_criticalMap, J_eq_normalizedJacobian, gt_iff_lt, ge_iff_le]
+    exact ⟨fun ⟨hz, ⟨hG, hJ⟩, hV⟩ => ⟨⟨hz, hG, V_target_eq_potential beta hk.le F xi hz ▸ hV⟩, hJ⟩,
+      fun ⟨⟨hz, hG, hV⟩, hJ⟩ => ⟨hz, ⟨hG, hJ⟩, (V_target_eq_potential beta hk.le F xi hz).symm ▸ hV⟩⟩
+  }
+  rw [ge_iff_le, hmax, hsad]
+  exact hc
+}
 
 /-!
 PAPER: 5.3 Equal-rank pairing
@@ -2570,12 +2672,338 @@ PAPER: and (F, t · w) ∈ D, then
 PAPER: (TtF, w) ∈ D, RTtF(w) = t# · RF(t · w). (5.16)
 (Verified in `brennanOAI/lean/OAI/Analysis/IntegralMeans/BorelPairing.lean` and `RankPairing.lean`)
 -/
-axiom R_pair (beta : ℝ) (F : KClass) (z : ℂ) : ℂ
 
-axiom prop_5_6_equivariant_pairing (beta : ℝ) (h_beta : beta > 1) (F : KClass) (z : ℂ)
+def criticalHeight (beta : ℝ) (F : KClass) (z : ℂ) : ℝ :=
+  k_val beta * z.im ^ (k_val beta - 1) * ‖Q F.F z‖
+
+lemma criticalHeight_pos (beta : ℝ) (hk : 0 < k_val beta) (F : KClass) {z : ℂ} (hz : z ∈ H) :
+    0 < criticalHeight beta F z := by
+{
+  refine mul_pos (mul_pos hk (Real.rpow_pos_of_pos hz _)) ?_
+  unfold Q
+  exact norm_pos_iff.mpr (one_div_ne_zero (deriv_ne_zero_of_univalentOn isOpen_H F.univalent hz))
+}
+
+lemma G_ne_pole (beta : ℝ) (hk : k_val beta ≠ 0) (F : KClass) {z xi : ℂ}
+    (hz : z ∈ H) (hc : G beta F z = xi) : F.F z ≠ xi := by
+{
+  intro hp
+  have hn := mul_ne_zero (mul_ne_zero (div_ne_zero I_ne_zero
+      (Complex.ofReal_ne_zero.mpr hk)) (Complex.ofReal_ne_zero.mpr (ne_of_gt hz)))
+    (deriv_ne_zero_of_univalentOn isOpen_H F.univalent hz)
+  apply hn
+  simpa [G, hp] using hc
+}
+
+lemma G_sub_eq (beta : ℝ) (F : KClass) {z xi : ℂ} (hc : G beta F z = xi) :
+    F.F z - xi = I / (k_val beta : ℂ) * (z.im : ℂ) * deriv F.F z := by
+{
+  unfold G at hc
+  linear_combination hc
+}
+
+lemma V_target_off_pole (beta : ℝ) (F : KClass) {xi z : ℂ}
+    (hz : z ∈ H) (hp : F.F z ≠ xi) :
+    V_target beta F xi z = ENNReal.ofReal (z.im ^ (k_val beta) / ‖F.F z - xi‖) := by
+{
+  rw [V_target, if_pos hz,
+    ENNReal.ofReal_div_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr hp))]
+}
+
+lemma V_target_eq_criticalHeight (beta : ℝ) (hk : 0 < k_val beta) (F : KClass)
+    {z xi : ℂ} (hz : z ∈ H) (hc : G beta F z = xi) :
+    V_target beta F xi z = ENNReal.ofReal (criticalHeight beta F z) := by
+{
+  have hd := deriv_ne_zero_of_univalentOn isOpen_H F.univalent hz
+  have hy : z.im ≠ 0 := ne_of_gt hz
+  have hn : ‖deriv F.F z‖ ≠ 0 := norm_ne_zero_iff.mpr hd
+  rw [V_target_off_pole beta F hz (G_ne_pole beta (ne_of_gt hk) F hz hc),
+    G_sub_eq beta F hc, norm_mul, norm_mul, norm_div, Complex.norm_I,
+    Complex.norm_real, Complex.norm_real, Real.norm_eq_abs, Real.norm_eq_abs,
+    abs_of_pos hk, abs_of_pos hz, criticalHeight, Real.rpow_sub_one hy, Q, norm_div, norm_one]
+  congr 1
+  field_simp
+}
+
+def orderRank {α : Type*} [LinearOrder α] (S : Set α) (x : α) : ℕ := (S ∩ Iio x).ncard
+
+lemma orderRank_strictMonoOn {α : Type*} [LinearOrder α] {S : Set α}
+    (hfin : ∀ x ∈ S, (S ∩ Iio x).Finite) : StrictMonoOn (orderRank S) S := by
+{
+  intro x hx y hy hxy
+  apply Set.ncard_lt_ncard _ (hfin y hy)
+  refine ssubset_iff_subset_ne.mpr ⟨fun a ha => ⟨ha.1, ha.2.trans hxy⟩, ?_⟩
+  intro he
+  have hmem : x ∈ S ∩ Iio x := he ▸ (show x ∈ S ∩ Iio y from ⟨hx, hxy⟩)
+  exact lt_irrefl x hmem.2
+}
+
+lemma orderRank_injOn {α : Type*} [LinearOrder α] {S : Set α}
+    (hfin : ∀ x ∈ S, (S ∩ Iio x).Finite) : InjOn (orderRank S) S := by
+{
+  exact (orderRank_strictMonoOn hfin).injOn
+}
+
+lemma orderRank_finset_enum {α : Type*} [LinearOrder α] (s : Finset α)
+    (j : Fin s.card) : orderRank (s : Set α) (s.orderEmbOfFin rfl j) = j.val := by
+{
+  let e := s.orderEmbOfFin rfl
+  have he : (s : Set α) ∩ Iio (e j) = e '' Iio j := by
+  {
+    ext a
+    constructor
+    · intro ha
+      obtain ⟨i, rfl⟩ := (s.range_orderEmbOfFin rfl).symm ▸ ha.1
+      exact ⟨i, e.lt_iff_lt.mp ha.2, rfl⟩
+    · rintro ⟨i, hi, rfl⟩
+      exact ⟨s.orderEmbOfFin_mem rfl i, e.strictMono hi⟩
+  }
+  rw [orderRank, he, Set.ncard_image_of_injective _ e.injective,
+    ← Finset.coe_Iio, Set.ncard_coe_finset, Fin.card_Iio]
+}
+
+lemma exists_orderRank_of_finite_initial {α : Type*} [LinearOrder α]
+    {S A : Set α} (hA : A.Finite) (hAS : A ⊆ S)
+    (hinit : ∀ x ∈ A, ∀ y ∈ S, y < x → y ∈ A)
+    {j : ℕ} (hj : j < A.ncard) : ∃ x ∈ A, orderRank S x = j := by
+{
+  let s := hA.toFinset
+  have hscard : s.card = A.ncard := (Set.ncard_eq_toFinset_card A hA).symm
+  let x : α := s.orderEmbOfFin rfl ⟨j, by simpa [hscard] using hj⟩
+  have hx : x ∈ A := hA.mem_toFinset.mp (s.orderEmbOfFin_mem rfl ⟨j, by simpa [hscard] using hj⟩)
+  refine ⟨x, hx, ?_⟩
+  have he : S ∩ Iio x = A ∩ Iio x := by
+  {
+    ext y
+    exact ⟨fun hy => ⟨hinit x hx y hy.1 hy.2, hy.2⟩, fun hy => ⟨hAS hy.1, hy.2⟩⟩
+  }
+  calc
+    orderRank S x = orderRank A x := congrArg Set.ncard he
+    _ = j := by
+      simpa only [s, Set.Finite.coe_toFinset] using
+        orderRank_finset_enum s ⟨j, by simpa [hscard] using hj⟩
+}
+
+def heightKey (h_fn : ℂ → ℝ) (z : ℂ) : Lex (ℝ × Lex (ℝ × ℝ)) :=
+  toLex (-h_fn z, toLex (z.re, z.im))
+
+lemma heightKey_injective (h_fn : ℂ → ℝ) : Injective (heightKey h_fn) := by
+{
+  intro z w he
+  have he' := congrArg (fun a : Lex (ℝ × Lex (ℝ × ℝ)) => ofLex ((ofLex a).2)) he
+  exact Complex.ext (congrArg Prod.fst he') (congrArg Prod.snd he')
+}
+
+@[instance_reducible] def heightOrder (h_fn : ℂ → ℝ) : LinearOrder ℂ :=
+  LinearOrder.lift' (heightKey h_fn) (heightKey_injective h_fn)
+
+def heightRank (h_fn : ℂ → ℝ) (S : Set ℂ) (z : ℂ) : ℕ :=
+  @orderRank ℂ (heightOrder h_fn) S z
+
+def heightPrecedes (h_fn : ℂ → ℝ) (z w : ℂ) : Prop :=
+  h_fn w < h_fn z ∨ h_fn z = h_fn w ∧ (z.re < w.re ∨ z.re = w.re ∧ z.im < w.im)
+
+lemma heightOrder_lt_iff (h_fn : ℂ → ℝ) (z w : ℂ) :
+    @LT.lt ℂ (heightOrder h_fn).toLT z w ↔ heightPrecedes h_fn z w := by
+{
+  change heightKey h_fn z < heightKey h_fn w ↔ _
+  simp only [heightKey, Prod.Lex.toLex_lt_toLex, neg_lt_neg_iff, neg_inj, heightPrecedes]
+}
+
+lemma heightOrder_height_le {h_fn : ℂ → ℝ} {z w : ℂ}
+    (h : @LT.lt ℂ (heightOrder h_fn).toLT z w) : h_fn w ≤ h_fn z := by
+{
+  rcases (heightOrder_lt_iff h_fn z w).mp h with h | ⟨h, _⟩
+  · exact h.le
+  · exact h.ge
+}
+
+lemma heightRank_pred_finite {h_fn : ℂ → ℝ} {S : Set ℂ} {z : ℂ}
+    (hfin : (S ∩ {w | h_fn z ≤ h_fn w}).Finite) :
+    @Set.Finite ℂ (S ∩ @Iio ℂ (heightOrder h_fn).toPreorder z) := by
+{
+  exact hfin.subset (fun w hw => ⟨hw.1, heightOrder_height_le hw.2⟩)
+}
+
+lemma heightRank_lt_segment {h_fn : ℂ → ℝ} {S : Set ℂ} {z : ℂ} (hz : z ∈ S)
+    (hfin : (S ∩ {w | h_fn z ≤ h_fn w}).Finite) :
+    heightRank h_fn S z < (S ∩ {w | h_fn z ≤ h_fn w}).ncard := by
+{
+  letI := heightOrder h_fn
+  apply Set.ncard_lt_ncard _ hfin
+  refine ssubset_iff_subset_ne.mpr ⟨fun w hw => ⟨hw.1, heightOrder_height_le hw.2⟩, ?_⟩
+  intro he
+  have hmem : z ∈ S ∩ Iio z := he ▸ (show z ∈ S ∩ {w | h_fn z ≤ h_fn w} from ⟨hz, show h_fn z ≤ h_fn z from le_refl _⟩)
+  exact lt_irrefl z hmem.2
+}
+
+lemma exists_equal_heightRank {h_fn : ℂ → ℝ} {A B : Set ℂ} {z : ℂ}
+    (hz : z ∈ A) (hAf : (A ∩ {w | h_fn z ≤ h_fn w}).Finite)
+    (hBf : (B ∩ {w | h_fn z ≤ h_fn w}).Finite)
+    (hc : (A ∩ {w | h_fn z ≤ h_fn w}).ncard ≤ (B ∩ {w | h_fn z ≤ h_fn w}).ncard) :
+    ∃ w ∈ B, h_fn z ≤ h_fn w ∧ heightRank h_fn B w = heightRank h_fn A z := by
+{
+  letI := heightOrder h_fn
+  have hj := (heightRank_lt_segment hz hAf).trans_le hc
+  obtain ⟨w, hw, hr⟩ := exists_orderRank_of_finite_initial hBf inter_subset_left
+    (fun x hx y hy hyx => ⟨hy, hx.2.trans (heightOrder_height_le hyx)⟩) hj
+  exact ⟨w, hw.1, hw.2, hr⟩
+}
+
+lemma heightRank_injOn {h_fn : ℂ → ℝ} {S : Set ℂ}
+    (hfin : ∀ z ∈ S, (S ∩ {w | h_fn z ≤ h_fn w}).Finite) : InjOn (heightRank h_fn S) S := by
+{
+  exact @orderRank_injOn ℂ (heightOrder h_fn) S (fun z hz => heightRank_pred_finite (hfin z hz))
+}
+
+lemma heightRank_eq_ncard (h_fn : ℂ → ℝ) (S : Set ℂ) (z : ℂ) :
+    heightRank h_fn S z = {w | w ∈ S ∧ heightPrecedes h_fn w z}.ncard := by
+{
+  letI := heightOrder h_fn
+  rw [heightRank, orderRank]
+  congr 1
+  ext w
+  exact and_congr_right (fun _ => heightOrder_lt_iff h_fn w z)
+}
+
+def rankPartner (h_fn : ℂ → ℝ) (A B : Set ℂ) (z : ℂ) : ℂ :=
+  if h : ∃ w ∈ B, heightRank h_fn B w = heightRank h_fn A z then h.choose else z
+
+lemma rankPartner_spec {h_fn : ℂ → ℝ} {A B : Set ℂ} {z : ℂ}
+    (h : ∃ w ∈ B, heightRank h_fn B w = heightRank h_fn A z) :
+    rankPartner h_fn A B z ∈ B ∧
+      heightRank h_fn B (rankPartner h_fn A B z) = heightRank h_fn A z := by
+{
+  rw [rankPartner, dif_pos h]
+  exact h.choose_spec
+}
+
+lemma rankPartner_eq {h_fn : ℂ → ℝ} {A B : Set ℂ} {z w : ℂ}
+    (hri : InjOn (heightRank h_fn B) B) (hw : w ∈ B)
+    (hr : heightRank h_fn B w = heightRank h_fn A z) : rankPartner h_fn A B z = w := by
+{
+  have hs := rankPartner_spec ⟨w, hw, hr⟩
+  exact hri hs.1 hw (hs.2.trans hr.symm)
+}
+
+def positiveFiber (beta : ℝ) (F : KClass) (xi : ℂ) : Set ℂ :=
+  {z ∈ H | is_saddle beta F xi z}
+
+def negativeFiber (beta : ℝ) (F : KClass) (xi : ℂ) : Set ℂ :=
+  {z ∈ H | is_max beta F xi z}
+
+lemma criticalHeight_count (beta : ℝ) (h_beta : beta > 1) (F : KClass) (xi : ℂ)
+    (hg : is_good_pair beta F xi) {h : ℝ} (hh : 0 < h) :
+    (positiveFiber beta F xi ∩ {z | h ≤ criticalHeight beta F z}).Finite ∧
+    (negativeFiber beta F xi ∩ {z | h ≤ criticalHeight beta F z}).Finite ∧
+    (positiveFiber beta F xi ∩ {z | h ≤ criticalHeight beta F z}).ncard ≤
+      (negativeFiber beta F xi ∩ {z | h ≤ criticalHeight beta F z}).ncard := by
+{
+  have hk : 0 < k_val beta := by unfold k_val; linarith
+  have hc := lemma_5_5_count beta h_beta F xi hg h hh
+  have hp : positiveFiber beta F xi ∩ {z | h ≤ criticalHeight beta F z} =
+      {z ∈ H | is_saddle beta F xi z ∧ V_target beta F xi z ≥ ENNReal.ofReal h} := by
+  {
+    ext z
+    simp only [positiveFiber, is_saddle, mem_inter_iff, mem_setOf_eq, ge_iff_le]
+    refine ⟨fun ⟨⟨hz, hG, hJ⟩, hle⟩ => ⟨hz, ⟨hG, hJ⟩, ?_⟩,
+      fun ⟨hz, ⟨hG, hJ⟩, hV⟩ => ⟨⟨hz, hG, hJ⟩, ?_⟩⟩
+    · rw [V_target_eq_criticalHeight beta hk F hz hG]
+      exact ENNReal.ofReal_le_ofReal hle
+    · rw [V_target_eq_criticalHeight beta hk F hz hG] at hV
+      exact (ENNReal.ofReal_le_ofReal_iff (criticalHeight_pos beta hk F hz).le).mp hV
+  }
+  have hn : negativeFiber beta F xi ∩ {z | h ≤ criticalHeight beta F z} =
+      {z ∈ H | is_max beta F xi z ∧ V_target beta F xi z ≥ ENNReal.ofReal h} := by
+  {
+    ext z
+    simp only [negativeFiber, is_max, mem_inter_iff, mem_setOf_eq, ge_iff_le]
+    refine ⟨fun ⟨⟨hz, hG, hJ⟩, hle⟩ => ⟨hz, ⟨hG, hJ⟩, ?_⟩,
+      fun ⟨hz, ⟨hG, hJ⟩, hV⟩ => ⟨⟨hz, hG, hJ⟩, ?_⟩⟩
+    · rw [V_target_eq_criticalHeight beta hk F hz hG]
+      exact ENNReal.ofReal_le_ofReal hle
+    · rw [V_target_eq_criticalHeight beta hk F hz hG] at hV
+      exact (ENNReal.ofReal_le_ofReal_iff (criticalHeight_pos beta hk F hz).le).mp hV
+  }
+  rw [hp, hn]
+  refine ⟨hc.1.subset (fun z hz => ⟨hz.1, hz.2.2, hz.2.1.1⟩),
+    hc.1.subset (fun z hz => ⟨hz.1, hz.2.2, hz.2.1.1⟩), ?_⟩
+  rw [Set.ncard_def, Set.ncard_def]
+  exact hc.2
+}
+
+lemma criticalHeight_rank_inj (beta : ℝ) (h_beta : beta > 1) (F : KClass) (xi : ℂ)
+    (hg : is_good_pair beta F xi) :
+    InjOn (heightRank (criticalHeight beta F) (positiveFiber beta F xi)) (positiveFiber beta F xi) ∧
+    InjOn (heightRank (criticalHeight beta F) (negativeFiber beta F xi)) (negativeFiber beta F xi) := by
+{
+  have hk : 0 < k_val beta := by unfold k_val; linarith
+  exact ⟨heightRank_injOn (fun z hz =>
+      (criticalHeight_count beta h_beta F xi hg (criticalHeight_pos beta hk F hz.1)).1),
+    heightRank_injOn (fun z hz =>
+      (criticalHeight_count beta h_beta F xi hg (criticalHeight_pos beta hk F hz.1)).2.1)⟩
+}
+
+lemma exists_critical_equalRank (beta : ℝ) (h_beta : beta > 1) (F : KClass) (xi : ℂ)
+    (hg : is_good_pair beta F xi) {z : ℂ} (hz : z ∈ positiveFiber beta F xi) :
+    ∃ w ∈ negativeFiber beta F xi, criticalHeight beta F z ≤ criticalHeight beta F w ∧
+      heightRank (criticalHeight beta F) (negativeFiber beta F xi) w =
+        heightRank (criticalHeight beta F) (positiveFiber beta F xi) z := by
+{
+  have hk : 0 < k_val beta := by unfold k_val; linarith
+  have hc := criticalHeight_count beta h_beta F xi hg (criticalHeight_pos beta hk F hz.1)
+  exact exists_equal_heightRank hz hc.1 hc.2.1 hc.2.2
+}
+
+def R_pair (beta : ℝ) (F : KClass) (z : ℂ) : ℂ :=
+  rankPartner (criticalHeight beta F) (positiveFiber beta F (G beta F z))
+    (negativeFiber beta F (G beta F z)) z
+
+lemma R_pair_spec_height (beta : ℝ) (h_beta : beta > 1) (F : KClass) {z : ℂ}
+    (hz : z ∈ H) (hz_saddle : J beta F z > 0) (h_good : is_good_pair beta F (G beta F z)) :
+    R_pair beta F z ∈ H ∧
+    is_max beta F (G beta F z) (R_pair beta F z) ∧
+    criticalHeight beta F z ≤ criticalHeight beta F (R_pair beta F z) := by
+{
+  obtain ⟨w, hw, hh, hr⟩ := exists_critical_equalRank beta h_beta F (G beta F z) h_good ⟨hz, rfl, hz_saddle⟩
+  have he : R_pair beta F z = w :=
+    rankPartner_eq (criticalHeight_rank_inj beta h_beta F (G beta F z) h_good).2 hw hr
+  rw [he]
+  exact ⟨hw.1, hw.2, hh⟩
+}
+
+theorem prop_5_6_equivariant_pairing (beta : ℝ) (h_beta : beta > 1) (F : KClass) (z : ℂ)
     (hz : z ∈ H) (hz_saddle : J beta F z > 0) (h_good : is_good_pair beta F (G beta F z)) :
   R_pair beta F z ∈ H ∧
   is_max beta F (G beta F z) (R_pair beta F z) ∧
-  V_target beta F (G beta F z) (R_pair beta F z) ≥ V_target beta F (G beta F z) z
+  V_target beta F (G beta F z) (R_pair beta F z) ≥ V_target beta F (G beta F z) z := by
+{
+  have hk : 0 < k_val beta := by unfold k_val; linarith
+  obtain ⟨hH, hmax, hh⟩ := R_pair_spec_height beta h_beta F hz hz_saddle h_good
+  refine ⟨hH, hmax, ?_⟩
+  rw [ge_iff_le, V_target_eq_criticalHeight beta hk F hz rfl,
+    V_target_eq_criticalHeight beta hk F hH hmax.1]
+  exact ENNReal.ofReal_le_ofReal hh
+}
+
+lemma R_pair_injective (beta : ℝ) (h_beta : beta > 1) (F : KClass) :
+    InjOn (R_pair beta F) {z ∈ H | J beta F z > 0 ∧ is_good_pair beta F (G beta F z)} := by
+{
+  intro z hz w hw he
+  have hsz := R_pair_spec_height beta h_beta F hz.1 hz.2.1 hz.2.2
+  have hsw := R_pair_spec_height beta h_beta F hw.1 hw.2.1 hw.2.2
+  have hG : G beta F z = G beta F w := by rw [← hsz.2.1.1, he, hsw.2.1.1]
+  have hri := (criticalHeight_rank_inj beta h_beta F (G beta F z) hz.2.2).1
+  obtain ⟨vz, hvz, _, hrz⟩ := exists_critical_equalRank beta h_beta F (G beta F z) hz.2.2
+    ⟨hz.1, rfl, hz.2.1⟩
+  obtain ⟨vw, hvw, _, hrw⟩ := exists_critical_equalRank beta h_beta F (G beta F z) hz.2.2
+    ⟨hw.1, hG.symm, hw.2.1⟩
+  have hzr := rankPartner_spec ⟨vz, hvz, hrz⟩
+  have hwr := rankPartner_spec ⟨vw, hvw, hrw⟩
+  apply hri ⟨hz.1, rfl, hz.2.1⟩ ⟨hw.1, hG.symm, hw.2.1⟩
+  rw [← hzr.2, ← hwr.2]
+  apply congrArg
+  simpa only [R_pair, ← hG] using he
+}
 
 end Brennan.Sections4and5

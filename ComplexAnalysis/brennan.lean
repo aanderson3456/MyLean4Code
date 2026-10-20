@@ -3,5 +3,8 @@ import brennan.Translation
 import brennan.Section2
 import brennan.Section2_Dyadic
 import brennan.Section3
+import brennan.Section5_Winding
+import brennan.Section5_LevelIndex
 import brennan.Section4_5
+import brennan.Section6_Transport
 import brennan.Section6_7
