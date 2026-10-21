@@ -144,6 +144,26 @@ if its first and second partial derivatives are continuous and satisfy Laplace's
 \end{lstlisting}
     \[ \lim_{y \to p_{0,y}} \frac{u(p_{0,x}, y) - u(p_0)}{y - p_{0,y}} = uy_0 \]
 
+    \item \textbf{\texttt{TwiceContinuouslyDifferentiable\_R2\_eps}} ($u : \mathbb{R}^2 \to \mathbb{R}$, $G \subset \mathbb{R}^2$): Defines twice continuous differentiability ($C^2$) for a real-valued function on an open subset $G \subset \mathbb{R}^2$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def TwiceContinuouslyDifferentiable_R2_eps (u : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) (G : Set ($\mathbb{R}$ $\times$ $\mathbb{R}$)) : Prop :=
+  IsOpen G $\wedge$
+  $\exists$ (ux uy uxx uxy uyx uyy : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$),
+    ($\forall$ p $\in$ G, HasPartialDerivX_R2_eps u (ux p) p) $\wedge$
+    ($\forall$ p $\in$ G, HasPartialDerivY_R2_eps u (uy p) p) $\wedge$
+    (ContinuousOn ux G) $\wedge$
+    (ContinuousOn uy G) $\wedge$
+    ($\forall$ p $\in$ G, HasPartialDerivX_R2_eps ux (uxx p) p) $\wedge$
+    ($\forall$ p $\in$ G, HasPartialDerivY_R2_eps ux (uxy p) p) $\wedge$
+    ($\forall$ p $\in$ G, HasPartialDerivX_R2_eps uy (uyx p) p) $\wedge$
+    ($\forall$ p $\in$ G, HasPartialDerivY_R2_eps uy (uyy p) p) $\wedge$
+    (ContinuousOn uxx G) $\wedge$
+    (ContinuousOn uxy G) $\wedge$
+    (ContinuousOn uyx G) $\wedge$
+    (ContinuousOn uyy G)
+\end{lstlisting}
+    \[ u \in C^2(G, \mathbb{R}) \iff u_x, u_y, u_{xx}, u_{xy}, u_{yx}, u_{yy} \text{ exist and are continuous on the open set } G \]
+
     \item \textbf{\texttt{Harmonic\_R2\_eps}} ($u : \mathbb{R}^2 \to \mathbb{R}$, $G \subset \mathbb{R}^2$):
 \begin{lstlisting}[language=Caml, mathescape=true]
 def Harmonic_R2_eps (u : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) (G : Set ($\mathbb{R}$ $\times$ $\mathbb{R}$)) : Prop :=
@@ -288,6 +308,23 @@ noncomputable def polar_partial_theta (ux uy : $\mathbb{R}$ $\times$ $\mathbb{R}
 \end{lstlisting}
     \[ U_\theta(r, \theta) = -r \sin \theta \ u_x(r \cos \theta, r \sin \theta) + r \cos \theta \ u_y(r \cos \theta, r \sin \theta) \]
 
+    \item \textbf{\texttt{polar\_partial\_rr}} ($uxx, uxy, uyy : \mathbb{R}^2 \to \mathbb{R}$, $p \in \mathbb{R}^2$): Second partial derivative with respect to $r$ in polar coordinates.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def polar_partial_rr (uxx uxy uyy : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) (p : $\mathbb{R}$ $\times$ $\mathbb{R}$) : $\mathbb{R}$ :=
+  Real.cos p.2 * polar_partial_r uxx uxy p + Real.sin p.2 * polar_partial_r uxy uyy p
+\end{lstlisting}
+    \[ U_{rr}(r, \theta) = \cos \theta \, (u_{xx})_r + \sin \theta \, (u_{xy})_r = \cos^2 \theta \, u_{xx} + 2 \sin \theta \cos \theta \, u_{xy} + \sin^2 \theta \, u_{yy} \]
+
+    \item \textbf{\texttt{polar\_partial\_thetatheta}} ($ux, uy, uxx, uxy, uyy : \mathbb{R}^2 \to \mathbb{R}$, $p \in \mathbb{R}^2$): Second partial derivative with respect to $\theta$ in polar coordinates.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def polar_partial_thetatheta (ux uy uxx uxy uyy : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) (p : $\mathbb{R}$ $\times$ $\mathbb{R}$) : $\mathbb{R}$ :=
+  -p.1 * Real.cos p.2 * ux (p.1 * Real.cos p.2, p.1 * Real.sin p.2)
+  - p.1 * Real.sin p.2 * polar_partial_theta uxx uxy p
+  - p.1 * Real.sin p.2 * uy (p.1 * Real.cos p.2, p.1 * Real.sin p.2)
+  + p.1 * Real.cos p.2 * polar_partial_theta uxy uyy p
+\end{lstlisting}
+    \[ U_{\theta\theta}(r, \theta) = -r(u_x \cos\theta + u_y \sin\theta) - r\sin\theta\,(u_{xx})_\theta + r\cos\theta\,(u_{xy})_\theta \]
+
     \item \textbf{\texttt{TwiceContinuouslyDifferentiable\_C\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $G \subset \mathbb{C}$): $f$ is twice continuously differentiable on the open set $G$ if its real and imaginary parts are.
 \begin{lstlisting}[language=Caml, mathescape=true]
 def TwiceContinuouslyDifferentiable_C_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}$) : Prop :=
@@ -385,6 +422,13 @@ local notation f "$z$bar" => delBar f
 \end{lstlisting}
     \[ \bar{\partial} f = \frac{1}{2} \left( \frac{\partial f}{\partial x} + i \frac{\partial f}{\partial y} \right) \]
 
+    \item \textbf{\texttt{ConformalLinearMap\_eps}} ($ux, uy, vx, vy \in \mathbb{R}$, $v \in \mathbb{C}$): Real-linear transformation on $\mathbb{C} \cong \mathbb{R}^2$ specified by the $2\times 2$ Jacobian entries $(u_x, u_y, v_x, v_y)$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def ConformalLinearMap_eps (ux uy vx vy : $\mathbb{R}$) (v : $\mathbb{C}$) : $\mathbb{C}$ :=
+  (ux * v.re + uy * v.im) + I * (vx * v.re + vy * v.im)
+\end{lstlisting}
+    \[ L(v) = (u_x \operatorname{Re}(v) + u_y \operatorname{Im}(v)) + i (v_x \operatorname{Re}(v) + v_y \operatorname{Im}(v)) = (\partial f)\, v + (\bar{\partial} f)\, \bar{v} \]
+
     \item \textbf{\texttt{del\_eps}} / \textbf{\texttt{delBar\_eps}} ($u_{x0}, u_{y0}, v_{x0}, v_{y0} \in \mathbb{R}$): Wirtinger derivatives expressed purely in terms of the real partial derivatives of $f = u + iv$.
 \begin{lstlisting}[language=Caml, mathescape=true]
 noncomputable def del_eps (ux uy vx vy : $\mathbb{R}$) : $\mathbb{C}$ :=
@@ -470,6 +514,13 @@ def conformal (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (z$_0$ : $\mathbb{C}$) : Pro
 \end{lstlisting}
     \[ \text{Conformal } f \text{ at } z_0 \iff f \text{ preserves angles between all regular intersecting curves at } z_0 \]
 
+    \item \textbf{\texttt{line\_path\_zero}} ($v \in \mathbb{C}$): A straight-line path from $-v$ to $v$ passing through $0$ at $t = 1/2$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def line_path_zero (v : $\mathbb{C}$) : path_in_C (-v) v where
+  toFun := fun t => -v + (2 * ((t : $\mathbb{R}$) : $\mathbb{C}$)) * v
+\end{lstlisting}
+    \[ \gamma(t) = -v + 2tv = (2t - 1)v \]
+
     \item \textbf{\texttt{centered\_line\_path}} ($z, v \in \mathbb{C}$): A straight-line path from $z - v$ to $z + v$ evaluating to $z$ at $t = 1/2$.
 \begin{lstlisting}[language=Caml, mathescape=true]
 noncomputable def centered_line_path (z v : $\mathbb{C}$) : path_in_C (z - v) (z + v) where
@@ -481,24 +532,60 @@ noncomputable def centered_line_path (z v : $\mathbb{C}$) : path_in_C (z - v) (z
 \section{\texttt{Sarason/Chapter3.lean}}
 
 \begin{itemize}
+    \item \textbf{\texttt{linFracTrans}} ($a, b, c, d, z \in \mathbb{C}$): A linear-fractional transformation (M\"obius transformation) on $\mathbb{C}$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def linFracTrans (a b c d z : $\mathbb{C}$) : $\mathbb{C}$ :=
+  (a * z + b) / (c * z + d)
+\end{lstlisting}
+    \[ \varphi(z) = \frac{az + b}{cz + d} \]
+
+    \item \textbf{\texttt{$\varphi$}} ($a, b, c, d, z \in \mathbb{C}$): Sarason's shorthand notation for \texttt{linFracTrans}.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable abbrev $\varphi$ (a b c d z : $\mathbb{C}$) : $\mathbb{C}$ :=
+  linFracTrans a b c d z
+\end{lstlisting}
+    \[ \varphi(a, b, c, d, z) = \frac{az + b}{cz + d} \]
+
+    \item \textbf{\texttt{linFracTransExt}} ($a, b, c, d \in \mathbb{C}$, $w \in \mathbb{C} \cup \{\infty\}$): The extended linear-fractional transformation on the Riemann sphere $\mathbb{C} \cup \{\infty\}$ (\texttt{OnePoint} $\mathbb{C}$).
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def linFracTransExt (a b c d : $\mathbb{C}$) : OnePoint $\mathbb{C}$ $\to$ OnePoint $\mathbb{C}$
+  | (z : $\mathbb{C}$) => if c * z + d = 0 then $\infty$ else (linFracTrans a b c d z : $\mathbb{C}$)
+  | $\infty$ => if c = 0 then $\infty$ else (a / c : $\mathbb{C}$)
+\end{lstlisting}
+    \[ \varphi(w) = \begin{cases} \frac{az+b}{cz+d} & \text{if } w = z \in \mathbb{C} \text{ and } cz+d \neq 0, \\ \infty & \text{if } w = z \in \mathbb{C} \text{ and } cz+d = 0, \\ \infty & \text{if } w = \infty \text{ and } c = 0, \\ \frac{a}{c} & \text{if } w = \infty \text{ and } c \neq 0. \end{cases} \]
+
+    \item \textbf{\texttt{IsLinFracTrans}} ($\varphi : \mathbb{C} \cup \{\infty\} \to \mathbb{C} \cup \{\infty\}$): Predicate stating that $\varphi$ is a non-degenerate linear-fractional transformation on $\mathbb{C} \cup \{\infty\}$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def IsLinFracTrans ($\varphi$ : OnePoint $\mathbb{C}$ $\to$ OnePoint $\mathbb{C}$) : Prop :=
+  $\exists$ a b c d : $\mathbb{C}$, a * d - b * c $\neq$ 0 $\wedge$ $\varphi$ = linFracTransExt a b c d
+\end{lstlisting}
+    \[ \operatorname{IsLinFracTrans}(\varphi) \iff \exists a, b, c, d \in \mathbb{C},\; ad - bc \neq 0 \;\wedge\; \varphi(w) = \frac{aw + b}{cw + d} \]
+
+    \item \textbf{\texttt{gl2OfCoeffs}} ($a, b, c, d \in \mathbb{C}$, $ad - bc \neq 0$): The invertible $2 \times 2$ matrix in $\operatorname{GL}(2, \mathbb{C})$ associated with coefficients $(a, b, c, d)$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def gl2OfCoeffs (a b c d : $\mathbb{C}$) (h_det : a * d - b * c $\neq$ 0) : GL (Fin 2) $\mathbb{C}$ :=
+  Matrix.GeneralLinearGroup.mkOfDetNeZero !![a, b; c, d] ...
+\end{lstlisting}
+    \[ \begin{pmatrix} a & b \\ c & d \end{pmatrix} \in \operatorname{GL}(2, \mathbb{C}), \quad ad - bc \neq 0 \]
+
     \item \textbf{\texttt{translationMatrix}} ($b \in \mathbb{C}$): 
 \begin{lstlisting}[language=Caml, mathescape=true]
 noncomputable def translationMatrix (b : $\mathbb{C}$) : GL (Fin 2) $\mathbb{C}$ := 
-  Units.mk0 !![1, b; 0, 1] ...
+  Matrix.GeneralLinearGroup.mkOfDetNeZero !![1, b; 0, 1] ...
 \end{lstlisting}
     \[ \begin{pmatrix} 1 & b \\ 0 & 1 \end{pmatrix} \]
 
     \item \textbf{\texttt{scalingMatrix}} ($a \in \mathbb{C}, a \neq 0$): 
 \begin{lstlisting}[language=Caml, mathescape=true]
 noncomputable def scalingMatrix (a : $\mathbb{C}$) (ha : a $\neq$ 0) : GL (Fin 2) $\mathbb{C}$ := 
-  Units.mk0 !![a, 0; 0, 1] ...
+  Matrix.GeneralLinearGroup.mkOfDetNeZero !![a, 0; 0, 1] ...
 \end{lstlisting}
     \[ \begin{pmatrix} a & 0 \\ 0 & 1 \end{pmatrix} \]
 
     \item \textbf{\texttt{inversionMatrix}}: 
 \begin{lstlisting}[language=Caml, mathescape=true]
 noncomputable def inversionMatrix : GL (Fin 2) $\mathbb{C}$ := 
-  Units.mk0 !![0, 1; 1, 0] ...
+  Matrix.GeneralLinearGroup.mkOfDetNeZero !![0, 1; 1, 0] ...
 \end{lstlisting}
     \[ \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix} \]
 \end{itemize}
