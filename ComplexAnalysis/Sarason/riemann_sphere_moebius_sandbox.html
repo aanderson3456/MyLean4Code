@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sarason Chapter 1–3: Riemann Sphere &amp; 3-Fold Transitive Möbius Sandbox</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --panel: #131a2a;
+      --panel-border: #25314d;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --z0: #f43f5e;
+      --z1: #10b981;
+      --z2: #f59e0b;
+      --fix: #c084fc;
+      --code-bg: #090d16;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    header {
+      padding: 12px 20px;
+      background: #0f1626;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    header h1 {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: -0.01em;
+    }
+    header h1 span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .preset-bar {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    button {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 6px 11px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    button:hover {
+      background: #283548;
+      border-color: var(--accent);
+      color: #fff;
+    }
+    button.active {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 370px;
+      gap: 12px;
+      padding: 12px;
+      flex: 1;
+      min-height: 620px;
+    }
+    @media (max-width: 1200px) {
+      .main-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .sidebar {
+        grid-column: 1 / -1;
+      }
+    }
+    .canvas-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .card-header {
+      padding: 9px 14px;
+      background: rgba(15, 23, 42, 0.7);
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .card-header .sub {
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 0.75rem;
+    }
+    .canvas-wrap {
+      flex: 1;
+      position: relative;
+      min-height: 480px;
+    }
+    canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+    canvas:active {
+      cursor: grabbing;
+    }
+    .overlay-legend {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(11, 15, 25, 0.86);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 8px 11px;
+      font-size: 0.73rem;
+      line-height: 1.5;
+      pointer-events: none;
+    }
+    .dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .info-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.8rem;
+    }
+    .info-card h2 {
+      font-size: 0.84rem;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .matrix-box {
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      background: var(--code-bg);
+      border: 1px solid #1e293b;
+      border-radius: 7px;
+      padding: 9px 11px;
+      font-size: 0.76rem;
+      line-height: 1.55;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+    .pts-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      margin-top: 4px;
+    }
+    .pts-table th, .pts-table td {
+      padding: 5px 4px;
+      text-align: left;
+      border-bottom: 1px solid #1e293b;
+      font-family: "JetBrains Mono", monospace;
+    }
+    .pts-table th {
+      color: var(--muted);
+      font-family: inherit;
+      font-weight: 600;
+    }
+    .tiny-btn {
+      padding: 2px 6px;
+      font-size: 0.68rem;
+      border-radius: 4px;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 7px;
+    }
+    .slider-row label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      min-width: 95px;
+    }
+    input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+    }
+    .toggles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .lean-code {
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      background: var(--code-bg);
+      border: 1px solid #1e293b;
+      border-radius: 7px;
+      padding: 8px 10px;
+      font-size: 0.71rem;
+      line-height: 1.48;
+      color: #93c5fd;
+      max-height: 190px;
+      overflow-y: auto;
+      white-space: pre;
+    }
+    .badge {
+      background: rgba(192, 132, 252, 0.16);
+      color: #d8b4fe;
+      border: 1px solid rgba(192, 132, 252, 0.35);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 0.7rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      <span>Sarason Ch. 1–3</span> · Riemann Sphere (ℂ ∪ {∞}) &amp; 3-Fold Transitive Möbius Sandbox
+    </h1>
+    <div class="preset-bar">
+      <button onclick="applyPreset('cayley')">Cayley (ℍ → 𝔻)</button>
+      <button onclick="applyPreset('inversion')">Inversion 1/z (§III.1)</button>
+      <button onclick="applyPreset('parabolic')">Parabolic z + 1 (1 Fix Pt at ∞)</button>
+      <button onclick="applyPreset('elliptic')">Elliptic i·z (2 Fix Pts)</button>
+      <button onclick="applyPreset('loxodromic')">Loxodromic Spiral</button>
+      <button onclick="applyPreset('crossratio')">Send (z₀,z₁,z₂) → (0,1,∞)</button>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <!-- Left: 3D Riemann Sphere -->
+    <div class="canvas-card">
+      <div class="card-header">
+        <span>3D Riemann Sphere S² ≅ OnePoint ℂ (Stereographic Projection Φ)</span>
+        <span class="sub">Drag to rotate 3D sphere · Scroll to zoom</span>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="sphereCanvas"></canvas>
+        <div class="overlay-legend">
+          <div><span class="dot" style="background:#38bdf8"></span>North Pole <b>∞</b> = (0, 0, 1)</div>
+          <div><span class="dot" style="background:var(--z0)"></span>z₀ → w₀ &nbsp; <span class="dot" style="background:var(--z1)"></span>z₁ → w₁ &nbsp; <span class="dot" style="background:var(--z2)"></span>z₂ → w₂</div>
+          <div><span class="dot" style="background:var(--fix)"></span>Fixed Points ξ of φ(z) = z (§III.4)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: 2D Complex Plane -->
+    <div class="canvas-card">
+      <div class="card-header">
+        <span>Complex Plane ℂ (Conformal Grid &amp; 3-Point Pin Control)</span>
+        <span class="sub">Drag hollow circles zⱼ or solid circles wⱼ · Pan/Zoom</span>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="planeCanvas"></canvas>
+        <div class="overlay-legend">
+          <div><b>Hollow ring ○</b>: Source point zⱼ &nbsp;|&nbsp; <b>Solid disc ●</b>: Target point wⱼ = φ(zⱼ)</div>
+          <div><b>Purple ★</b>: Fixed points of φ (§III.4) &nbsp;|&nbsp; <b>Cyan curves</b>: Image of polar grid under φₜ (§III.3)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Live Math & Lean 4 Inspector -->
+    <div class="sidebar">
+      <div class="info-card">
+        <h2>
+          <span>§III.5 3-Fold Transitivity Solver</span>
+          <span class="badge">Unique φ</span>
+        </h2>
+        <div class="matrix-box" id="formulaBox">Loading...</div>
+        <table class="pts-table">
+          <thead>
+            <tr>
+              <th>j</th>
+              <th>Source zⱼ</th>
+              <th>Target wⱼ = φ(zⱼ)</th>
+              <th>∞ Toggle</th>
+            </tr>
+          </thead>
+          <tbody id="ptsTableBody"></tbody>
+        </table>
+        <div class="slider-row">
+          <label for="interpSlider">Homotopy t = <span id="tVal">1.00</span></label>
+          <input type="range" id="interpSlider" min="0" max="1" step="0.01" value="1" />
+        </div>
+        <div class="toggles">
+          <button id="btnFlow" class="active" onclick="toggleOpt('flow')">Flow Particles</button>
+          <button id="btnRays" class="active" onclick="toggleOpt('rays')">Stereo Rays from ∞</button>
+          <button id="btnGrid" class="active" onclick="toggleOpt('grid')">Conformal Circles</button>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h2>
+          <span>§III.4 Fixed Points &amp; Quadratic Roots</span>
+          <span class="badge" id="fixCountBadge">2 Fixed Pts</span>
+        </h2>
+        <div class="matrix-box" id="fixedBox">Loading...</div>
+      </div>
+
+      <div class="info-card">
+        <h2>
+          <span>Verified Lean 4 Formalization</span>
+          <span class="badge">0 sorry</span>
+        </h2>
+        <div class="lean-code">-- Sarason/Chapter3.lean
+noncomputable def linFracTrans (a b c d z : ℂ) : ℂ :=
+  (a * z + b) / (c * z + d)
+
+-- §III.3 Conformality of Linear-Fractional Maps
+theorem III_3_conformalAt (a b c d z₀ : ℂ)
+    (h_det : a * d - b * c ≠ 0) (h_den : c * z₀ + d ≠ 0) :
+    ConformalAt (linFracTrans a b c d) z₀
+
+-- §III.4 One or Two Fixed Points in OnePoint ℂ
+theorem III_4 (a b c d : ℂ) (h_det : a * d - b * c ≠ 0)
+    (h_not_id : ¬ ∀ w : OnePoint ℂ, linFracTransExt a b c d w = w) :
+    (∃ w₀, ∀ w, linFracTransExt a b c d w = w ↔ w = w₀) ∨
+    (∃ w₁ w₂, w₁ ≠ w₂ ∧
+      ∀ w, linFracTransExt a b c d w = w ↔ w = w₁ ∨ w = w₂)
+
+-- §III.5 Three-Fold Transitivity (Unique φ(zⱼ) = wⱼ)
+theorem III_5 (z w : Fin 3 → OnePoint ℂ)
+    (hz : Function.Injective z) (hw : Function.Injective w) :
+    ∃! φ : OnePoint ℂ → OnePoint ℂ,
+      IsLinFracTrans φ ∧ ∀ j : Fin 3, φ (z j) = w j</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // Complex Arithmetic & OnePoint ℂ Representation
+    // =========================================================================
+    const EPS = 1e-9;
+    function C(re, im = 0) { return { re, im, infty: false }; }
+    const INF = { re: 0, im: 0, infty: true };
+
+    function cAdd(a, b) { return C(a.re + b.re, a.im + b.im); }
+    function cSub(a, b) { return C(a.re - b.re, a.im - b.im); }
+    function cMul(a, b) { return C(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re); }
+    function cDiv(a, b) {
+      const den = b.re * b.re + b.im * b.im;
+      if (den < 1e-14) return INF;
+      return C((a.re * b.re + a.im * b.im) / den, (a.im * b.re - a.re * b.im) / den);
+    }
+    function cAbs2(z) { return z.re * z.re + z.im * z.im; }
+    function cAbs(z) { return Math.hypot(z.re, z.im); }
+    function cSqrt(z) {
+      const r = cAbs(z);
+      const ang = Math.atan2(z.im, z.re) * 0.5;
+      return C(Math.sqrt(r) * Math.cos(ang), Math.sqrt(r) * Math.sin(ang));
+    }
+    function fmtC(z) {
+      if (!z || z.infty) return "∞";
+      const r = Math.abs(z.re) < 1e-3 ? 0 : z.re;
+      const i = Math.abs(z.im) < 1e-3 ? 0 : z.im;
+      if (i === 0) return r.toFixed(2);
+      if (r === 0) return `${i.toFixed(2)}i`;
+      return `${r.toFixed(2)}${i >= 0 ? "+" : ""}${i.toFixed(2)}i`;
+    }
+
+    // Stereographic projection Φ : OnePoint ℂ → S² ⊂ ℝ³ (Sarason/Chapter1.lean)
+    function stereoPhi(z) {
+      if (z.infty) return { x: 0, y: 0, z: 1 };
+      const nsq = z.re * z.re + z.im * z.im;
+      if (nsq > 1e12) return { x: 0, y: 0, z: 1 };
+      const d = 1 + nsq;
+      return { x: (2 * z.re) / d, y: (2 * z.im) / d, z: (nsq - 1) / d };
+    }
+
+    // Extended Möbius action `linFracTransExt a b c d w` (Sarason/Chapter3.lean)
+    function applyM(M, w) {
+      const { a, b, c, d } = M;
+      if (w.infty) {
+        if (cAbs(c) < 1e-10) return INF;
+        return cDiv(a, c);
+      }
+      const num = cAdd(cMul(a, w), b);
+      const den = cAdd(cMul(c, w), d);
+      if (cAbs(den) < 1e-10) return INF;
+      return cDiv(num, den);
+    }
+
+    function matMul(M1, M2) {
+      return {
+        a: cAdd(cMul(M1.a, M2.a), cMul(M1.b, M2.c)),
+        b: cAdd(cMul(M1.a, M2.b), cMul(M1.b, M2.d)),
+        c: cAdd(cMul(M1.c, M2.a), cMul(M1.d, M2.c)),
+        d: cAdd(cMul(M1.c, M2.b), cMul(M1.d, M2.d))
+      };
+    }
+
+    function matInv(M) {
+      return { a: M.d, b: C(-M.b.re, -M.b.im), c: C(-M.c.re, -M.c.im), d: M.a };
+    }
+
+    // Construct G ∈ GL(2, ℂ) sending (z0, z1, z2) ↦ (0, 1, ∞) (`exists_gl2_std_triple`)
+    function stdTripleMatrix(p0, p1, p2) {
+      // Step 1: S sending p2 ↦ ∞ (`exists_gl2_send_to_infty`)
+      let S;
+      if (p2.infty) {
+        S = { a: C(1), b: C(0), c: C(0), d: C(1) };
+      } else {
+        S = { a: C(0), b: C(1), c: C(1), d: C(-p2.re, -p2.im) };
+      }
+      const q0 = applyM(S, p0);
+      const q1 = applyM(S, p1);
+      // Step 2: Affine map T sending (q0, q1, ∞) ↦ (0, 1, ∞) (`exists_gl2_affine_std_triple`)
+      const T = {
+        a: C(1),
+        b: C(-q0.re, -q0.im),
+        c: C(0),
+        d: cSub(q1, q0)
+      };
+      return matMul(T, S);
+    }
+
+    // Solve Theorem III_5: unique Möbius transformation sending z_j ↦ w_j (j = 0, 1, 2)
+    function solveIII5(zPts, wPts) {
+      const Gz = stdTripleMatrix(zPts[0], zPts[1], zPts[2]);
+      const Gw = stdTripleMatrix(wPts[0], wPts[1], wPts[2]);
+      let M = matMul(matInv(Gw), Gz);
+      // Normalize matrix entries so max modulus is ~1 for clean display
+      const scale = Math.max(cAbs(M.a), cAbs(M.b), cAbs(M.c), cAbs(M.d), 1e-9);
+      return {
+        a: C(M.a.re / scale, M.a.im / scale),
+        b: C(M.b.re / scale, M.b.im / scale),
+        c: C(M.c.re / scale, M.c.im / scale),
+        d: C(M.d.re / scale, M.d.im / scale)
+      };
+    }
+
+    // Solve Theorem III_4: Fixed points of M in OnePoint ℂ via c*z^2 + (d - a)*z - b = 0
+    function solveFixedPoints(M) {
+      const { a, b, c, d } = M;
+      const dMinusA = cSub(d, a);
+      const disc = cAdd(cMul(dMinusA, dMinusA), cMul(C(4), cMul(b, c)));
+      const s = cSqrt(disc);
+      if (cAbs(c) < 1e-7) {
+        // Case c = 0: ∞ is always fixed
+        if (cAbs(dMinusA) < 1e-7) {
+          if (cAbs(b) < 1e-7) return { type: "Identity (All points fixed)", pts: [], disc, s };
+          return { type: "Parabolic (1 Fixed Pt at ∞)", pts: [INF], disc, s };
+        }
+        const zFin = cDiv(b, dMinusA);
+        return { type: "Affine Dilation (2 Fixed Pts)", pts: [zFin, INF], disc, s };
+      }
+      // Case c ≠ 0: roots of c*z^2 + (d - a)*z - b = 0 (`quad_factor_roots`)
+      const aMinusD = cSub(a, d);
+      const twoC = cMul(C(2), c);
+      const r1 = cDiv(cAdd(aMinusD, s), twoC);
+      const r2 = cDiv(cSub(aMinusD, s), twoC);
+      if (cAbs(s) < 1e-5) {
+        return { type: "Parabolic (1 Double Root in ℂ)", pts: [r1], disc, s };
+      }
+      return { type: "2 Distinct Finite Fixed Pts", pts: [r1, r2], disc, s };
+    }
+
+    // =========================================================================
+    // Interactive State
+    // =========================================================================
+    const COLORS = ["#f43f5e", "#10b981", "#f59e0b"];
+    let zPts = [C(-1, 0), C(0, -1), C(1, 0)];
+    let wPts = [C(0, 0), C(1, 0), C(0, 1)];
+    let interpT = 1.0;
+    let opts = { flow: true, rays: true, grid: true };
+
+    function getInterpolatedM() {
+      const M = solveIII5(zPts, wPts);
+      if (interpT >= 0.999) return M;
+      // Normalize determinant or trace for smooth interpolation from I to M
+      const det = cSub(cMul(M.a, M.d), cMul(M.b, M.c));
+      const sqDet = cSqrt(det);
+      let N = cAbs(sqDet) > 1e-8 ? {
+        a: cDiv(M.a, sqDet), b: cDiv(M.b, sqDet),
+        c: cDiv(M.c, sqDet), d: cDiv(M.d, sqDet)
+      } : M;
+      if (N.a.re + N.d.re < 0) {
+        N = { a: C(-N.a.re, -N.a.im), b: C(-N.b.re, -N.b.im), c: C(-N.c.re, -N.c.im), d: C(-N.d.re, -N.d.im) };
+      }
+      const t = interpT;
+      return {
+        a: C((1 - t) + t * N.a.re, t * N.a.im),
+        b: C(t * N.b.re, t * N.b.im),
+        c: C(t * N.c.re, t * N.c.im),
+        d: C((1 - t) + t * N.d.re, t * N.d.im)
+      };
+    }
+
+    function applyPreset(name) {
+      document.getElementById("interpSlider").value = 1;
+      interpT = 1.0;
+      document.getElementById("tVal").textContent = "1.00";
+      if (name === "cayley") {
+        zPts = [C(0, 0), C(1, 0), { ...INF }];
+        wPts = [C(-1, 0), C(0, -1), C(1, 0)];
+      } else if (name === "inversion") {
+        zPts = [C(1, 0), C(0, 1), C(2, 0)];
+        wPts = [C(1, 0), C(0, -1), C(0.5, 0)];
+      } else if (name === "parabolic") {
+        zPts = [C(0, 0), C(0, 1), { ...INF }];
+        wPts = [C(1, 0), C(1, 1), { ...INF }];
+      } else if (name === "elliptic") {
+        zPts = [C(0, 0), C(1, 0), { ...INF }];
+        wPts = [C(0, 0), C(0, 1), { ...INF }];
+      } else if (name === "loxodromic") {
+        zPts = [C(0, 0), C(1, 0), { ...INF }];
+        wPts = [C(0, 0), C(1.25, 0.55), { ...INF }];
+      } else if (name === "crossratio") {
+        zPts = [C(-1, -0.5), C(0.8, -0.4), C(0.2, 1.1)];
+        wPts = [C(0, 0), C(1, 0), { ...INF }];
+      }
+      updateUI();
+    }
+
+    function toggleInfty(which, idx) {
+      const arr = which === "z" ? zPts : wPts;
+      if (arr[idx].infty) {
+        arr[idx] = C(idx - 1, which === "z" ? 0.6 : -0.6);
+      } else {
+        // Ensure no two points in the same triple are both ∞
+        for (let k = 0; k < 3; k++) {
+          if (k !== idx && arr[k].infty) arr[k] = C(k - 1, 0.5);
+        }
+        arr[idx] = { ...INF };
+      }
+      updateUI();
+    }
+
+    function toggleOpt(key) {
+      opts[key] = !opts[key];
+      const btnId = key === "flow" ? "btnFlow" : key === "rays" ? "btnRays" : "btnGrid";
+      document.getElementById(btnId).classList.toggle("active", opts[key]);
+    }
+
+    document.getElementById("interpSlider").addEventListener("input", (e) => {
+      interpT = parseFloat(e.target.value);
+      document.getElementById("tVal").textContent = interpT.toFixed(2);
+      updateUI();
+    });
+
+    function updateUI() {
+      const M = solveIII5(zPts, wPts);
+      const det = cSub(cMul(M.a, M.d), cMul(M.b, M.c));
+      document.getElementById("formulaBox").innerHTML =
+        `φ(z) = (a·z + b) / (c·z + d)\n` +
+        `a = ${fmtC(M.a).padEnd(13)} b = ${fmtC(M.b)}\n` +
+        `c = ${fmtC(M.c).padEnd(13)} d = ${fmtC(M.d)}\n` +
+        `det(g) = a·d - b·c = ${fmtC(det)} ≠ 0`;
+
+      const tbody = document.getElementById("ptsTableBody");
+      tbody.innerHTML = "";
+      for (let j = 0; j < 3; j++) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><span class="dot" style="background:${COLORS[j]}"></span>j=${j}</td>
+          <td>${fmtC(zPts[j])}</td>
+          <td>${fmtC(wPts[j])}</td>
+          <td>
+            <button class="tiny-btn" onclick="toggleInfty('z',${j})">z${j}=∞</button>
+            <button class="tiny-btn" onclick="toggleInfty('w',${j})">w${j}=∞</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      const fixInfo = solveFixedPoints(M);
+      document.getElementById("fixCountBadge").textContent = fixInfo.type;
+      const dMinusA = cSub(M.d, M.a);
+      const negB = C(-M.b.re, -M.b.im);
+      const fixStr = fixInfo.pts.length === 0
+        ? "Every w ∈ OnePoint ℂ is fixed"
+        : fixInfo.pts.map((p, i) => `ξ_${i + 1} = ${fmtC(p)}`).join(" ,  ");
+      document.getElementById("fixedBox").innerHTML =
+        `Quadratic Eq: c·z² + (d - a)·z - b = 0\n` +
+        `  (${fmtC(M.c)})z² + (${fmtC(dMinusA)})z + (${fmtC(negB)}) = 0\n` +
+        `Discriminant Δ = (d - a)² + 4bc = ${fmtC(fixInfo.disc)}\n` +
+        `Fixed Points in OnePoint ℂ:\n  ${fixStr}`;
+    }
+
+    // =========================================================================
+    // Flow Particles
+    // =========================================================================
+    const particles = [];
+    for (let i = 0; i < 65; i++) {
+      particles.push({
+        z: C((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4),
+        age: Math.random() * 100
+      });
+    }
+
+    // =========================================================================
+    // 2D Complex Plane Canvas
+    // =========================================================================
+    const planeCanvas = document.getElementById("planeCanvas");
+    const pCtx = planeCanvas.getContext("2d");
+    let pScale = 85;
+    let pCenter = { x: 0, y: 0 };
+    let draggingPin = null;
+    let panningPlane = false;
+    let lastMouse = { x: 0, y: 0 };
+
+    function cToScreen(z, w, h) {
+      return {
+        x: w / 2 + (z.re - pCenter.x) * pScale,
+        y: h / 2 - (z.im - pCenter.y) * pScale
+      };
+    }
+    function screenToC(sx, sy, w, h) {
+      return C(
+        pCenter.x + (sx - w / 2) / pScale,
+        pCenter.y - (sy - h / 2) / pScale
+      );
+    }
+
+    planeCanvas.addEventListener("mousedown", (e) => {
+      const rect = planeCanvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      lastMouse = { x: mx, y: my };
+      for (let j = 0; j < 3; j++) {
+        if (!wPts[j].infty) {
+          const sp = cToScreen(wPts[j], rect.width, rect.height);
+          if (Math.hypot(mx - sp.x, my - sp.y) < 13) {
+            draggingPin = { which: "w", idx: j };
+            return;
+          }
+        }
+        if (!zPts[j].infty) {
+          const sp = cToScreen(zPts[j], rect.width, rect.height);
+          if (Math.hypot(mx - sp.x, my - sp.y) < 13) {
+            draggingPin = { which: "z", idx: j };
+            return;
+          }
+        }
+      }
+      panningPlane = true;
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (draggingPin) {
+        const rect = planeCanvas.getBoundingClientRect();
+        const zNew = screenToC(e.clientX - rect.left, e.clientY - rect.top, rect.width, rect.height);
+        if (draggingPin.which === "z") zPts[draggingPin.idx] = zNew;
+        else wPts[draggingPin.idx] = zNew;
+        updateUI();
+      } else if (panningPlane) {
+        const rect = planeCanvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        pCenter.x -= (mx - lastMouse.x) / pScale;
+        pCenter.y += (my - lastMouse.y) / pScale;
+        lastMouse = { x: mx, y: my };
+      }
+    });
+
+    window.addEventListener("mouseup", () => {
+      draggingPin = null;
+      panningPlane = false;
+      rotatingSphere = false;
+    });
+
+    planeCanvas.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      pScale *= e.deltaY < 0 ? 1.1 : 0.9;
+      pScale = Math.max(25, Math.min(300, pScale));
+    }, { passive: false });
+
+    function drawPlane() {
+      const w = planeCanvas.clientWidth;
+      const h = planeCanvas.clientHeight;
+      if (planeCanvas.width !== w || planeCanvas.height !== h) {
+        planeCanvas.width = w;
+        planeCanvas.height = h;
+      }
+      pCtx.clearRect(0, 0, w, h);
+
+      // Background coordinate grid
+      pCtx.strokeStyle = "#1e293b";
+      pCtx.lineWidth = 1;
+      for (let k = -10; k <= 10; k++) {
+        const p1 = cToScreen(C(k, -10), w, h);
+        const p2 = cToScreen(C(k, 10), w, h);
+        pCtx.beginPath(); pCtx.moveTo(p1.x, 0); pCtx.lineTo(p2.x, h); pCtx.stroke();
+        const q1 = cToScreen(C(-10, k), w, h);
+        const q2 = cToScreen(C(10, k), w, h);
+        pCtx.beginPath(); pCtx.moveTo(0, q1.y); pCtx.lineTo(w, q2.y); pCtx.stroke();
+      }
+
+      // Axes & Unit Circle
+      const orig = cToScreen(C(0, 0), w, h);
+      pCtx.strokeStyle = "#334155";
+      pCtx.lineWidth = 1.5;
+      pCtx.beginPath(); pCtx.moveTo(0, orig.y); pCtx.lineTo(w, orig.y); pCtx.stroke();
+      pCtx.beginPath(); pCtx.moveTo(orig.x, 0); pCtx.lineTo(orig.x, h); pCtx.stroke();
+      pCtx.strokeStyle = "rgba(148, 163, 184, 0.35)";
+      pCtx.beginPath(); pCtx.arc(orig.x, orig.y, pScale, 0, Math.PI * 2); pCtx.stroke();
+
+      const Mt = getInterpolatedM();
+
+      // Conformal image of polar circles & rays under Mt (§III.3)
+      if (opts.grid) {
+        const radii = [0.35, 0.65, 1.0, 1.5, 2.2];
+        for (const r of radii) {
+          pCtx.strokeStyle = r === 1.0 ? "rgba(56, 189, 248, 0.7)" : "rgba(56, 189, 248, 0.32)";
+          pCtx.lineWidth = r === 1.0 ? 1.8 : 1.1;
+          pCtx.beginPath();
+          let started = false;
+          for (let s = 0; s <= 120; s++) {
+            const ang = (s / 120) * Math.PI * 2;
+            const img = applyM(Mt, C(r * Math.cos(ang), r * Math.sin(ang)));
+            if (!img.infty && cAbs(img) < 25) {
+              const sp = cToScreen(img, w, h);
+              if (!started) { pCtx.moveTo(sp.x, sp.y); started = true; }
+              else pCtx.lineTo(sp.x, sp.y);
+            } else {
+              started = false;
+            }
+          }
+          pCtx.stroke();
+        }
+        for (let k = 0; k < 12; k++) {
+          const ang = (k / 12) * Math.PI * 2;
+          pCtx.strokeStyle = "rgba(125, 211, 252, 0.24)";
+          pCtx.lineWidth = 1;
+          pCtx.beginPath();
+          let started = false;
+          for (let s = 1; s <= 90; s++) {
+            const r = (s / 90) * 3.0;
+            const img = applyM(Mt, C(r * Math.cos(ang), r * Math.sin(ang)));
+            if (!img.infty && cAbs(img) < 25) {
+              const sp = cToScreen(img, w, h);
+              if (!started) { pCtx.moveTo(sp.x, sp.y); started = true; }
+              else pCtx.lineTo(sp.x, sp.y);
+            } else {
+              started = false;
+            }
+          }
+          pCtx.stroke();
+        }
+      }
+
+      // Flow particles
+      if (opts.flow) {
+        pCtx.fillStyle = "rgba(56, 189, 248, 0.75)";
+        for (const pt of particles) {
+          const img = applyM(Mt, pt.z);
+          if (!img.infty && cAbs(img) < 20) {
+            const sp = cToScreen(img, w, h);
+            pCtx.beginPath();
+            pCtx.arc(sp.x, sp.y, 2.2, 0, Math.PI * 2);
+            pCtx.fill();
+          }
+        }
+      }
+
+      // Fixed points (§III.4)
+      const fixInfo = solveFixedPoints(solveIII5(zPts, wPts));
+      for (const fp of fixInfo.pts) {
+        if (!fp.infty) {
+          const sp = cToScreen(fp, w, h);
+          pCtx.fillStyle = "#c084fc";
+          pCtx.strokeStyle = "#fff";
+          pCtx.lineWidth = 1.5;
+          pCtx.beginPath();
+          pCtx.arc(sp.x, sp.y, 6.5, 0, Math.PI * 2);
+          pCtx.fill();
+          pCtx.stroke();
+          pCtx.fillStyle = "#e9d5ff";
+          pCtx.font = "bold 11px sans-serif";
+          pCtx.fillText("ξ", sp.x + 9, sp.y - 7);
+        }
+      }
+
+      // Draw z_j (hollow) and w_j (solid) and connecting arrows
+      for (let j = 0; j < 3; j++) {
+        const col = COLORS[j];
+        if (!zPts[j].infty && !wPts[j].infty) {
+          const sz = cToScreen(zPts[j], w, h);
+          const sw = cToScreen(wPts[j], w, h);
+          pCtx.strokeStyle = col;
+          pCtx.setLineDash([4, 4]);
+          pCtx.lineWidth = 1.4;
+          pCtx.beginPath(); pCtx.moveTo(sz.x, sz.y); pCtx.lineTo(sw.x, sw.y); pCtx.stroke();
+          pCtx.setLineDash([]);
+        }
+        if (!zPts[j].infty) {
+          const sz = cToScreen(zPts[j], w, h);
+          pCtx.strokeStyle = col;
+          pCtx.lineWidth = 2.6;
+          pCtx.fillStyle = "#0b0f19";
+          pCtx.beginPath(); pCtx.arc(sz.x, sz.y, 8, 0, Math.PI * 2); pCtx.fill(); pCtx.stroke();
+          pCtx.fillStyle = col;
+          pCtx.font = "bold 11px sans-serif";
+          pCtx.fillText(`z${j}`, sz.x + 10, sz.y + 4);
+        }
+        if (!wPts[j].infty) {
+          const sw = cToScreen(wPts[j], w, h);
+          pCtx.fillStyle = col;
+          pCtx.strokeStyle = "#fff";
+          pCtx.lineWidth = 1.5;
+          pCtx.beginPath(); pCtx.arc(sw.x, sw.y, 7.5, 0, Math.PI * 2); pCtx.fill(); pCtx.stroke();
+          pCtx.fillStyle = "#fff";
+          pCtx.font = "bold 11px sans-serif";
+          pCtx.fillText(`w${j}`, sw.x + 10, sw.y - 6);
+        }
+      }
+    }
+
+    // =========================================================================
+    // 3D Riemann Sphere Canvas (Stereographic Projection Φ from Chapter1.lean)
+    // =========================================================================
+    const sphereCanvas = document.getElementById("sphereCanvas");
+    const sCtx = sphereCanvas.getContext("2d");
+    let sRotY = -0.65;
+    let sRotX = 0.42;
+    let sZoom = 185;
+    let rotatingSphere = false;
+    let sLast = { x: 0, y: 0 };
+
+    sphereCanvas.addEventListener("mousedown", (e) => {
+      rotatingSphere = true;
+      sLast = { x: e.clientX, y: e.clientY };
+    });
+    window.addEventListener("mousemove", (e) => {
+      if (!rotatingSphere) return;
+      sRotY += (e.clientX - sLast.x) * 0.008;
+      sRotX = Math.max(-1.45, Math.min(1.45, sRotX + (e.clientY - sLast.y) * 0.008));
+      sLast = { x: e.clientX, y: e.clientY };
+    });
+    sphereCanvas.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      sZoom *= e.deltaY < 0 ? 1.08 : 0.92;
+      sZoom = Math.max(100, Math.min(340, sZoom));
+    }, { passive: false });
+
+    function proj3D(pt, w, h) {
+      // Coordinate convention: x, y in horizontal plane, z vertical (North Pole = (0,0,1))
+      const cosZ = Math.cos(sRotY), sinZ = Math.sin(sRotY);
+      const x1 = pt.x * cosZ - pt.y * sinZ;
+      const y1 = pt.x * sinZ + pt.y * cosZ;
+      const z1 = pt.z;
+
+      const cosX = Math.cos(sRotX), sinX = Math.sin(sRotX);
+      const y2 = y1 * cosX - z1 * sinX;
+      const z2 = y1 * sinX + z1 * cosX;
+
+      const fov = 4.2 / (4.2 - y2 * 0.6);
+      return {
+        x: w / 2 + x1 * sZoom * fov,
+        y: h / 2 - z2 * sZoom * fov,
+        depth: y2
+      };
+    }
+
+    function drawSphere() {
+      const w = sphereCanvas.clientWidth;
+      const h = sphereCanvas.clientHeight;
+      if (sphereCanvas.width !== w || sphereCanvas.height !== h) {
+        sphereCanvas.width = w;
+        sphereCanvas.height = h;
+      }
+      sCtx.clearRect(0, 0, w, h);
+
+      // Subtle equatorial complex plane z = 0 reference grid
+      sCtx.strokeStyle = "rgba(51, 65, 85, 0.35)";
+      sCtx.lineWidth = 1;
+      for (let g = -2; g <= 2; g++) {
+        const a = proj3D({ x: g, y: -2, z: 0 }, w, h);
+        const b = proj3D({ x: g, y: 2, z: 0 }, w, h);
+        sCtx.beginPath(); sCtx.moveTo(a.x, a.y); sCtx.lineTo(b.x, b.y); sCtx.stroke();
+        const c = proj3D({ x: -2, y: g, z: 0 }, w, h);
+        const d = proj3D({ x: 2, y: g, z: 0 }, w, h);
+        sCtx.beginPath(); sCtx.moveTo(c.x, c.y); sCtx.lineTo(d.x, d.y); sCtx.stroke();
+      }
+
+      // Sphere silhouette glow
+      const center2D = proj3D({ x: 0, y: 0, z: 0 }, w, h);
+      const grad = sCtx.createRadialGradient(
+        center2D.x - sZoom * 0.25, center2D.y - sZoom * 0.25, sZoom * 0.1,
+        center2D.x, center2D.y, sZoom
+      );
+      grad.addColorStop(0, "rgba(30, 41, 59, 0.55)");
+      grad.addColorStop(1, "rgba(15, 23, 42, 0.88)");
+      sCtx.fillStyle = grad;
+      sCtx.strokeStyle = "rgba(148, 163, 184, 0.35)";
+      sCtx.lineWidth = 1.5;
+      sCtx.beginPath();
+      sCtx.arc(center2D.x, center2D.y, sZoom, 0, Math.PI * 2);
+      sCtx.fill();
+      sCtx.stroke();
+
+      const Mt = getInterpolatedM();
+
+      // Transformed latitude & longitude circles on S² under Mt
+      const radii = [0.35, 0.65, 1.0, 1.5, 2.4];
+      for (const r of radii) {
+        sCtx.strokeStyle = r === 1.0 ? "rgba(56, 189, 248, 0.82)" : "rgba(56, 189, 248, 0.35)";
+        sCtx.lineWidth = r === 1.0 ? 1.9 : 1.1;
+        sCtx.beginPath();
+        for (let s = 0; s <= 96; s++) {
+          const ang = (s / 96) * Math.PI * 2;
+          const img = applyM(Mt, C(r * Math.cos(ang), r * Math.sin(ang)));
+          const p3 = stereoPhi(img);
+          const sp = proj3D(p3, w, h);
+          if (s === 0) sCtx.moveTo(sp.x, sp.y);
+          else sCtx.lineTo(sp.x, sp.y);
+        }
+        sCtx.stroke();
+      }
+      for (let k = 0; k < 12; k++) {
+        const ang = (k / 12) * Math.PI * 2;
+        sCtx.strokeStyle = "rgba(125, 211, 252, 0.25)";
+        sCtx.lineWidth = 1;
+        sCtx.beginPath();
+        for (let s = 0; s <= 60; s++) {
+          const r = Math.tan((s / 60) * (Math.PI * 0.48));
+          const img = applyM(Mt, C(r * Math.cos(ang), r * Math.sin(ang)));
+          const p3 = stereoPhi(img);
+          const sp = proj3D(p3, w, h);
+          if (s === 0) sCtx.moveTo(sp.x, sp.y);
+          else sCtx.lineTo(sp.x, sp.y);
+        }
+        sCtx.stroke();
+      }
+
+      // North Pole ∞ = (0, 0, 1)
+      const np = proj3D({ x: 0, y: 0, z: 1 }, w, h);
+      sCtx.fillStyle = "#38bdf8";
+      sCtx.beginPath(); sCtx.arc(np.x, np.y, 5.5, 0, Math.PI * 2); sCtx.fill();
+      sCtx.fillStyle = "#bae6fd";
+      sCtx.font = "bold 12px sans-serif";
+      sCtx.fillText("∞ (North Pole)", np.x + 8, np.y - 6);
+
+      // Stereographic projection rays from ∞ (0,0,1) through Φ(w_j) to w_j on z=0 plane
+      if (opts.rays) {
+        for (let j = 0; j < 3; j++) {
+          if (!wPts[j].infty && cAbs(wPts[j]) < 3.2) {
+            const planePt = proj3D({ x: wPts[j].re, y: wPts[j].im, z: 0 }, w, h);
+            const sphPt = proj3D(stereoPhi(wPts[j]), w, h);
+            sCtx.strokeStyle = COLORS[j];
+            sCtx.setLineDash([3, 3]);
+            sCtx.lineWidth = 1.2;
+            sCtx.beginPath();
+            sCtx.moveTo(np.x, np.y);
+            sCtx.lineTo(sphPt.x, sphPt.y);
+            sCtx.lineTo(planePt.x, planePt.y);
+            sCtx.stroke();
+            sCtx.setLineDash([]);
+          }
+        }
+      }
+
+      // Flow particles on S²
+      if (opts.flow) {
+        sCtx.fillStyle = "rgba(56, 189, 248, 0.85)";
+        for (const pt of particles) {
+          const img = applyM(Mt, pt.z);
+          const sp = proj3D(stereoPhi(img), w, h);
+          sCtx.beginPath();
+          sCtx.arc(sp.x, sp.y, 2.2, 0, Math.PI * 2);
+          sCtx.fill();
+        }
+      }
+
+      // Fixed points on S² (§III.4)
+      const fixInfo = solveFixedPoints(solveIII5(zPts, wPts));
+      for (const fp of fixInfo.pts) {
+        const sp = proj3D(stereoPhi(fp), w, h);
+        sCtx.fillStyle = "#c084fc";
+        sCtx.strokeStyle = "#fff";
+        sCtx.lineWidth = 1.5;
+        sCtx.beginPath(); sCtx.arc(sp.x, sp.y, 6.5, 0, Math.PI * 2); sCtx.fill(); sCtx.stroke();
+        sCtx.fillStyle = "#f3e8ff";
+        sCtx.font = "bold 11px sans-serif";
+        sCtx.fillText("ξ", sp.x + 8, sp.y - 6);
+      }
+
+      // Draw z_j (hollow) and w_j (solid) on S²
+      for (let j = 0; j < 3; j++) {
+        const col = COLORS[j];
+        const sz = proj3D(stereoPhi(zPts[j]), w, h);
+        const sw = proj3D(stereoPhi(wPts[j]), w, h);
+
+        sCtx.strokeStyle = col;
+        sCtx.lineWidth = 2.4;
+        sCtx.fillStyle = "#0b0f19";
+        sCtx.beginPath(); sCtx.arc(sz.x, sz.y, 6.5, 0, Math.PI * 2); sCtx.fill(); sCtx.stroke();
+
+        sCtx.fillStyle = col;
+        sCtx.strokeStyle = "#fff";
+        sCtx.lineWidth = 1.4;
+        sCtx.beginPath(); sCtx.arc(sw.x, sw.y, 6.5, 0, Math.PI * 2); sCtx.fill(); sCtx.stroke();
+      }
+    }
+
+    // =========================================================================
+    // Animation Loop
+    // =========================================================================
+    function animate() {
+      const M = solveIII5(zPts, wPts);
+      for (const pt of particles) {
+        pt.age += 1;
+        // Move particle slightly toward φ(z) along continuous vector field
+        const target = applyM(M, pt.z);
+        if (!target.infty && cAbs(target) < 12) {
+          pt.z.re += (target.re - pt.z.re) * 0.018;
+          pt.z.im += (target.im - pt.z.im) * 0.018;
+        } else {
+          pt.age = 120;
+        }
+        if (pt.age > 110 || cAbs(pt.z) > 6) {
+          pt.z = C((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
+          pt.age = 0;
+        }
+      }
+      drawPlane();
+      drawSphere();
+      requestAnimationFrame(animate);
+    }
+
+    applyPreset("cayley");
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
