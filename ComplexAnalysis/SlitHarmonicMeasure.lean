@@ -436,13 +436,98 @@ theorem continuum_channel_monotonicity_via_chelkak_smirnov_bridge
     omega_k omega_k1 ((eps_delta + eps_delta) + (eta_R + eta_R)) hTwoStage
 }
 
-/-! ## 7. Open Continuum & Spandrel Specifications (Questions 1.1 & 2.3) -/
+/-! ## 7. The Starlike Riemann Map `f : 𝔻 → Ω` & Conformal Invariance Bridge (Section 1, Equation 1.1)
 
-/-- Check whether a sequence of channel gapwidths or harmonic measures is monotone non-decreasing. -/
+In Section 1 (Equation 1.1, Pommerenke [Pom92, Thm. 3.18]), the Riemann map `f : 𝔻 → Ω` onto a
+radially slitted starlike domain symmetric with respect to the real axis has the explicit product representation:
+  `f(z) = z ∏_{j=1}^{2n} (1 - z̄_j z)^{-σ_j}`,   where `∑_{j=1}^{2n} σ_j = 2`.
+- The unit-circle points `z_k = e^{i φ_k} ∈ ∂𝔻` (`0 = φ₁ < φ₂ < ... < φ_{2n} < 2π`) are mapped to `∞`
+  down the `2n` channels of asymptotic angular gapwidth `Δθ_k = σ_k π`.
+- Between `z_k` and `z_{k+1}` on `∂𝔻` lies the slit-tip preimage `e^{i t_k}` (`φ_k < t_k < φ_{k+1}`) where
+  `z f'(z) / f(z) = 0`, which maps to the slit tip `f(e^{i t_k}) = ρ_k e^{i θ_k}`.
+- By **Conformal Invariance of Harmonic Measure** (since `f(0) = 0`):
+  1. The **slit harmonic measure** `ω_k = ω(0; R_k; Ω)` of the `k`-th slit `R_k` (folded from the arc `(z_k, z_{k+1})`)
+     equals the arc length `|(z_k, z_{k+1})| = φ_{k+1} - φ_k` (Section 1, Question 1.1 & Section 2, Lemma 2.2).
+  2. The **channel harmonic measure** `ω(0; ∂C_k; Ω)` of the `k`-th channel boundary `∂C_k` (formed by the upper
+     side of slit `R_k` and the lower side of slit `R_{k+1}`, meeting at `z_{k+1}`) equals the arc length
+     `t_{k+1} - t_k = (φ_{k+1} - t_k) + (t_{k+1} - φ_{k+1})` (Section 2, Equation 2.21 & Lemma 2.1).
+-/
+
+/-- Check whether a sequence of natural numbers (representing channel gapwidths `σ_k`, discrete channel widths `n^δ_k`,
+or harmonic measures `ω_k`) is monotone non-decreasing. -/
 def isMonotoneNonDecreasing : List Nat → Bool
   | [] => true
   | [_] => true
   | a :: b :: rest => (a <= b) && isMonotoneNonDecreasing (b :: rest)
+
+/-- Structure encoding the boundary data of the Pommerenke starlike Riemann map
+`f(z) = z ∏_{j=1}^{2n} (1 - z̄_j z)^{-σ_j} : 𝔻 → Ω` (Section 1, Equations 1.1–1.6):
+- `phi k` (`φ_k`): argument of the channel-infinity preimage `z_k = e^{i φ_k} ∈ ∂𝔻`,
+- `tipArg k` (`t_k`): argument of the slit-tip preimage `e^{i t_k} ∈ (z_k, z_{k+1}) ⊂ ∂𝔻`,
+- `sigma k` (`σ_k`): exponent / asymptotic angular gapwidth parameter of the `k`-th channel,
+- `rho k` (`ρ_k`): starting modulus `|f(e^{i t_k})|` of the `k`-th radial slit `R_k`. -/
+structure StarlikeRiemannSlitMap (n : Nat) where
+  phi : Nat → Nat
+  tipArg : Nat → Nat
+  sigma : Nat → Nat
+  rho : Nat → Nat
+  /-- Interlacing of channel-infinity preimages `z_k = e^{i φ_k}` and slit-tip preimages `e^{i t_k}` on `∂𝔻`:
+      `φ_k ≤ t_k ≤ φ_{k+1}`. -/
+  hInterlaceLeft : ∀ k, phi k <= tipArg k
+  hInterlaceRight : ∀ k, tipArg k <= phi (k + 1)
+  /-- Conjugation symmetry across the real axis (Section 1, Equations 1.2–1.5):
+      `σ_{2n+2-k} = σ_k` and `ρ_{2n+1-k} = ρ_k`. -/
+  hSymmetricSigma : ∀ k, sigma (2 * n + 2 - k) = sigma k
+  hSymmetricRho : ∀ k, rho (2 * n + 1 - k) = rho k
+  /-- Equal slit starting moduli condition (`ρ_k = 1` in Section 2, Equation 2.1): -/
+  hUnitCircleSlits : ∀ j k, rho j = rho k
+
+/-- **Slit Harmonic Measure via Conformal Invariance (Section 1, Equation 1.6):**
+Because `f : 𝔻 → Ω` is conformal with `f(0) = 0` and maps the arc `(z_k, z_{k+1})` onto the two sides
+of the `k`-th slit `R_k`, the harmonic measure `ω_k = ω(0; R_k; Ω)` is `|(z_k, z_{k+1})| = φ_{k+1} - φ_k`. -/
+def slitHarmonicMeasure {n : Nat} (M : StarlikeRiemannSlitMap n) (k : Nat) : Nat :=
+  M.phi (k + 1) - M.phi k
+
+/-- **Channel Harmonic Measure via Conformal Invariance (Section 2, Equation 2.21):**
+The boundary `∂C_k` of the `k`-th channel consists of the upper bank of slit `R_k` (image of `(e^{i t_k}, z_{k+1})`)
+and the lower bank of slit `R_{k+1}` (image of `(z_{k+1}, e^{i t_{k+1}})`), so its harmonic measure from `0` is
+`t_{k+1} - t_k`. -/
+def channelHarmonicMeasure {n : Nat} (M : StarlikeRiemannSlitMap n) (k : Nat) : Nat :=
+  M.tipArg (k + 1) - M.tipArg k
+
+/-- **Upper and Lower Slit-Bank Decomposition of Slit Harmonic Measure:**
+The harmonic measure `ω_k = φ_{k+1} - φ_k` of slit `R_k` decomposes into the sum of its lower bank
+`t_k - φ_k` (facing channel `C_{k-1}`) and its upper bank `φ_{k+1} - t_k` (facing channel `C_k`). -/
+def lowerSlitBankMeasure {n : Nat} (M : StarlikeRiemannSlitMap n) (k : Nat) : Nat :=
+  M.tipArg k - M.phi k
+
+def upperSlitBankMeasure {n : Nat} (M : StarlikeRiemannSlitMap n) (k : Nat) : Nat :=
+  M.phi (k + 1) - M.tipArg k
+
+/-- **1. Two-Bank Monotonicity Implies Slit Harmonic Measure Monotonicity (Conformal Counterpart of Lemma 2.2):**
+If both the lower slit bank facing channel `C_{k-1}` and the upper slit bank facing channel `C_k`
+are bounded by the corresponding banks of slit `R_{k+1}`, then their sum (the total slit harmonic measure `ω_k`)
+is bounded by `ω_{k+1}`. -/
+theorem conformal_slit_measure_monotone_of_bank_bounds
+    {n : Nat} (M : StarlikeRiemannSlitMap n) (k : Nat)
+    (hLowerBank : lowerSlitBankMeasure M k <= lowerSlitBankMeasure M (k + 1))
+    (hUpperBank : upperSlitBankMeasure M k <= upperSlitBankMeasure M (k + 1)) :
+    lowerSlitBankMeasure M k + upperSlitBankMeasure M k <=
+      lowerSlitBankMeasure M (k + 1) + upperSlitBankMeasure M (k + 1) := by {
+  exact Nat.add_le_add hLowerBank hUpperBank
+}
+
+/-- **2. Continuum Gapwidth Monotonicity Implies Discrete Channel Width Monotonicity (Section 2, Equation 2.10):**
+In Section 2 (Equation 2.10), the discrete channel width `n^δ_k` is the number of grid rays of spacing `δ²`
+fitting inside the channel opening `Δθ_k = θ_k - θ_{k-1} = σ_k π`, i.e., `n^δ_k = ⌊Δθ_k / δ²⌋`.
+If the continuum gapwidths satisfy `gap_k ≤ gap_{k+1}`, then for every mesh spacing `deltaSq > 0`,
+the discrete channel widths satisfy `n^δ_k ≤ n^δ_{k+1}`. -/
+theorem monotone_gapwidth_implies_monotone_discrete_channel_width
+    (gap_k gap_k1 deltaSq : Nat)
+    (hGapMono : gap_k <= gap_k1) :
+    gap_k / deltaSq <= gap_k1 / deltaSq := by {
+  exact Nat.div_le_div_right hGapMono
+}
 
 /-- Model of a symmetric starlike slit domain `Ω = ℂ \ ⋃_{k=0}^N S_k` with Riemann map
 `f(z) = z ∏_{j=1}^{2n} (1 - z̄_j z)^{-σ_j}` (Section 1, Equation 1.1). -/
