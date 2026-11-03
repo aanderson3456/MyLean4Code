@@ -43,7 +43,7 @@ const winHighlightG = g.append("g").attr("id", "win-highlight-layer");
 
 // --- Helper Functions ---
 
-// TODO: When integrating with mathgod.org, replace this with the seed from random.org
+// TODO: Replace this with the seed from random.org
 function seededRandom() {
     return Math.random();
 }

@@ -1,11 +1,10 @@
 import Mathlib
 
 /-!
-# Mathgod.org Style Binary Strings
+# List Bool Binary Strings
 
 This file demonstrates an alternative formalization of binary strings
-and 1-deletions using standard Mathlib `List Bool` and `take`/`drop`,
-as presented by mathgod.org.
+and 1-deletions using standard Mathlib `List Bool` and `take`/`drop`.
 
 This is strictly for comparative study and equivalence proofs, and does
 not replace the custom `List.Vector B n` used in the main codebase.

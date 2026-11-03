@@ -51,7 +51,7 @@ def normalize (S : List Grid) : List Grid :=
   let my := minY S
   S.map (fun p => (p.1 - mx, p.2 - my))
 
-/-- Generates the 8 symmetries (D8 group) for a list of grids, matching AngularMathgod's logic. -/
+/-- Generates the 8 symmetries (D8 group) for a list of grids. -/
 def getOrientations (S : List Grid) : List (List Grid) :=
   let r0 := S
   let r1 := rotateShape r0

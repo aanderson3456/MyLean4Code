@@ -1,6 +1,6 @@
 /-!
 # Formalization of Discrete Harmonic Measure Monotonicity on Isoradial Slit Domains
-**Author:** Austin Anderson (University of Hawaiʻi at Mānoa / MathGod.org)
+**Author:** Austin Anderson
 **Paper:** *Discretization of a Harmonic Measure Problem and Spandrel* (`IsoRadStarQuestion.pdf`)
 **Public Repository:** `https://github.com/aanderson3456/MyLean4Code/blob/main/ComplexAnalysis/SlitHarmonicMeasure.lean`
 
