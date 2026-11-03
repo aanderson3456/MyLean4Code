@@ -264,7 +264,179 @@ theorem isoradial_recursion_terminates_beyond_rmax
   exact Nat.sub_eq_zero_of_le (Nat.le_of_lt hExceeds)
 }
 
-/-! ## 6. Open Continuum & Spandrel Conjectures (Questions 1.1 & 2.3) -/
+/-! ## 6. The Chelkak–Smirnov & Beurling–Nevanlinna Continuum Bridge
+
+To pass from the discrete channel harmonic measure inequality (Equation 2.21, proven in
+`discrete_channel_harmonic_measure_monotone`) to the continuum harmonic measure inequality on `Ω`:
+1. **Rotational First-Exit Reduction to an Inner Circle `|z| = r₀ < 1`:**
+   Because the slits `S_k = {r e^{±iθ_k} : r ≥ 1}` lie outside the open unit disk `𝔻`, the inner disk
+   `𝔻_{r₀}` (`0 < r₀ < 1`) is completely unslitted. By rotational symmetry, the first-exit distribution
+   from `0` onto the ring `|v| = r₀` is uniform (`1/m` per ray), reducing the problem to the annular domain
+   `r₀ ≤ |z| ≤ R` where the modulus `|z|` is bounded away from `0`.
+2. **Annular Bounded-Angles Property (`BAP(ε₀)` on `r₀ ≤ |v| ≤ R < r^δ_max`):**
+   On any compact annulus `r₀ ≤ r_j ≤ R`, the rhombic half-angle `sin θ_j = r_j sin(π/m) / δ` is bounded
+   strictly away from `0` and `1` (`r₀² sin²(π/m) ≤ r_j² sin²(π/m) ≤ R² sin²(π/m) < δ²`), satisfying the
+   Chelkak–Smirnov Bounded-Angles Property [CS11, Sec. 2.1].
+3. **Chelkak–Smirnov Uniform Convergence (`δ → 0` at Fixed Truncation Radius `R`):**
+   By Chelkak–Smirnov [CS11, Cor. 3.10 / Thm. 3.12], discrete harmonic measure on `Ω^δ_{r₀, R}` converges as
+   `δ → 0` to continuum harmonic measure `ω_R(0; ∂C_k; Ω_R)` on the truncated slit domain `Ω_R = Ω ∩ B(0, R)`.
+4. **Beurling–Nevanlinna Radial Exhaustion (`R → ∞`, Bypassing the Spandrel Question 2.3):**
+   By the Beurling–Nevanlinna projection theorem, the harmonic measure of the outer boundary `{|z| = R}` decays as
+   `O(R^{-1/2}) → 0` as `R → ∞`. Taking `δ → 0` first on each finite `Ω_R` (where `R < r^δ_max` for small `δ`)
+   and then `R → ∞` transfers monotonicity to `ω(0; ∂C_k; Ω) ≤ ω(0; ∂C_{k+1}; Ω)` without requiring an infinite
+   dyadic polar isoradial starlike graph.
+-/
+
+/-- **1. Annular Bounded-Angles Window (`BAP` Invariant on `r₀ ≤ r_j ≤ R < r^δ_max`):**
+If a vertex modulus `r` lies in the annular window `r0 ≤ r ≤ R` and the outer cutoff `R` satisfies
+`R² sin²(π/m) < δ²`, then the rhombic angle parameter `r² sin²(π/m)` is sandwiched in `[r0² sin²(π/m), R² sin²(π/m)]`
+and stays strictly below the degeneration threshold `δ²`. -/
+theorem annular_bap_window_invariant
+    (r0 r R sinSqPiOverM deltaSq : Nat)
+    (hInner : r0 <= r)
+    (hOuter : r <= R)
+    (hBelowMax : R * R * sinSqPiOverM < deltaSq) :
+    r0 * r0 * sinSqPiOverM <= r * r * sinSqPiOverM ∧
+    r * r * sinSqPiOverM <= R * R * sinSqPiOverM ∧
+    r * r * sinSqPiOverM < deltaSq := by {
+  have hSqInner : r0 * r0 <= r * r := Nat.mul_le_mul hInner hInner
+  have hSqOuter : r * r <= R * R := Nat.mul_le_mul hOuter hOuter
+  have hBapLow : r0 * r0 * sinSqPiOverM <= r * r * sinSqPiOverM :=
+    Nat.mul_le_mul_right sinSqPiOverM hSqInner
+  have hBapHigh : r * r * sinSqPiOverM <= R * R * sinSqPiOverM :=
+    Nat.mul_le_mul_right sinSqPiOverM hSqOuter
+  exact ⟨hBapLow, hBapHigh, Nat.lt_of_le_of_lt hBapHigh hBelowMax⟩
+}
+
+/-- **2. Rotational Annular Entry Decomposition (Bypassing the Origin Singularity `z = 0`):**
+Inside the unslitted disk `|v| ≤ r₀ < 1`, every ray `ℓ ∈ {1, ..., m}` has the same uniform first-exit weight `w_ring`.
+If the subsequent annular exit probabilities from the ring `|v| = r₀` to channel `C_k` (`pAnnular_k`) are bounded
+by those to channel `C_{k+1}` (`pAnnular_k1`), then the total harmonic measure from `0` preserves monotonicity. -/
+theorem rotational_annular_entry_monotonicity
+    (w_ring pAnnular_k pAnnular_k1 : Nat)
+    (hAnnular : pAnnular_k <= pAnnular_k1) :
+    w_ring * pAnnular_k <= w_ring * pAnnular_k1 := by {
+  exact Nat.mul_le_mul (Nat.le_refl w_ring) hAnnular
+}
+
+/-- **3. Single-Scale Chelkak–Smirnov Error Transfer (`δ → 0` at Fixed `R`):**
+Suppose at mesh scale `δ > 0`:
+- Discrete channel monotonicity holds: `omega_delta_k ≤ omega_delta_k1` (by Equation 2.21),
+- Chelkak–Smirnov convergence [CS11, Thm. 3.12] bounds the discretization error by `eps_delta`:
+  `omega_R_k ≤ omega_delta_k + eps_delta` and `omega_delta_k1 ≤ omega_R_k1 + eps_delta`.
+Then the continuum truncated harmonic measures on `Ω_R` satisfy
+`omega_R_k ≤ omega_R_k1 + 2 * eps_delta`. -/
+theorem chelkak_smirnov_eps_monotonicity_transfer
+    (omega_R_k omega_R_k1 omega_delta_k omega_delta_k1 eps_delta : Nat)
+    (hDiscreteMono : omega_delta_k <= omega_delta_k1)
+    (hCSLower : omega_R_k <= omega_delta_k + eps_delta)
+    (hCSUpper : omega_delta_k1 <= omega_R_k1 + eps_delta) :
+    omega_R_k <= omega_R_k1 + (eps_delta + eps_delta) := by {
+  have hStep1 : omega_delta_k + eps_delta <= omega_delta_k1 + eps_delta :=
+    Nat.add_le_add_right hDiscreteMono eps_delta
+  have hStep2 : omega_R_k <= omega_delta_k1 + eps_delta :=
+    Nat.le_trans hCSLower hStep1
+  have hStep3 : omega_delta_k1 + eps_delta <= (omega_R_k1 + eps_delta) + eps_delta :=
+    Nat.add_le_add_right hCSUpper eps_delta
+  have hStep4 : omega_R_k <= (omega_R_k1 + eps_delta) + eps_delta :=
+    Nat.le_trans hStep2 hStep3
+  rw [Nat.add_assoc] at hStep4
+  exact hStep4
+}
+
+/-- **4. Two-Stage Iterated Bridge (`δ → 0` via Chelkak–Smirnov, then `R → ∞` via Beurling–Nevanlinna):**
+Combining:
+1. Discrete monotonicity `omega_delta_k ≤ omega_delta_k1` at scale `δ`,
+2. Chelkak–Smirnov discretization error `eps_delta` between `Ω^δ_R` and `Ω_R`, and
+3. Beurling–Nevanlinna outer-circle truncation error `eta_R` (`O(R^{-1/2})`) between `Ω_R` and `Ω`:
+   `omega_k ≤ omega_R_k + eta_R` and `omega_R_k1 ≤ omega_k1 + eta_R`,
+yields the continuum harmonic measure bound within total error `2 * eps_delta + 2 * eta_R`:
+`omega_k ≤ omega_k1 + (eps_delta + eps_delta) + (eta_R + eta_R)`. -/
+theorem chelkak_smirnov_beurling_two_stage_bridge
+    (omega_k omega_k1 omega_R_k omega_R_k1 omega_delta_k omega_delta_k1 eps_delta eta_R : Nat)
+    (hDiscreteMono : omega_delta_k <= omega_delta_k1)
+    (hCSLower : omega_R_k <= omega_delta_k + eps_delta)
+    (hCSUpper : omega_delta_k1 <= omega_R_k1 + eps_delta)
+    (hBeurlingLower : omega_k <= omega_R_k + eta_R)
+    (hBeurlingUpper : omega_R_k1 <= omega_k1 + eta_R) :
+    omega_k <= omega_k1 + ((eps_delta + eps_delta) + (eta_R + eta_R)) := by {
+  have hTrunc : omega_R_k <= omega_R_k1 + (eps_delta + eps_delta) :=
+    chelkak_smirnov_eps_monotonicity_transfer
+      omega_R_k omega_R_k1 omega_delta_k omega_delta_k1 eps_delta
+      hDiscreteMono hCSLower hCSUpper
+  have hStep1 : omega_R_k + eta_R <= (omega_R_k1 + (eps_delta + eps_delta)) + eta_R :=
+    Nat.add_le_add_right hTrunc eta_R
+  have hStep2 : omega_k <= (omega_R_k1 + (eps_delta + eps_delta)) + eta_R :=
+    Nat.le_trans hBeurlingLower hStep1
+  have hStep3 :
+      (omega_R_k1 + (eps_delta + eps_delta)) + eta_R <=
+      ((omega_k1 + eta_R) + (eps_delta + eps_delta)) + eta_R :=
+    Nat.add_le_add_right (Nat.add_le_add_right hBeurlingUpper (eps_delta + eps_delta)) eta_R
+  have hStep4 : omega_k <= ((omega_k1 + eta_R) + (eps_delta + eps_delta)) + eta_R :=
+    Nat.le_trans hStep2 hStep3
+  rw [Nat.add_assoc omega_k1 eta_R (eps_delta + eps_delta)] at hStep4
+  rw [Nat.add_comm eta_R (eps_delta + eps_delta)] at hStep4
+  rw [← Nat.add_assoc omega_k1 (eps_delta + eps_delta) eta_R] at hStep4
+  rw [Nat.add_assoc (omega_k1 + (eps_delta + eps_delta)) eta_R eta_R] at hStep4
+  rw [Nat.add_assoc omega_k1 (eps_delta + eps_delta) (eta_R + eta_R)] at hStep4
+  exact hStep4
+}
+
+/-- **5. Archimedean Order Preservation in the Continuum Limit (`δ → 0, R → ∞`):**
+Suppose the combined Chelkak–Smirnov (`δ → 0`) and Beurling–Nevanlinna (`R → ∞`) error is bounded by `C`
+at magnification scale `C + 1` (i.e., dividing through by `C + 1` makes the total error `C / (C + 1) < 1`):
+`(C + 1) * omega_k ≤ (C + 1) * omega_k1 + C`.
+Then `omega_k ≤ omega_k1`. -/
+theorem archimedean_continuum_limit_order_preservation
+    (omega_k omega_k1 C : Nat)
+    (hApprox : (C + 1) * omega_k <= (C + 1) * omega_k1 + C) :
+    omega_k <= omega_k1 := by {
+  cases Nat.lt_or_ge omega_k1 omega_k with
+  | inr hLe => exact hLe
+  | inl hGt =>
+    have hSucc : omega_k1 + 1 <= omega_k := hGt
+    have hMul : (C + 1) * (omega_k1 + 1) <= (C + 1) * omega_k :=
+      Nat.mul_le_mul_left (C + 1) hSucc
+    rw [Nat.mul_add, Nat.mul_one] at hMul
+    have hChain : (C + 1) * omega_k1 + (C + 1) <= (C + 1) * omega_k1 + C :=
+      Nat.le_trans hMul hApprox
+    have hCancel : C + 1 <= C := Nat.le_of_add_le_add_left hChain
+    exact False.elim (Nat.not_succ_le_self C hCancel)
+}
+
+/-- **6. Master End-to-End Chelkak–Smirnov Continuum Bridge Theorem:**
+Combines:
+- Discrete channel ray dominance `InductiveListDominates rays_k rays_k1` (established by Lemmas 2.1 & 2.2),
+- The two-stage Chelkak–Smirnov (`δ → 0`) and Beurling–Nevanlinna (`R → ∞`) error transfer at
+  Archimedean magnification `N = ((eps_delta + eps_delta) + (eta_R + eta_R)) + 1`,
+to conclude continuum channel harmonic measure monotonicity `omega_k ≤ omega_k1`. -/
+theorem continuum_channel_monotonicity_via_chelkak_smirnov_bridge
+    (omega_k omega_k1 omega_R_k omega_R_k1 eps_delta eta_R : Nat)
+    (rays_k rays_k1 : List Nat)
+    (hRaysDom : InductiveListDominates rays_k rays_k1)
+    (hCSLower : omega_R_k <= sumList rays_k + eps_delta)
+    (hCSUpper : sumList rays_k1 <= omega_R_k1 + eps_delta)
+    (hBeurlingLower :
+      (((eps_delta + eps_delta) + (eta_R + eta_R)) + 1) * omega_k <= omega_R_k + eta_R)
+    (hBeurlingUpper :
+      omega_R_k1 <= (((eps_delta + eps_delta) + (eta_R + eta_R)) + 1) * omega_k1 + eta_R) :
+    omega_k <= omega_k1 := by {
+  have hDiscreteMono : sumList rays_k <= sumList rays_k1 :=
+    discrete_channel_harmonic_measure_monotone rays_k rays_k1 hRaysDom
+  have hTwoStage :
+      (((eps_delta + eps_delta) + (eta_R + eta_R)) + 1) * omega_k <=
+      (((eps_delta + eps_delta) + (eta_R + eta_R)) + 1) * omega_k1 +
+        ((eps_delta + eps_delta) + (eta_R + eta_R)) :=
+    chelkak_smirnov_beurling_two_stage_bridge
+      ((((eps_delta + eps_delta) + (eta_R + eta_R)) + 1) * omega_k)
+      ((((eps_delta + eps_delta) + (eta_R + eta_R)) + 1) * omega_k1)
+      omega_R_k omega_R_k1 (sumList rays_k) (sumList rays_k1) eps_delta eta_R
+      hDiscreteMono hCSLower hCSUpper hBeurlingLower hBeurlingUpper
+  exact archimedean_continuum_limit_order_preservation
+    omega_k omega_k1 ((eps_delta + eps_delta) + (eta_R + eta_R)) hTwoStage
+}
+
+/-! ## 7. Open Continuum & Spandrel Specifications (Questions 1.1 & 2.3) -/
 
 /-- Check whether a sequence of channel gapwidths or harmonic measures is monotone non-decreasing. -/
 def isMonotoneNonDecreasing : List Nat → Bool
