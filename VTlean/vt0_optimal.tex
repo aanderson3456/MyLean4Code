@@ -21,7 +21,7 @@
 \maketitle
 
 \begin{abstract}
-This report surveys the single-deletion-correcting properties of binary Varshamov-Tenengolts (VT) codes, focusing on the unsolved conjecture regarding the global optimality of $VT_0(n)$ and the recent Lean 4 formalization efforts. We describe the formal proof that $VT_0(n)$ is optimal among all \emph{perfect} single-deletion-correcting codes, which successfully compiles in the interactive theorem prover Lean 4. While the core maximality of the zero-checksum class is fully verified using complex analysis and discrete Fourier transforms, the bridge showing that any perfect code has size matching a VT code is currently postulated as a conjecture.
+This report surveys the single-deletion-correcting properties of binary Varshamov-Tenengolts (VT) codes, focusing on the unsolved conjecture regarding the global optimality of $VT_0(n)$ and the recent Lean 4 formalization efforts. We describe a \emph{conditional} formal proof, checked in Lean 4, that $VT_0(n)$ is optimal among all \emph{perfect} single-deletion-correcting codes. The maximality of the zero-checksum class is fully verified (no \texttt{sorry}) using discrete Fourier transforms. The remaining step, that every perfect code has the size of some VT code, is an open hypothesis (\texttt{PerfectSizeBridge}). The Lean theorem takes it as an explicit argument. We have confirmed it by exhaustive enumeration for $n \le 11$.
 \end{abstract}
 
 \section{The VT(0) Optimal Theorem and Conjecture}
@@ -38,19 +38,19 @@ The initial formalization of Varshamov-Tenengolts codes in the Lean theorem prov
 Various historical and modern attempts have sought to resolve the optimality of VT codes. Levenshtein~\cite{Lev65} established the asymptotic optimality of these codes by showing that $A(n, 1) \sim 2^n / n$ as $n \to \infty$. Furthermore, Levenshtein~\cite{Lev92} introduced the concept of perfect deletion-correcting codes, proving that the deletion spheres $dS(x)$ of any VT code $VT_a(n)$ form a partition of the space of descendants $\{0,1\}^{n-1}$, making VT codes perfect single-deletion-correcting codes for all $a$. Other related efforts, such as those by Tenengolts~\cite{Ten76}, have focused on constructing linear single-deletion-correcting codes, though they suffer from a larger check-bit overhead of $O(\sqrt{n})$ compared to the $O(\log n)$ overhead of VT codes.
 
 \section{Detailed Proof of \texttt{vt0\_is\_optimal\_perfect}}
-The theorem \texttt{vt0\_is\_optimal\_perfect}, formalized in the module \texttt{VTlean.Progressive}, establishes that $VT_0(n)$ is optimal among all perfect single-deletion-correcting codes of length $n$.
-\begin{theorem}
-Let $C \subset \{0,1\}^n$ be a perfect single-deletion-correcting code of length $n$. Then:
+The theorem \texttt{vt0\_is\_optimal\_perfect}, formalized in the module \texttt{VTlean.Progressive}, establishes that $VT_0(n)$ is optimal among all perfect single-deletion-correcting codes of length $n$, \emph{conditional on} the hypothesis \texttt{PerfectSizeBridge n} (defined in \texttt{VTlean.AlgebraicFractal}).
+\begin{theorem}[conditional]
+Assume \texttt{PerfectSizeBridge n}. Let $C \subset \{0,1\}^n$ be a perfect single-deletion-correcting code of length $n$. Then:
 \begin{equation}
 |C| \le |VT_0(n)|.
 \end{equation}
 \end{theorem}
 
 \begin{proof}[Proof Structure and Formalization Details]
-The proof is structured as follows and builds successfully in Lean 4:
+The Lean proof depends on no \texttt{sorry} (checked with \texttt{\#print axioms}); the only unproven input is the explicit hypothesis below. The cases $n = 0, 1$ are proven directly. For $n \ge 2$:
 \begin{enumerate}
-\item \textbf{Perfect Card Equivalence}: We show that the cardinality of any perfect single-deletion-correcting code $C$ must match the cardinality of some VT code $VT_a(n)$ for some $a \in \{0, \dots, n\}$. Let $c(x) = 1$ if $x \in C$ and $0$ otherwise. The perfect code condition implies that for all descendants $y \in \{0,1\}^{n-1}$, we have $\sum_x A_{x,y} c(x) = 1$, where $A_{x,y} = 1$ if $y \in dS(x)$ and $0$ otherwise. 
-By inductive tracking of the run transitions using cumulative deletion potentials $P(x, k, u) = \sum_{y \in \text{cumulativeDels}(x, k)} u(y)$, we unroll this algebraic system. This reduces the size of $C$ to $\sum_{k=0}^n T_{n,k,a}$ for some $a$, which is the size of $VT_a(n)$. In the Lean codebase, this corresponds to the lemma \texttt{perfect\_code\_card\_eq\_sum\_T} in \texttt{VTlean.AlgebraicFractal}, which is currently postulated with a \texttt{sorry}.
+\item \textbf{Perfect Card Equivalence (open hypothesis)}: The cardinality of any perfect single-deletion-correcting code $C$ should equal the cardinality of $VT_a(n)$ for some $a \in \{0, \dots, n\}$. Let $c(x) = 1$ if $x \in C$ and $0$ otherwise. The perfect code condition says that for all descendants $y \in \{0,1\}^{n-1}$, $\sum_x A_{x,y} c(x) = 1$, where $A_{x,y} = 1$ if $y \in dS(x)$ and $0$ otherwise.
+\texttt{PerfectSizeBridge n} asserts that every such solution has $\sum_x c(x) = \sum_{k=0}^n T_{n,k,a}$ for some $a$; this sum equals $|VT_a(n)|$ (\texttt{vt\_size\_eq\_sum\_T}, fully verified). The bridge itself is \textbf{not proven}. The one-step reduction in \texttt{AlgebraicFractal} does not produce smaller perfect codes, and the slice recurrences once proposed for an induction are false. Perfect codes that are not VT codes exist for $n = 4, 6, 7$. Exhaustive exact-cover enumeration confirms the bridge for all $n \le 11$. For $8 \le n \le 11$ every perfect code is in fact a VT code.
 \item \textbf{Maximality of the Zero-Checksum Class}: We prove that $|VT_a(n)| \le |VT_0(n)|$ for all $a$. This corresponds to the theorem \texttt{VTCode\_zero\_is\_max}, which is fully verified in the module \texttt{VTlean.Cuculiere} without any occurrences of \texttt{sorry}. The proof utilizes the Discrete Fourier Transform over $\mathbb{C}$. The card of $VT_a(n)$ is represented using the $(n+1)$-th roots of unity $\omega$:
 \begin{equation}
 |VT_a(n)| = \frac{1}{n+1} \sum_{j=0}^n \omega^{-aj} P_n(\omega^j),

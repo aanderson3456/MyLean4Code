@@ -138,6 +138,183 @@ lemma partition_sum (C : Finset (List.Vector B n)) (hC : is_PerfectCodeCandidate
   rw [hC.right]
 }
 
+/-- The unique codeword whose deletion sphere contains `y`, for a perfect code. -/
+noncomputable def perfectParent (C : Finset (List.Vector B n))
+    (hC : is_PerfectCodeCandidate C) (y : List.Vector B (n - 1)) : List.Vector B n := by {
+  have hmem : y ∈ C.biUnion dS := by rw [hC.2]; simp
+  exact Classical.choose (Finset.mem_biUnion.mp hmem)
+}
+
+lemma perfectParent_spec (C : Finset (List.Vector B n))
+    (hC : is_PerfectCodeCandidate C) (y : List.Vector B (n - 1)) :
+    perfectParent C hC y ∈ C ∧ y ∈ dS (perfectParent C hC y) := by {
+  have hmem : y ∈ C.biUnion dS := by rw [hC.2]; simp
+  exact Classical.choose_spec (Finset.mem_biUnion.mp hmem)
+}
+
+lemma perfectParent_eq_of_mem (C : Finset (List.Vector B n))
+    (hC : is_PerfectCodeCandidate C) (x : List.Vector B n) (y : List.Vector B (n - 1))
+    (hx : x ∈ C) (hy : y ∈ dS x) : perfectParent C hC y = x := by {
+  have hp := perfectParent_spec C hC y
+  by_contra hneq
+  have hdisj := hC.1 _ hp.1 x hx hneq
+  rw [Finset.disjoint_iff_inter_eq_empty] at hdisj
+  have hinter : y ∈ dS (perfectParent C hC y) ∩ dS x :=
+    Finset.mem_inter.mpr ⟨hp.2, hy⟩
+  rw [hdisj] at hinter
+  simp at hinter
+}
+
+/-- Pushforward identity for the unique-parent map: under uniform deletion
+outputs, a parent `x` is sampled with probability proportional to its sphere
+size. -/
+lemma perfect_code_parent_pushforward (C : Finset (List.Vector B n))
+    (hC : is_PerfectCodeCandidate C) (g : List.Vector B n → Rat) (hn : 0 < n) :
+    ∑ y ∈ Finset.univ, g (perfectParent C hC y) =
+      ∑ x ∈ C, (dS x).card * g x := by {
+  let u : List.Vector B (n - 1) → Rat := fun y => g (perfectParent C hC y)
+  have h_each : ∀ x ∈ C, P x n u = (dS x).card * g x := by {
+    intro x hx
+    rw [P_n_eq_sum_dS x hn]
+    calc
+      (∑ y ∈ dS x, u y) = ∑ y ∈ dS x, g x := by {
+        apply Finset.sum_congr rfl
+        intro y hy
+        dsimp [u]
+        rw [perfectParent_eq_of_mem C hC x y hx hy]
+      }
+      _ = (dS x).card * g x := by simp [Finset.sum_const, nsmul_eq_mul]
+  }
+  have h_left :
+      (∑ x ∈ C, P x n u) = ∑ x ∈ C, (dS x).card * g x := by {
+    apply Finset.sum_congr rfl
+    intro x hx
+    exact h_each x hx
+  }
+  calc
+    (∑ y ∈ Finset.univ, g (perfectParent C hC y)) = ∑ x ∈ C, P x n u :=
+      (partition_sum C hC u hn).symm
+    _ = ∑ x ∈ C, (dS x).card * g x := h_left
+}
+
+/-- For a uniformly random deletion output, the expected reciprocal size of its
+unique parent sphere is exactly `|C| / 2^(n-1)`.  Thus an upper bound on this
+expectation is precisely a perfect-code cardinality bound. -/
+lemma perfect_code_reciprocal_degree_identity (C : Finset (List.Vector B n))
+    (hC : is_PerfectCodeCandidate C) (hn : 0 < n) :
+    (C.card : Rat) =
+      ∑ y ∈ Finset.univ,
+        ((dS (perfectParent C hC y)).card : Rat)⁻¹ := by {
+  let u : List.Vector B (n - 1) → Rat := fun y =>
+    ((dS (perfectParent C hC y)).card : Rat)⁻¹
+  have h_each : ∀ x ∈ C, P x n u = 1 := by {
+    intro x hx
+    rw [P_n_eq_sum_dS x hn]
+    have hcard_pos : 0 < (dS x).card := by {
+      rw [Finset.card_pos]
+      refine ⟨sDel x 0, ?_⟩
+      rw [mem_dS]
+      exact ⟨0, by omega, rfl⟩
+    }
+    have hcard_ne : ((dS x).card : Rat) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hcard_pos)
+    calc
+      (∑ y ∈ dS x, u y) = ∑ y ∈ dS x, ((dS x).card : Rat)⁻¹ := by {
+        apply Finset.sum_congr rfl
+        intro y hy
+        dsimp [u]
+        rw [perfectParent_eq_of_mem C hC x y hx hy]
+      }
+      _ = 1 := by simp [Finset.sum_const, nsmul_eq_mul, hcard_ne]
+  }
+  have h_left : (∑ x ∈ C, P x n u) = (C.card : Rat) := by {
+    calc
+      (∑ x ∈ C, P x n u) = ∑ x ∈ C, (1 : Rat) := by {
+        apply Finset.sum_congr rfl
+        intro x hx
+        exact h_each x hx
+      }
+      _ = (C.card : Rat) := by simp
+  }
+  have h_partition := partition_sum C hC u hn
+  calc
+    (C.card : Rat) = ∑ x ∈ C, P x n u := h_left.symm
+    _ = ∑ y ∈ Finset.univ, u y := h_partition
+    _ = ∑ y ∈ Finset.univ,
+          ((dS (perfectParent C hC y)).card : Rat)⁻¹ := by rfl
+}
+
+/-- Specializing the perfect-partition identity to the indicator of the weight-`w`
+layer gives an exact accounting identity for that layer.  Unlike the crude
+bound `card (dS x) ≤ n`, this keeps the non-uniform edge sizes visible one
+weight layer at a time. -/
+lemma perfect_code_layer_budget (C : Finset (List.Vector B n))
+    (hC : is_PerfectCodeCandidate C) (w : Nat) (hn : 0 < n) :
+    ∑ x ∈ C, (dS_wt x w).card =
+      (Finset.filter (fun y : List.Vector B (n - 1) => wt y = w) Finset.univ).card := by {
+  let u : List.Vector B (n - 1) → Rat := fun y => if wt y = w then 1 else 0
+  have h_left :
+      (∑ x ∈ C, ((dS_wt x w).card : Rat)) = ∑ x ∈ C, P x n u := by {
+    apply Finset.sum_congr rfl
+    intro x hx
+    rw [P_n_eq_sum_dS x hn]
+    calc
+      ((dS_wt x w).card : Rat) = ∑ y ∈ dS_wt x w, (1 : Rat) := by simp
+      _ = ∑ y ∈ dS x, if wt y = w then 1 else 0 := by {
+        unfold dS_wt
+        rw [Finset.sum_filter]
+      }
+      _ = ∑ y ∈ dS x, u y := by simp [u]
+  }
+  have h_mid := partition_sum C hC u hn
+  have h_right :
+      (∑ y ∈ Finset.univ, u y) =
+        ((Finset.filter (fun y : List.Vector B (n - 1) => wt y = w) Finset.univ).card : Rat) := by {
+    unfold u
+    rw [← Finset.sum_filter]
+    simp
+  }
+  have h_rat :
+      (∑ x ∈ C, ((dS_wt x w).card : Rat)) =
+        ((Finset.filter (fun y : List.Vector B (n - 1) => wt y = w) Finset.univ).card : Rat) := by {
+    calc
+      _ = ∑ x ∈ C, P x n u := h_left
+      _ = ∑ y ∈ Finset.univ, u y := h_mid
+      _ = _ := h_right
+  }
+  exact_mod_cast h_rat
+}
+
+/-- In a perfect code, if every codeword contributes at least `r` descendants
+to a fixed output-weight layer, then that layer has room for at least `r` per
+codeword.  This is useful when run-count information supplies such a lower
+bound on a (possibly filtered) family of codewords. -/
+lemma perfect_code_layer_lower_bound (C : Finset (List.Vector B n))
+    (hC : is_PerfectCodeCandidate C) (S : Finset (List.Vector B n)) (hS : S ⊆ C)
+    (w r : Nat) (hn : 0 < n)
+    (h_each : ∀ x ∈ S, r ≤ (dS_wt x w).card) :
+    r * S.card ≤
+      (Finset.filter (fun y : List.Vector B (n - 1) => wt y = w) Finset.univ).card := by {
+  have hlow : r * S.card ≤ ∑ x ∈ S, (dS_wt x w).card := by {
+    have hsum : (∑ x ∈ S, r) ≤ ∑ x ∈ S, (dS_wt x w).card := by {
+      apply Finset.sum_le_sum
+      intro x hx
+      exact h_each x hx
+    }
+    rw [Finset.sum_const, nsmul_eq_mul] at hsum
+    simpa [Nat.mul_comm] using hsum
+  }
+  have hsubset_sum :
+      (∑ x ∈ S, (dS_wt x w).card) ≤ ∑ x ∈ C, (dS_wt x w).card :=
+    Finset.sum_le_sum_of_subset_of_nonneg hS (by
+      intro x hxC hxS
+      exact Nat.zero_le _)
+  calc
+    r * S.card ≤ ∑ x ∈ S, (dS_wt x w).card := hlow
+    _ ≤ ∑ x ∈ C, (dS_wt x w).card := hsubset_sum
+    _ = (Finset.filter (fun y : List.Vector B (n - 1) => wt y = w) Finset.univ).card :=
+      perfect_code_layer_budget C hC w hn
+}
+
 lemma vt0_is_optimal_perfect_zero (C : Finset (List.Vector B 0)) (_hC : is_PerfectCodeCandidate C) :
     C.card ≤ (Finset.VTCode 0 0).card := by {
   have h_univ : (Finset.univ : Finset (List.Vector B 0)) = {List.Vector.nil} := by {
@@ -206,7 +383,10 @@ lemma vt0_is_optimal_perfect_one (C : Finset (List.Vector B 1)) (hC : is_Perfect
   omega
 }
 
-lemma perfect_code_card_eq_vt_card (C : Finset (List.Vector B n)) (hC : is_PerfectCodeCandidate C) :
+/-- Every perfect code has the size of some `VT_a(n)`, **conditional on** the open
+`PerfectSizeBridge n` (only used for `n ≥ 2`; the cases `n = 0, 1` are proven outright). -/
+lemma perfect_code_card_eq_vt_card (hBridge : PerfectSizeBridge n)
+    (C : Finset (List.Vector B n)) (hC : is_PerfectCodeCandidate C) :
     ∃ a, C.card = (Finset.VTCode n a).card := by {
   cases n with
   | zero =>
@@ -315,7 +495,7 @@ lemma perfect_code_card_eq_vt_card (C : Finset (List.Vector B n)) (hC : is_Perfe
         rw [h_eq, Finset.card_singleton]
       }
       
-      have h_card_T := perfect_code_card_eq_sum_T c hc
+      have h_card_T := hBridge c hc
       
       rcases h_card_T with ⟨a, ha⟩
       
@@ -337,26 +517,20 @@ lemma perfect_code_card_eq_vt_card (C : Finset (List.Vector B n)) (hC : is_Perfe
       exact (vt_size_eq_sum_T (n'' + 2) a).symm
 }
 
-/-- Theorem: VT_0 is optimal among all perfect single-deletion correcting codes.
-Proven via double induction:
-- Outer induction: string length n.
-- Inner induction: prefix index k tracking run transitions and cumulative deletion spheres. -/
-theorem vt0_is_optimal_perfect (C : Finset (List.Vector B n)) (hC : is_PerfectCodeCandidate C) :
+/-- Theorem (conditional): `VT_0(n)` is optimal among all perfect single-deletion
+correcting codes, **assuming** the open hypothesis `PerfectSizeBridge n`.
+
+Proof: `n = 0, 1` are handled directly. For `n ≥ 2`, the bridge gives `|C| = |VT_a(n)|`
+for some `a`, and `VTCode_zero_is_max` (sorry-free, via the DFT) gives
+`|VT_a(n)| ≤ |VT_0(n)|`. -/
+theorem vt0_is_optimal_perfect (hBridge : PerfectSizeBridge n)
+    (C : Finset (List.Vector B n)) (hC : is_PerfectCodeCandidate C) :
     C.card ≤ (Finset.VTCode n 0).card := by {
-  induction n with
-  | zero =>
-    exact vt0_is_optimal_perfect_zero C hC
-  | succ n' ih =>
-    cases n' with
-    | zero =>
-      exact vt0_is_optimal_perfect_one C hC
-    | succ n'' =>
-      have h_inner : ∀ k ≤ n'' + 2, ∀ x ∈ C, ∀ u : List.Vector B (n'' + 1) → Rat,
-          (∀ y, 0 ≤ u y) → P x k u ≤ ∑ i ∈ Finset.range k, u (sDel x i) := by {
-        intro k hk x hx u hu
-        exact P_le_sum_range x k u hu
-      }
-      have ⟨a, h_eq⟩ := perfect_code_card_eq_vt_card C hC
-      rw [h_eq]
-      exact VTCode_zero_is_max (n'' + 2) a
+  match n, hBridge, C, hC with
+  | 0, _, C, hC => exact vt0_is_optimal_perfect_zero C hC
+  | 1, _, C, hC => exact vt0_is_optimal_perfect_one C hC
+  | n'' + 2, hBridge, C, hC =>
+    have ⟨a, h_eq⟩ := perfect_code_card_eq_vt_card hBridge C hC
+    rw [h_eq]
+    exact VTCode_zero_is_max (n'' + 2) a
 }

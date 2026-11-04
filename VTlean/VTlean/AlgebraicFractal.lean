@@ -530,12 +530,18 @@ lemma perfect_code_1_step_sum {n : Nat} (hn : 0 < n) (c : List.Vector B (n + 1) 
     exact h_sum2
 }
 
-/-- The recursive unrolling of the perfect code equation forces the total cardinality
-to match one of the n+1 combinatorial subset sums T(n, k, a). -/
-theorem perfect_code_card_eq_sum_T {n : Nat} (c : List.Vector B n → Nat) (hc : is_perfect_algebraic n c) :
-  ∃ a, (∑ x, c x) = ∑ k ∈ Finset.Iic n, T n k a := by {
-  sorry
-}
+/-- **Open hypothesis (the "bridge").** Every solution `c` of the perfect-code equation
+`A c = 1` at length `n` has total weight equal to one of the `n+1` combinatorial subset
+sums `∑ₖ T(n, k, a)`, i.e. the size of some `VT_a(n)`.
+
+This was previously stated as the theorem `perfect_code_card_eq_sum_T` closed by `sorry`.
+It is **not proven**: the 1-step `c_0/c_1/e_0/e_1` reduction above does not yield smaller
+perfect codes (see the summary note at the end of this file), and non-VT perfect codes exist
+for `n = 4, 6, 7`. Exhaustive enumeration (`scripts/perfect_sizes.py`) confirms it for all
+`n ≤ 11`. Downstream results take `PerfectSizeBridge n` as an explicit hypothesis. -/
+def PerfectSizeBridge (n : Nat) : Prop :=
+  ∀ c : List.Vector B n → Nat, is_perfect_algebraic n c →
+    ∃ a, (∑ x, c x) = ∑ k ∈ Finset.Iic n, T n k a
 
 /-!
 ### Summary of the Recurrence Failures

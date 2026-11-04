@@ -588,6 +588,482 @@ noncomputable def inversionMatrix : GL (Fin 2) $\mathbb{C}$ :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![0, 1; 1, 0] ...
 \end{lstlisting}
     \[ \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix} \]
+
+    \item \textbf{\texttt{cross\_ratio\_Cinfty}} ($z_1, z_2, z_3, z_4 \in \mathbb{C} \cup \{\infty\}$): The spherical cross-ratio $(z_1, z_2, z_3, z_4) \in \mathbb{C} \cup \{\infty\}$, defined as $\varphi(z_4)$ where $\varphi$ is the unique linear-fractional transformation mapping $z_1 \mapsto \infty$, $z_2 \mapsto 0$, and $z_3 \mapsto 1$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def cross_ratio_Cinfty (z$_1$ z$_2$ z$_3$ z$_4$ : OnePoint $\mathbb{C}$) : OnePoint $\mathbb{C}$ :=
+  (Classical.epsilon (fun $\varphi$ : OnePoint $\mathbb{C}$ $\to$ OnePoint $\mathbb{C}$ =>
+    IsLinFracTrans $\varphi$ $\wedge$ $\varphi$ z$_1$ = $\infty$ $\wedge$ $\varphi$ z$_2$ = (0 : $\mathbb{C}$) $\wedge$ $\varphi$ z$_3$ = (1 : $\mathbb{C}$))) z$_4$
+\end{lstlisting}
+    \[ (z_1, z_2, z_3, z_4) = \varphi(z_4) \quad \text{where } \varphi(z_1) = \infty,\; \varphi(z_2) = 0,\; \varphi(z_3) = 1 \]
+
+    \item \textbf{\texttt{crossRatioFin}} ($z_1, z_2, z_3, z_4 \in \mathbb{C}$): The rational cross-ratio formula for four finite complex numbers.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def crossRatioFin (z$_1$ z$_2$ z$_3$ z$_4$ : $\mathbb{C}$) : $\mathbb{C}$ :=
+  ((z$_4$ - z$_2$) * (z$_3$ - z$_1$)) / ((z$_4$ - z$_1$) * (z$_3$ - z$_2$))
+\end{lstlisting}
+    \[ (z_1, z_2, z_3, z_4) = \frac{(z_4 - z_2)(z_3 - z_1)}{(z_4 - z_1)(z_3 - z_2)} \]
+
+    \item \textbf{\texttt{clineLocus}} ($\alpha, \gamma \in \mathbb{R}$, $\beta \in \mathbb{C}$): The general locus of a circle or line (cline) in $\mathbb{C} \cup \{\infty\}$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def clineLocus ($\alpha$ : $\mathbb{R}$) ($\beta$ : $\mathbb{C}$) ($\gamma$ : $\mathbb{R}$) : Set (OnePoint $\mathbb{C}$) :=
+  {w : OnePoint $\mathbb{C}$ | match w with
+    | $\infty$ => $\alpha$ = 0
+    | (z : $\mathbb{C}$) => $\alpha$ * $\Vert$z$\Vert$ ^ 2 + 2 * (star $\beta$ * z).re + $\gamma$ = 0}
+\end{lstlisting}
+    \[ C_{\alpha,\beta,\gamma} = \{z \in \mathbb{C} : \alpha |z|^2 + 2 \operatorname{Re}(\bar{\beta} z) + \gamma = 0\} \cup \{\infty \mid \alpha = 0\} \]
+
+    \item \textbf{\texttt{IsCline}} ($S \subseteq \mathbb{C} \cup \{\infty\}$): Predicate stating that $S$ is a non-degenerate cline ($|\beta|^2 > \alpha \gamma$).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def IsCline (S : Set (OnePoint $\mathbb{C}$)) : Prop :=
+  $\exists$ ($\alpha$ : $\mathbb{R}$) ($\beta$ : $\mathbb{C}$) ($\gamma$ : $\mathbb{R}$), $\alpha$ * $\gamma$ < $\Vert\beta\Vert$ ^ 2 $\wedge$ S = clineLocus $\alpha$ $\beta$ $\gamma$
+\end{lstlisting}
+    \[ \operatorname{IsCline}(S) \iff \exists \alpha, \gamma \in \mathbb{R},\; \beta \in \mathbb{C},\; \alpha\gamma < |\beta|^2 \;\wedge\; S = C_{\alpha,\beta,\gamma} \]
+
+    \item \textbf{\texttt{circleReflect}} ($z_0, z \in \mathbb{C}$, $R \in \mathbb{R}$): Reflection (inversion) across the circle $\{z \in \mathbb{C} : |z - z_0| = R\}$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def circleReflect (z$_0$ : $\mathbb{C}$) (R : $\mathbb{R}$) (z : $\mathbb{C}$) : $\mathbb{C}$ :=
+  z$_0$ + (R ^ 2 : $\mathbb{C}$) / star (z - z$_0$)
+\end{lstlisting}
+    \[ z^* = z_0 + \frac{R^2}{\overline{z - z_0}} \]
+
+    \item \textbf{\texttt{SymmetricWrtTriple}} ($z_1, z_2, z_3, z, z^* \in \mathbb{C} \cup \{\infty\}$): Sarason's cross-ratio definition of symmetry with respect to the cline through $(z_1, z_2, z_3)$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def SymmetricWrtTriple (z$_1$ z$_2$ z$_3$ z z_star : OnePoint $\mathbb{C}$) : Prop :=
+  cross_ratio_Cinfty z$_1$ z$_2$ z$_3$ z_star = conjExt (cross_ratio_Cinfty z$_1$ z$_2$ z$_3$ z)
+\end{lstlisting}
+    \[ (z_1, z_2, z_3, z^*) = \overline{(z_1, z_2, z_3, z)} \]
+
+    \item \textbf{\texttt{cayleyMap}} ($z \in \mathbb{C}$): The Cayley transform mapping the upper half-plane $\mathbb{H} = \{\operatorname{Im} z > 0\}$ onto the unit disk $\mathbb{D} = \{|w| < 1\}$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def cayleyMap (z : $\mathbb{C}$) : $\mathbb{C}$ :=
+  linFracTrans 1 (-Complex.I) 1 Complex.I z
+\end{lstlisting}
+    \[ w = \frac{z - i}{z + i} \]
+
+    \item \textbf{\texttt{herglotzKernel}} ($\zeta, z \in \mathbb{C}$): The Herglotz kernel mapping $z \in \mathbb{D}$ onto the right half-plane $\{\operatorname{Re} w > 0\}$ for $\zeta \in \partial\mathbb{D}$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def herglotzKernel ($\zeta$ z : $\mathbb{C}$) : $\mathbb{C}$ :=
+  ($\zeta$ + z) / ($\zeta$ - z)
+\end{lstlisting}
+    \[ H(\zeta, z) = \frac{\zeta + z}{\zeta - z}, \qquad \operatorname{Re} H(\zeta, z) = \frac{1 - |z|^2}{|\zeta - z|^2} \quad (|\zeta| = 1) \]
+
+    \item \textbf{\texttt{blaschkeFactor}} ($a, z \in \mathbb{C}$): Disk automorphism / Blaschke factor mapping $\mathbb{D}$ onto $\mathbb{D}$ and taking $a \mapsto 0$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def blaschkeFactor (a z : $\mathbb{C}$) : $\mathbb{C}$ :=
+  (z - a) / (1 - star a * z)
+\end{lstlisting}
+    \[ \varphi_a(z) = \frac{z - a}{1 - \bar{a} z} \]
+
+    \item \textbf{\texttt{polarPoint}} ($r, \theta \in \mathbb{R} \to \mathbb{C}$): Polar coordinate point $z = r \cos \theta + i r \sin \theta \in \mathbb{C}$, matching the $(r \cos \theta, r \sin \theta)$ parameterization of \texttt{polar\_partial\_r} and \texttt{polar\_partial\_theta}.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def polarPoint (r $\theta$ : $\mathbb{R}$) : $\mathbb{C}$ :=
+  ((r * Real.cos $\theta$ : $\mathbb{R}$) : $\mathbb{C}$) + ((r * Real.sin $\theta$ : $\mathbb{R}$) : $\mathbb{C}$) * I
+\end{lstlisting}
+    \[ \operatorname{polarPoint}(r, \theta) = r \cos \theta + i r \sin \theta = r e^{i\theta} \]
+
+    \item \textbf{\texttt{IsStarlikeDomain\_theta}} ($\Omega \subseteq \mathbb{C}$): Geometric definition of a starlike domain with respect to the origin $0$ in terms of the polar angle $\theta$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def IsStarlikeDomain_theta ($\Omega$ : Set $\mathbb{C}$) : Prop :=
+  (0 : $\mathbb{C}$) $\in$ $\Omega$ $\wedge$
+  $\forall$ (r $\theta$ : $\mathbb{R}$), 0 $\le$ r $\to$ polarPoint r $\theta$ $\in$ $\Omega$ $\to$
+    $\forall$ t : $\mathbb{R}$, 0 $\le$ t $\to$ t $\le$ 1 $\to$ polarPoint (t * r) $\theta$ $\in$ $\Omega$
+\end{lstlisting}
+    \[ \operatorname{IsStarlikeDomain\_theta}(\Omega) \iff 0 \in \Omega \;\wedge\; \forall r \ge 0,\; \forall \theta \in \mathbb{R},\; r e^{i\theta} \in \Omega \implies \forall t \in [0, 1],\; (tr)e^{i\theta} \in \Omega \]
+
+    \item \textbf{\texttt{argPolarDeriv\_theta}} ($u, v, u_x, u_y, v_x, v_y : \mathbb{R}^2 \to \mathbb{R}$, $p = (r, \theta) \in \mathbb{R}^2 \to \mathbb{R}$): Angular rate of change $\frac{\partial \arg f(r e^{i\theta})}{\partial \theta}$ of the image argument along the polar circle of radius $r$, defined directly via \texttt{polar\_partial\_theta}.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def argPolarDeriv_theta (u v ux uy vx vy : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$) (p : $\mathbb{R}$ $\times$ $\mathbb{R}$) : $\mathbb{R}$ :=
+  let q : $\mathbb{R}$ $\times$ $\mathbb{R}$ := (p.1 * Real.cos p.2, p.1 * Real.sin p.2)
+  (u q * polar_partial_theta vx vy p - v q * polar_partial_theta ux uy p) /
+    (u q ^ 2 + v q ^ 2)
+\end{lstlisting}
+    \[ \frac{\partial \arg f(r e^{i\theta})}{\partial \theta} = \frac{u(r \cos \theta, r \sin \theta)\, v_\theta(r, \theta) - v(r \cos \theta, r \sin \theta)\, u_\theta(r, \theta)}{u(r \cos \theta, r \sin \theta)^2 + v(r \cos \theta, r \sin \theta)^2} = \operatorname{Re}\!\left(\frac{z f'(z)}{f(z)}\right) \]
+
+    \item \textbf{\texttt{IsStarlikeOnDisk\_theta\_eps}} ($f : \mathbb{C} \to \mathbb{C}$): Angle-based ($\theta$ / \texttt{polar\_partial\_theta}) and Weierstrass \texttt{\_eps} definition of a starlike holomorphic map on the open unit disk $\mathbb{D} = \texttt{unitDiskSet}$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def IsStarlikeOnDisk_theta_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) : Prop :=
+  HolomorphicOn_eps f unitDiskSet $\wedge$
+  f 0 = 0 $\wedge$
+  ($\forall$ z $\in$ unitDiskSet, z $\neq$ 0 $\to$ f z $\neq$ 0) $\wedge$
+  $\forall$ (r $\theta$ : $\mathbb{R}$) (ux uy vx vy : $\mathbb{R}$ $\times$ $\mathbb{R}$ $\to$ $\mathbb{R}$),
+    0 < r $\to$ r < 1 $\to$
+    HasPartialDerivX_C_to_R_eps (fun w => (f w).re) (ux (r * Real.cos $\theta$, r * Real.sin $\theta$)) (polarPoint r $\theta$) $\to$
+    HasPartialDerivY_C_to_R_eps (fun w => (f w).re) (uy (r * Real.cos $\theta$, r * Real.sin $\theta$)) (polarPoint r $\theta$) $\to$
+    HasPartialDerivX_C_to_R_eps (fun w => (f w).im) (vx (r * Real.cos $\theta$, r * Real.sin $\theta$)) (polarPoint r $\theta$) $\to$
+    HasPartialDerivY_C_to_R_eps (fun w => (f w).im) (vy (r * Real.cos $\theta$, r * Real.sin $\theta$)) (polarPoint r $\theta$) $\to$
+    0 < argPolarDeriv_theta
+      (fun q => (f ((q.1 : $\mathbb{C}$) + (q.2 : $\mathbb{C}$) * I)).re)
+      (fun q => (f ((q.1 : $\mathbb{C}$) + (q.2 : $\mathbb{C}$) * I)).im)
+      ux uy vx vy (r, $\theta$)
+\end{lstlisting}
+    \[ f \in \mathcal{O}_{\varepsilon}(\mathbb{D}),\quad f(0) = 0,\quad f(z) \neq 0 \text{ on } \mathbb{D} \setminus \{0\},\quad \frac{\partial \arg f(r e^{i\theta})}{\partial \theta} > 0 \quad \forall r \in (0, 1),\; \theta \in \mathbb{R} \]
+
+    \item \textbf{\texttt{IsStarlikeLogDeriv\_eps}} ($f : \mathbb{C} \to \mathbb{C}$): Analytic logarithmic-derivative definition of a starlike holomorphic map on $\mathbb{D}$ using \texttt{HolomorphicOn\_eps}, \texttt{DifferentiableAt\_eps}, and \texttt{deriv\_eps}.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def IsStarlikeLogDeriv_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) : Prop :=
+  HolomorphicOn_eps f unitDiskSet $\wedge$
+  f 0 = 0 $\wedge$
+  ($\forall$ z $\in$ unitDiskSet, z $\neq$ 0 $\to$ f z $\neq$ 0) $\wedge$
+  $\forall$ (z : $\mathbb{C}$), z $\in$ unitDiskSet $\to$ z $\neq$ 0 $\to$
+    $\forall$ (hd : DifferentiableAt_eps f z), 0 < ((z * deriv_eps f z hd) / f z).re
+\end{lstlisting}
+    \[ f \in \mathcal{O}_{\varepsilon}(\mathbb{D}),\quad f(0) = 0,\quad \operatorname{Re}\!\left(\frac{z f'(z)}{f(z)}\right) > 0 \quad \forall z \in \mathbb{D} \setminus \{0\} \]
+
+    \item \textbf{\texttt{pommerenkeLogDeriv}} ($\zeta : \operatorname{Fin} m \to \mathbb{C}$, $\sigma : \operatorname{Fin} m \to \mathbb{R}$, $z \in \mathbb{C} \to \mathbb{C}$): Herglotz--Pommerenke logarithmic derivative of a starlike radial slit map $f(z) = z \prod_{j=1}^m (1 - \overline{\zeta_j} z)^{-\sigma_j}$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def pommerenkeLogDeriv {m : $\mathbb{N}$} ($\zeta$ : Fin m $\to$ $\mathbb{C}$) ($\sigma$ : Fin m $\to$ $\mathbb{R}$) (z : $\mathbb{C}$) : $\mathbb{C}$ :=
+  $\sum$ j : Fin m, (($\sigma$ j / 2 : $\mathbb{R}$) : $\mathbb{C}$) * herglotzKernel ($\zeta$ j) z
+\end{lstlisting}
+    \[ \frac{z f'(z)}{f(z)} = \sum_{j=1}^m \frac{\sigma_j}{2} \frac{\zeta_j + z}{\zeta_j - z} = 1 + \sum_{j=1}^m \frac{\sigma_j \overline{\zeta_j} z}{1 - \overline{\zeta_j} z} \quad \left(\sum_{j=1}^m \sigma_j = 2\right) \]
+
+    \item \textbf{\texttt{pommerenkeFactorPhase}}, \textbf{\texttt{pommerenkeArcPhase}}, \& \textbf{\texttt{pommerenkeSlitAngle}} ($m, k \in \mathbb{N}$, $\varphi, \sigma : \mathbb{N} \to \mathbb{R}$, $t \in \mathbb{R} \to \mathbb{R}$): Half-angle boundary phase of $(1 - e^{-i\varphi_j} e^{it})^{-\sigma_j}$ and the resulting constant slit angle $\theta_k$ on the $k$-th arc $(\varphi_{k-1}, \varphi_k)$, satisfying $\theta_{k+1} - \theta_k = \sigma_k \pi$ (\texttt{pommerenkeSlitAngle\_succ\_sub\_eq\_sigma\_mul\_pi}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def pommerenkeFactorPhase ($\varphi$_j $\sigma$_j t : $\mathbb{R}$) (beforePole : Bool) : $\mathbb{R}$ :=
+  -$\sigma$_j * ((t - $\varphi$_j + (if beforePole then Real.pi else -Real.pi)) / 2)
+
+noncomputable def pommerenkeArcPhase (m k : $\mathbb{N}$) ($\varphi$ $\sigma$ : $\mathbb{N}$ $\to$ $\mathbb{R}$) (t : $\mathbb{R}$) : $\mathbb{R}$ :=
+  t + $\sum$ j $\in$ Finset.range m, pommerenkeFactorPhase ($\varphi$ j) ($\sigma$ j) t (decide (k $\le$ j))
+
+noncomputable def pommerenkeSlitAngle (m k : $\mathbb{N}$) ($\varphi$ $\sigma$ : $\mathbb{N}$ $\to$ $\mathbb{R}$) : $\mathbb{R}$ :=
+  pommerenkeArcPhase m k $\varphi$ $\sigma$ 0
+\end{lstlisting}
+    \[ \theta_k = \sum_{j=0}^{m-1} \frac{\sigma_j \varphi_j}{2} + \sum_{j < k} \frac{\sigma_j \pi}{2} - \sum_{j \ge k} \frac{\sigma_j \pi}{2}, \qquad \Delta\theta_k = \theta_{k+1} - \theta_k = \sigma_k \pi \]
+\end{itemize}
+
+\section{\texttt{SlitHarmonicMeasure.lean} (Section 8: Polar Angle $\theta$ \& \texttt{\_eps} Monotone Channel Statement)}
+
+\begin{itemize}
+    \item \textbf{\texttt{radialSlit\_theta}} ($\rho, \theta \in \mathbb{R} \to \mathcal{P}(\mathbb{C})$): Radial slit $R_k = \{r e^{i\theta} : r \ge \rho\}$ at polar angle $\theta$ starting at modulus $\rho$, parameterized via \texttt{polarPoint}.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def radialSlit_theta ($\rho$ $\theta$ : $\mathbb{R}$) : Set $\mathbb{C}$ :=
+  {w : $\mathbb{C}$ | $\exists$ r : $\mathbb{R}$, $\rho$ $\le$ r $\wedge$ w = polarPoint r $\theta$}
+\end{lstlisting}
+    \[ R(\rho, \theta) = \{r e^{i\theta} \in \mathbb{C} : r \ge \rho\} \]
+
+    \item \textbf{\texttt{angularChannel\_theta}} ($\theta_{\text{low}}, \theta_{\text{high}} \in \mathbb{R} \to \mathcal{P}(\mathbb{C})$): Open angular channel sector $C_k$ between adjacent radial slit angles $\theta_{\text{low}}$ and $\theta_{\text{high}}$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def angularChannel_theta ($\theta$_low $\theta$_high : $\mathbb{R}$) : Set $\mathbb{C}$ :=
+  {w : $\mathbb{C}$ | $\exists$ (r $\theta$ : $\mathbb{R}$), 0 < r $\wedge$ $\theta$_low < $\theta$ $\wedge$ $\theta$ < $\theta$_high $\wedge$ w = polarPoint r $\theta$}
+\end{lstlisting}
+    \[ C(\theta_{\text{low}}, \theta_{\text{high}}) = \{r e^{i\theta} \in \mathbb{C} : r > 0,\; \theta_{\text{low}} < \theta < \theta_{\text{high}}\} \]
+
+    \item \textbf{\texttt{slitComplementDomain\_theta}} ($\rho, \theta : \operatorname{Fin} m \to \mathbb{R} \to \mathcal{P}(\mathbb{C})$): Radially slitted plane $\Omega = \mathbb{C} \setminus \bigcup_{j=1}^m R(\rho_j, \theta_j)$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def slitComplementDomain_theta {m : $\mathbb{N}$} ($\rho$ $\theta$ : Fin m $\to$ $\mathbb{R}$) : Set $\mathbb{C}$ :=
+  ($\bigcup$ j : Fin m, radialSlit_theta ($\rho$ j) ($\theta$ j))$^c$
+\end{lstlisting}
+    \[ \Omega = \mathbb{C} \setminus \bigcup_{j=1}^m \{r e^{i\theta_j} : r \ge \rho_j\} \]
+
+    \item \textbf{\texttt{IsRealHarmonicOn\_eps}} ($\omega : \mathbb{C} \to \mathbb{R}$, $G \subseteq \mathbb{C}$): Harmonicity of a real-valued function on an open subset $G \subseteq \mathbb{C}$ via \texttt{Harmonic\_R2\_eps}.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def IsRealHarmonicOn_eps ($\omega$ : $\mathbb{C}$ $\to$ $\mathbb{R}$) (G : Set $\mathbb{C}$) : Prop :=
+  Harmonic_R2_eps (fun p : $\mathbb{R}$ $\times$ $\mathbb{R}$ => $\omega$ ((p.1 : $\mathbb{C}$) + (p.2 : $\mathbb{C}$) * I))
+    {p : $\mathbb{R}$ $\times$ $\mathbb{R}$ | (p.1 : $\mathbb{C}$) + (p.2 : $\mathbb{C}$) * I $\in$ G}
+\end{lstlisting}
+    \[ \Delta \omega = \omega_{xx} + \omega_{yy} = 0 \quad \text{on } G \]
+
+    \item \textbf{\texttt{poissonKernel\_theta}} ($\varphi \in \mathbb{R}$, $z \in \mathbb{C} \to \mathbb{R}$): Poisson kernel on $\mathbb{D}$ with boundary pole at polar angle $\varphi$ ($\zeta = e^{i\varphi} = \texttt{polarPoint}\ 1\ \varphi$), defined as the real part of \texttt{herglotzKernel}.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def poissonKernel_theta ($\varphi$ : $\mathbb{R}$) (z : $\mathbb{C}$) : $\mathbb{R}$ :=
+  (herglotzKernel (polarPoint 1 $\varphi$) z).re
+\end{lstlisting}
+    \[ P(z, e^{i\varphi}) = \operatorname{Re}\!\left(\frac{e^{i\varphi} + z}{e^{i\varphi} - z}\right) = \frac{1 - |z|^2}{|e^{i\varphi} - z|^2} \]
+
+    \item \textbf{\texttt{diskArcHarmonicMeasureOrigin}} ($\varphi_1, \varphi_2 \in \mathbb{R} \to \mathbb{R}$): Normalized harmonic measure $\omega(0; (e^{i\varphi_1}, e^{i\varphi_2}); \mathbb{D})$ at the origin of a boundary arc on $\partial\mathbb{D}$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def diskArcHarmonicMeasureOrigin ($\varphi_1$ $\varphi_2$ : $\mathbb{R}$) : $\mathbb{R}$ :=
+  ($\varphi_2$ - $\varphi_1$) / (2 * Real.pi)
+\end{lstlisting}
+    \[ \omega(0; (e^{i\varphi_1}, e^{i\varphi_2}); \mathbb{D}) = \frac{\varphi_2 - \varphi_1}{2\pi} \]
+
+    \item \textbf{\texttt{AnalyticOrderedSlitConfiguration\_eps}} ($m \in \mathbb{N}$): Structure bundling a starlike conformal map $f : \mathbb{C} \to \mathbb{C}$ satisfying \texttt{IsStarlikeOnDisk\_theta\_eps}, the Herglotz--Pommerenke \texttt{deriv\_eps} logarithmic derivative identity, critical tip preimages \texttt{HasDerivAt\_R\_to\_C\_eps}, interlaced boundary angles $\varphi_k \le t_k \le \varphi_{k+1}$, channel opening angles $\theta_{k+1} - \theta_k = \sigma_k \pi$, and unit-circle slit tips $\rho_k = 1$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+structure AnalyticOrderedSlitConfiguration_eps (m : $\mathbb{N}$) where
+  f : $\mathbb{C}$ $\to$ $\mathbb{C}$
+  phi : $\mathbb{N}$ $\to$ $\mathbb{R}$
+  tipArg : $\mathbb{N}$ $\to$ $\mathbb{R}$
+  thetaSlit : $\mathbb{N}$ $\to$ $\mathbb{R}$
+  sigma : $\mathbb{N}$ $\to$ $\mathbb{R}$
+  rho : $\mathbb{N}$ $\to$ $\mathbb{R}$
+  hStarlike_theta : IsStarlikeOnDisk_theta_eps f
+  hLogDeriv_eps :
+    $\forall$ (z : $\mathbb{C}$), z $\in$ unitDiskSet $\to$ z $\neq$ 0 $\to$ $\forall$ (hd : DifferentiableAt_eps f z),
+      (z * deriv_eps f z hd) / f z =
+        pommerenkeLogDeriv (fun j : Fin m => polarPoint 1 (phi j.val)) (fun j : Fin m => sigma j.val) z
+  hTipCritical_eps : $\forall$ k : $\mathbb{N}$, HasDerivAt_R_to_C_eps (fun $\theta$ => f (polarPoint 1 $\theta$)) 0 (tipArg k)
+  hInterlaceLeft : $\forall$ k : $\mathbb{N}$, phi k $\le$ tipArg k
+  hInterlaceRight : $\forall$ k : $\mathbb{N}$, tipArg k $\le$ phi (k + 1)
+  hChannelOpeningAngle : $\forall$ k : $\mathbb{N}$, thetaSlit (k + 1) - thetaSlit k = sigma k * Real.pi
+  hUnitCircleTips : $\forall$ k : $\mathbb{N}$, rho k = 1
+\end{lstlisting}
+    \[ \frac{z f'(z)}{f(z)} = \sum_{j=1}^m \frac{\sigma_j}{2} \frac{e^{i\varphi_j} + z}{e^{i\varphi_j} - z}, \qquad \frac{d}{d\theta} f(e^{i\theta})\Big|_{\theta = t_k} = 0, \qquad \varphi_k \le t_k \le \varphi_{k+1}, \qquad \Delta\theta_k = \theta_{k+1} - \theta_k = \sigma_k \pi \]
+
+    \item \textbf{\texttt{MonotoneChannelStatement\_eps}} ($C : \texttt{AnalyticOrderedSlitConfiguration\_eps}\ m$, $N \in \mathbb{N}$): The Analytic Monotone Channel Harmonic Measure Statement (Section 2, Equation 2.21 / Lemma 2.1).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def MonotoneChannelStatement_eps {m : $\mathbb{N}$} (C : AnalyticOrderedSlitConfiguration_eps m) (N : $\mathbb{N}$) : Prop :=
+  ($\forall$ k < N, analyticChannelOpeningAngle_theta C k $\le$ analyticChannelOpeningAngle_theta C (k + 1)) $\to$
+  ($\forall$ k < N, analyticChannelHarmonicMeasure_eps C k $\le$ analyticChannelHarmonicMeasure_eps C (k + 1))
+\end{lstlisting}
+    \[ \left(\forall k < N,\; \Delta\theta_k \le \Delta\theta_{k+1}\right) \implies \left(\forall k < N,\; \omega(0; \partial C_k; \Omega) = \frac{t_{k+1} - t_k}{2\pi} \le \frac{t_{k+2} - t_{k+1}}{2\pi} = \omega(0; \partial C_{k+1}; \Omega)\right) \]
+
+    \item \textbf{\texttt{MonotoneSlitStatement\_eps}} ($C : \texttt{AnalyticOrderedSlitConfiguration\_eps}\ m$, $N \in \mathbb{N}$): The Analytic Monotone Slit Harmonic Measure Statement (Section 1, Question 1.1 / Lemma 2.2).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def MonotoneSlitStatement_eps {m : $\mathbb{N}$} (C : AnalyticOrderedSlitConfiguration_eps m) (N : $\mathbb{N}$) : Prop :=
+  ($\forall$ k < N, analyticChannelOpeningAngle_theta C k $\le$ analyticChannelOpeningAngle_theta C (k + 1)) $\to$
+  ($\forall$ k < N, analyticSlitHarmonicMeasure_eps C k $\le$ analyticSlitHarmonicMeasure_eps C (k + 1))
+\end{lstlisting}
+    \[ \left(\forall k < N,\; \Delta\theta_k \le \Delta\theta_{k+1}\right) \implies \left(\forall k < N,\; \omega(0; R_k; \Omega) = \frac{\varphi_{k+1} - \varphi_k}{2\pi} \le \frac{\varphi_{k+2} - \varphi_{k+1}}{2\pi} = \omega(0; R_{k+1}; \Omega)\right) \]
+
+    \item \textbf{\texttt{riemannSlitMap\_f}} ($n \in \mathbb{N}$, $z_{\text{pt}} : \mathbb{N} \to \mathbb{C}$, $\sigma : \mathbb{N} \to \mathbb{R}$, $z \in \mathbb{C} \to \mathbb{C}$): Explicit Pommerenke formula (Section 1, Equation 1.1 of \textit{Discretization of a Harmonic Measure Problem and Spandrel}) for the Riemann map $f : \mathbb{D} \to \Omega$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def riemannSlitMap_f (n : $\mathbb{N}$) (z_pt : $\mathbb{N}$ $\to$ $\mathbb{C}$) ($\sigma$ : $\mathbb{N}$ $\to$ $\mathbb{R}$) (z : $\mathbb{C}$) : $\mathbb{C}$ :=
+  z * $\prod$ j $\in$ Finset.Icc 1 (2 * n), (1 - star (z_pt j) * z) ^ (-($\sigma$ j : $\mathbb{C}$))
+\end{lstlisting}
+    \[ f(z) = z \prod_{j=1}^{2n} (1 - \bar{z}_j z)^{-\sigma_j} \]
+
+    \item \textbf{\texttt{PaperSection1SymmetricSlitSetup\_eps}} ($n \in \mathbb{N}$): Exact symmetrical setup of Section 1 (Equations 1.1--1.6 of \texttt{IsoRadStarQuestion.tex}), including the real-axis conjugation symmetries for $k = 2, 3, \dots, n$ and equal starting moduli $\rho_k = \rho_j$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+structure PaperSection1SymmetricSlitSetup_eps (n : $\mathbb{N}$) where
+  f : $\mathbb{C}$ $\to$ $\mathbb{C}$
+  $\varphi$ : $\mathbb{N}$ $\to$ $\mathbb{R}$
+  z_pt : $\mathbb{N}$ $\to$ $\mathbb{C}$
+  $\sigma$ : $\mathbb{N}$ $\to$ $\mathbb{R}$
+  t : $\mathbb{N}$ $\to$ $\mathbb{R}$
+  $\rho$ : $\mathbb{N}$ $\to$ $\mathbb{R}$
+  hStarlike_theta : IsStarlikeOnDisk_theta_eps f
+  hUnitCircle_z : $\forall$ k : $\mathbb{N}$, z_pt k = polarPoint 1 ($\varphi$ k)
+  hFormula_f : $\forall$ z $\in$ unitDiskSet, f z = riemannSlitMap_f n z_pt $\sigma$ z
+  hSymm_z : $\forall$ k : $\mathbb{N}$, 2 $\le$ k $\to$ k $\le$ n $\to$ z_pt (2 * n + 2 - k) = star (z_pt k)
+  hSymm_sigma : $\forall$ k : $\mathbb{N}$, 2 $\le$ k $\to$ k $\le$ n $\to$ $\sigma$ (2 * n + 2 - k) = $\sigma$ k
+  hSymm_tip : $\forall$ k : $\mathbb{N}$, 2 $\le$ k $\to$ k $\le$ n $\to$ polarPoint 1 (t (2 * n + 1 - k)) = polarPoint 1 (-t k)
+  hSymm_rho : $\forall$ k : $\mathbb{N}$, 2 $\le$ k $\to$ k $\le$ n $\to$ $\rho$ (2 * n + 1 - k) = $\rho$ k
+  hEqualRho : $\forall$ j k : $\mathbb{N}$, $\rho$ k = $\rho$ j
+\end{lstlisting}
+    \[ z_{2n+2-k} = \bar{z}_k,\qquad \sigma_{2n+2-k} = \sigma_k,\qquad \exp(i t_{2n+1-k}) = \exp(-i t_k),\qquad \rho_{2n+1-k} = \rho_k,\qquad \rho_k = \rho_j \]
+
+    \item \textbf{\texttt{paperSlitArcLength\_omega}} ($S : \texttt{PaperSection1SymmetricSlitSetup\_eps}\ n$, $k \in \mathbb{N} \to \mathbb{R}$): Arc lengths $\omega_k = |(z_k, z_{k+1})|$ on the unit circle from $z_k$ to $z_{k+1}$ (Section 1 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def paperSlitArcLength_omega {n : $\mathbb{N}$} (S : PaperSection1SymmetricSlitSetup_eps n) (k : $\mathbb{N}$) : $\mathbb{R}$ :=
+  S.$\varphi$ (k + 1) - S.$\varphi$ k
+\end{lstlisting}
+    \[ \omega_k = |(z_k, z_{k+1})| = \varphi_{k+1} - \varphi_k \]
+
+    \item \textbf{\texttt{Question\_1\_1\_eps}} ($n \in \mathbb{N}$, $S : \texttt{PaperSection1SymmetricSlitSetup\_eps}\ n$): Section 1, Question 1.1 of \texttt{IsoRadStarQuestion.tex} (\textit{``Does $\{\omega_k\}_1^n$ being monotone imply $\{\sigma_k\}_1^n$ are monotone, and vice versa?''}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def Question_1_1_eps (n : $\mathbb{N}$) (S : PaperSection1SymmetricSlitSetup_eps n) : Prop :=
+  ($\forall$ k : $\mathbb{N}$, 1 $\le$ k $\to$ k < n $\to$ paperSlitArcLength_omega S k $\le$ paperSlitArcLength_omega S (k + 1)) $\leftrightarrow$
+  ($\forall$ k : $\mathbb{N}$, 1 $\le$ k $\to$ k < n $\to$ S.$\sigma$ k $\le$ S.$\sigma$ (k + 1))
+\end{lstlisting}
+    \[ \left(\forall k \in \{1, \dots, n-1\},\; \omega_k \le \omega_{k+1}\right) \iff \left(\forall k \in \{1, \dots, n-1\},\; \sigma_k \le \sigma_{k+1}\right) \]
+
+    \item \textbf{\texttt{symmetricSlit\_S\_k}} ($\theta : \mathbb{N} \to \mathbb{R}$, $k \in \mathbb{N} \to \mathcal{P}(\mathbb{C})$): Symmetric slits starting on the unit circle (Section 2, Equation 2.1 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def symmetricSlit_S_k ($\theta$ : $\mathbb{N}$ $\to$ $\mathbb{R}$) (k : $\mathbb{N}$) : Set $\mathbb{C}$ :=
+  radialSlit_theta 1 ($\theta$ k) $\cup$ radialSlit_theta 1 (-$\theta$ k)
+\end{lstlisting}
+    \[ S_k = \{ r e^{\pm i\theta_k} : r \ge 1 \} \]
+
+    \item \textbf{\texttt{MonotoneSymmetricSlitAngles}} ($N \in \mathbb{N}$, $\theta : \mathbb{N} \to \mathbb{R}$): Monotone slit angle hypothesis $\theta_0 = 0 < \theta_1 < \theta_2 < \dots < \theta_N$ with $(\theta_k - \theta_{k-1}) \le (\theta_{k+1} - \theta_k)$ for $k = 1, \dots, N-1$ (Section 2 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def MonotoneSymmetricSlitAngles (N : $\mathbb{N}$) ($\theta$ : $\mathbb{N}$ $\to$ $\mathbb{R}$) : Prop :=
+  $\theta$ 0 = 0 $\wedge$
+  ($\forall$ k < N, $\theta$ k < $\theta$ (k + 1)) $\wedge$
+  ($\forall$ k : $\mathbb{N}$, 1 $\le$ k $\to$ k < N $\to$ $\theta$ k - $\theta$ (k - 1) $\le$ $\theta$ (k + 1) - $\theta$ k)
+\end{lstlisting}
+    \[ \theta_0 = 0 < \theta_1 < \theta_2 < \dots < \theta_N, \qquad (\theta_k - \theta_{k-1}) \le (\theta_{k+1} - \theta_k) \quad (k = 1, \dots, N-1) \]
+
+    \item \textbf{\texttt{slitDomain\_Omega}} ($N \in \mathbb{N}$, $\theta : \mathbb{N} \to \mathbb{R} \to \mathcal{P}(\mathbb{C})$): Symmetric slitted starlike domain $\Omega = \mathbb{C} \setminus \left(\bigcup_{k=0}^N S_k\right)$ (Section 2, Equation 2.2 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def slitDomain_Omega (N : $\mathbb{N}$) ($\theta$ : $\mathbb{N}$ $\to$ $\mathbb{R}$) : Set $\mathbb{C}$ :=
+  ($\bigcup$ k $\in$ Finset.range (N + 1), symmetricSlit_S_k $\theta$ k)$^c$
+\end{lstlisting}
+    \[ \Omega = \mathbb{C} \setminus \left(\bigcup_{k=0}^N S_k\right) \]
+
+    \item \textbf{\texttt{channel\_C\_k}} ($\theta_{\text{seq}} : \mathbb{N} \to \mathbb{R}$, $k \in \mathbb{N} \to \mathcal{P}(\mathbb{C})$): Symmetric channels outside the unit disk (Section 2, Equation 2.3 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def channel_C_k ($\theta$_seq : $\mathbb{N}$ $\to$ $\mathbb{R}$) (k : $\mathbb{N}$) : Set $\mathbb{C}$ :=
+  {w : $\mathbb{C}$ | $\exists$ (r $\theta$ : $\mathbb{R}$), 1 < r $\wedge$ $\theta$_seq k < $\theta$ $\wedge$ $\theta$ < $\theta$_seq (k + 1) $\wedge$
+    (w = polarPoint r $\theta$ $\vee$ w = polarPoint r (-$\theta$))}
+\end{lstlisting}
+    \[ C_k = \{ r e^{\pm i\theta} : r > 1,\; \theta_k < \theta < \theta_{k+1} \} \]
+
+    \item \textbf{\texttt{isoradialModulusStep}} ($m \in \mathbb{N}$, $\delta, r_j \in \mathbb{R} \to \mathbb{R}$): Recursive modulus formula for the polar isoradial graph $\Gamma^\delta$ (Section 2, Equation 2.4 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def isoradialModulusStep (m : $\mathbb{N}$) ($\delta$ r_j : $\mathbb{R}$) : $\mathbb{R}$ :=
+  r_j * Real.cos (Real.pi / (m : $\mathbb{R}$)) +
+    Real.sqrt ((r_j * Real.cos (Real.pi / (m : $\mathbb{R}$))) ^ 2 - r_j ^ 2 + $\delta$ ^ 2)
+\end{lstlisting}
+    \[ r_{j+1} = r_j \cos(\pi/m) + \sqrt{(r_j \cos(\pi/m))^2 - r_j^2 + \delta^2} \]
+
+    \item \textbf{\texttt{isoradialGraphVertices\_V\_Gamma\_delta}} ($m \in \mathbb{N}$, $\delta \in \mathbb{R}$, $r_{\text{seq}} : \mathbb{N} \to \mathbb{R} \to \mathcal{P}(\mathbb{C})$): Vertex set $V(\Gamma^\delta)$ of the polar isoradial graph (Section 2, Equation 2.5 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def isoradialGraphVertices_V_Gamma_delta (m : $\mathbb{N}$) ($\delta$ : $\mathbb{R}$) (r_seq : $\mathbb{N}$ $\to$ $\mathbb{R}$) : Set $\mathbb{C}$ :=
+  {v : $\mathbb{C}$ | $\exists$ (n $\ell$ : $\mathbb{N}$), 1 $\le$ $\ell$ $\wedge$ $\ell$ $\le$ m $\wedge$ v = polarPoint (r_seq (2 * n)) (($\ell$ : $\mathbb{R}$) * $\delta$ ^ 2)}
+\end{lstlisting}
+    \[ V(\Gamma^\delta) = \{ r_j e^{i\ell\delta^2} : \ell = 1, \dots, m,\qquad r_j \in \{r_{2n}\} \} \]
+
+    \item \textbf{\texttt{discreteSlit\_S\_k\_delta}} ($V_{\Gamma} \subseteq \mathbb{C}$, $\gamma^\delta : \mathbb{N} \to \mathbb{C}$, $k \in \mathbb{N} \to \mathcal{P}(\mathbb{C})$): Discrete slit $(S_k)_{\Omega^\delta}$ defined via $\arg$ from Chapter 2 (Section 2, Equation 2.8 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def discreteSlit_S_k_delta (V_Gamma : Set $\mathbb{C}$) ($\gamma$_delta : $\mathbb{N}$ $\to$ $\mathbb{C}$) (k : $\mathbb{N}$) : Set $\mathbb{C}$ :=
+  {v $\in$ V_Gamma | arg v = arg ($\gamma$_delta k) $\wedge$ $\|$ $\gamma$_delta k $\|$ $\le$ $\|$ v $\|$}
+\end{lstlisting}
+    \[ (S_k)_{\Omega^\delta} = \{ v \in V(\Gamma^\delta) : \arg v = \arg \gamma_k^\delta,\; |v| \ge |\gamma_k^\delta| \} \]
+
+    \item \textbf{\texttt{discreteChannel\_C\_k\_delta}} ($V_{\Gamma} \subseteq \mathbb{C}$, $n_k : \mathbb{N} \to \mathbb{N}$, $v^\delta : \mathbb{N} \to \mathbb{N} \to \mathbb{C}$, $r^\delta_{\max} \in \mathbb{R}$, $k \in \mathbb{N} \to \mathcal{P}(\mathbb{C})$): Discrete channel $(C_k)_{\Omega^\delta}$ (Section 2, Equation 2.13 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def discreteChannel_C_k_delta (V_Gamma : Set $\mathbb{C}$) (n_k : $\mathbb{N}$ $\to$ $\mathbb{N}$) (v_open : $\mathbb{N}$ $\to$ $\mathbb{N}$ $\to$ $\mathbb{C}$)
+    (r_max : $\mathbb{R}$) (k : $\mathbb{N}$) : Set $\mathbb{C}$ :=
+  $\bigcup$ $\ell$ $\in$ Finset.Icc 1 (n_k k),
+    {v $\in$ V_Gamma | arg v = arg (v_open k $\ell$) $\wedge$ $\|$ v_open k $\ell$ $\|$ $\le$ $\|$ v $\|$ $\wedge$ $\|$ v $\|$ < r_max}
+\end{lstlisting}
+    \[ (C_k)_{\Omega^\delta} = \bigcup_{\ell=1}^{n_k} \{ v \in V(\Gamma^\delta) : \arg v = \arg v^\delta_{k,\ell},\quad |v^\delta_{k,\ell}| \le |v| < r^\delta_{\max} \} \]
+
+    \item \textbf{\texttt{discreteChannelBoundary\_delta}} ($\partial\Omega^\delta_{\Gamma} \subseteq \mathbb{C}$, $E_{\Gamma} : \mathbb{C} \to \mathbb{C} \to \operatorname{Prop}$, $(C_k)_{\Omega^\delta} \subseteq \mathbb{C} \to \mathcal{P}(\mathbb{C})$): Discrete channel boundary $\partial(C_k)_{\Omega^\delta}$ (Section 2, Equation 2.20 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def discreteChannelBoundary_delta (bdry_Omega_delta : Set $\mathbb{C}$) (E_Gamma : $\mathbb{C}$ $\to$ $\mathbb{C}$ $\to$ Prop)
+    (C_k_delta : Set $\mathbb{C}$) : Set $\mathbb{C}$ :=
+  {v $\in$ bdry_Omega_delta | $\exists$ u $\in$ C_k_delta, E_Gamma v u}
+\end{lstlisting}
+    \[ \partial(C_k)_{\Omega^\delta} = \{ v \in \partial\Omega^\delta_{\Gamma} : (v, u) \in E(\Gamma^\delta),\quad u \in (C_k)_{\Omega^\delta} \} \]
+
+    \item \textbf{\texttt{markovFourTermStep}} ($m_l, m_r, m_u, m_d, p_l, p_r, p_u, p_d \in \mathbb{N} \to \mathbb{N}$): Four-neighbor Markov process equation for $RW(t+1)$ on $\Omega^\delta_{\Gamma}$ (Section 2, Equations 2.26--2.27 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def markovFourTermStep (ml mr mu md pl pr pu pd : Nat) : Nat :=
+  ml * pl + mr * pr + mu * pu + md * pd
+\end{lstlisting}
+    \[ \mathbf{P}(RW(t+1) = v) = M_{v,v_l}\mathbf{P}(RW(t)=v_l) + M_{v,v_r}\mathbf{P}(RW(t)=v_r) + M_{v,v_u}\mathbf{P}(RW(t)=v_u) + M_{v,v_d}\mathbf{P}(RW(t)=v_d) \]
+
+    \item \textbf{\texttt{IsInfiniteDyadicPolarIsoradialStarlikeGraph}} \& \textbf{\texttt{Question\_2\_3\_Spandrel}} ($m \in \mathbb{N}$, $\delta \in \mathbb{R}$, $V_{\Gamma} \subseteq \mathbb{C}$): Definition of an \textit{infinite dyadic polar isoradial starlike graph} and Question 2.3 (Spandrel) from Section 2 of \texttt{IsoRadStarQuestion\_Lean2026.tex}, expressed via \texttt{arg} and \texttt{polarPoint}.
+\begin{lstlisting}[language=Caml, mathescape=true]
+def IsInfiniteDyadicPolarIsoradialStarlikeGraph (m : $\mathbb{N}$) ($\delta$ : $\mathbb{R}$) (V_Gamma : Set $\mathbb{C}$) : Prop :=
+  ($\forall$ v $\in$ V_Gamma, $\exists$ n : $\mathbb{Z}$, arg v = (2 * Real.pi) / (2 : $\mathbb{R}$) ^ n) $\wedge$
+  ($\forall$ r $\theta$ : $\mathbb{R}$, polarPoint r $\theta$ $\in$ V_Gamma $\to$
+    polarPoint (isoradialModulusStep m $\delta$ r) $\theta$ $\in$ V_Gamma) $\wedge$
+  ($\forall$ r : $\mathbb{R}$, 0 < r $\to$ $\exists$ v $\in$ V_Gamma, r < $\|$ v $\|$)
+
+def Question_2_3_Spandrel (m : $\mathbb{N}$) ($\delta$ : $\mathbb{R}$) : Prop :=
+  $\exists$ V_Gamma : Set $\mathbb{C}$, IsInfiniteDyadicPolarIsoradialStarlikeGraph m $\delta$ V_Gamma
+\end{lstlisting}
+    \[
+      \begin{aligned}
+        \text{(Dyadic)} &\quad v \in V(\Gamma^\delta) \implies \arg v = 2\pi / 2^n \text{ for some } n \in \mathbb{Z}, \\
+        \text{(Starlike)} &\quad r e^{i\theta} \in V(\Gamma^\delta) \implies r' e^{i\theta} \in V(\Gamma^\delta), \quad r' = r\cos(\pi/m) + \sqrt{(r\cos(\pi/m))^2 - r^2 + \delta^2}, \\
+        \text{(Infinite)} &\quad \forall r > 0,\; \exists v \in V(\Gamma^\delta) \text{ such that } |v| > r.
+      \end{aligned}
+    \]
+
+    \item \textbf{\texttt{isoradialTangentWeight}} ($\theta_k, \theta_{\text{sum}} \in \mathbb{R} \to \mathbb{R}$): Chelkak--Smirnov isoradial random walk transition weight (Section 2, Equation 2.19 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def isoradialTangentWeight ($\theta$_k $\theta$_sum : $\mathbb{R}$) : $\mathbb{R}$ :=
+  Real.tan $\theta$_k / $\theta$_sum
+\end{lstlisting}
+    \[ \mathbf{P}(\xi_v = u_k - v) = \frac{\tan \theta_k}{\sum_j \tan \theta_j} \]
+
+    \item \textbf{\texttt{markovFourTermStep\_R}} ($m_l, m_r, m_u, m_d, p_l, p_r, p_u, p_d \in \mathbb{R} \to \mathbb{R}$): Real-valued four-neighbor Markov transition operator on $\Omega^\delta_{\Gamma}$ (Section 2, Equations 2.26--2.27 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def markovFourTermStep_R (ml mr mu md pl pr pu pd : $\mathbb{R}$) : $\mathbb{R}$ :=
+  ml * pl + mr * pr + mu * pu + md * pd
+\end{lstlisting}
+    \[ \mathbf{P}(RW(t+1) = v) = M_{v,v_l}\mathbf{P}(RW(t)=v_l) + M_{v,v_r}\mathbf{P}(RW(t)=v_r) + M_{v,v_u}\mathbf{P}(RW(t)=v_u) + M_{v,v_d}\mathbf{P}(RW(t)=v_d) \]
+
+    \item \textbf{\texttt{discreteChannelWidth\_delta}} ($\Delta\theta, \delta \in \mathbb{R} \to \mathbb{N}$): Discrete channel width $n_k^\delta = \lfloor (\theta_{k+1} - \theta_k)/\delta^2 \rfloor$ (Section 2, Equation 2.12 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def discreteChannelWidth_delta ($\Delta\theta$ $\delta$ : $\mathbb{R}$) : $\mathbb{N}$ :=
+  Nat.floor ($\Delta\theta$ / $\delta$ ^ 2)
+\end{lstlisting}
+    \[ n_k^\delta = \left\lfloor \frac{\theta_{k+1} - \theta_k}{\delta^2} \right\rfloor \]
+
+    \item \textbf{\texttt{discreteChannelHarmonicMeasure\_R}} ($n_k^\delta \in \mathbb{N}$, $p_{\text{ray}} : \mathbb{N} \to \mathbb{R} \to \mathbb{R}$): Real-valued discrete channel harmonic measure $\omega^\delta(0; \partial(C_k)_{\Omega^\delta}; \Omega^\delta_{\Gamma})$ (Section 2, Equation 2.21 of \texttt{IsoRadStarQuestion.tex}).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def discreteChannelHarmonicMeasure_R (n_width : $\mathbb{N}$) (p_ray : $\mathbb{N}$ $\to$ $\mathbb{R}$) : $\mathbb{R}$ :=
+  $\sum$ $\ell$ $\in$ Finset.Icc 1 n_width, p_ray $\ell$
+\end{lstlisting}
+    \[ \omega^\delta(0; \partial(C_k)_{\Omega^\delta}; \Omega^\delta_{\Gamma}) = \sum_{\ell=1}^{n_k^\delta} p^\delta_{k,\ell} \]
+
+    \item \textbf{\texttt{analyticSlitTipCotangentSum}} ($C : \texttt{AnalyticOrderedSlitConfiguration\_eps}\ m$, $t \in \mathbb{R} \to \mathbb{R}$): Boundary cotangent sum characterizing the critical slit-tip preimages $e^{it_k} \in \partial\mathbb{D}$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def analyticSlitTipCotangentSum {m : $\mathbb{N}$}
+    (C : AnalyticOrderedSlitConfiguration_eps m) (t : $\mathbb{R}$) : $\mathbb{R}$ :=
+  $\sum$ j : Fin m, (C.sigma j.val / 2) * (Real.sin (t - C.phi j.val) / (1 - Real.cos (t - C.phi j.val)))
+\end{lstlisting}
+    \[ \operatorname{Im}\!\left(\frac{e^{it} f'(e^{it})}{f(e^{it})}\right) = \sum_{j=1}^m \frac{\sigma_j}{2} \frac{\sin(t - \varphi_j)}{1 - \cos(t - \varphi_j)} = \sum_{j=1}^m \frac{\sigma_j}{2} \cot\!\left(\frac{t - \varphi_j}{2}\right) \]
+
+    \item \textbf{\texttt{IsoradialContinuumBridge\_eps}} ($C : \texttt{AnalyticOrderedSlitConfiguration\_eps}\ m$): Structure packaging the Lemma 2.1/2.2 ray dominance with the Chelkak--Smirnov (\texttt{HasLimitAt\_eps} as $\delta \to 0$) and Beurling--Nevanlinna (\texttt{HasLimitAtInf\_eps} as $\|w\| \to \infty$) convergence limits used by \texttt{monotoneChannelStatement\_eps\_proven}.
+\begin{lstlisting}[language=Caml, mathescape=true]
+structure IsoradialContinuumBridge_eps {m : $\mathbb{N}$} (C : AnalyticOrderedSlitConfiguration_eps m) where
+  R$_0$ : $\mathbb{R}$
+  $\delta_0$ : $\mathbb{R}$
+  h$\delta_0$_pos : 0 < $\delta_0$
+  p_ray : $\mathbb{C}$ $\to$ $\mathbb{C}$ $\to$ $\mathbb{N}$ $\to$ $\mathbb{N}$ $\to$ $\mathbb{R}$
+  $\omega$_trunc : $\mathbb{N}$ $\to$ $\mathbb{C}$ $\to$ $\mathbb{R}$
+  hRayNonneg : $\forall$ (w $\delta$ : $\mathbb{C}$) (k $\ell$ : $\mathbb{N}$), 0 $\le$ p_ray w $\delta$ k $\ell$
+  hRayDom : $\forall$ (w $\delta$ : $\mathbb{C}$) (k : $\mathbb{N}$),
+    analyticChannelOpeningAngle_theta C k $\le$ analyticChannelOpeningAngle_theta C (k + 1) $\to$
+    $\forall$ $\ell$ $\in$ Finset.Icc 1 (discreteChannelWidth_delta (analyticChannelOpeningAngle_theta C k) $\|$ $\delta$ $\|$),
+      p_ray w $\delta$ k $\ell$ $\le$ p_ray w $\delta$ (k + 1) $\ell$
+  hChelkakSmirnov_eps : $\forall$ (w : $\mathbb{C}$) (k : $\mathbb{N}$), $\|$ w $\|$ > R$_0$ $\to$
+    HasLimitAt_eps
+      (fun $\delta$ : $\mathbb{C}$ =>
+        ((discreteChannelHarmonicMeasure_R
+          (discreteChannelWidth_delta (analyticChannelOpeningAngle_theta C k) $\|$ $\delta$ $\|$)
+          (p_ray w $\delta$ k) : $\mathbb{R}$) : $\mathbb{C}$))
+      ($\omega$_trunc k w : $\mathbb{C}$) 0
+  hBeurlingNevanlinna_eps : $\forall$ k : $\mathbb{N}$,
+    HasLimitAtInf_eps ($\omega$_trunc k) (analyticChannelHarmonicMeasure_eps C k)
+\end{lstlisting}
+    \[ \lim_{\|w\| \to \infty} \lim_{\delta \to 0} \sum_{\ell=1}^{n_k^\delta} p^\delta_{k,\ell}(w) = \omega(0; \partial C_k; \Omega) \]
+
+    \item \textbf{\texttt{IsoradialVertexStar}} ($d \in \mathbb{N}$): Chelkak--Smirnov isoradial vertex star at $v \in \mathbb{C}$ with $d$ neighbors $u_k \in \mathbb{C}$, rhombic half-angles $\theta_k \in \mathbb{R}$, and dual circumcenters $w_{\text{next}}(k), w_{\text{prev}}(k) \in \mathbb{C}$ satisfying $(\tan\theta_k)(u_k - v) = -i(w_{\text{next}}(k) - w_{\text{prev}}(k))$ and $\sum_{k=1}^d (w_{\text{next}}(k) - w_{\text{prev}}(k)) = 0$ (Dmitry Chelkak, \url{https://www-personal.umich.edu/~chelkak/}, and Stanislav Smirnov, \url{http://www.unige.ch/~smirnov/}, \emph{Discrete complex analysis on isoradial graphs}, Adv.\ Math.\ \textbf{228} (2011), 1590--1630, \texttt{arXiv:0810.2188}, Sec.~2.1).
+\begin{lstlisting}[language=Caml, mathescape=true]
+structure IsoradialVertexStar (d : $\mathbb{N}$) where
+  v : $\mathbb{C}$
+  u : Fin d $\to$ $\mathbb{C}$
+  theta : Fin d $\to$ $\mathbb{R}$
+  w_next : Fin d $\to$ $\mathbb{C}$
+  w_prev : Fin d $\to$ $\mathbb{C}$
+  hTanPos : $\forall$ k : Fin d, 0 < Real.tan (theta k)
+  hTanSumPos : 0 < $\sum$ k : Fin d, Real.tan (theta k)
+  hAreaPos : 0 < (1 / 4 : $\mathbb{R}$) * $\sum$ k : Fin d,
+    Real.tan (theta k) * ((u k - v).re ^ 2 + (u k - v).im ^ 2)
+  hDualOrthog : $\forall$ k : Fin d,
+    ((Real.tan (theta k) : $\mathbb{R}$) : $\mathbb{C}$) * (u k - v) = -I * (w_next k - w_prev k)
+  hDualCycle : $\sum$ k : Fin d, (w_next k - w_prev k) = 0
+\end{lstlisting}
+    \[ (\tan\theta_k)(u_k - v) = -i(w_k - w_{k-1}), \qquad \sum_{k=1}^d \tan\theta_k\,(u_k - v) = -i\sum_{k=1}^d (w_k - w_{k-1}) = 0 \]
+
+    \item \textbf{\texttt{isoradialDiscreteMeanValue}} ($S : \texttt{IsoradialVertexStar}\ d$, $H : \mathbb{C} \to \mathbb{R} \to \mathbb{R}$): Chelkak--Smirnov discrete Mean Value operator $(M^\delta H)(v) = \sum_{k=1}^d P(\xi_v = u_k - v)\,H(u_k)$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def isoradialDiscreteMeanValue {d : $\mathbb{N}$}
+    (S : IsoradialVertexStar d) (H : $\mathbb{C}$ $\to$ $\mathbb{R}$) : $\mathbb{R}$ :=
+  $\sum$ k : Fin d, isoradialStarProb S k * H (S.u k)
+\end{lstlisting}
+    \[ (M^\delta H)(v) = \sum_{k=1}^d \left(\frac{\tan\theta_k}{\sum_{j=1}^d \tan\theta_j}\right) H(u_k) \]
+
+    \item \textbf{\texttt{isoradialDiscreteLaplacian}} \& \textbf{\texttt{IsDiscreteHarmonicAt}} ($S : \texttt{IsoradialVertexStar}\ d$, $H : \mathbb{C} \to \mathbb{R}$): Chelkak--Smirnov discrete Laplacian $(\Delta^\delta H)(v)$ and discrete harmonicity predicate $(\Delta^\delta H)(v) = 0 \iff H(v) = (M^\delta H)(v)$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def isoradialDiscreteLaplacian {d : $\mathbb{N}$}
+    (S : IsoradialVertexStar d) (H : $\mathbb{C}$ $\to$ $\mathbb{R}$) : $\mathbb{R}$ :=
+  (1 / isoradialStarAreaWeight S) *
+    $\sum$ k : Fin d, Real.tan (S.theta k) * (H (S.u k) - H S.v)
+
+def IsDiscreteHarmonicAt {d : $\mathbb{N}$} (S : IsoradialVertexStar d) (H : $\mathbb{C}$ $\to$ $\mathbb{R}$) : Prop :=
+  isoradialDiscreteLaplacian S H = 0
+\end{lstlisting}
+    \[ (\Delta^\delta H)(v) = \frac{1}{\mu_\Gamma(v)} \sum_{k=1}^d \tan\theta_k\,\bigl(H(u_k) - H(v)\bigr), \qquad (\Delta^\delta H)(v) = 0 \iff H(v) = (M^\delta H)(v) \]
+
+    \item \textbf{\texttt{secondOrderTaylorAt}} \& \textbf{\texttt{IsQuadraticallyBalancedStar}} ($v \in \mathbb{C}$, $h_0, h_x, h_y, h_{xx}, h_{xy}, h_{yy} \in \mathbb{R}$, $S : \texttt{IsoradialVertexStar}\ d$): Second-order Taylor polynomial $T_2(z)$ centered at $v$ and quadratic balance condition $\sum_{k=1}^d \tan\theta_k\,(u_k - v)^2 = 0$ ensuring $(\Delta^\delta T_2)(v) = h_{xx} + h_{yy}$.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def secondOrderTaylorAt (v : $\mathbb{C}$) (h$_0$ hx hy hxx hxy hyy : $\mathbb{R}$) (z : $\mathbb{C}$) : $\mathbb{R}$ :=
+  let dx := (z - v).re
+  let dy := (z - v).im
+  h$_0$ + hx * dx + hy * dy + (1 / 2 : $\mathbb{R}$) * hxx * dx ^ 2 + hxy * dx * dy + (1 / 2 : $\mathbb{R}$) * hyy * dy ^ 2
+
+def IsQuadraticallyBalancedStar {d : $\mathbb{N}$} (S : IsoradialVertexStar d) : Prop :=
+  ($\sum$ k : Fin d, Real.tan (S.theta k) * ((S.u k - S.v).re ^ 2 - (S.u k - S.v).im ^ 2) = 0) $\wedge$
+  ($\sum$ k : Fin d, Real.tan (S.theta k) * ((S.u k - S.v).re * (S.u k - S.v).im) = 0)
+\end{lstlisting}
+    \[ (\Delta^\delta T_2)(v) = h_{xx} + h_{yy}, \qquad (\Delta^\delta h)(v) = (h_{xx} + h_{yy}) + \Delta^\delta(h - T_2)(v) \]
 \end{itemize}
 
 \end{document}

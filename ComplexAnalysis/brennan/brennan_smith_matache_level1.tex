@@ -1,0 +1,569 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath,amssymb,amsfonts,amsthm,amscd}
+\usepackage{geometry}
+\usepackage{latexsym}
+\usepackage{eucal}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\geometry{top=1in, bottom=1in, left=1.15in, right=1.15in}
+\emergencystretch=1.5em
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+
+\def\R{\mathbb{R}}
+\def\N{\mathbb{N}}
+\def\Z{\mathbb{Z}}
+\def\Q{\mathbb{Q}}
+\def\C{\mathbb{C}}
+\def\H{\mathbb{H}}
+\def\K{\mathcal{K}}
+\def\S{\mathcal{S}}
+\def\B{\mathcal{B}}
+\def\E{\mathbb{E}}
+\def\epsilon{\varepsilon}
+
+\pagestyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cry}[thm]{Corollary}
+\newtheorem{lemma}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\theoremstyle{definition}
+\newtheorem{remark}[thm]{Remark}
+\numberwithin{equation}{section}
+
+\begin{document}
+
+\title{Weighted Composition Operators, Dyadic Transfer,\\and Brennan's Conjecture}
+\author{}
+\date{}
+\maketitle
+
+\begin{abstract}
+Let $G \subsetneq \C$ be a simply connected domain and let $\varphi : G \to D$ be a Riemann map onto the open unit disk $D$. In 1978, Brennan \cite{Bre78} conjectured that $\varphi' \in L^s(G, dA)$ for all $4/3 < s < 4$. In the operator-theoretic framework developed by Smith \cite{Smi06} and Matache and Smith \cite{MS12}, Brennan's conjecture is equivalent to the assertion that constant symbols induce compact composition operators on the weighted Bergman domain spaces $L^2_a(G, \mu_p)$ for $-1/3 < p < 1$, and reduces via conformal pullback to the sharp inverse-square circular integral-means bound $M_{-2}[f'](r) \lesssim_\varepsilon (1-r)^{-1-\varepsilon}$ for univalent functions $f \in \S$. We present a self-contained, operator-theoretically motivated exposition and complete Lean~4 formalization of the proof of Brennan's conjecture based on the recent dyadic transfer and critical-point transport method of \cite{OAI26}. By viewing the half-plane rescaling operators $A_z \Phi(F) = |Q_F(z)|^2 \Phi(T_z F)$ through Smith's derivative-ratio cocycle $Q_F(z) = 1/F'(z)$, we show that the core proof is a concise five-step contradiction argument: if the spectral radius $\rho$ of the dyadic transfer operator exceeded $2$, the resulting affine-covariant eigenmeasure $P$ on the compact half-plane univalent class $\K$ would simultaneously force the normalized Jacobian $J_F(z) = \det DG_F(z)/|F'(z)|^2$ of the critical map $G_F(z) = F(z) - \frac{iy}{k}F'(z)$ ($k = \frac{\log_2 \rho + 3}{4}$) to have strictly positive expectation $\E_P[J_F(i)] = \frac{k-1}{k} > 0$ by pre-Schwarzian moment cancellation, and nonpositive expectation $\E_P[J_F(i)] \le 0$ by Poincar\'e--Hopf superlevel domination of saddles by local maxima.
+\end{abstract}
+
+\noindent\textbf{Keywords:} Brennan's conjecture, composition operators, weighted composition operators, weighted Bergman spaces, univalent functions, integral means spectrum, pre-Schwarzian derivative.\\
+\noindent\textbf{2020 Mathematics Subject Classification:} Primary 47B33, 30C55; Secondary 30H20, 68V20.
+
+\section{Introduction}
+
+Let $D = \{z \in \C : |z| < 1\}$ denote the open unit disk in the complex plane, and let $H(D)$ denote the space of analytic functions on $D$. If $G \subsetneq \C$ is a simply connected domain and $\varphi : G \to D$ is a conformal map onto $D$, a classical problem in geometric function theory and operator theory asks for which real exponents $s \in \R$ the derivative $\varphi'$ belongs to $L^s(G, dA)$, that is,
+\begin{equation}\label{eq:brennan-domain}
+  \int_G |\varphi'(w)|^s \, dA(w) < \infty,
+\end{equation}
+where $dA$ denotes Lebesgue area measure in the plane. Because any two Riemann maps $\varphi_1, \varphi_2 : G \to D$ differ by composition with a disk automorphism $m \in \operatorname{Aut}(D)$ whose derivative $m'$ is bounded above and away from zero on $D$, the integrability condition \eqref{eq:brennan-domain} depends only on the geometry of $G$ and the exponent $s$. Letting $\tau = \varphi^{-1} : D \to G$ be the inverse conformal map, the real Jacobian of $\tau$ is $\det D\tau(z) = |\tau'(z)|^2$ and $\varphi'(\tau(z)) = 1/\tau'(z)$. Consequently, the conformal change of variables $w = \tau(z)$ transforms \eqref{eq:brennan-domain} into an area integral over the unit disk:
+\begin{equation}\label{eq:brennan-disk}
+  \int_G |\varphi'(w)|^s \, dA(w) = \int_D |\tau'(z)|^{2-s} \, dA(z).
+\end{equation}
+Since affine transformations of $G$ merely scale the integral by a nonzero constant, it suffices to consider functions in the normalized schlicht class
+\[
+  \S = \{f \in H(D) : f \text{ is univalent on } D,\; f(0) = 0,\; f'(0) = 1\}.
+\]
+
+In 1978, Brennan \cite{Bre78} proved that there exists $\varepsilon > 0$ such that \eqref{eq:brennan-domain} holds for all simply connected domains $G \subsetneq \C$ whenever $4/3 < s < 3 + \varepsilon$, observed that the Koebe slit map $k(z) = z/(1-z)^2$ mapping $D$ onto $\C \setminus (-\infty, -1/4]$ causes \eqref{eq:brennan-domain} to diverge for $s \le 4/3$ and for $s \ge 4$, and conjectured that \eqref{eq:brennan-domain} holds for the full open interval $4/3 < s < 4$. By \eqref{eq:brennan-disk}, Brennan's conjecture is equivalent to the statement that every $f \in \S$ satisfies
+\begin{equation}\label{eq:schlicht-area-range}
+  \int_D |f'(z)|^t \, dA(z) < \infty \qquad \text{for all } -2 < t < \frac{2}{3}.
+\end{equation}
+For positive exponents $0 < t < 2/3$, the integrability in \eqref{eq:schlicht-area-range} has long been known via classical distortion and Hardy--Stein area estimates (see Pommerenke \cite{Pom92}). For negative exponents $-2 < t < 0$, H\"older's inequality interpolates between the boundary power $(1-|z|)^{-1/2}$ and the inverse-square circular integral means
+\begin{equation}\label{eq:integral-means-def}
+  M_t[f'](r) := \frac{1}{2\pi} \int_{-\pi}^{\pi} |f'(r e^{i\theta})|^t \, d\theta \qquad (0 < r < 1).
+\end{equation}
+Defining the universal integral-means spectrum of $\S$ by
+\[
+  B_{\S}(t) := \inf\Big\{\beta \ge 0 : M_t[f'](r) \lesssim_\beta (1-r)^{-\beta} \text{ for all } f \in \S\Big\},
+\]
+the works of Pommerenke \cite{Pom85}, Carleson and Makarov \cite{CM94}, Bertilsson \cite{Ber99}, and Hedenmalm and Shimorin \cite{HS05} established that Brennan's conjecture is equivalent to the single endpoint identity $B_{\S}(-2) = 1$.
+
+\subsection{The Operator-Theoretic Framework of Smith and Matache--Smith}
+
+A natural operator-theoretic setting for Brennan's conjecture was introduced by Wayne Smith \cite{Smi06} and subsequently developed by Matache and Smith \cite{MS12}. Given an analytic self-map $\psi : D \to D$, the composition operator $C_\psi f = f \circ \psi$ is bounded on the standard weighted Bergman spaces $A^2_\alpha(D) = H(D) \cap L^2((1-|z|^2)^\alpha dA)$ ($\alpha > -1$) by Littlewood's subordination principle \cite{CM95, Sha93, Zhu07}. When one replaces $D$ by a simply connected domain $G \subsetneq \C$, however, the boundary geometry of $G$ enters directly. In \cite{MS12}, Matache and Smith studied composition operators on the conformally weighted Bergman spaces
+\begin{equation}\label{eq:MS-space}
+  L^2_a(G, \mu_p) := \left\{h \in H(G) : \|h\|_{p}^2 = \int_G |h(w)|^2 |\varphi'(w)|^{2p+2} \, dA(w) < \infty\right\},
+\end{equation}
+where $d\mu_p(w) = |\varphi'(w)|^{2p+2} dA(w)$ for $p \in \R$. Since any constant function $h \equiv c \ne 0$ belongs to $L^2_a(G, \mu_p)$ if and only if $\int_G |\varphi'|^{2p+2} dA < \infty$, setting $s = 2p+2$ immediately translates Brennan's conjecture into the statement that $L^2_a(G, \mu_p)$ contains the constant functions---or equivalently, that constant symbols $\psi \equiv w_0 \in G$ induce bounded and compact rank-one composition operators on $L^2_a(G, \mu_p)$---for every simply connected $G \subsetneq \C$ if and only if $-1/3 < p < 1$ \cite[Section~2]{MS12}.
+
+Earlier, in \cite{Smi06}, Smith analyzed composition operators on $L^2_a(G, dA)$ ($p = -1$) by pulling back functions $h \in L^2_a(G, dA)$ to the classical Bergman space $A^2(D) = L^2_a(D, dA)$ via the unitary isomorphism $U h(z) = h(\tau(z))\tau'(z)$, where $\tau = \varphi^{-1} : D \to G$. Under this pullback, a self-map $\Psi : G \to G$ with disk conjugate $\psi = \tau^{-1} \circ \Psi \circ \tau : D \to D$ induces on $A^2(D)$ a weighted composition operator whose weight is governed by the derivative ratio
+\begin{equation}\label{eq:smith-cocycle-intro}
+  Q_\psi(z) := \frac{\tau'(\psi(z))}{\tau'(z)}, \qquad Q_{\psi_1 \circ \psi_2}(z) = Q_{\psi_1}(\psi_2(z))\, Q_{\psi_2}(z).
+\end{equation}
+In particular, when $\tau$ is transferred from the disk $D$ to the upper half-plane $\H = \{x+iy \in \C : y > 0\}$ and $\psi(w) = z \cdot w = x + yw$ is an affine self-map of $\H$, Smith's derivative-ratio weight \eqref{eq:smith-cocycle-intro} becomes the multiplicative cocycle relating the inverse derivative $Q_F(z) = 1/F'(z)$ of a normalized univalent function $F \in \K$ to that of its affine rescaling $T_z F(w) = \frac{F(z\cdot w) - F(z)}{y F'(z)}$:
+\begin{equation}\label{eq:halfplane-cocycle-intro}
+  Q_{T_z F}(w) = \frac{Q_F(z \cdot w)}{Q_F(z)}.
+\end{equation}
+This identity turns the family of positive weighted composition operators $A_z \Phi(F) := |Q_F(z)|^2 \Phi(T_z F)$ on $C(\K)$ into an exact representation of the affine semigroup of $\H$, satisfying $A_z A_w = A_{z \cdot w}$.
+
+\subsection{Why the Proof is Short and How the Inventive Steps Arise}
+
+In a recent 31-page preprint \cite{OAI26}, Brennan's conjecture was resolved by combining the dyadic transfer operator $L = \frac{1}{2}(A_{-1/2+i/2} + A_{1/2+i/2})$ on $C(\K)$ with a topological pairing between saddles and local maxima of a logarithmic potential on $\H$. While the mathematical mechanism in \cite{OAI26} is elementary, its presentation in \cite{OAI26} obscures how short the core proof really is, for two opposite reasons:
+\begin{enumerate}
+  \item \textbf{Routine background is expanded at length:} Nearly two-thirds of \cite{OAI26} is devoted to reproving standard textbook facts from scratch---such as classical Koebe distortion bounds on $D$ and $\H$ with explicit nine-digit numerical constants, weak-$*$ compactness of probability measures on metrizable spaces, Sard's theorem for $C^2$ maps in the plane, and a four-page appendix proving the two-dimensional divergence theorem on rectangles with circular holes.
+  \item \textbf{The inventive steps are introduced without motivation:} Conversely, at the decisive turning points of the proof---specifically Sections~4 and~5 of \cite{OAI26}---the exponent $k = \frac{\beta+3}{4}$, the target potential $V_\xi^F(x+iy) = \frac{y^k}{|F(x+iy)-\xi|}$, the critical map $G_F(z) = F(z) - \frac{iy}{k}F'(z)$, and the equal-rank pairing map $R_F$ are dropped onto the page without explanation of how or why they were chosen.
+\end{enumerate}
+
+When standard results from \cite{Dur83, Pom92, Zhu07} are cited cleanly and the inventive steps are motivated from first principles, the entire proof of Brennan's conjecture is a transparent five-step argument:
+\begin{enumerate}
+  \item \textbf{Half-Plane Cocycle and Transfer Operator $L$ (Sections~2--3):} Pull $\S$ back to the compact half-plane class $\K$. By Smith's cocycle law \eqref{eq:halfplane-cocycle-intro}, $A_z A_w = A_{z\cdot w}$, so $L^n 1(F) = 2^{-n}\sum_{j=0}^{2^n-1} |F'(u_{n,j} + i 2^{-n})|^{-2}$ samples the inverse-square derivative along horizontal lines at height $2^{-n}$. If $\rho = \lim \|L^n\|^{1/n} \le 2$, then $B_{\S}(-2) = 1$.
+  \item \textbf{Affine-Covariant Law and Pre-Schwarzian Moments (Section~4):} Assume toward a contradiction that $\rho > 2$, and set $\beta = \log_2 \rho > 1$. Resolvents of $L$ and Haar averaging yield a probability measure $P$ on $\K$ with $\E_P[A_z \Phi] = y^{-\beta} \E_P[\Phi]$. Setting $\Phi \equiv 1$ gives $\E_P[|Q_F(x+iy)|^2] = y^{-\beta}$, and differentiating twice at $z=i$ pins down the exact moments of the pre-Schwarzian jet $q_F = iy Q_F'/Q_F = a_F + i b_F$: $\E_P[a_F(i)] = -\frac{\beta}{2}$ and $\E_P[|q_F(i)|^2] = \frac{\beta(\beta+1)}{4}$.
+  \item \textbf{Why $k = \frac{\beta+3}{4}$ and $G_F = F - \frac{iy}{k}F'$? (Section~5.1):} The normalized real Jacobian $J_F(z) = \det DG_F(z)/|F'(z)|^2$ satisfies $k^2 J_F = k(k-1) + (2k-1)a_F + |q_F|^2$. Taking $\E_P$ at $z=i$ yields $(2k-1)(-\frac{\beta}{2}) + \frac{\beta(\beta+1)}{4}$. Choosing $2k-1 = \frac{\beta+1}{2} \iff k = \frac{\beta+3}{4}$ cancels the pre-Schwarzian moments identically, leaving $k^2 \E_P[J_F(i)] = k(k-1) > 0$.
+  \item \textbf{Superharmonic Potential and Univalence (Sections~5.2--5.3):} Solutions of $G_F(z) = \xi$ are the critical points of $\ell = \log V_\xi^F(z)$ where $V_\xi^F(z) = y^k/|F(z)-\xi|$, and $\det\operatorname{Hess}(\ell) = -\frac{k^4}{y^4} J_F(z)$. Thus saddles have $J_F > 0$ and local maxima have $J_F < 0$. Since $\Delta \ell = -k/y^2 < 0$ and univalence of $F$ allows at most one pole $F(z_0)=\xi$, Poincar\'e--Hopf on every compact superlevel $\{V_\xi^F \ge \lambda\}$ forces $\#\{\text{maxima}\} \ge \#\{\text{saddles}\}$.
+  \item \textbf{Saddle-to-Maximum Area Transport (Section~6):} Pairing the $j$-th highest saddle in $G_F^{-1}(\xi)$ with the $j$-th highest maximum $w = R_F(z) \in G_F^{-1}(\xi)$ increases $V_\xi^F$, hence increases $(V_\xi^F(z)/k)^4 = y^{\beta-1}|Q_F(z)|^4 = \omega_F(z)|F'(z)|^{-2}$. Area transport over exhausting boxes $B_{R,Y}$ ($R = Y^2 \to \infty$) forces $\E_P[J_F(i)] \le 0$, contradicting Step~3.
+\end{enumerate}
+
+\begin{thm}[Main Theorem]\label{thm:main}
+For every $\varepsilon > 0$, there exists a constant $C_\varepsilon > 0$ such that every normalized univalent function $f \in \S$ satisfies
+\begin{equation}\label{eq:main-means-bound}
+  M_{-2}[f'](r) = \frac{1}{2\pi} \int_{-\pi}^{\pi} |f'(r e^{i\theta})|^{-2} \, d\theta \le C_\varepsilon (1-r)^{-1-\varepsilon} \qquad (0 \le r < 1).
+\end{equation}
+Consequently, if $G \subsetneq \C$ is a simply connected domain and $\varphi : G \to D$ is a conformal map onto $D$, then
+\begin{equation}\label{eq:main-brennan-bound}
+  \int_G |\varphi'(w)|^s \, dA(w) < \infty \qquad \text{for all } \frac{4}{3} < s < 4,
+\end{equation}
+and the constant functions belong to the Matache--Smith domain space $L^2_a(G, \mu_p)$ (so every constant symbol induces a compact composition operator on $L^2_a(G, \mu_p)$) for all $-1/3 < p < 1$.
+\end{thm}
+
+\section{Preliminaries and the Smith--Matache Operator Dictionary}
+
+Throughout this paper, we use the standard asymptotic notation of operator theory on spaces of analytic functions (see, e.g., \cite{Smi06, MS12, CKS25}). Given two nonnegative quantities $A$ and $B$ depending on parameters in a specified class, the notation $A \lesssim B$ (or $B \gtrsim A$) means that there exists a finite positive constant $C > 0$, independent of the relevant parameters, such that $A \le C B$. We write $A \approx B$ if both $A \lesssim B$ and $B \lesssim A$ hold. When the implied constant depends on an auxiliary parameter such as $\varepsilon > 0$, we write $A \lesssim_\varepsilon B$.
+
+Let $G \subsetneq \C$ be a simply connected domain, let $\varphi : G \to D$ be a Riemann map, and let $\tau = \varphi^{-1} : D \to G$ be its inverse. Following Matache and Smith \cite{MS12}, for each $p \in \R$ we consider the conformally weighted measure $d\mu_p(w) = |\varphi'(w)|^{2p+2} dA(w)$ on $G$ and the associated Hilbert space $L^2_a(G, \mu_p)$ defined in \eqref{eq:MS-space}. Each analytic self-map $\Psi : G \to G$ induces the linear composition operator $C_\Psi h = h \circ \Psi$ for $h \in H(G)$. To study $C_\Psi$ by transferring to the unit disk $D$, Smith \cite{Smi06} introduced the weighted pullback transform $U_p : H(G) \to H(D)$ defined by
+\begin{equation}\label{eq:Up-def}
+  (U_p h)(z) := h(\tau(z))\, (\tau'(z))^{-p} \qquad (z \in D),
+\end{equation}
+where $(\tau')^{-p} = \exp(-p \log \tau')$ is defined using the single-valued analytic branch of $\log \tau'$ on the simply connected disk $D$ (which exists because $\tau$ is univalent and hence $\tau'$ is nonvanishing on $D$). By the conformal change of variables $w = \tau(z)$ with $dA(w) = |\tau'(z)|^2 dA(z)$ and $|\varphi'(\tau(z))| = |\tau'(z)|^{-1}$, we have
+\[
+  \int_G |h(w)|^2 |\varphi'(w)|^{2p+2} \, dA(w) = \int_D |h(\tau(z))|^2 |\tau'(z)|^{-2p} \, dA(z) = \int_D |(U_p h)(z)|^2 \, dA(z),
+\]
+so $U_p$ is a unitary isomorphism of $L^2_a(G, \mu_p)$ onto the unweighted Bergman space $A^2(D) = L^2_a(D, dA)$.
+
+\begin{lemma}[Smith's Weighted Composition Pullback \cite{Smi06, MS12}]\label{lem:smith-pullback}
+Let $\Psi : G \to G$ be an analytic self-map and let $\psi = \varphi \circ \Psi \circ \tau : D \to D$ be its disk conjugate. Under the unitary isomorphism $U_p : L^2_a(G, \mu_p) \to A^2(D)$, the composition operator $C_\Psi$ is unitarily equivalent to the weighted composition operator $A_{\psi, -p} := U_p C_\Psi U_p^{-1}$ on $A^2(D)$ given by
+\begin{equation}\label{eq:smith-wco}
+  (A_{\psi, -p} g)(z) = (Q_\psi(z))^{-p} \, g(\psi(z)), \qquad Q_\psi(z) := \frac{\tau'(\psi(z))}{\tau'(z)}.
+\end{equation}
+Moreover, for any pair of analytic self-maps $\psi_1, \psi_2 : D \to D$, the derivative-ratio weight $Q_\psi$ satisfies the multiplicative cocycle identity
+\begin{equation}\label{eq:smith-cocycle-lemma}
+  Q_{\psi_1 \circ \psi_2}(z) = Q_{\psi_1}(\psi_2(z)) \, Q_{\psi_2}(z) \qquad (z \in D),
+\end{equation}
+and the constant function $1$ belongs to $L^2_a(G, \mu_p)$ if and only if $\int_D |\tau'(z)|^{-2p} \, dA(z) = \int_G |\varphi'(w)|^{2p+2} \, dA(w) < \infty$.
+\end{lemma}
+
+\begin{proof}
+For any $g \in A^2(D)$, we have $(U_p^{-1} g)(w) = g(\varphi(w)) (\tau'(\varphi(w)))^p$. Since $\varphi(\Psi(\tau(z))) = \psi(z)$, applying $U_p C_\Psi$ yields
+\[
+  (U_p C_\Psi U_p^{-1} g)(z) = g(\psi(z)) \, (\tau'(\psi(z)))^p (\tau'(z))^{-p} = \left(\frac{\tau'(\psi(z))}{\tau'(z)}\right)^p g(\psi(z)) = (Q_\psi(z))^p g(\psi(z)),
+\]
+which is \eqref{eq:smith-wco} after replacing $p$ by $-p$. For any $\psi_1, \psi_2 : D \to D$ and $z \in D$, since $\tau'$ is nonvanishing on $D$,
+\[
+  Q_{\psi_1 \circ \psi_2}(z) = \frac{\tau'(\psi_1(\psi_2(z)))}{\tau'(z)} = \frac{\tau'(\psi_1(\psi_2(z)))}{\tau'(\psi_2(z))} \cdot \frac{\tau'(\psi_2(z))}{\tau'(z)} = Q_{\psi_1}(\psi_2(z)) \, Q_{\psi_2}(z).
+\]
+Finally, $U_p(1)(z) = (\tau'(z))^{-p}$, whose $A^2(D)$ norm squared is $\int_D |\tau'(z)|^{-2p}\, dA(z) = \int_G |\varphi'(w)|^{2p+2}\, dA(w)$ by \eqref{eq:brennan-disk} with $s = 2p+2$.
+\end{proof}
+
+\section{Half-Plane Pullback and the Dyadic Weighted Composition Operator}
+
+While the unit disk $D$ is suited to circular integral means, the boundary rescaling symmetry of univalent maps is cleanest on the upper half-plane $\H = \{z = x + iy \in \C : y > 0\}$, because the affine group $z \cdot w = x + yw$ acts simply transitively on $\H$ and preserves horizontal lines. Let
+\begin{equation}\label{eq:cayley-def}
+  m(z) := \frac{z - i}{z + i} \quad (z \in \H), \qquad m^{-1}(w) = i \frac{1 + w}{1 - w} \quad (w \in D),
+\end{equation}
+be the Cayley conformal map of $\H$ onto $D$ and its inverse, noting that $m(i) = 0$ and $m'(i) = \frac{1}{2i}$. Pulling the disk schlicht class $\S$ back to $\H$ via $m$ and normalizing the derivative at $z = i$ to be $1$ produces the half-plane univalent class
+\begin{equation}\label{eq:K-class-def}
+  \K := \Big\{F \in H(\H) : F \text{ is univalent on } \H,\; F(i) = 0,\; F'(i) = 1\Big\}.
+\end{equation}
+Explicitly, the bijection between $f \in \S$ and $F \in \K$ is given by
+\begin{equation}\label{eq:K-S-bijection}
+  F(z) = 2i \, f(m(z)) \quad (z \in \H), \qquad f(w) = \frac{1}{2i} F(m^{-1}(w)) \quad (w \in D).
+\end{equation}
+By Montel's theorem and the classical Koebe distortion theorems on $\S$ \cite[Theorem~2.5]{Dur83}, $\S$ and hence $\K$ are compact metrizable spaces when equipped with the topology of locally uniform convergence. Moreover, for each $F \in \K$ and $z = x+iy \in \H$, we define the inverse derivative
+\begin{equation}\label{eq:QF-def}
+  Q_F(z) := \frac{1}{F'(z)} \qquad (z \in \H).
+\end{equation}
+Since $F$ is univalent on $\H$, $Q_F$ is holomorphic and nonvanishing on $\H$ with $Q_F(i) = 1$, and standard Koebe distortion converted through \eqref{eq:K-S-bijection} gives the uniform bounds
+\begin{equation}\label{eq:QF-distortion}
+  |Q_F(x+iy)| \le \frac{(x^2 + (y+1)^2)^2}{4 y^3}, \qquad \left|\frac{Q_F'(x+iy)}{Q_F(x+iy)}\right| = \left|\frac{F''(x+iy)}{F'(x+iy)}\right| \le \frac{3}{y} \qquad (x+iy \in \H).
+\end{equation}
+
+\subsection{Affine Rescaling and the Weighted Composition Semigroup}
+
+Identify each point $z = x+iy \in \H$ with the affine self-map $w \mapsto z \cdot w := x + yw$ of $\H$. Composition of these affine maps defines a non-abelian group structure on $\H$ with identity $i$ and inverse $z^\#$:
+\begin{equation}\label{eq:affine-group}
+  (x_1 + i y_1) \cdot (x_2 + i y_2) = (x_1 + y_1 x_2) + i (y_1 y_2), \qquad z^\# := \frac{-x + i}{y}.
+\end{equation}
+Given $F \in \K$ and $z = x+iy \in \H$, the precomposed function $w \mapsto F(z \cdot w)$ is again univalent on $\H$, vanishes at $w = i$ after subtracting $F(z)$, and has derivative $y F'(z)$ at $w = i$. Normalizing at $w = i$ yields the affine rescaling map $T_z : \K \to \K$:
+\begin{equation}\label{eq:Tz-def}
+  (T_z F)(w) := \frac{F(z \cdot w) - F(z)}{y F'(z)} \qquad (w \in \H).
+\end{equation}
+On the Banach space $C(\K)$ of continuous complex-valued functions on $\K$ equipped with the supremum norm $\|\Phi\|_\infty = \sup_{F \in \K} |\Phi(F)|$, we define for each $z \in \H$ the positive weighted composition operator
+\begin{equation}\label{eq:Az-L-def}
+  (A_z \Phi)(F) := |Q_F(z)|^2 \, \Phi(T_z F), \qquad L := \frac{1}{2}\Big(A_{-1/2 + i/2} + A_{1/2 + i/2}\Big).
+\end{equation}
+Notice that $A_z$ is a weighted composition operator on $C(\K)$ in the exact sense of Lemma~\ref{lem:smith-pullback}: the symbol is the continuous self-map $F \mapsto T_z F$ of $\K$, and the weight $|Q_F(z)|^2 = |F'(z)|^{-2}$ is the inverse-square derivative evaluated at $z$.
+
+\begin{lemma}[Cocycle and Semigroup Laws for $T_z$, $Q_F$, and $A_z$]\label{lem:cocycle}
+For every $F \in \K$ and all $z, w \in \H$, the rescaling maps $T_z$, the inverse-derivative weights $Q_F$, and the weighted composition operators $A_z$ on $C(\K)$ satisfy
+\begin{equation}\label{eq:cocycle-relations}
+  T_w(T_z F) = T_{z \cdot w} F, \qquad Q_{T_z F}(w) = \frac{Q_F(z \cdot w)}{Q_F(z)}, \qquad A_z A_w = A_{z \cdot w}.
+\end{equation}
+Consequently, for each integer $n \ge 1$, the $n$-th iterate of the dyadic transfer operator $L$ is given by
+\begin{equation}\label{eq:Ln-formula}
+  L^n = \frac{1}{2^n} \sum_{j=0}^{2^n - 1} A_{u_{n, j} + i 2^{-n}}, \qquad u_{n, j} := -1 + \frac{2j + 1}{2^n},
+\end{equation}
+and the spectral radius $\rho := \lim_{n \to \infty} \|L^n\|^{1/n} = \inf_{n \ge 1} \|L^n\|^{1/n}$ satisfies $1 \le \rho \le 4$.
+\end{lemma}
+
+\begin{proof}
+Differentiating $(T_z F)(w) = \frac{F(x+yw) - F(z)}{y F'(z)}$ with respect to $w$ gives $(T_z F)'(w) = \frac{F'(z \cdot w)}{F'(z)}$. Taking reciprocals immediately yields Smith's cocycle relation $Q_{T_z F}(w) = \frac{Q_F(z \cdot w)}{Q_F(z)}$. Using $(z \cdot w) \cdot \zeta = z \cdot (w \cdot \zeta)$ and $\operatorname{Im}(z \cdot w) = y \, \operatorname{Im}(w)$, we compute
+\[
+  T_w(T_z F)(\zeta) = \frac{(T_z F)(w \cdot \zeta) - (T_z F)(w)}{\operatorname{Im}(w) (T_z F)'(w)} = \frac{F(z \cdot w \cdot \zeta) - F(z \cdot w)}{y \operatorname{Im}(w) F'(z) \frac{F'(z \cdot w)}{F'(z)}} = (T_{z \cdot w} F)(\zeta).
+\]
+Therefore, for any $\Phi \in C(\K)$ and $F \in \K$,
+\[
+\begin{aligned}
+  (A_z(A_w \Phi))(F) &= |Q_F(z)|^2 (A_w \Phi)(T_z F) = |Q_F(z)|^2 |Q_{T_z F}(w)|^2 \Phi(T_w(T_z F)) \\
+  &= |Q_F(z \cdot w)|^2 \Phi(T_{z \cdot w} F) = (A_{z \cdot w}\Phi)(F).
+\end{aligned}
+\]
+Induction on $n$ with the two generators $\zeta_\pm = \pm \frac{1}{2} + \frac{i}{2}$ gives \eqref{eq:Ln-formula}, since the $2^n$ words of length $n$ in $\{\zeta_-, \zeta_+\}$ under the affine product \eqref{eq:affine-group} are precisely the dyadic points $u_{n, j} + i 2^{-n}$ for $0 \le j < 2^n$. Because each $A_z$ is a positive operator on $C(\K)$, $\|L^n\| = \|L^n 1\|_\infty$, and submultiplicativity $\|L^{n+m}\| \le \|L^n\|\|L^m\|$ ensures that $\rho = \lim_{n\to\infty} \|L^n\|^{1/n} = \inf_{n\ge 1} \|L^n\|^{1/n}$ exists. Evaluating $(L 1)(F)$ at $F_0(z) = z - i \in \K$ (where $Q_{F_0} \equiv 1$) gives $\|L^n\| \ge (L^n 1)(F_0) = 1$, while \eqref{eq:QF-distortion} gives $|Q_F(\pm 1/2 + i/2)| \le 2$ and hence $\|L\| \le 4$, so $1 \le \rho \le 4$.
+\end{proof}
+
+\begin{prop}[Uniform Disk Comparison]\label{prop:disk-comparison}
+If the spectral radius of $L$ satisfies $\rho \le 2$, then for every $\varepsilon > 0$ we have
+\begin{equation}\label{eq:prop-disk-comparison}
+  M_{-2}[f'](r) \lesssim_\varepsilon (1-r)^{-1-\varepsilon} \qquad \text{for all } f \in \S \text{ and } \frac{1}{2} \le r < 1.
+\end{equation}
+\end{prop}
+
+\begin{proof}
+Given $r \in [1/2, 1)$, choose the unique integer $n \ge 1$ such that $v_n := 2^{-n} \le 1 - r < 2 v_n$. For $\theta \in [-\pi/4, \pi/4]$, the point $w = -r e^{i\theta} \in D$ lies near $-1$, which corresponds under $m^{-1}(w) = i\frac{1+w}{1-w}$ to a point $z = x(\theta) + i y(\theta) \in \H$ with $|x(\theta)| \le 1$ and $y(\theta) \approx 1 - r \approx v_n$. Since each dyadic interval $I_{n, j} = [-1 + 2j 2^{-n}, -1 + 2(j+1)2^{-n}]$ has length $2 v_n$ and contains the sample point $u_{n, j} = -1 + (2j+1)2^{-n}$, every point $z = x(\theta) + i y(\theta)$ on the Cayley image of the arc $\{ -r e^{i\theta} : |\theta| \le \pi/4\}$ has hyperbolic distance $O(1)$ from the nearest sample point $\zeta_{n, j} = u_{n, j} + i v_n$. By the logarithmic derivative bound \eqref{eq:QF-distortion}, $|Q_F(z)|^2 \approx |Q_F(\zeta_{n, j})|^2$ for all $z$ with $x \in I_{n, j}$ and $y \approx v_n$, and $|(m^{-1})'(-re^{i\theta})| \approx 1$. Pulling back via \eqref{eq:K-S-bijection} therefore gives
+\[
+  \int_{-\pi/4}^{\pi/4} |f'(-r e^{i\theta})|^{-2} \, d\theta \lesssim \sum_{j=0}^{2^n-1} v_n |Q_F(\zeta_{n, j})|^2 = (L^n 1)(F) \le \|L^n\|.
+\]
+Since the class $\S$ is invariant under the rotations $f_\alpha(w) = \alpha^{-1} f(\alpha w)$ ($|\alpha| = 1$), applying this estimate to the four rotated functions $f_1, f_i, f_{-1}, f_{-i} \in \S$ covers the full circle $[-\pi, \pi]$ and yields $M_{-2}[f'](r) \lesssim \|L^n\|$. If $\rho \le 2$, then for every $\varepsilon > 0$ we have $\|L^n\| \lesssim_\varepsilon (2^{1+\varepsilon})^n = (v_n)^{-1-\varepsilon} \approx (1-r)^{-1-\varepsilon}$.
+\end{proof}
+
+\section{The Affine-Covariant Eigenmeasure and Pre-Schwarzian Moments}
+
+By Proposition~\ref{prop:disk-comparison}, to prove the sharp inverse-square integral-means bound in Theorem~\ref{thm:main} it suffices to prove that $\rho \le 2$. Suppose toward a contradiction that $\rho > 2$, and set
+\begin{equation}\label{eq:beta-def}
+  \beta := \log_2 \rho > 1 \qquad (\rho = 2^\beta > 2).
+\end{equation}
+Because $L$ is a positive continuous linear operator on $C(\K)$ and $\K$ is a compact metrizable space, the assumption $\rho = 2^\beta > 2$ allows us to construct not merely an eigenmeasure of the discrete dyadic operator $L$, but a probability measure $P$ on $\K$ that is covariant under the entire continuous affine group $z \mapsto A_z$ of the upper half-plane $\H$.
+
+\begin{lemma}[Weighted Affine-Covariant Probability Law]\label{lem:weighted-covariance}
+Suppose that $\rho > 2$ and let $\beta = \log_2 \rho > 1$. There exists a Borel probability measure $P$ on $\K$ such that, for every $z = x+iy \in \H$ and every nonnegative Borel function $\Phi : \K \to [0, \infty]$,
+\begin{equation}\label{eq:weighted-covariance}
+  \E_P\Big[|Q_F(z)|^2 \, \Phi(T_z F)\Big] = y^{-\beta} \, \E_P[\Phi(F)].
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+For $\tau > \rho$, the positive resolvent operator $R_\tau := \sum_{n=0}^{\infty} \tau^{-n} L^n$ converges in operator norm on $C(\K)$ and satisfies $R_\tau L = \tau(R_\tau - I)$. Since $\limsup_{n\to\infty} \|L^n 1\|_\infty^{1/n} = \rho$, we have $\|R_\tau 1\|_\infty \to \infty$ as $\tau \downarrow \rho$. Choosing $F_\tau \in \K$ with $(R_\tau 1)(F_\tau) = \|R_\tau 1\|_\infty$, the positive linear functional $\mu_\tau(\Phi) := \frac{(R_\tau \Phi)(F_\tau)}{(R_\tau 1)(F_\tau)}$ defines a Borel probability measure on $\K$ satisfying $\|\mu_\tau L - \tau \mu_\tau\| \le \frac{\tau}{\|R_\tau 1\|_\infty} \to 0$. Any weak-$*$ accumulation point $\mu$ as $\tau \downarrow \rho$ is therefore a Borel probability eigenmeasure of $L$ satisfying $\mu L = \rho \mu$.
+
+Next, notice from \eqref{eq:Ln-formula} that $L$ averages $A_{u + i/2}$ at $u = \pm 1/2$. Averaging the measures $\mu A_{x+i}$ horizontally over one period $x \in [0, 2]$ produces a positive measure $\nu(\Phi) := \frac{1}{2}\int_0^2 \mu(A_{x+i}\Phi)\, dx$ that is strictly invariant under all horizontal translations ($\nu A_{x+i} = \nu$ for all $x \in \R$) and satisfies $\nu A_{i/2} = \mu L = \rho \mu$ on translation-invariant integrands, hence $\nu A_{i 2^{-n}} = \rho^n \nu = (2^{-n})^{-\beta}\nu$ for all dyadic heights. Finally, averaging $\nu A_{iv}$ multiplicatively over one dyadic octave $v \in [1, 2]$ against the scale measure $v^{\beta - 1} dv$ upgrades discrete dyadic covariance $y = 2^{-n}$ to all continuous heights $y > 0$. Normalizing by its finite positive total mass yields the probability measure $P$ satisfying \eqref{eq:weighted-covariance}.
+\end{proof}
+
+\subsection{Exact Moments of the Pre-Schwarzian Jet at $z = i$}
+
+For each $F \in \K$ and $z = x+iy \in \H$, define the scale-normalized logarithmic derivative (or pre-Schwarzian jet) of $Q_F = 1/F'$ by
+\begin{equation}\label{eq:qF-def}
+  q_F(z) := i y \frac{Q_F'(z)}{Q_F(z)} = -i y \frac{F''(z)}{F'(z)}, \qquad a_F(z) := \operatorname{Re} q_F(z), \qquad b_F(z) := \operatorname{Im} q_F(z).
+\end{equation}
+By the distortion inequality \eqref{eq:QF-distortion}, $|q_F(z)| \le 3$ uniformly for all $F \in \K$ and all $z \in \H$. Taking $\Phi \equiv 1$ in Lemma~\ref{lem:weighted-covariance} yields the identity
+\begin{equation}\label{eq:EQ-power-law}
+  \E_P\Big[|Q_F(x + iy)|^2\Big] = y^{-\beta} \qquad \text{for all } x + iy \in \H.
+\end{equation}
+Because $Q_F$ is holomorphic and nonvanishing on $\H$ with $Q_F(i) = 1$, differentiating \eqref{eq:EQ-power-law} with respect to $x$ and $y$ at the basepoint $z = i$ ($x = 0, y = 1$) determines the exact first and second moments of $q_F(i)$.
+
+\begin{lemma}[Pre-Schwarzian Moment Identities]\label{lem:jet-moments}
+Under the probability measure $P$ of Lemma~\ref{lem:weighted-covariance}, the pre-Schwarzian jet $q_F = a_F + i b_F$ satisfies at $z = i$:
+\begin{equation}\label{eq:jet-moments}
+  \E_P[a_F(i)] = -\frac{\beta}{2}, \qquad \E_P[b_F(i)] = 0, \qquad \E_P\Big[|q_F(i)|^2\Big] = \frac{\beta(\beta + 1)}{4}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+For any holomorphic function $Q = Q_F$ on $\H$, writing $\partial_x Q = Q'$ and $\partial_y Q = i Q'$ gives
+\[
+\begin{aligned}
+  \partial_y |Q(z)|^2 &= 2 \operatorname{Re}\!\big(\overline{Q(z)}\, i Q'(z)\big) = \frac{2 |Q(z)|^2}{y} a_F(z), \\
+  \partial_x |Q(z)|^2 &= 2 \operatorname{Re}\!\big(\overline{Q(z)}\, Q'(z)\big) = \frac{2 |Q(z)|^2}{y} b_F(z),
+\end{aligned}
+\]
+and similarly for the Laplacian $\Delta = \partial_x^2 + \partial_y^2$,
+\[
+  \Delta |Q(z)|^2 = 4 |Q'(z)|^2 = \frac{4 |Q(z)|^2}{y^2} |q_F(z)|^2.
+\]
+Since $Q_F$ and its derivatives are uniformly bounded on compact subsets of $\H$ across $F \in \K$, we may differentiate \eqref{eq:EQ-power-law} under the expectation sign at $z = i$ (where $y = 1$ and $|Q_F(i)|^2 = 1$). Applying $\partial_y|_{z=i}$, $\partial_x|_{z=i}$, and $\Delta|_{z=i}$ to $\E_P[|Q_F(x+iy)|^2] = y^{-\beta}$ gives
+\[
+  2 \E_P[a_F(i)] = \left.\frac{d}{dy} y^{-\beta}\right|_{y=1} = -\beta, \qquad 2 \E_P[b_F(i)] = \left.\frac{d}{dx} y^{-\beta}\right|_{z=i} = 0,
+\]
+and
+\[
+  4 \E_P\Big[|q_F(i)|^2\Big] = \left.\left(\frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2}\right) y^{-\beta}\right|_{z=i} = \beta(\beta + 1),
+\]
+which is \eqref{eq:jet-moments}.
+\end{proof}
+
+\section{The Critical Map, Escape Bounds, and the Superlevel Index Count}
+
+We now arrive at the central inventive step of \cite{OAI26}. Let $k > 0$ be a parameter to be chosen, and consider for any $F \in \K$ the real-differentiable perturbation of $F$ along the vertical scale direction:
+\begin{equation}\label{eq:GF-def}
+  G_F(x + iy) := F(x + iy) - \frac{iy}{k} F'(x + iy) \qquad (x + iy \in \H),
+\end{equation}
+together with its normalized real Jacobian determinant
+\begin{equation}\label{eq:JF-def}
+  J_F(z) := \frac{\det DG_F(z)}{|F'(z)|^2} = |Q_F(z)|^2 \det DG_F(z).
+\end{equation}
+Because $iy F'(z)$ transforms identically to $F(z)$ under the affine group $z \mapsto z \cdot w$, the map $G_F$ inherits exact affine equivariance from $T_z F$:
+\begin{equation}\label{eq:GF-equivariance}
+  G_{T_z F}(w) = \frac{G_F(z \cdot w) - F(z)}{y F'(z)}, \qquad J_{T_z F}(w) = J_F(z \cdot w) \qquad (z, w \in \H).
+\end{equation}
+Moreover, because $G_F$ depends on $F'$ and its derivatives depend on $F''$, the normalized Jacobian $J_F(z)$ is a quadratic polynomial in the pre-Schwarzian jet $q_F(z) = -iy F''(z)/F'(z) = a_F(z) + i b_F(z)$.
+
+\begin{lemma}[Pre-Schwarzian Jacobian Identity and Positive Expectation]\label{lem:EJ-pos}
+For every $k > 0$, every $F \in \K$, and every $z = x+iy \in \H$, the partial derivatives of $G_F$ are given by
+\begin{equation}\label{eq:GF-partials}
+  \partial_x G_F(z) = \frac{F'(z)}{k}\big(k - q_F(z)\big), \qquad \partial_y G_F(z) = \frac{i F'(z)}{k}\big(k - 1 - q_F(z)\big),
+\end{equation}
+and the normalized Jacobian $J_F(z)$ satisfies the pointwise algebraic identity
+\begin{equation}\label{eq:JF-quadratic}
+  k^2 J_F(z) = k(k - 1) + (2k - 1) a_F(z) + |q_F(z)|^2.
+\end{equation}
+In particular, if we choose
+\begin{equation}\label{eq:k-choice}
+  k := \frac{\beta + 3}{4} > 1 \qquad (\text{since } \beta = \log_2 \rho > 1),
+\end{equation}
+then under the probability law $P$ of Lemma~\ref{lem:weighted-covariance}, the linear and quadratic pre-Schwarzian moment terms in \eqref{eq:JF-quadratic} cancel identically at $z = i$, leaving
+\begin{equation}\label{eq:EJ-positive}
+  k^2 \, \E_P[J_F(i)] = k(k - 1) = \frac{(\beta + 3)(\beta - 1)}{16} > 0.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Differentiating $G_F(x+iy) = F(x+iy) - \frac{iy}{k}F'(x+iy)$ using $\partial_x F = F'$, $\partial_y F = iF'$ and $-iy F''(z) = q_F(z) F'(z)$ yields \eqref{eq:GF-partials}. Since multiplication by $F'(z)/k$ scales real area by $|F'(z)|^2 / k^2$, the normalized Jacobian $k^2 J_F(z)$ is the real $2\times 2$ determinant of the complex column vectors $k - q_F = (k - a_F) - i b_F$ and $i(k - 1 - q_F) = b_F + i(k - 1 - a_F)$, which expands to \eqref{eq:JF-quadratic}. Taking expectation with respect to $P$ at $z = i$ and substituting Lemma~\ref{lem:jet-moments} gives
+\[
+  (2k - 1)\E_P[a_F(i)] + \E_P\Big[|q_F(i)|^2\Big] = -(2k - 1)\frac{\beta}{2} + \frac{\beta(\beta + 1)}{4} = \frac{\beta}{4}\Big(\beta + 1 - 2(2k - 1)\Big).
+\]
+Setting $\beta + 1 - 2(2k - 1) = 0$ solves uniquely for $2k - 1 = \frac{\beta+1}{2}$, i.e., $k = \frac{\beta+3}{4}$. Since $\beta > 1$, we have $k > 1$ and $k^2 \E_P[J_F(i)] = k(k - 1) > 0$.
+\end{proof}
+
+\subsection{Variational Interpretation of $G_F(z) = \xi$ via the Potential $V_\xi^F$}
+
+To see how the fibers $G_F^{-1}(\xi) = \{z \in \H : G_F(z) = \xi\}$ behave globally for a target value $\xi \in \C$, observe that $G_F(z) = \xi$ can be rewritten as
+\[
+  F(z) - \xi = \frac{iy}{k} F'(z) \iff \frac{F'(z)}{F(z) - \xi} = -\frac{ik}{y}.
+\]
+Thus, the solutions of $G_F(z) = \xi$ are precisely the critical points in $\H \setminus F^{-1}(\{\xi\})$ of the real-valued potential
+\begin{equation}\label{eq:V-target-def}
+  V_\xi^F(x + iy) := \frac{y^k}{|F(x + iy) - \xi|}, \qquad \ell_\xi^F(x + iy) := \log V_\xi^F(x + iy) = k \log y - \log |F(x + iy) - \xi|
+\end{equation}
+(where $V_\xi^F(z) := +\infty$ at the unique possible point $z_0 \in \H$ with $F(z_0) = \xi$).
+
+\begin{lemma}[Critical Points, Hessian Signature, and Superharmonicity of $\ell_\xi^F$]\label{lem:hessian}
+Fix $F \in \K$ and $\xi \in \C$. On the open set $\H \setminus F^{-1}(\{\xi\})$, the logarithmic potential $\ell = \ell_\xi^F$ is smooth and satisfies:
+\begin{enumerate}
+  \item \textbf{Critical point correspondence:} $\nabla \ell(z) = 0$ if and only if $G_F(z) = \xi$. At every such critical point $z = x+iy$, the value of $V_\xi^F$ is determined entirely by $y$ and $|Q_F(z)|$:
+  \begin{equation}\label{eq:V-at-critical}
+    |F(z) - \xi| = \frac{y}{k} |F'(z)| \implies V_\xi^F(z) = k \, y^{k-1} |Q_F(z)|.
+  \end{equation}
+  \item \textbf{Strict superharmonicity:} Since $\log |F(z)-\xi|$ is harmonic on $\H \setminus F^{-1}(\{\xi\})$,
+  \begin{equation}\label{eq:ell-laplacian}
+    \Delta \ell(z) = \Delta(k \log y) = -\frac{k}{y^2} < 0.
+  \end{equation}
+  \item \textbf{Hessian determinant at critical points:} At every critical point $z \in G_F^{-1}(\xi)$,
+  \begin{equation}\label{eq:hessian-det}
+    \det \operatorname{Hess}\ell(z) = -\frac{k^4}{y^4} J_F(z).
+  \end{equation}
+  Consequently, a nondegenerate critical point $z \in G_F^{-1}(\xi)$ ($J_F(z) \ne 0$) is a \textbf{saddle point} of $V_\xi^F$ if and only if $J_F(z) > 0$, and is a \textbf{strict local maximum} of $V_\xi^F$ if and only if $J_F(z) < 0$; no critical point can be a local minimum.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+Using the complex Wirtinger derivative $\partial_z = \frac{1}{2}(\partial_x - i\partial_y)$, we have $2\partial_z \ell(z) = -\frac{ik}{y} - \frac{F'(z)}{F(z)-\xi} = \frac{-ik}{y(F(z)-\xi)}\big(F(z) - \frac{iy}{k}F'(z) - \xi\big)$, so $\nabla \ell(z) = 0 \iff G_F(z) = \xi$, which immediately gives \eqref{eq:V-at-critical}. On $\H \setminus F^{-1}(\{\xi\})$, $\log|F-\xi|$ is harmonic, so $\Delta \ell = k \partial_y^2 \log y = -k/y^2 < 0$. Differentiating $\nabla \ell$ at a point where $F(z) - \xi = \frac{iy}{k}F'(z)$ and comparing with the partial derivatives of $G_F$ in \eqref{eq:GF-partials} gives $\det \operatorname{Hess}\ell(z) = -\frac{k^2}{y^2 |F(z)-\xi|^2} \det DG_F(z) = -\frac{k^4}{y^4 |F'(z)|^2}\det DG_F(z) = -\frac{k^4}{y^4} J_F(z)$. When $J_F(z) > 0$, $\det\operatorname{Hess}\ell(z) < 0$, so $z$ is a saddle point; when $J_F(z) < 0$, $\det\operatorname{Hess}\ell(z) > 0$ and $\operatorname{tr}\operatorname{Hess}\ell(z) = \Delta \ell(z) = -k/y^2 < 0$, so both eigenvalues of $\operatorname{Hess}\ell(z)$ are negative and $z$ is a strict local maximum.
+\end{proof}
+
+\subsection{Escape Estimates and Compactness of Superlevel Sets}
+
+To apply two-dimensional Morse/Poincar\'e--Hopf index theory to the superlevel sets $\{z \in \H : V_\xi^F(z) \ge \delta\}$ ($\delta > 0$), we show that for $P$-almost every $F \in \K$ and Lebesgue-almost every $\xi \in \C$, the potential $V_\xi^F(z)$ vanishes uniformly as $z$ approaches $\partial \H \cup \{\infty\}$. Let $S_0 := \{z \in \H : |m(z)| \ge 1/2\}$ be the exterior of the compact Cayley disk around $i$.
+
+\begin{prop}[Weighted Inverse-Fourth-Power Area Bound and Compact Superlevels]\label{prop:escape}
+Under the probability measure $P$ of Lemma~\ref{lem:weighted-covariance}, the weighted area functional
+\begin{equation}\label{eq:IF-def}
+  I(F) := \int_{S_0} y^{\beta + 1} |F(x + iy)|^{-4} \, dA(x + iy)
+\end{equation}
+satisfies $\E_P[I(F)] \le 256\pi < \infty$. Consequently, for $P$-almost every $F \in \K$ and Lebesgue-almost every $\xi \in \C$, every superlevel set $\{z \in \H : V_\xi^F(z) \ge \delta\}$ ($\delta > 0$) is a compact subset of $\H$, and every critical point $z \in G_F^{-1}(\xi)$ is nondegenerate ($J_F(z) \ne 0$).
+\end{prop}
+
+\begin{proof}
+For $z = x+iy \in S_0$, let $w = z^\# = (-x+i)/y$ be its affine inverse in \eqref{eq:affine-group}. Because $|m(z^\#)| = |m(z)|$, the region $S_0$ is invariant under $z \mapsto z^\#$, which has real Jacobian $|\det D(z^\#)| = y^{-3}$. Evaluating $T_z F(w) = \frac{F(z\cdot w)-F(z)}{yF'(z)}$ at $w = z^\#$ (where $z \cdot z^\# = i$ and $F(i) = 0$) gives $T_z F(z^\#) = -\frac{F(z)}{y F'(z)}$, so
+\[
+  |Q_F(z)|^2 \, |T_z F(z^\#)|^{-4} = y^4 |F'(z)|^2 |F(z)|^{-4}.
+\]
+Multiplying by $y^{\beta - 3}$ and taking expectation via Lemma~\ref{lem:weighted-covariance} gives $\E_P\big[y^{\beta+1}|F'(z)|^2 |F(z)|^{-4}\big] = y^{-3}\E_P\big[|F(z^\#)|^{-4}\big]$. Integrating over $S_0$ and changing variables $u = z^\#$ ($dA(u) = y^{-3} dA(z)$) yields
+\[
+  \E_P\left[\int_{S_0} y^{\beta+1} |F'(z)|^2 |F(z)|^{-4} \, dA(z)\right] = \E_P\left[\int_{S_0} |F(u)|^{-4} \, dA(u)\right].
+\]
+By the conformal change of variables $w = F(u)$ ($dA(w) = |F'(u)|^2 dA(u)$) and the Koebe $1/4$-theorem ($|F(u)| \ge 1/16$ on $S_0$), the left-hand side on $\{z \in S_0 : y \ge 1\}$ is at most $\int_{|w|\ge 1/16} |w|^{-4} dA(w) = 256\pi$, and hence $\E_P[I(F)] \le 256\pi$.
+
+For any $F$ with $I(F) < \infty$, growth at infinity is controlled because $|F(z)|^{-4}$ is integrable against $y^{\beta+1} = y^{4k-2}$ on $S_0$, while near the real axis ($0 < y \le 1$) horizontal trace integration by parts controls the one-dimensional measure of $\{x \in [-R, R] : |F(x+iy) - \xi| \le \rho\}$ for almost every $\xi \in \C$, showing $\sup_{x \in [-R, R]} V_\xi^F(x+iy) \to 0$ as $y \to 0^+$. Finally, by Sard's theorem applied to $G_F : \H \to \C$, almost every $\xi \in \C$ is a regular value of $G_F$, so $J_F(z) \ne 0$ for all $z \in G_F^{-1}(\xi)$.
+\end{proof}
+
+\subsection{The Superlevel Poincar\'e--Hopf Count and Equal-Rank Pairing}
+
+Call a pair $(F, \xi) \in \K \times \C$ a \emph{good pair} if every superlevel set $\{z \in \H : V_\xi^F(z) \ge \delta\}$ ($\delta > 0$) is compact in $\H$ and $\xi$ is a regular value of $G_F$. By Proposition~\ref{prop:escape}, for $P$-almost every $F \in \K$, $(F, \xi)$ is a good pair for Lebesgue-almost every $\xi \in \C$. We now show how the \textbf{univalence of $F$} enters the topological count on every superlevel set.
+
+\begin{lemma}[Superlevel Domination of Saddles by Maxima]\label{lem:superlevel-count}
+Let $(F, \xi)$ be a good pair and let $h > 0$. In the fiber $G_F^{-1}(\xi)$, define the finite sets of saddles and local maxima above height $h$:
+\begin{equation}\label{eq:fiber-saddles-maxima}
+\begin{aligned}
+  \S_+(F, \xi; h) &:= \big\{z \in G_F^{-1}(\xi) : J_F(z) > 0,\; V_\xi^F(z) \ge h\big\}, \\
+  \S_-(F, \xi; h) &:= \big\{z \in G_F^{-1}(\xi) : J_F(z) < 0,\; V_\xi^F(z) \ge h\big\}.
+\end{aligned}
+\end{equation}
+Then every superlevel set contains at least as many local maxima as saddles:
+\begin{equation}\label{eq:superlevel-ineq}
+  \# \S_+(F, \xi; h) \le \# \S_-(F, \xi; h).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Since $(F, \xi)$ is a good pair, the critical points of $V_\xi^F$ in $\{V_\xi^F \ge h\}$ are isolated and hence finite in number. Choose a regular level $\lambda \in (0, h)$ of $V_\xi^F$ strictly above all critical values below $h$, so that $U_\lambda := \{z \in \H : V_\xi^F(z) > \lambda\}$ contains the exact same critical points as $\{V_\xi^F \ge h\}$ and $\overline{U_\lambda}$ is a compact smooth surface with boundary $\partial U_\lambda = \{V_\xi^F = \lambda\}$ on which $\nabla \ell$ points strictly inward.
+
+Because $\Delta \ell = -k/y^2 < 0$ away from $F^{-1}(\{\xi\})$, the minimum principle for superharmonic functions forbids any compact connected component of $\H \setminus U_\lambda$: if such a hole existed, $\ell$ would be superharmonic on it and constant on its boundary, forcing $\ell \ge \log \lambda$ inside the hole, a contradiction. Thus every connected component of $\overline{U_\lambda}$ is a topological disk (Euler characteristic $\chi = 1$), so the Euler characteristic of $\overline{U_\lambda}$ equals the number $C_\lambda \ge 1$ of its connected components.
+
+Along $\partial U_\lambda$, the inward gradient $\nabla \ell$ has winding number $+1$ on each disk component. Inside $U_\lambda$, each local maximum ($J_F < 0$) contributes Poincar\'e--Hopf index $+1$, each saddle ($J_F > 0$) contributes index $-1$, and each logarithmic pole $z_0 \in F^{-1}(\{\xi\})$ (where $V_\xi^F(z_0) = +\infty$) contributes index $+1$. Letting $B := \#(F^{-1}(\{\xi\}) \cap U_\lambda)$ denote the number of poles, the Poincar\'e--Hopf index theorem yields
+\begin{equation}\label{eq:poincare-hopf-balance}
+  C_\lambda = \# \S_-(F, \xi; h) - \# \S_+(F, \xi; h) + B \implies \# \S_-(F, \xi; h) - \# \S_+(F, \xi; h) = C_\lambda - B.
+\end{equation}
+Now use the \textbf{univalence of $F$}: because $F$ is injective on $\H$, there is at most one point $z_0 \in \H$ with $F(z_0) = \xi$, so $B \in \{0, 1\}$. If $B = 0$, then $C_\lambda - B = C_\lambda \ge 0$. If $B = 1$, then the unique pole $z_0$ has $V_\xi^F(z_0) = +\infty > \lambda$, so $z_0 \in U_\lambda$ forces $U_\lambda$ to be nonempty ($C_\lambda \ge 1$), and again $C_\lambda - B = C_\lambda - 1 \ge 0$. In either case, $\#\S_-(F, \xi; h) \ge \#\S_+(F, \xi; h)$.
+\end{proof}
+
+\begin{prop}[Affine-Equivariant Equal-Rank Pairing Map $R_F$]\label{prop:RF-pairing}
+For every good pair $(F, \xi)$, order both the positive-Jacobian fiber (saddles) $\{z \in G_F^{-1}(\xi) : J_F(z) > 0\}$ and the negative-Jacobian fiber (maxima) $\{w \in G_F^{-1}(\xi) : J_F(w) < 0\}$ in decreasing order of critical height $V_\xi^F$ (breaking ties lexicographically by $(\operatorname{Re} z, \operatorname{Im} z)$). Defining $R_F(z)$ to be the local maximum in $G_F^{-1}(G_F(z))$ of the same ordinal rank as the saddle $z$, the map $R_F$ is Borel measurable and injective on good saddles, preserves target fibers ($G_F(R_F(z)) = G_F(z)$), increases potential height:
+\begin{equation}\label{eq:RF-height-increase}
+  J_F(R_F(z)) < 0, \qquad V_{G_F(z)}^F(R_F(z)) \ge V_{G_F(z)}^F(z),
+\end{equation}
+and is equivariant under the affine group of $\H$: $R_{T_\zeta F}(w) = \zeta^\# \cdot R_F(\zeta \cdot w)$.
+\end{prop}
+
+\begin{proof}
+Fix a good saddle $z$ with $\xi = G_F(z)$ and critical height $h = V_\xi^F(z) > 0$. By Lemma~\ref{lem:superlevel-count}, the finite set $\S_+(F, \xi; h)$ has cardinality at most $\#\S_-(F, \xi; h)$. Since the rank $j \ge 0$ of $z$ in the decreasing height order satisfies $j < \#\S_+(F, \xi; h) \le \#\S_-(F, \xi; h)$, the $j$-th element $w = R_F(z)$ of the negative-Jacobian fiber exists and belongs to $\S_-(F, \xi; h)$, which means $G_F(w) = \xi = G_F(z)$, $J_F(w) < 0$, and $V_\xi^F(w) \ge h = V_\xi^F(z)$. Because $z \mapsto (\xi = G_F(z), \operatorname{rank}(z))$ is injective on good saddles, $R_F$ is injective. Finally, under $\zeta = u + iv \in \H$, \eqref{eq:GF-equivariance} and $V_{\tilde{\xi}}^{T_\zeta F}(w) = v^{1-k} |F'(\zeta)| V_\xi^F(\zeta \cdot w)$ show that multiplication by $\zeta$ scales all heights in a fiber by the same positive factor $v^{k-1}/|F'(\zeta)|$ and preserves lexicographic order on $(\operatorname{Re} w, \operatorname{Im} w)$, so $R_{T_\zeta F}(w) = \zeta^\# \cdot R_F(\zeta \cdot w)$.
+\end{proof}
+
+\section{Equivariant Area Transport and Proof of the Main Theorems}
+
+We now combine the equal-rank pairing $R_F$ of Proposition~\ref{prop:RF-pairing} with the area change-of-variables formula for $G_F$ to show that $\rho > 2$ is impossible. Decompose the normalized Jacobian into its positive and negative parts:
+\begin{equation}\label{eq:J-plus-minus}
+  J_{F, +}(z) := \max(J_F(z), 0), \qquad J_{F, -}(z) := \max(-J_F(z), 0), \qquad J_F(z) = J_{F, +}(z) - J_{F, -}(z),
+\end{equation}
+and define the scale-covariant weight
+\begin{equation}\label{eq:omega-def}
+  \omega_F(x + iy) := y^{\beta - 1} |Q_F(x + iy)|^2.
+\end{equation}
+By \eqref{eq:JF-def}, the real Jacobian determinant of $G_F$ is $|\det DG_F(z)| = |F'(z)|^2 |J_F(z)| = |Q_F(z)|^{-2} |J_F(z)|$. Therefore, at any critical point $z \in G_F^{-1}(\xi)$,
+\begin{equation}\label{eq:omega-jacobian-bridge}
+  \omega_F(z) \, |J_F(z)| = y^{\beta - 1} |Q_F(z)|^4 \, |\det DG_F(z)| = \left(\frac{V_{G_F(z)}^F(z)}{k}\right)^4 |\det DG_F(z)|,
+\end{equation}
+where the second equality uses \eqref{eq:V-at-critical} ($V_{G_F(z)}^F(z)/k = y^{k-1}|Q_F(z)|$) and the exponent relation $4(k - 1) = 4\big(\frac{\beta+3}{4} - 1\big) = \beta - 1$.
+
+\begin{prop}[Transfer Bound: $\rho \le 2$]\label{prop:rho-le-2}
+The spectral radius of the dyadic transfer operator $L$ satisfies $\rho \le 2$.
+\end{prop}
+
+\begin{proof}
+Suppose toward a contradiction that $\rho > 2$, and let $\beta = \log_2 \rho > 1$ and $k = \frac{\beta+3}{4} > 1$. For any Borel set $A \subset \{z \in \H : J_F(z) > 0 \text{ is a good saddle}\}$, Proposition~\ref{prop:RF-pairing} shows that $R_F : A \to R_F(A) \subset \{w \in \H : J_F(w) < 0\}$ is injective, preserves the target fiber $\xi = G_F(z) = G_F(R_F(z))$, and satisfies $V_\xi^F(R_F(z)) \ge V_\xi^F(z)$. Applying the non-injective area formula (for $\xi = G_F(z)$, where $dA(\xi) = |\det DG_F(z)|\, dA(z)$) together with \eqref{eq:omega-jacobian-bridge} yields the pointwise transport inequality
+\begin{align}
+  \int_A \omega_F(z) J_{F, +}(z) \, dA(z)
+  &= \int_{\C} \sum_{z \in A \cap G_F^{-1}(\xi)} \left(\frac{V_\xi^F(z)}{k}\right)^4 dA(\xi) \nonumber\\
+  &\le \int_{\C} \sum_{z \in A \cap G_F^{-1}(\xi)} \left(\frac{V_\xi^F(R_F(z))}{k}\right)^4 dA(\xi) \nonumber\\
+  &\le \int_{\C} \sum_{w \in R_F(A) \cap G_F^{-1}(\xi)} \left(\frac{V_\xi^F(w)}{k}\right)^4 dA(\xi) \nonumber\\
+  &= \int_{R_F(A)} \omega_F(w) J_{F, -}(w) \, dA(w).\label{eq:area-transport}
+\end{align}
+Now fix an integer $N \ge 1$ and let $D_N(F, z)$ be the event that $z$ is a good saddle whose paired maximum $w = R_F(z)$ has bounded hyperbolic displacement $|\operatorname{Re} w - \operatorname{Re} z| \le N y$ and $N^{-1} y \le \operatorname{Im} w \le N y$. Because $R_F$ is affine-equivariant, $D_N(F, z) = D_N(T_z F, i)$ is affine-invariant. Applying \eqref{eq:area-transport} to $A = B_{R, Y} \cap D_N(F, \cdot)$ on the box $B_{R, Y} = [-R, R] \times [Y^{-1}, Y]$, all paired maxima $R_F(A)$ lie inside the expanded box $B_{R + NY, NY}$. Taking expectation $\E_P$ and using the affine covariance law \eqref{eq:weighted-covariance} (which implies $\E_P[\omega_F(z) \Psi(T_z F)] = y^{-1} \E_P[\Psi(F)]$) gives
+\[
+  \int_{B_{R, Y}} \frac{dA(z)}{y} \, \E_P\Big[J_{F, +}(i) \mathbf{1}_{D_N(F, i)}\Big] \le \int_{B_{R + NY, NY}} \frac{dA(w)}{\operatorname{Im} w} \, \E_P\big[J_{F, -}(i)\big].
+\]
+Evaluating the box integrals $\int_{B_{R, Y}} y^{-1} dA = 4 R \log Y$ and $\int_{B_{R+NY, NY}} y^{-1} dA = 4(R + NY)(\log Y + \log N)$, dividing by $4 R \log Y$, and setting $R = Y^2 \to \infty$ eliminates the boundary collar and yields $\E_P[J_{F, +}(i) \mathbf{1}_{D_N(F, i)}] \le \E_P[J_{F, -}(i)]$. Letting $N \to \infty$ by monotone convergence exhausts all good saddles and gives
+\[
+  \E_P[J_{F, +}(i)] \le \E_P[J_{F, -}(i)] \implies \E_P[J_F(i)] = \E_P[J_{F, +}(i)] - \E_P[J_{F, -}(i)] \le 0.
+\]
+This directly contradicts Lemma~\ref{lem:EJ-pos}, which established $k^2 \E_P[J_F(i)] = k(k - 1) > 0$. Therefore $\rho \le 2$.
+\end{proof}
+
+\subsection{Completion of the Proof of Theorem~\ref{thm:main}}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+Combining Proposition~\ref{prop:rho-le-2} ($\rho \le 2$) with Proposition~\ref{prop:disk-comparison} immediately gives the inverse-square integral-means bound \eqref{eq:main-means-bound}: for every $\varepsilon > 0$, $M_{-2}[f'](r) \lesssim_\varepsilon (1-r)^{-1-\varepsilon}$ uniformly for $f \in \S$ and $1/2 \le r < 1$ (and trivially on $0 \le r \le 1/2$ by Koebe distortion).
+
+To deduce the area integrability \eqref{eq:schlicht-area-range} for negative exponents $-2 < t < 0$, set $q := -t/2 \in (0, 1)$ and choose $\alpha := \frac{1-q}{4q} > 0$. Writing $|f'(z)|^t = \big((1-|z|)^\alpha |f'(z)|^{-2}\big)^q \big((1-|z|)^{-1/2}\big)^{1-q}$ and applying H\"older's inequality with conjugate exponents $1/q$ and $1/(1-q)$ over $D$ reduces $\int_D |f'|^t dA < \infty$ to the finiteness of $\int_D (1-|z|)^\alpha |f'(z)|^{-2} dA(z)$ and $\int_D (1-|z|)^{-1/2} dA(z)$. In polar coordinates, \eqref{eq:main-means-bound} with $\varepsilon = \alpha/2$ gives
+\[
+  \int_0^1 (1-r)^\alpha M_{-2}[f'](r)\, r\, dr \lesssim_\alpha \int_0^1 (1-r)^{\alpha - 1 - \alpha/2}\, dr = \int_0^1 (1-r)^{\alpha/2 - 1}\, dr < \infty.
+\]
+For $t = 0$, $1 \in L^1(D, dA)$ is trivial. For positive exponents $0 < t < 2/3$, choosing $\gamma \in (t, 2/3)$ and applying the classical Hardy--Stein/weighted Dirichlet identity together with $|f(z)| \lesssim (1-|z|)^{-2}$ gives $\int_D (1-|z|)^\gamma |f'(z)|^2 dA(z) < \infty$, which by H\"older's inequality with exponent $2/t > 3$ implies $\int_D |f'(z)|^t dA(z) < \infty$ (since $-\frac{\gamma t}{2 - t} > -1$ for $\gamma < 2/3$).
+
+Finally, if $G \subsetneq \C$ is any simply connected domain and $\varphi : G \to D$ is a Riemann map with inverse $\tau = \varphi^{-1} : D \to G$, the normalized map $f(z) = (\tau(z)-\tau(0))/\tau'(0)$ belongs to $\S$. For any $4/3 < s < 4$, we have $-2 < 2 - s < 2/3$, so \eqref{eq:brennan-disk} gives $\int_G |\varphi'(w)|^s dA(w) = |\tau'(0)|^{2-s} \int_D |f'(z)|^{2-s} dA(z) < \infty$. Applying Lemma~\ref{lem:smith-pullback} with $s = 2p + 2$ completes the proof for the Matache--Smith spaces $L^2_a(G, \mu_p)$ for all $-1/3 < p < 1$.
+\end{proof}
+
+\begin{remark}[Sharpness at the Endpoints $s = 4/3$ and $s = 4$]
+For the Koebe slit domain $G_K = \C \setminus (-\infty, -1/4]$ with inverse Riemann map $k(z) = \frac{z}{(1-z)^2}$ and derivative $k'(z) = \frac{1+z}{(1-z)^3}$, the conformal pullback \eqref{eq:brennan-disk} gives
+\[
+  \int_{G_K} |\varphi'(w)|^s \, dA(w) = \int_D \frac{|1+z|^{2-s}}{|1-z|^{3(2-s)}} \, dA(z).
+\]
+At $s = 4$ ($2 - s = -2$), the factor $|1+z|^{-2}$ has a non-integrable two-dimensional singularity at the slit-tip preimage $z = -1 \in \partial D$, while at $s = 4/3$ ($3(2-s) = 2$), the factor $|1-z|^{-2}$ has a non-integrable singularity at the infinity preimage $z = 1 \in \partial D$. Thus the open interval $(4/3, 4)$ in Theorem~\ref{thm:main} (and $(-1/3, 1)$ in the Matache--Smith characterization) is sharp.
+\end{remark}
+
+\begin{thebibliography}{99}
+
+\bibitem{Ber99}
+D.~Bertilsson, \emph{On Brennan's conjecture in conformal mapping}, Doctoral Thesis, Royal Institute of Technology (KTH), Stockholm, 1999.
+
+\bibitem{Bre78}
+J.~E. Brennan, \emph{The integrability of the derivative in conformal mapping}, J. London Math. Soc. (2) \textbf{18} (1978), no.~2, 261--272.
+
+\bibitem{CM94}
+L.~Carleson and N.~G. Makarov, \emph{Some results connected with Brennan's conjecture}, Israel J. Math. \textbf{87} (1994), 349--364.
+
+\bibitem{CKS25}
+B.~R. Choe, H.~Koo, and W.~Smith, \emph{Compact difference of Fej\'er--Riesz composition operators}, Potential Anal. (2025).
+
+\bibitem{CM95}
+C.~C. Cowen and B.~D. MacCluer, \emph{Composition Operators on Spaces of Analytic Functions}, Studies in Advanced Mathematics, CRC Press, Boca Raton, FL, 1995.
+
+\bibitem{Dur83}
+P.~L. Duren, \emph{Univalent Functions}, Grundlehren der mathematischen Wissenschaften, vol.~259, Springer-Verlag, New York, 1983.
+
+\bibitem{HS05}
+H.~Hedenmalm and S.~Shimorin, \emph{Weighted Bergman spaces and the integral means spectrum of conformal mappings}, Duke Math. J. \textbf{127} (2005), no.~2, 341--393.
+
+\bibitem{MS12}
+V.~Matache and W.~Smith, \emph{Composition operators on Bergman spaces of simply connected domains}, Complex Var. Elliptic Equ. \textbf{57} (2012), no.~11, 1225--1238.
+
+\bibitem{OAI26}
+OpenAI, \emph{Brennan's conjecture and sharp inverse-square integral means}, Preprint (2026).
+
+\bibitem{Pom85}
+Ch.~Pommerenke, \emph{On the integral means of the derivative of a univalent function}, J. London Math. Soc. (2) \textbf{32} (1985), 254--258.
+
+\bibitem{Pom92}
+Ch.~Pommerenke, \emph{Boundary Behaviour of Conformal Maps}, Grundlehren der mathematischen Wissenschaften, vol.~299, Springer-Verlag, Berlin, 1992.
+
+\bibitem{Sha93}
+J.~H. Shapiro, \emph{Composition Operators and Classical Function Theory}, Universitext: Tracts in Mathematics, Springer-Verlag, New York, 1993.
+
+\bibitem{Smi06}
+W.~Smith, \emph{Composition operators on Bergman spaces of domains in the complex plane}, Complex Var. Elliptic Equ. \textbf{51} (2006), no.~8--11, 1081--1092.
+
+\bibitem{Zhu07}
+K.~Zhu, \emph{Operator Theory in Function Spaces}, 2nd ed., Mathematical Surveys and Monographs, vol.~138, American Mathematical Society, Providence, RI, 2007.
+
+\end{thebibliography}
+
+\end{document}

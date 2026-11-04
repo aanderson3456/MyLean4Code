@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discretization of a Harmonic Measure Problem and Spandrel: From Sarason's Complex Analysis Roots to Isoradial Graphs</title>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        tags: 'ams'
+      }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <style>
+    :root {
+      --bg: #f4f2ec;
+      --paper: #ffffff;
+      --surface-l2: #f8fafc;
+      --surface-l3: #fcfcfd;
+      --border: #d8d4c8;
+      --border-subtle: #e6e3da;
+      --text: #111315;
+      --muted: #4b5563;
+      --accent: #1e3a8a;
+      --teal: #0f766e;
+      --amber: #92400e;
+      --purple: #5b21b6;
+      --green: #065f46;
+      --code-bg: #f8fafc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Latin Modern Roman", "Computer Modern Serif", "CMU Serif", "Georgia", "Times New Roman", Times, serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.72;
+      font-size: 17px;
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      min-height: 100vh;
+    }
+    @media (max-width: 1024px) {
+      body { grid-template-columns: 1fr; }
+      aside { display: none; }
+    }
+    /* Sidebar navigation & interactive controls */
+    aside {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #ece9e0;
+      border-right: 1px solid var(--border);
+      padding: 22px 16px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    aside h2 {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .toc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .toc-list a {
+      color: #374151;
+      text-decoration: none;
+      font-size: 0.79rem;
+      line-height: 1.38;
+      padding: 5px 9px;
+      border-radius: 4px;
+      display: block;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .toc-list a:hover {
+      color: var(--accent);
+      background: rgba(30, 58, 138, 0.07);
+      border-left-color: var(--accent);
+    }
+    .global-controls {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .ctrl-btn {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #ffffff;
+      color: #1f2937;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      padding: 7px 10px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+    .ctrl-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #eff6ff;
+    }
+    .legend-box {
+      margin-top: 18px;
+      padding: 11px 12px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      font-size: 0.74rem;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+    .legend-box strong {
+      color: #111827;
+    }
+
+    /* Main LaTeX Paper Sheet */
+    main {
+      max-width: 920px;
+      width: 100%;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      padding: 68px 78px 96px;
+      margin: 28px auto 64px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+    }
+    @media (max-width: 768px) {
+      main {
+        padding: 32px 22px 64px;
+        margin: 0;
+        border: none;
+      }
+    }
+
+    /* LaTeX Title, Author, Abstract Header */
+    .paper-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .paper-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      line-height: 1.34;
+      color: #000000;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .paper-authors {
+      font-size: 1.02rem;
+      font-variant: small-caps;
+      letter-spacing: 0.04em;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    .paper-affil {
+      font-size: 0.88rem;
+      font-style: italic;
+      color: #4b5563;
+      margin-bottom: 6px;
+    }
+    .paper-date {
+      font-size: 0.84rem;
+      color: #525866;
+    }
+
+    .abstract-container {
+      margin: 24px 36px 28px;
+      font-size: 0.93rem;
+      line-height: 1.64;
+      text-align: justify;
+    }
+    @media (max-width: 768px) {
+      .abstract-container { margin: 20px 0; }
+    }
+    .abstract-container p {
+      margin-bottom: 10px;
+    }
+    .abstract-label {
+      font-weight: 700;
+      font-variant: small-caps;
+      letter-spacing: 0.03em;
+    }
+    .paper-meta-footnotes {
+      border-top: 1px solid #d1d5db;
+      border-bottom: 1px solid #d1d5db;
+      padding: 10px 0;
+      margin-bottom: 32px;
+      font-size: 0.86rem;
+      color: #374151;
+      line-height: 1.55;
+    }
+
+    /* Section & Subsection Headings (LaTeX article style) */
+    section {
+      margin-bottom: 34px;
+    }
+    h2.sec-heading {
+      font-size: 1.22rem;
+      font-weight: 700;
+      color: #000000;
+      margin: 34px 0 14px;
+      line-height: 1.35;
+    }
+    h2.sec-heading .sec-num {
+      margin-right: 8px;
+    }
+    h3.subsec-heading {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #111827;
+      margin: 22px 0 10px;
+    }
+    h3.subsec-heading .subsec-num {
+      margin-right: 6px;
+    }
+
+    /* Standard Running Prose (Level 1) */
+    p.prose {
+      text-align: justify;
+      margin-bottom: 14px;
+      color: var(--text);
+      hyphens: auto;
+    }
+    p.prose-indent {
+      text-align: justify;
+      text-indent: 1.8em;
+      margin-bottom: 12px;
+      color: var(--text);
+      hyphens: auto;
+    }
+    ul.paper-list, ol.paper-list {
+      margin: 10px 0 16px 2.2em;
+      text-align: justify;
+    }
+    ul.paper-list li, ol.paper-list li {
+      margin-bottom: 6px;
+    }
+
+    /* Figures */
+    .fig-box {
+      margin: 22px 0;
+      text-align: center;
+    }
+    .fig-caption {
+      font-size: 0.88rem;
+      color: #374151;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+    .fig-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: center;
+      margin: 20px 0;
+    }
+    @media (max-width: 680px) {
+      .fig-grid { grid-template-columns: 1fr; }
+    }
+    .fig-box img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      background: #fff;
+    }
+
+    /* LaTeX Theorem / Lemma / Proposition / Question Environments */
+    .latex-env {
+      margin: 18px 0 14px;
+      padding: 2px 0;
+      text-align: justify;
+    }
+    .latex-env-title {
+      font-weight: 700;
+      color: #000000;
+    }
+    .latex-thm-body {
+      font-style: italic;
+    }
+    .latex-def-body {
+      font-style: normal;
+    }
+    .latex-proof {
+      margin: 8px 0 20px;
+      text-align: justify;
+    }
+    .latex-proof-title {
+      font-style: italic;
+      font-weight: 600;
+      color: #000000;
+    }
+    .qed {
+      float: right;
+      font-size: 0.95rem;
+      line-height: 1;
+      color: #111827;
+    }
+
+    /* Interactive Level 1 -> Level 2 -> Level 3 Step Blocks */
+    .step-block {
+      margin: 12px 0;
+      border-left: 2.5px solid #cbd5e1;
+      padding-left: 14px;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+    .step-block:hover {
+      border-left-color: var(--accent);
+    }
+    .step-block.open-l2 {
+      border-left-color: var(--accent);
+      background: rgba(248, 250, 252, 0.55);
+      border-radius: 0 4px 4px 0;
+    }
+    .level1-row {
+      cursor: pointer;
+      padding: 4px 0;
+      text-align: justify;
+    }
+    .step-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 8px;
+      vertical-align: middle;
+      user-select: none;
+    }
+    .pill-toggle {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 3px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-style: normal;
+    }
+    .pill-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #eff6ff;
+    }
+    .pill-toggle.l3-pill {
+      border-color: #a7f3d0;
+      background: #ecfdf5;
+      color: var(--green);
+    }
+    .pill-toggle.l3-pill:hover {
+      background: #d1fae5;
+    }
+
+    /* Level 2: Commentary, Sarason-to-Discrete Translation & Formalization Notes */
+    .level2-drawer {
+      display: none;
+      margin: 8px 0 10px;
+      padding: 14px 18px;
+      background: var(--surface-l2);
+      border: 1px solid #dbeafe;
+      border-left: 3.5px solid var(--accent);
+      border-radius: 4px;
+      font-size: 0.92rem;
+      font-style: normal;
+      line-height: 1.65;
+      color: #1e293b;
+    }
+    .step-block.open-l2 .level2-drawer {
+      display: block;
+    }
+    .l2-header {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .l2-note {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: #fffbeb;
+      border-left: 3px solid #d97706;
+      font-size: 0.87rem;
+      color: #78350f;
+    }
+
+    /* Level 3: Verified Lean 4 Code */
+    .level3-drawer {
+      display: none;
+      margin-top: 10px;
+      background: var(--surface-l3);
+      border: 1px solid #cbd5e1;
+      border-left: 3.5px solid var(--green);
+      border-radius: 4px;
+      overflow: hidden;
+      font-style: normal;
+    }
+    .level2-drawer.open-l3 .level3-drawer {
+      display: block;
+    }
+    .l3-bar {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f1f5f9;
+      padding: 6px 12px;
+      font-size: 0.73rem;
+      font-weight: 600;
+      color: #334155;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .l3-bar a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .l3-bar a:hover {
+      text-decoration: underline;
+    }
+    pre.lean-code {
+      padding: 12px 15px;
+      overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", "SFMono-Regular", Consolas, monospace;
+      font-size: 0.8rem;
+      line-height: 1.52;
+      color: #0f172a;
+      background: var(--code-bg);
+    }
+    .kw { color: #be185d; font-weight: 600; }
+    .tp { color: #0369a1; }
+    .fn { color: #4338ca; font-weight: 600; }
+    .cm { color: #64748b; font-style: italic; }
+    .ac { color: #047857; font-weight: 600; }
+
+    /* Bibliography */
+    ul.bib-list {
+      list-style: none;
+      margin-top: 12px;
+      font-size: 0.91rem;
+      line-height: 1.6;
+    }
+    ul.bib-list li {
+      margin-bottom: 10px;
+      padding-left: 3.4em;
+      text-indent: -3.4em;
+      text-align: justify;
+    }
+    .bib-key {
+      font-weight: 600;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <aside>
+    <h2>Contents</h2>
+    <ul class="toc-list">
+      <li><a href="#sec-intro">1. Introduction &amp; Sarason Complex-Analytic Roots</a></li>
+      <li><a href="#subsec-starlike">&nbsp;&nbsp;1.1 Polar Starlikeness &amp; Herglotz--Pommerenke</a></li>
+      <li><a href="#subsec-halfangle">&nbsp;&nbsp;1.2 Half-Angle Jumps &amp; $\Delta\theta_k = \sigma_k\pi$</a></li>
+      <li><a href="#subsec-pullback">&nbsp;&nbsp;1.3 Conformal Pullback of Slit &amp; Channel Measures</a></li>
+      <li><a href="#sec-disc">2. Discretization on Polar Isoradial Graphs</a></li>
+      <li><a href="#subsec-rw">&nbsp;&nbsp;2.1 Random Walk &amp; Kakutani--Markov Monotonicity</a></li>
+      <li><a href="#sec-cs">3. Chelkak--Smirnov Discrete Complex Analysis</a></li>
+      <li><a href="#subsec-mvt">&nbsp;&nbsp;3.1 Dual-Circle Telescoping &amp; Discrete MVT</a></li>
+      <li><a href="#subsec-transfer">&nbsp;&nbsp;3.2 Laplacian Consistency &amp; Proof Transfer</a></li>
+      <li><a href="#sec-spandrel">4. The Spandrel Problem on Infinite Dyadic Graphs</a></li>
+      <li><a href="#sec-refs">References</a></li>
+    </ul>
+
+    <div class="global-controls">
+      <h2>3-Level Controls</h2>
+      <button class="ctrl-btn" onclick="collapseAll()">Collapse All (Level 1 Paper Only)</button>
+      <button class="ctrl-btn" onclick="expandAllL2()">Expand All Level 2 (Sarason-to-Discrete Notes)</button>
+      <button class="ctrl-btn" onclick="expandAllL3()">Expand All Level 3 (Lean 4 Proofs)</button>
+    </div>
+
+    <div class="legend-box">
+      <strong>3-Level Interactive Architecture:</strong><br/>
+      <strong>Level 1:</strong> Main research paper built on <code>IsoRadStarQuestion.tex</code>.<br/>
+      <strong>Level 2 (<code>+L2</code>):</strong> Mathematical motivation &amp; how Sarason's <code>_eps</code> complex analysis translates into discrete isoradial graphs.<br/>
+      <strong>Level 3 (<code>+L3 Lean</code>):</strong> Machine-checked Lean 4 theorems &amp; tactic proofs from <code>Sarason/Chapter3.lean</code> &amp; <code>SlitHarmonicMeasure.lean</code>.
+    </div>
+  </aside>
+
+  <main>
+    <header class="paper-header">
+      <h1 class="paper-title">
+        Discretization of a Harmonic Measure Problem and Spandrel:<br/>
+        From Sarason's Complex Analysis Roots to Isoradial Graphs
+      </h1>
+      <div class="paper-authors">Austin Anderson</div>
+      <div class="paper-affil">Interactive 3-Level Formalization Edition (Lean 4 Verified)</div>
+      <div class="paper-date">November 3, 2026</div>
+    </header>
+
+    <div class="abstract-container">
+      <p>
+        <span class="abstract-label">Abstract.</span>
+        It appears difficult to make precise estimates of the harmonic measure of certain starlike domains in the complex plane using classical geometric function theory alone. Starting from the classical complex-analytic foundations of starlike conformal maps, Poisson--Herglotz representations, and Pommerenke's radial slit product formula, we show how translating the continuum harmonic measure problem into a discrete random walk on a polar isoradial graph reveals a direct inductive coupling across adjacent angular channels. Using a discrete Kakutani--Markov argument on the four-neighbor polar lattice, we prove interior channel monotonicity (Lemma 2.2), boundary slit monotonicity (Lemma 2.3), and discrete channel harmonic measure monotonicity (Theorem 2.4). We then formalize the internal discrete complex analysis of Chelkak and Smirnov—establishing the dual-circle telescoping identity, the Discrete Mean Value Theorem, second-order Laplacian consistency with continuum harmonicity, and the $\varepsilon$-$\delta$ analytic--discrete proof transfer—to carry the discrete monotonicity theorem back to the continuum starlike slit domain. Finally, a spandrel problem about infinite dyadic polar isoradial starlike graphs arises.
+      </p>
+    </div>
+
+    <div class="paper-meta-footnotes">
+      <strong>2020 Mathematics Subject Classification:</strong> Primary 30C85, 60J10, 68V15; Secondary 30C45, 31A15.<br/>
+      <strong>Keywords:</strong> Harmonic measure, isoradial graph, starlike functions, Herglotz--Pommerenke formula, Brownian motion, Chelkak--Smirnov discrete complex analysis, Lean 4 formal verification.<br/>
+      <strong>Companion PDFs:</strong>
+      <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/IsoRadStar_Sarason_level1.pdf">Level 1 Paper PDF</a> &nbsp;|&nbsp;
+      <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/IsoRadStar_Sarason_level1_2.pdf">Levels 1 &amp; 2 Paper PDF</a> &nbsp;|&nbsp;
+      <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/SlitHarmonicMeasure.lean"><code>SlitHarmonicMeasure.lean</code></a> &nbsp;|&nbsp;
+      <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/Sarason/Chapter3.lean"><code>Sarason/Chapter3.lean</code></a>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 1: INTRODUCTION & SARASON COMPLEX-ANALYTIC ROOTS          -->
+    <!-- ================================================================= -->
+    <section id="sec-intro">
+      <h2 class="sec-heading"><span class="sec-num">1.</span>Introduction and Continuum Complex-Analytic Roots</h2>
+
+      <p class="prose">
+        Let $\Omega$ be a slitted starlike domain in $\mathbb{C}$ with channels of monotone width, symmetric with respect to the real axis. Denoting $\mathbb{D} = \{z \in \mathbb{C} : |z| < 1\}$, an example is given by $f(\mathbb{D})$ for a Riemann map $f$ illustrated below.
+      </p>
+
+      <!-- Inline SVG reproduction of the TikZ diagram from IsoRadStarQuestion.tex -->
+      <div class="fig-box">
+        <svg viewBox="0 0 740 310" width="100%" style="max-width:720px; background:#ffffff; border:1px solid #e5e7eb; border-radius:4px;">
+          <!-- Left: Unit Disk D -->
+          <g transform="translate(175, 148)">
+            <circle cx="0" cy="0" r="95" fill="none" stroke="#111827" stroke-width="1.6"/>
+            <!-- z_1 = 1 -->
+            <circle cx="95" cy="0" r="3.5" fill="#111827"/>
+            <text x="103" y="4" font-family="Georgia, serif" font-size="13">$z_1 = 1$</text>
+            <!-- z_2 (45 deg up) -->
+            <circle cx="67.2" cy="-67.2" r="3.5" fill="#111827"/>
+            <text x="64" y="-76" font-family="Georgia, serif" font-size="13">$z_2$</text>
+            <!-- z_{2n} = \bar{z}_2 (45 deg down) -->
+            <circle cx="67.2" cy="67.2" r="3.5" fill="#111827"/>
+            <text x="74" y="82" font-family="Georgia, serif" font-size="13">$z_{2n} = \bar{z}_2$</text>
+            <!-- z_{n+1} = -1 -->
+            <circle cx="-95" cy="0" r="3.5" fill="#111827"/>
+            <text x="-152" y="4" font-family="Georgia, serif" font-size="13">$z_{n+1} = -1$</text>
+            <!-- Upper-left points: -1 + angle -->
+            <circle cx="-80.6" cy="-50.3" r="3.5" fill="#111827"/>
+            <text x="-126" y="-56" font-family="Georgia, serif" font-size="12">$z_{k+1}$</text>
+            <circle cx="-63.6" cy="-70.6" r="3.5" fill="#dc2626"/>
+            <text x="-96" y="-82" font-family="Georgia, serif" font-size="12" fill="#dc2626">$e^{it_k}$</text>
+            <circle cx="-41.6" cy="-85.4" r="3.5" fill="#111827"/>
+            <text x="-52" y="-98" font-family="Georgia, serif" font-size="12">$z_k$</text>
+            <!-- Lower-left symmetric points -->
+            <circle cx="-80.6" cy="50.3" r="3.5" fill="#111827"/>
+            <text x="-158" y="60" font-family="Georgia, serif" font-size="12">$z_{n+1+(n-k)}$</text>
+            <circle cx="-63.6" cy="70.6" r="3.5" fill="#111827"/>
+            <text x="-102" y="92" font-family="Georgia, serif" font-size="12">$e^{-it_k}$</text>
+            <circle cx="-41.6" cy="85.4" r="3.5" fill="#111827"/>
+            <text x="-65" y="108" font-family="Georgia, serif" font-size="12">$z_{n+2+(n-k)}$</text>
+            <!-- Near -1 points z_n, z_{n+2} -->
+            <circle cx="-93.6" cy="-16.5" r="3.5" fill="#111827"/>
+            <text x="-122" y="-18" font-family="Georgia, serif" font-size="12">$z_n$</text>
+            <circle cx="-93.6" cy="16.5" r="3.5" fill="#111827"/>
+            <text x="-132" y="26" font-family="Georgia, serif" font-size="12">$z_{n+2}$</text>
+            <text x="-8" y="132" font-family="Georgia, serif" font-size="15">$\mathbb{D}$</text>
+          </g>
+
+          <!-- Arrow f -->
+          <g transform="translate(350, 148)">
+            <line x1="-22" y1="0" x2="22" y2="0" stroke="#111827" stroke-width="1.6"/>
+            <polygon points="22,0 14,-4 14,4" fill="#111827"/>
+            <text x="-5" y="20" font-family="Georgia, serif" font-size="15" font-style="italic">f</text>
+          </g>
+
+          <!-- Right: Slitted Starlike Domain Omega -->
+          <g transform="translate(545, 148)">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#111827" />
+              </marker>
+            </defs>
+            <!-- Radial slits -->
+            <line x1="-46" y1="-29" x2="-92" y2="-58" stroke="#111827" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="-24" y1="-49" x2="-48" y2="-98" stroke="#111827" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="28" y1="-46" x2="56" y2="-92" stroke="#111827" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="-46" y1="29" x2="-92" y2="58" stroke="#111827" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="-24" y1="49" x2="-48" y2="98" stroke="#111827" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="28" y1="46" x2="56" y2="92" stroke="#111827" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="-53" y1="-8" x2="-106" y2="-16" stroke="#111827" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="-53" y1="8" x2="-106" y2="16" stroke="#111827" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <!-- Red slit tip \rho_k e^{i\theta_k} -->
+            <circle cx="-46" cy="-29" r="3.5" fill="#dc2626"/>
+            <text x="-38" y="-24" font-family="Georgia, serif" font-size="12" fill="#dc2626">$\rho_k e^{i\theta_k}$</text>
+            <!-- Slit labels -->
+            <text x="-22" y="-76" font-family="Georgia, serif" font-size="12">$R_{k-1}$</text>
+            <text x="-78" y="-62" font-family="Georgia, serif" font-size="12">$R_k$</text>
+            <text x="-94" y="-24" font-family="Georgia, serif" font-size="12">$R_n$</text>
+            <text x="60" y="-62" font-family="Georgia, serif" font-size="12">$R_1$</text>
+            <text x="48" y="82" font-family="Georgia, serif" font-size="12">$R_{2n}$</text>
+            <!-- Blue channel arcs -->
+            <path d="M -98 -62 A 115 115 0 0 1 -52 -103" fill="none" stroke="#1d4ed8" stroke-width="1.6"/>
+            <text x="-106" y="-94" font-family="Georgia, serif" font-size="13" fill="#1d4ed8">$\sigma_k\pi$</text>
+            <path d="M 68 -92 A 115 115 0 0 1 68 92" fill="none" stroke="#1d4ed8" stroke-width="1.6"/>
+            <text x="122" y="5" font-family="Georgia, serif" font-size="13" fill="#1d4ed8">$\sigma_1\pi$</text>
+            <path d="M -113 -16 A 115 115 0 0 0 -113 16" fill="none" stroke="#1d4ed8" stroke-width="1.6"/>
+            <text x="-162" y="5" font-family="Georgia, serif" font-size="13" fill="#1d4ed8">$\sigma_{n+1}\pi$</text>
+            <text x="-8" y="132" font-family="Georgia, serif" font-size="15">$\Omega$</text>
+          </g>
+        </svg>
+        <div class="fig-caption">Figure 1.1. Conformal mapping $f : \mathbb{D} \to \Omega$ of the unit disk onto a starlike radial slit domain with channel opening angles $\sigma_k \pi$ and slit tips $\rho_k e^{i\theta_k} = f(e^{it_k})$.</div>
+      </div>
+
+      <p class="prose">
+        The explicit formula
+        \begin{equation}\label{eq:f}
+          f(z) = z \prod_{j=1}^{2n}(1-\bar{z}_jz)^{-\sigma_j}
+        \end{equation}
+        for $f$ can be given; see [Pom, Thm 3.18]. The points $z_k$ correspond to angles $\sigma_k$ dependent on $\rho_k$, the slits' starting moduli. The symmetrical setup gives the following equations for $k = 2, 3, \dots, n$:
+        \[
+          z_{2n+2-k} = \bar{z}_k, \qquad
+          \sigma_{2n+2-k} = \sigma_k, \qquad
+          \exp(it_{2n+1-k}) = \exp(-it_k), \qquad
+          \rho_{2n+1-k} = \rho_k.
+        \]
+        If we require that $\rho_k = \rho_j$ for all $j,k$, we can prescribe either $\{z_k\}$ or $\{\sigma_k\}$, but their precise relationship is not obvious. Denote the arc lengths on the unit circle from $z_k$ to $z_{k+1}$ by
+        \[
+          \{\omega_k = |(z_k,z_{k+1})|\},
+        \]
+        and it follows that $\omega_k$ is the harmonic measure of the slit $R_k$ in $\Omega$. One natural question is the following.
+      </p>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Question 1.1.</span>
+        <span class="latex-thm-body">Does $\{\omega_k\}_1^n$ being monotone imply $\{\sigma_k\}_1^n$ are monotone, and vice versa?</span>
+      </div>
+
+      <p class="prose">
+        We conjecture that the answer is yes, but a proof using classic geometric function theory eludes us.
+      </p>
+
+      <!-- STEP 1.1: Section 1 Setup & Question 1.1 -->
+      <div class="step-block" id="step-1-1">
+        <div class="level1-row" onclick="toggleL2('step-1-1', event)">
+          <span style="font-size:0.9rem; color:var(--muted);"><em>Click to inspect Level 2 (Why classical geometric function theory gets stuck on Question 1.1) and Level 3 (Lean 4 formalization of Equation 1.1 &amp; Question 1.1).</em></span>
+          <span class="step-controls">
+            <button class="pill-toggle" onclick="toggleL2('step-1-1', event)">+L2</button>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-1-1', event)">+L3 Lean</button>
+          </span>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — Why Classical Geometric Function Theory Gets Stuck on Question 1.1</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-1-1', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <p>
+            In \eqref{eq:f}, the $2n$ boundary poles $z_j = e^{i\varphi_j}$ and the $2n$ exponents $\sigma_j$ determine the slit-tip preimages $e^{it_k} \in (z_k, z_{k+1})$ implicitly through $f'(e^{it_k}) = 0$, and then determine the starting moduli $\rho_k = |f(e^{it_k})|$ through the product $\prod_{j=1}^{2n} |1 - e^{-i\varphi_j} e^{it_k}|^{-\sigma_j}$. Requiring equal starting moduli $\rho_k = \rho_j$ couples all $2n$ arcs $(z_k, z_{k+1})$ into a global non-local system of transcendental equations. By contrast, when we discretize $\Omega$ by a polar isoradial graph $\Gamma^{\delta}$, the equal-modulus condition $\rho_k = 1$ becomes a <em>local geometric symmetry</em> of the discrete graph: every slit $(S_k)_{\Omega^{\delta}}$ starts on the exact same discrete circle $|v| = |\gamma_k^{\delta}| \approx 1$, allowing a direct step-by-step Markov comparison across adjacent channels.
+          </p>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>SlitHarmonicMeasure.lean</code> (Lines 1003–1048)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/SlitHarmonicMeasure.lean#L1003-L1048">Open in Editor</a>
+            </div>
+            <pre class="lean-code"><span class="cm">/-- Section 1, Equation (1.1): Explicit Pommerenke product formula for `f : 𝔻 → Ω`. -/</span>
+<span class="kw">noncomputable def</span> <span class="fn">riemannSlitMap_f</span> (n : <span class="tp">ℕ</span>) (z_pt : <span class="tp">ℕ</span> → <span class="tp">ℂ</span>) (σ : <span class="tp">ℕ</span> → <span class="tp">ℝ</span>) (z : <span class="tp">ℂ</span>) : <span class="tp">ℂ</span> :=
+  z * ∏ j ∈ Finset.Icc <span class="ac">1</span> (<span class="ac">2</span> * n), (<span class="ac">1</span> - star (z_pt j) * z) ^ (-(σ j : <span class="tp">ℂ</span>))
+
+<span class="kw">structure</span> <span class="fn">PaperSection1SymmetricSlitSetup_eps</span> (n : <span class="tp">ℕ</span>) <span class="kw">where</span>
+  f : <span class="tp">ℂ</span> → <span class="tp">ℂ</span>
+  φ : <span class="tp">ℕ</span> → <span class="tp">ℝ</span>
+  z_pt : <span class="tp">ℕ</span> → <span class="tp">ℂ</span>
+  σ : <span class="tp">ℕ</span> → <span class="tp">ℝ</span>
+  t : <span class="tp">ℕ</span> → <span class="tp">ℝ</span>
+  ρ : <span class="tp">ℕ</span> → <span class="tp">ℝ</span>
+  hStarlike_theta : IsStarlikeOnDisk_theta_eps f
+  hUnitCircle_z : ∀ k : <span class="tp">ℕ</span>, z_pt k = polarPoint <span class="ac">1</span> (φ k)
+  hFormula_f : ∀ z ∈ unitDiskSet, f z = riemannSlitMap_f n z_pt σ z
+  hSymm_z : ∀ k : <span class="tp">ℕ</span>, <span class="ac">2</span> ≤ k → k ≤ n → z_pt (<span class="ac">2</span> * n + <span class="ac">2</span> - k) = star (z_pt k)
+  hSymm_sigma : ∀ k : <span class="tp">ℕ</span>, <span class="ac">2</span> ≤ k → k ≤ n → σ (<span class="ac">2</span> * n + <span class="ac">2</span> - k) = σ k
+  hSymm_tip : ∀ k : <span class="tp">ℕ</span>, <span class="ac">2</span> ≤ k → k ≤ n → polarPoint <span class="ac">1</span> (t (<span class="ac">2</span> * n + <span class="ac">1</span> - k)) = polarPoint <span class="ac">1</span> (-t k)
+  hSymm_rho : ∀ k : <span class="tp">ℕ</span>, <span class="ac">2</span> ≤ k → k ≤ n → ρ (<span class="ac">2</span> * n + <span class="ac">1</span> - k) = ρ k
+  hEqualRho : ∀ j k : <span class="tp">ℕ</span>, ρ k = ρ j
+
+<span class="kw">def</span> <span class="fn">paperSlitArcLength_omega</span> {n : <span class="tp">ℕ</span>} (S : PaperSection1SymmetricSlitSetup_eps n) (k : <span class="tp">ℕ</span>) : <span class="tp">ℝ</span> :=
+  S.φ (k + <span class="ac">1</span>) - S.φ k
+
+<span class="kw">def</span> <span class="fn">Question_1_1_eps</span> (n : <span class="tp">ℕ</span>) (S : PaperSection1SymmetricSlitSetup_eps n) : <span class="tp">Prop</span> :=
+  (∀ k : <span class="tp">ℕ</span>, <span class="ac">1</span> ≤ k → k &lt; n → paperSlitArcLength_omega S k ≤ paperSlitArcLength_omega S (k + <span class="ac">1</span>)) ↔
+  (∀ k : <span class="tp">ℕ</span>, <span class="ac">1</span> ≤ k → k &lt; n → S.σ k ≤ S.σ (k + <span class="ac">1</span>))</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBSECTION 1.1 -->
+      <h3 class="subsec-heading" id="subsec-starlike"><span class="subsec-num">1.1.</span>Polar-Angle Starlikeness and the Herglotz--Pommerenke Logarithmic Derivative</h3>
+
+      <p class="prose">
+        In polar coordinates $z = r e^{i\theta} = r(\cos\theta + i\sin\theta)$, a domain $\Omega \subset \mathbb{C}$ containing $0$ is <em>starlike with respect to the origin</em> if for every $r e^{i\theta} \in \Omega$ and every $t \in [0, 1]$, the scaled point $t r e^{i\theta}$ also lies in $\Omega$. For any collection of radial slits $R_j = \{r e^{i\theta_j} : r \ge \rho_j\}$ with strictly positive tip moduli $\rho_j > 0$, the complement $\Omega = \mathbb{C} \setminus \bigcup_{j=1}^{2n} R_j$ is starlike with respect to $0$. When $f = u + iv : \mathbb{D} \to \Omega$ is holomorphic with $f(0) = 0$ and $f(z) \ne 0$ for $z \in \mathbb{D} \setminus \{0\}$, the polar Cauchy--Riemann equations
+        \begin{equation}\label{eq:polar-cr}
+          u_\theta = -r v_r, \qquad v_\theta = r u_r
+        \end{equation}
+        govern the angular variation of $\arg f(re^{i\theta})$ along each circle $|z| = r \in (0, 1)$.
+      </p>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Theorem 1.2 (Polar-Angle Starlike Characterization and Herglotz--Pommerenke Formula).</span>
+        <span class="latex-thm-body">
+          Let $f = u + iv : \mathbb{D} \to \mathbb{C}$ be holomorphic on $\mathbb{D}$ with $f(0) = 0$ and $f(z) \ne 0$ on $\mathbb{D} \setminus \{0\}$. At every $z = r e^{i\theta} \in \mathbb{D} \setminus \{0\}$,
+          \begin{equation}\label{eq:arg-deriv}
+            \frac{\partial}{\partial\theta}\arg f(re^{i\theta})
+            = \frac{u v_\theta - v u_\theta}{u^2 + v^2}
+            = \frac{r(u u_r + v v_r)}{u^2 + v^2}
+            = \operatorname{Re}\!\left(\frac{z f'(z)}{f(z)}\right).
+          \end{equation}
+          For the Pommerenke radial slit map \eqref{eq:f} with $z_j = e^{i\varphi_j} \in \partial\mathbb{D}$ and $\sigma_j > 0$ satisfying $\sum_{j=1}^{2n} \sigma_j = 2$,
+          \begin{equation}\label{eq:pom-herglotz}
+            \frac{z f'(z)}{f(z)}
+            = 1 + \sum_{j=1}^{2n} \frac{\sigma_j \bar{z}_j z}{1 - \bar{z}_j z}
+            = \sum_{j=1}^{2n} \frac{\sigma_j}{2} \frac{z_j + z}{z_j - z},
+          \end{equation}
+          which satisfies $\operatorname{Re}(z f'(z)/f(z)) > 0$ on $\mathbb{D}$, vanishes in real part on $\partial\mathbb{D} \setminus \{z_j\}$, and on $\partial\mathbb{D}$ takes the purely imaginary cotangent form
+          \begin{equation}\label{eq:bdry-cot}
+            \frac{e^{it} f'(e^{it})}{f(e^{it})}
+            = i \sum_{j=1}^{2n} \frac{\sigma_j}{2} \frac{\sin(t - \varphi_j)}{1 - \cos(t - \varphi_j)}.
+          \end{equation}
+        </span>
+      </div>
+
+      <!-- STEP 1.2: Starlike & Herglotz-Pommerenke -->
+      <div class="step-block" id="step-1-2">
+        <div class="level1-row" onclick="toggleL2('step-1-2', event)">
+          <span style="font-size:0.9rem; color:var(--muted);"><em>Click to inspect Level 2 (How Sarason's <code>_eps</code> Cauchy–Riemann &amp; Herglotz theorems prove Theorem 1.2) and Level 3 (Lean 4 proofs in <code>Sarason/Chapter3.lean</code>).</em></span>
+          <span class="step-controls">
+            <button class="pill-toggle" onclick="toggleL2('step-1-2', event)">+L2</button>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-1-2', event)">+L3 Lean</button>
+          </span>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — Building Starlike &amp; Herglotz–Pommerenke Theory from Sarason's <code>_eps</code> Roots</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-1-2', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <p>
+            In <code>Sarason/Definitions.lean</code> and <code>Sarason/Chapter2.lean</code>, complex differentiability is built in Weierstrass $\varepsilon$-$\delta$ form (<code>HasDerivAt_eps</code>, <code>HolomorphicOn_eps</code>), from which <code>hasDerivAt_eps_imp_cauchy_riemann</code> derives $u_x = v_y, u_y = -v_x$ and <code>exercise_II_6_3</code> derives the polar Cauchy–Riemann equations \eqref{eq:polar-cr}. In <code>Sarason/Chapter3.lean</code> (§III.13), <code>argPolarDeriv_theta_eq_re_logDeriv</code> proves \eqref{eq:arg-deriv}, and <code>III_11_herglotz_properties</code> proves that the Herglotz kernel <code>herglotzKernel ζ z = (ζ + z)/(ζ - z)</code> has positive real part on $\mathbb{D}$ and zero real part on $\partial\mathbb{D}$.
+          </p>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>Sarason/Chapter3.lean</code> (Lines 2675–2922 &amp; 3125–3142)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/Sarason/Chapter3.lean#L2675-L2922">Open in Editor</a>
+            </div>
+            <pre class="lean-code"><span class="kw">theorem</span> <span class="fn">argPolarDeriv_theta_eq_re_logDeriv</span> (u v ux uy vx vy : <span class="tp">ℝ</span> × <span class="tp">ℝ</span> → <span class="tp">ℝ</span>) (p : <span class="tp">ℝ</span> × <span class="tp">ℝ</span>)
+    (h_CR1 : ux (p.1 * Real.cos p.2, p.1 * Real.sin p.2) = vy (p.1 * Real.cos p.2, p.1 * Real.sin p.2))
+    (h_CR2 : uy (p.1 * Real.cos p.2, p.1 * Real.sin p.2) = -vx (p.1 * Real.cos p.2, p.1 * Real.sin p.2)) :
+    <span class="kw">let</span> q : <span class="tp">ℝ</span> × <span class="tp">ℝ</span> := (p.1 * Real.cos p.2, p.1 * Real.sin p.2)
+    <span class="kw">let</span> f_z : <span class="tp">ℂ</span> := (u q : <span class="tp">ℂ</span>) + (v q : <span class="tp">ℂ</span>) * I
+    <span class="kw">let</span> f'_z : <span class="tp">ℂ</span> := (ux q : <span class="tp">ℂ</span>) + (vx q : <span class="tp">ℂ</span>) * I
+    argPolarDeriv_theta u v ux uy vx vy p = ((polarPoint p.1 p.2 * f'_z) / f_z).re := <span class="kw">by</span> {
+  intros q f_z f'_z
+  unfold argPolarDeriv_theta polar_partial_theta polarPoint
+  dsimp [q, f_z, f'_z]
+  rw [h_CR1, h_CR2, Complex.div_re, Complex.normSq_apply]
+  simp only [Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im,
+    Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im]
+  ring
+}
+
+<span class="kw">theorem</span> <span class="fn">pommerenkeLogDeriv_re_pos_on_disk</span> {m : <span class="tp">ℕ</span>} (hm : <span class="ac">0</span> &lt; m)
+    (ζ : Fin m → <span class="tp">ℂ</span>) (σ : Fin m → <span class="tp">ℝ</span>)
+    (hζ : ∀ j, ζ j ∈ unitCircleSet) (hσ : ∀ j, <span class="ac">0</span> &lt; σ j) :
+    ∀ z ∈ unitDiskSet, <span class="ac">0</span> &lt; (pommerenkeLogDeriv ζ σ z).re := <span class="kw">by</span> {
+  intro z hz
+  rw [pommerenkeLogDeriv_re]
+  haveI : Nonempty (Fin m) := Fin.pos_iff_nonempty.mp hm
+  apply Finset.sum_pos
+  · intro j _
+    have h_herg := (III_11_herglotz_properties (hζ j)).2.1 z hz
+    exact mul_pos (half_pos (hσ j)) h_herg
+  · exact Finset.univ_nonempty
+}
+
+<span class="kw">theorem</span> <span class="fn">pommerenkeLogDeriv_unitCircle_eq</span> {m : <span class="tp">ℕ</span>}
+    (φ σ : Fin m → <span class="tp">ℝ</span>) (t : <span class="tp">ℝ</span>) :
+    pommerenkeLogDeriv (<span class="kw">fun</span> j =&gt; polarPoint <span class="ac">1</span> (φ j)) σ (polarPoint <span class="ac">1</span> t) =
+      ((∑ j : Fin m, (σ j / <span class="ac">2</span>) * (Real.sin (t - φ j) / (<span class="ac">1</span> - Real.cos (t - φ j))) : <span class="tp">ℝ</span>) : <span class="tp">ℂ</span>) * I</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBSECTION 1.2 -->
+      <h3 class="subsec-heading" id="subsec-halfangle"><span class="subsec-num">1.2.</span>Half-Angle Phase Jumps and the Channel Opening Angle Identity $\Delta\theta_k = \sigma_k\pi$</h3>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Theorem 1.3 (Half-Angle Factorization and Channel Opening Angle Formula).</span>
+        <span class="latex-thm-body">
+          For every $\alpha \in \mathbb{R}$, the unit-circle chord $1 - e^{i\alpha}$ admits the polar factorizations
+          \begin{equation}\label{eq:half-angle}
+            1 - e^{i\alpha} = 2\sin\!\left(\frac{\alpha}{2}\right) e^{i(\alpha - \pi)/2}
+            = -2\sin\!\left(\frac{\alpha}{2}\right) e^{i(\alpha + \pi)/2}.
+          \end{equation}
+          When $\sum_{j=0}^{m-1} \sigma_j = 2$, on the $k$-th boundary arc $(\varphi_{k-1}, \varphi_k)$ (where $t > \varphi_j$ for $j &lt; k$ and $t &lt; \varphi_j$ for $j \ge k$), the boundary phase $\arg f(e^{it})$ is independent of $t$:
+          \begin{equation}\label{eq:theta-k-const}
+            \arg f(e^{it}) = \sum_{j &lt; k} \sigma_j \frac{\varphi_j + \pi}{2} + \sum_{j \ge k} \sigma_j \frac{\varphi_j - \pi}{2} =: \theta_k.
+          \end{equation}
+          Across each pole $z_k = e^{i\varphi_k}$, the $k$-th factor jumps by $\sigma_k \pi$, yielding the exact channel opening angle formula and monotonicity equivalence:
+          \begin{equation}\label{eq:delta-theta-sigma}
+            \Delta\theta_k := \theta_{k+1} - \theta_k = \sigma_k \pi, \qquad
+            \Delta\theta_k \le \Delta\theta_{k+1} \iff \sigma_k \le \sigma_{k+1}.
+          \end{equation}
+        </span>
+      </div>
+
+      <!-- STEP 1.3: Half-angle & \Delta\theta_k = \sigma_k \pi -->
+      <div class="step-block" id="step-1-3">
+        <div class="level1-row" onclick="toggleL2('step-1-3', event)">
+          <span style="font-size:0.9rem; color:var(--muted);"><em>Click to inspect Level 2 (How Theorem 1.3 links Section 1's exponents $\sigma_k$ to Section 2's channel widths $n_k^\delta$) and Level 3 (Lean 4 proof of $\theta_{k+1}-\theta_k = \sigma_k\pi$).</em></span>
+          <span class="step-controls">
+            <button class="pill-toggle" onclick="toggleL2('step-1-3', event)">+L2</button>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-1-3', event)">+L3 Lean</button>
+          </span>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — The Exact Dictionary Entry Linking $\sigma_k$ (Section 1) to $\Delta\theta_k$ and $n_k^\delta$ (Section 2)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-1-3', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <p>
+            In Section 1, the exponents $\sigma_k$ appear in the product formula \eqref{eq:f}, whereas in Section 2 the domain $\Omega$ is defined by radial slits at angles $\theta_k$ with channel opening angles $\Delta\theta_k = \theta_{k+1} - \theta_k$. Theorem 1.3 proves from first principles—without assuming $\Delta\theta_k = \sigma_k\pi$ as an external axiom—that the linear $t$-dependence in $\arg f(e^{it})$ cancels via $\sum \sigma_j = 2$, and that crossing the pole $z_k = e^{i\varphi_k}$ flips the sign of $\sin((t-\varphi_k)/2)$ only in the $k$-th factor, producing the jump $\theta_{k+1} - \theta_k = \sigma_k\pi$.
+          </p>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>Sarason/Chapter3.lean</code> (Lines 3175–3344)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/Sarason/Chapter3.lean#L3175-L3344">Open in Editor</a>
+            </div>
+            <pre class="lean-code"><span class="kw">theorem</span> <span class="fn">one_sub_polarPoint_eq_pos_halfAngle</span> (α : <span class="tp">ℝ</span>) :
+    <span class="ac">1</span> - polarPoint <span class="ac">1</span> α = polarPoint (<span class="ac">2</span> * Real.sin (α / <span class="ac">2</span>)) ((α - Real.pi) / <span class="ac">2</span>)
+
+<span class="kw">theorem</span> <span class="fn">pommerenkeArcPhase_eq_slitAngle</span> (m k : <span class="tp">ℕ</span>) (φ σ : <span class="tp">ℕ</span> → <span class="tp">ℝ</span>)
+    (h_sum : ∑ j ∈ Finset.range m, σ j = <span class="ac">2</span>) (t : <span class="tp">ℝ</span>) :
+    pommerenkeArcPhase m k φ σ t = pommerenkeSlitAngle m k φ σ
+
+<span class="kw">theorem</span> <span class="fn">pommerenkeSlitAngle_succ_sub_eq_sigma_mul_pi</span> (m k : <span class="tp">ℕ</span>) (φ σ : <span class="tp">ℕ</span> → <span class="tp">ℝ</span>) (hk : k &lt; m) :
+    pommerenkeSlitAngle m (k + <span class="ac">1</span>) φ σ - pommerenkeSlitAngle m k φ σ =
+      σ k * Real.pi := <span class="kw">by</span> {
+  unfold pommerenkeSlitAngle pommerenkeArcPhase
+  rw [zero_add, zero_add, ← Finset.sum_sub_distrib]
+  have h_congr :
+      ∑ j ∈ Finset.range m,
+        (pommerenkeFactorPhase (φ j) (σ j) <span class="ac">0</span> (decide (k + <span class="ac">1</span> ≤ j)) -
+         pommerenkeFactorPhase (φ j) (σ j) <span class="ac">0</span> (decide (k ≤ j))) =
+      ∑ j ∈ Finset.range m, (<span class="kw">if</span> j = k <span class="kw">then</span> σ j * Real.pi <span class="kw">else</span> <span class="ac">0</span>) := <span class="kw">by</span> {
+    apply Finset.sum_congr rfl
+    intro j _
+    exact pommerenkeFactorPhase_jump k j (φ j) (σ j) <span class="ac">0</span>
+  }
+  rw [h_congr, Finset.sum_ite_eq', if_pos (Finset.mem_range.mpr hk)]
+}
+
+<span class="kw">theorem</span> <span class="fn">pommerenkeSlitAngle_diff_monotone_iff_sigma_monotone</span>
+    (m k : <span class="tp">ℕ</span>) (φ σ : <span class="tp">ℕ</span> → <span class="tp">ℝ</span>) (hk : k + <span class="ac">1</span> &lt; m) :
+    pommerenkeSlitAngle m (k + <span class="ac">1</span>) φ σ - pommerenkeSlitAngle m k φ σ ≤
+      pommerenkeSlitAngle m (k + <span class="ac">2</span>) φ σ - pommerenkeSlitAngle m (k + <span class="ac">1</span>) φ σ ↔
+      σ k ≤ σ (k + <span class="ac">1</span>) := <span class="kw">by</span> {
+  have hk0 : k &lt; m := Nat.lt_of_succ_lt hk
+  rw [pommerenkeSlitAngle_succ_sub_eq_sigma_mul_pi m k φ σ hk0,
+    pommerenkeSlitAngle_succ_sub_eq_sigma_mul_pi m (k + <span class="ac">1</span>) φ σ hk]
+  exact mul_le_mul_iff_of_pos_right Real.pi_pos
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBSECTION 1.3 -->
+      <h3 class="subsec-heading" id="subsec-pullback"><span class="subsec-num">1.3.</span>Conformal Pullback of Slit and Channel Harmonic Measures</h3>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Proposition 1.4 (Slit-Bank and Channel Harmonic Measure Decomposition).</span>
+        <span class="latex-thm-body">
+          For boundary arguments $\varphi_k &lt; t_k &lt; \varphi_{k+1}$ on $\partial\mathbb{D}$, let $R_k^-$ and $R_k^+$ denote the lower and upper banks of slit $R_k$ (with preimages $(\varphi_k, t_k)$ and $(t_k, \varphi_{k+1})$). Since the Poisson kernel $P_\varphi(z) = \operatorname{Re}\frac{e^{i\varphi}+z}{e^{i\varphi}-z}$ equals $1$ at $z = 0$,
+          \begin{equation}\label{eq:bank-decomp}
+            \omega(0; R_k; \Omega) = \frac{\varphi_{k+1}-\varphi_k}{2\pi} = \omega(0; R_k^-; \Omega) + \omega(0; R_k^+; \Omega), \qquad
+            \omega(0; \partial C_k; \Omega) = \frac{t_{k+1}-t_k}{2\pi} = \omega(0; R_k^+; \Omega) + \omega(0; R_{k+1}^-; \Omega).
+          \end{equation}
+          In particular, if $\omega(0; R_k^-; \Omega) \le \omega(0; R_{k+1}^-; \Omega)$ and $\omega(0; R_k^+; \Omega) \le \omega(0; R_{k+1}^+; \Omega)$, then $\omega(0; R_k; \Omega) \le \omega(0; R_{k+1}; \Omega)$.
+        </span>
+      </div>
+
+      <!-- STEP 1.4: Bank Decomposition -->
+      <div class="step-block" id="step-1-4">
+        <div class="level1-row" onclick="toggleL2('step-1-4', event)">
+          <span style="font-size:0.9rem; color:var(--muted);"><em>Click to inspect Level 2 (How two-sided slits decompose into channel banks) and Level 3 (Lean 4 verification in <code>SlitHarmonicMeasure.lean</code>).</em></span>
+          <span class="step-controls">
+            <button class="pill-toggle" onclick="toggleL2('step-1-4', event)">+L2</button>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-1-4', event)">+L3 Lean</button>
+          </span>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — Two-Sided Slit Banks vs. Channel Boundaries</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-1-4', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <p>
+            Proposition 1.4 highlights how the conformal map $f : \mathbb{D} \to \Omega$ folds each arc $(z_k, z_{k+1})$ at the critical point $e^{it_k}$ onto the two sides $R_k^-$ and $R_k^+$ of the radial slit $R_k$. Meanwhile, the $k$-th channel $C_k$ is bounded by the upper bank $R_k^+$ of slit $k$ and the lower bank $R_{k+1}^-$ of slit $k+1$.
+          </p>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>SlitHarmonicMeasure.lean</code> (Lines 852–890)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/SlitHarmonicMeasure.lean#L852-L890">Open in Editor</a>
+            </div>
+            <pre class="lean-code"><span class="kw">theorem</span> <span class="fn">analyticSlitHarmonicMeasure_eq_bank_sum_eps</span> {m : <span class="tp">ℕ</span>}
+    (C : AnalyticOrderedSlitConfiguration_eps m) (k : <span class="tp">ℕ</span>) :
+    analyticSlitHarmonicMeasure_eps C k =
+      analyticLowerBankHarmonicMeasure_eps C k + analyticUpperBankHarmonicMeasure_eps C k := <span class="kw">by</span> {
+  unfold analyticSlitHarmonicMeasure_eps analyticLowerBankHarmonicMeasure_eps
+    analyticUpperBankHarmonicMeasure_eps diskArcHarmonicMeasureOrigin
+  ring
+}
+
+<span class="kw">theorem</span> <span class="fn">analytic_monotone_slit_of_bank_monotonicity_eps</span> {m : <span class="tp">ℕ</span>}
+    (C : AnalyticOrderedSlitConfiguration_eps m) (k : <span class="tp">ℕ</span>)
+    (hLower : analyticLowerBankHarmonicMeasure_eps C k ≤ analyticLowerBankHarmonicMeasure_eps C (k + <span class="ac">1</span>))
+    (hUpper : analyticUpperBankHarmonicMeasure_eps C k ≤ analyticUpperBankHarmonicMeasure_eps C (k + <span class="ac">1</span>)) :
+    analyticSlitHarmonicMeasure_eps C k ≤ analyticSlitHarmonicMeasure_eps C (k + <span class="ac">1</span>) := <span class="kw">by</span> {
+  rw [analyticSlitHarmonicMeasure_eq_bank_sum_eps C k,
+      analyticSlitHarmonicMeasure_eq_bank_sum_eps C (k + <span class="ac">1</span>)]
+  exact add_le_add hLower hUpper
+}</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 2: DISCRETIZATION ON POLAR ISORADIAL GRAPHS               -->
+    <!-- ================================================================= -->
+    <section id="sec-disc">
+      <h2 class="sec-heading"><span class="sec-num">2.</span>Discretization on Polar Isoradial Graphs</h2>
+
+      <p class="prose">
+        For convenience let us reflect $\Omega$ about the imaginary axis and make the slits start on the unit circle. For symmetric slits
+        \begin{equation}
+          S_k = \{ re^{\pm i \theta_k} : r \ge 1\}
+        \end{equation}
+        satisfying $\theta_0 = 0 &lt; \theta_1 &lt; \theta_2 &lt; \dots &lt; \theta_N$ with $(\theta_k - \theta_{k-1}) \leq (\theta_{k+1} - \theta_k)$ for all $k = 1, \dots, N-1$, define
+        \begin{equation}
+          \Omega = \mathbb{C} \setminus \left( \bigcup_{k=0}^N S_k \right), \qquad
+          C_k = \{ re^{\pm i \theta} : r &gt; 1,\; \theta_k &lt; \theta &lt; \theta_{k+1}\}.
+        \end{equation}
+        Following [CS], for each $\delta &gt; 0$, we define an isoradial graph $\Gamma^{\delta}$ to approximate compact subsets of $\Omega$. An <em>isoradial</em> graph is planar and consists of faces that are all inscribed in circles of the same radius $\delta$. We may assume $\delta^2 = 2\pi/ m$ for some integer $m$. The vertices along rays spaced by $\Delta \theta = \delta^2$ can extend to radius $1/\delta$, creating graphs that fill $\Omega$ as $\delta$ tends to $0$.
+      </p>
+
+      <p class="prose">
+        Specifying the moduli of the vertices, we begin with $r_0 = 0$. The isoradial property determines the recursive formula for $r_j = r_j(\delta)$:
+        \begin{equation}\label{eq:rmoduli}
+          r_{j+1} = r_j\cos(\pi/m) + \sqrt{(r_j\cos(\pi/m))^2 - r_j^2 + \delta^2},
+        \end{equation}
+        which gives the moduli of the circle centers of the graph faces for odd indices, and the moduli of the vertices for even indices $\{r_{2n}\}$. Thus we have the vertices
+        \begin{equation}
+          V(\Gamma^{\delta}) = \{ r_j e^{i\ell\delta^2} : \ell = 1, \dots, m, \quad r_j \in \{r_{2n}\} \}.
+        \end{equation}
+      </p>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Proposition 2.1 (Isoradial Discriminant Identity).</span>
+        <span class="latex-thm-body">
+          For every $m \in \mathbb{N}$ and $\delta, r_j \in \mathbb{R}$, the radicand in \eqref{eq:rmoduli} simplifies identically to
+          \[
+            (r_j \cos(\pi/m))^2 - r_j^2 + \delta^2 = \delta^2 - r_j^2 \sin^2(\pi/m),
+          \]
+          which is non-negative if and only if $r_j \sin(\pi/m) \le \delta$ (asymptotically $r_j \le r_{\max}^\delta \approx 1/\delta$).
+        </span>
+      </div>
+
+      <div class="fig-box">
+        <img src="isorad_figures/stargraphq16wC.png" alt="Graph shown in black, circle centers in pink" style="max-width:460px;"/>
+        <div class="fig-caption">Figure 2.1. Polar isoradial graph shown in black. Dual circle centers are pink.</div>
+      </div>
+
+      <div class="fig-grid">
+        <div class="fig-box">
+          <img src="isorad_figures/stargraphq16.png" alt="Isoradial polar graph m=16"/>
+          <div class="fig-caption">Figure 2.2. Isoradial polar graph with $m = 16$.</div>
+        </div>
+        <div class="fig-box">
+          <img src="isorad_figures/stargraphq64.png" alt="Isoradial polar graph m=64"/>
+          <div class="fig-caption">Figure 2.3. Isoradial polar graph with $m = 64$.</div>
+        </div>
+      </div>
+
+      <!-- STEP 2.1: Isoradial Graph & Discriminant -->
+      <div class="step-block" id="step-2-1">
+        <div class="level1-row" onclick="toggleL2('step-2-1', event)">
+          <span style="font-size:0.9rem; color:var(--muted);"><em>Click to inspect Level 2 (Why the polar recursion terminates at $r_{\max}^\delta \approx 1/\delta$) and Level 3 (Lean 4 proof of Proposition 2.1 &amp; starlikeness of $\Omega$).</em></span>
+          <span class="step-controls">
+            <button class="pill-toggle" onclick="toggleL2('step-2-1', event)">+L2</button>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-2-1', event)">+L3 Lean</button>
+          </span>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — Simultaneous Mesh Refinement ($\delta \to 0$) and Domain Exhaustion ($r_{\max}^\delta \to \infty$)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-2-1', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <p>
+            In a polar grid with $m$ rays spaced by $\Delta\theta = 2\pi/m = \delta^2$, two adjacent rays at radius $r_j$ have chordal distance $2 r_j \sin(\pi/m)$. For a rhombic circumcircle of radius $\delta$ to pass through both points, the chord cannot exceed the circle diameter $2\delta$. Proposition 2.1 shows that the radicand in \eqref{eq:rmoduli} is $\delta^2 - r_j^2\sin^2(\pi/m)$, so as $\delta \to 0$ the outer boundary $r_{\max}^\delta \approx 1/\delta \to \infty$ automatically exhausts $\Omega$.
+          </p>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>SlitHarmonicMeasure.lean</code> (Lines 1077–1128)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/SlitHarmonicMeasure.lean#L1077-L1128">Open in Editor</a>
+            </div>
+            <pre class="lean-code"><span class="kw">theorem</span> <span class="fn">slitDomain_Omega_isStarlike_theta</span> (N : <span class="tp">ℕ</span>) (θ : <span class="tp">ℕ</span> → <span class="tp">ℝ</span>) :
+    IsStarlikeDomain_theta (slitDomain_Omega N θ)
+
+<span class="kw">noncomputable def</span> <span class="fn">isoradialModulusStep</span> (m : <span class="tp">ℕ</span>) (δ r_j : <span class="tp">ℝ</span>) : <span class="tp">ℝ</span> :=
+  r_j * Real.cos (Real.pi / (m : <span class="tp">ℝ</span>)) +
+    Real.sqrt ((r_j * Real.cos (Real.pi / (m : <span class="tp">ℝ</span>))) ^ <span class="ac">2</span> - r_j ^ <span class="ac">2</span> + δ ^ <span class="ac">2</span>)
+
+<span class="kw">theorem</span> <span class="fn">isoradial_discriminant_identity</span> (m : <span class="tp">ℕ</span>) (δ r_j : <span class="tp">ℝ</span>) :
+    (r_j * Real.cos (Real.pi / (m : <span class="tp">ℝ</span>))) ^ <span class="ac">2</span> - r_j ^ <span class="ac">2</span> + δ ^ <span class="ac">2</span> =
+      δ ^ <span class="ac">2</span> - r_j ^ <span class="ac">2</span> * Real.sin (Real.pi / (m : <span class="tp">ℝ</span>)) ^ <span class="ac">2</span> := <span class="kw">by</span> {
+  have h_pyth := Real.cos_sq_add_sin_sq (Real.pi / (m : <span class="tp">ℝ</span>))
+  linear_combination r_j ^ <span class="ac">2</span> * h_pyth
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <p class="prose">
+        For every slit tip $e^{i\theta_k}$ there exists a nearest vertex $\gamma_k^{\delta} \in V(\Gamma^{\delta})$ such that $\gamma_k^{\delta} \to e^{i\theta_k}$ as $\delta \to 0$. The discrete slit and discrete channels are
+        \[
+          (S_k)_{\Omega^{\delta}} = \{ v \in V(\Gamma^{\delta}) : \arg v = \arg \gamma_k^{\delta},\; |v| \ge |\gamma_k^{\delta}|\},
+        \]
+        \[
+          (C_k)_{\Omega^{\delta}} = \bigcup_{\ell = 1}^{n_k^\delta} \{ v \in V(\Gamma^{\delta}) : \arg v = \arg v_{k,\ell}^{\delta}, \quad |v_{k,\ell}^{\delta}| \leq |v| &lt; r^{\delta}_{\text{max}}\},
+        \]
+        where $n_k^{\delta} = \lfloor (\theta_{k+1} - \theta_k)/\delta^2 \rfloor \le n_{k+1}^{\delta}$ measures the discrete channel width. Our discrete domain $\Omega_{\Gamma}^{\delta}$ has interior $\operatorname{int}\Omega_{\Gamma}^{\delta} = (\mathbb{D}^{\delta} \setminus \{\gamma_k^{\delta}\}) \cup \bigcup_k (C_k)_{\Omega^{\delta}}$ and boundary $\partial\Omega_{\Gamma}^{\delta} = \{\gamma_k^{\delta}\} \cup \{(S_k)_{\Omega^{\delta}} : n_k^{\delta} \ne 0\} \cup \{v : \arg v = \arg v_{k,\ell}^{\delta},\; |v| = r_{\max}^{\delta}\}$.
+      </p>
+
+      <div class="fig-grid">
+        <div class="fig-box">
+          <img src="isorad_figures/stargraphBoundary.png" alt="Boundary shown in black"/>
+          <div class="fig-caption">Figure 2.4. Example discrete slit domain $\Omega_\Gamma^\delta$. Boundary shown in black.</div>
+        </div>
+        <div class="fig-box">
+          <img src="isorad_figures/sgbwLabels.png" alt="Vertex labelling"/>
+          <div class="fig-caption">Figure 2.5. Example vertex labelling of channels and slits.</div>
+        </div>
+      </div>
+
+      <!-- SUBSECTION 2.1 -->
+      <h3 class="subsec-heading" id="subsec-rw"><span class="subsec-num">2.1.</span>Random Walk and Kakutani--Markov Monotonicity</h3>
+
+      <p class="prose">
+        As in [CS, p. 1593], we define a random walk $RW$ on $\Omega_{\Gamma}^{\delta}$ starting at $RW(0) = 0$, where $RW(t+1) = RW(t) + \xi_{RW(t)}$ and for the neighbors $u_j$ of an interior vertex $v$ with rhombic half-angles $\theta_j$,
+        \begin{equation}\label{eq:angles}
+          \mathbf{P}(\xi_v = u_k - v) = \frac{\tan \theta_k}{\sum_j \tan \theta_j}.
+        \end{equation}
+        For the channel boundary $\partial (C_k)_{\Omega^{\delta}} = \{ v \in \partial \Omega_{\Gamma}^{\delta} : (v,u) \in E(\Gamma^{\delta}),\; u \in (C_k)_{\Omega^{\delta}} \}$, we aim to establish
+        \begin{equation}\label{eq:channel-monotone}
+          \omega^{\delta}(0 ; \partial (C_k)_{\Omega^{\delta}}; \Omega^{\delta}_{\Gamma}) \le \omega^{\delta}(0 ; \partial (C_{k+1})_{\Omega^{\delta}}; \Omega^{\delta}_{\Gamma}).
+        \end{equation}
+      </p>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Lemma 2.2 (Interior Channel Monotonicity).</span>
+        <span class="latex-thm-body">
+          For all $t, k \in \mathbb{N}$ and $1 \le \ell \le n_k^{\delta}$,
+          \begin{equation}\label{eq:lem-interior}
+            \mathbf{P}(RW(t) = v^{\delta}_{k,\ell}) \le \min \bigl(\mathbf{P}(RW(t) = v^{\delta}_{k+1,\ell}) ,\, \mathbf{P}(RW(t) = v^{\delta}_{k+1,n_{k+1}-\ell+1})\bigr).
+          \end{equation}
+        </span>
+      </div>
+
+      <div class="latex-proof">
+        <span class="latex-proof-title">Proof.</span>
+        We proceed by induction on $t$. At $t=0$, all channel vertices have $|v| &gt; 0$ while $RW(0) = 0$, so both sides equal $0$. At step $t+1$, every vertex $v \ne 0$ satisfies the four-term Markov transition equation
+        \[
+          \mathbf{P}(RW(t+1) = v) = M_{v,v_l} \mathbf{P}(RW(t) = v_l) + M_{v,v_r} \mathbf{P}(RW(t) = v_r) + M_{v,v_u} \mathbf{P}(RW(t) = v_u) + M_{v,v_d} \mathbf{P}(RW(t) = v_d).
+        \]
+        By rotational invariance and $n_k \le n_{k+1}$, $M_{v^{\delta}_{k,\ell},(v^{\delta}_{k,\ell})_a} = M_{v^{\delta}_{k+1,\ell},(v^{\delta}_{k+1,\ell})_a}$ for $a = l, r, u, d$, <em>except</em> when $n_{k+1} &gt; n_k = \ell$ and $a = l$, where $(v^{\delta}_{k,n_k})_l$ lies on the absorbing slit boundary $(S_k)_{\Omega^{\delta}}$ so $M_{v^{\delta}_{k,n_k},(v^{\delta}_{k,n_k})_l} = 0 \le M_{v^{\delta}_{k+1,n_k},(v^{\delta}_{k+1,n_k})_l}$. Similarly, intrachannel reflection $\ell \mapsto n_{k+1} - \ell + 1$ swaps the left and right transition weights. Applying the inductive hypothesis to each of the four neighbors gives both the direct bound $\mathbf{P}(RW(t+1) = v^{\delta}_{k+1,\ell})$ and the reflected bound $\mathbf{P}(RW(t+1) = v^{\delta}_{k+1,n_{k+1}-\ell+1})$. <span class="qed">$\blacksquare$</span>
+      </div>
+
+      <!-- STEP 2.2: Lemma 2.1 in Lean 4 -->
+      <div class="step-block" id="step-2-2">
+        <div class="level1-row" onclick="toggleL2('step-2-2', event)">
+          <span style="font-size:0.9rem; color:var(--muted);"><em>Click to inspect Level 2 (How the absorbing boundary exception $n_{k+1} &gt; n_k = \ell$ becomes $0 \le m_{l,k} \le m_{l,k+1}$) and Level 3 (Lean 4 proof of <code>lemma_2_1_full_induction_R</code>).</em></span>
+          <span class="step-controls">
+            <button class="pill-toggle" onclick="toggleL2('step-2-2', event)">+L2</button>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-2-2', event)">+L3 Lean</button>
+          </span>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — Unifying Rotational Invariance and Boundary Absorption in Lean 4</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-2-2', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <p>
+            In the paper proof of Lemma 2.2, rotational symmetry gives equality of the four transition weights except at the left boundary ray $\ell = n_k &lt; n_{k+1}$, where the absorbing slit sets $M_{l,k} = 0$ in channel $k$ while $M_{l,k+1} &gt; 0$ in channel $k+1$. In Lean 4, both cases are unified into the single linear inequality <code>hBoundaryL : ml_k ≤ ml_k1</code> with <code>0 ≤ ml_k1</code> and <code>0 ≤ pl_k</code>, allowing <code>mul_le_mul</code> and <code>linarith</code> to verify both the direct and reflected steps cleanly over $\mathbb{R}$.
+          </p>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>SlitHarmonicMeasure.lean</code> (Lines 1230–1358)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/SlitHarmonicMeasure.lean#L1230-L1358">Open in Editor</a>
+            </div>
+            <pre class="lean-code"><span class="kw">theorem</span> <span class="fn">lemma_2_1_direct_step_R</span>
+    (ml_k ml_k1 mr mu md : <span class="tp">ℝ</span>)
+    (pl_k pr_k pu_k pd_k : <span class="tp">ℝ</span>) (pl_k1 pr_k1 pu_k1 pd_k1 : <span class="tp">ℝ</span>)
+    (h_ml_nonneg : <span class="ac">0</span> ≤ ml_k1)
+    (h_mr_nonneg : <span class="ac">0</span> ≤ mr) (h_mu_nonneg : <span class="ac">0</span> ≤ mu) (h_md_nonneg : <span class="ac">0</span> ≤ md)
+    (h_pl_nonneg : <span class="ac">0</span> ≤ pl_k) (hWeightL : ml_k ≤ ml_k1)
+    (hProbL : pl_k ≤ pl_k1) (hProbR : pr_k ≤ pr_k1)
+    (hProbU : pu_k ≤ pu_k1) (hProbD : pd_k ≤ pd_k1) :
+    markovFourTermStep_R ml_k mr mu md pl_k pr_k pu_k pd_k ≤
+      markovFourTermStep_R ml_k1 mr mu md pl_k1 pr_k1 pu_k1 pd_k1 := <span class="kw">by</span> {
+  unfold markovFourTermStep_R
+  have h1 : ml_k * pl_k ≤ ml_k1 * pl_k1 :=
+    mul_le_mul hWeightL hProbL h_pl_nonneg h_ml_nonneg
+  have h2 : mr * pr_k ≤ mr * pr_k1 := mul_le_mul_of_nonneg_left hProbR h_mr_nonneg
+  have h3 : mu * pu_k ≤ mu * pu_k1 := mul_le_mul_of_nonneg_left hProbU h_mu_nonneg
+  have h4 : md * pd_k ≤ md * pd_k1 := mul_le_mul_of_nonneg_left hProbD h_md_nonneg
+  linarith
+}
+
+<span class="kw">theorem</span> <span class="fn">lemma_2_1_full_induction_R</span> (W : CoupledChannelWalk_R) (t : <span class="tp">ℕ</span>) :
+    probChannelK_R W t ≤ min (probChannelDirect_R W t) (probChannelRefl_R W t) := <span class="kw">by</span> {
+  induction t <span class="kw">with</span>
+  | zero =&gt;
+    simp [probChannelK_R, probChannelDirect_R, probChannelRefl_R]
+  | succ step _ =&gt;
+    rw [le_min_iff]
+    constructor
+    · exact lemma_2_1_direct_step_R ...
+    · exact lemma_2_1_reflected_step_R ...
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Lemma 2.3 (Slit Boundary Monotonicity) &amp; Theorem 2.4 (Discrete Channel Monotonicity).</span>
+        <span class="latex-thm-body">
+          For all $t, k \in \mathbb{N}$, $\mathbf{P}(RW(t) = \gamma_k^{\delta}) \le \mathbf{P}(RW(t) = \gamma_{k+1}^{\delta})$. Furthermore, when $\Delta\theta_k \le \Delta\theta_{k+1}$, the discrete channel widths satisfy $n_k^{\delta} = \lfloor \Delta\theta_k / \delta^2 \rfloor \le n_{k+1}^{\delta}$, and summing the absorbed ray hitting probabilities $0 \le p_{k,\ell} \le p_{k+1,\ell}$ yields \eqref{eq:channel-monotone}:
+          \begin{equation}\label{eq:disc-channel-sum}
+            \omega^{\delta}(0 ; \partial (C_k)_{\Omega^{\delta}}; \Omega^{\delta}_{\Gamma})
+            = \sum_{\ell=1}^{n_k^{\delta}} p_{k,\ell}
+            \le \sum_{\ell=1}^{n_{k+1}^{\delta}} p_{k+1,\ell}
+            = \omega^{\delta}(0 ; \partial (C_{k+1})_{\Omega^{\delta}}; \Omega^{\delta}_{\Gamma}).
+          \end{equation}
+        </span>
+      </div>
+
+      <!-- STEP 2.3: Lemma 2.2 & Eq 2.21 in Lean 4 -->
+      <div class="step-block" id="step-2-3">
+        <div class="level1-row" onclick="toggleL2('step-2-3', event)">
+          <span style="font-size:0.9rem; color:var(--muted);"><em>Click to inspect Level 2 (How Lemma 2.2 at $\ell = 1$ supplies both sides of the slit $\gamma_k^\delta$) and Level 3 (Lean 4 proofs of Lemma 2.3 &amp; Theorem 2.4).</em></span>
+          <span class="step-controls">
+            <button class="pill-toggle" onclick="toggleL2('step-2-3', event)">+L2</button>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-2-3', event)">+L3 Lean</button>
+          </span>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — Specializing $\ell = 1$ to Bound Both Banks of $\gamma_k^\delta$ and Summing Over $n_k^\delta \le n_{k+1}^\delta$</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-2-3', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <p>
+            At the slit vertex $\gamma_k^{\delta}$, the right neighbor is $v^{\delta}_{k-1,n_{k-1}}$ (the last ray of channel $k-1$) and the left neighbor is $v^{\delta}_{k,1}$ (the first ray of channel $k$). Setting $\ell = 1$ in the reflected bound of Lemma 2.2 compares $v^{\delta}_{k-1,n_{k-1}}$ to $v^{\delta}_{k,n_k}$, while setting $\ell = 1$ in the direct bound compares $v^{\delta}_{k,1}$ to $v^{\delta}_{k+1,1}$. Then <code>discrete_channel_harmonic_measure_monotone_R</code> combines termwise ray dominance on $\{1, \dots, n_k^\delta\}$ with subset inclusion $\{1, \dots, n_k^\delta\} \subseteq \{1, \dots, n_{k+1}^\delta\}$ of non-negative probabilities.
+          </p>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>SlitHarmonicMeasure.lean</code> (Lines 1366–1435)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/SlitHarmonicMeasure.lean#L1366-L1435">Open in Editor</a>
+            </div>
+            <pre class="lean-code"><span class="kw">theorem</span> <span class="fn">lemma_2_2_slit_boundary_monotonicity_R</span>
+    (mRight mLeft mUp mDown : <span class="tp">ℝ</span>)
+    (p_km1_last p_k_last p_k_first p_kp1_first pUp_k pUp_kp1 pDown_k pDown_kp1 : <span class="tp">ℝ</span>)
+    (hmR : <span class="ac">0</span> ≤ mRight) (hmL : <span class="ac">0</span> ≤ mLeft) (hmU : <span class="ac">0</span> ≤ mUp) (hmD : <span class="ac">0</span> ≤ mDown)
+    (hRightChannel : p_km1_last ≤ p_k_last) (hLeftChannel : p_k_first ≤ p_kp1_first)
+    (hUp : pUp_k ≤ pUp_kp1) (hDown : pDown_k ≤ pDown_kp1) :
+    markovFourTermStep_R mRight mLeft mUp mDown p_km1_last p_k_first pUp_k pDown_k ≤
+      markovFourTermStep_R mRight mLeft mUp mDown p_k_last p_kp1_first pUp_kp1 pDown_kp1
+
+<span class="kw">theorem</span> <span class="fn">discrete_channel_harmonic_measure_monotone_R</span>
+    (n_k n_k1 : <span class="tp">ℕ</span>) (p_k p_k1 : <span class="tp">ℕ</span> → <span class="tp">ℝ</span>)
+    (hWidth : n_k ≤ n_k1) (hNonneg : ∀ ℓ : <span class="tp">ℕ</span>, <span class="ac">0</span> ≤ p_k1 ℓ)
+    (hRayDom : ∀ ℓ ∈ Finset.Icc <span class="ac">1</span> n_k, p_k ℓ ≤ p_k1 ℓ) :
+    discreteChannelHarmonicMeasure_R n_k p_k ≤
+      discreteChannelHarmonicMeasure_R n_k1 p_k1 := <span class="kw">by</span> {
+  unfold discreteChannelHarmonicMeasure_R
+  have h_step1 : ∑ ℓ ∈ Finset.Icc <span class="ac">1</span> n_k, p_k ℓ ≤ ∑ ℓ ∈ Finset.Icc <span class="ac">1</span> n_k, p_k1 ℓ :=
+    Finset.sum_le_sum hRayDom
+  have h_sub : Finset.Icc <span class="ac">1</span> n_k ⊆ Finset.Icc <span class="ac">1</span> n_k1 :=
+    Finset.Icc_subset_Icc_right hWidth
+  have h_step2 : ∑ ℓ ∈ Finset.Icc <span class="ac">1</span> n_k, p_k1 ℓ ≤ ∑ ℓ ∈ Finset.Icc <span class="ac">1</span> n_k1, p_k1 ℓ :=
+    Finset.sum_le_sum_of_subset_of_nonneg h_sub (<span class="kw">fun</span> ℓ _ _ =&gt; hNonneg ℓ)
+  exact le_trans h_step1 h_step2
+}</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 3: CHELKAK-SMIRNOV DISCRETE COMPLEX ANALYSIS & TRANSFER   -->
+    <!-- ================================================================= -->
+    <section id="sec-cs">
+      <h2 class="sec-heading"><span class="sec-num">3.</span>Chelkak--Smirnov Discrete Complex Analysis and Analytic--Discrete Proof Transfer</h2>
+
+      <p class="prose">
+        To transfer the discrete random-walk monotonicity \eqref{eq:disc-channel-sum} back to the continuum starlike domain $\Omega$, we formalize the internal discrete complex analysis of Dmitry Chelkak and Stanislav Smirnov [CS] on isoradial graphs.
+      </p>
+
+      <!-- SUBSECTION 3.1 -->
+      <h3 class="subsec-heading" id="subsec-mvt"><span class="subsec-num">3.1.</span>Dual-Circle Telescoping and the Discrete Mean Value Theorem</h3>
+
+      <p class="prose">
+        At an interior vertex $v \in \mathbb{C}$ of $\Gamma^{\delta}$ with neighbors $u_1, \dots, u_d \in \mathbb{C}$ and dual rhombic circumcenters $w_1, \dots, w_d \in \mathbb{C}$ ($w_0 := w_d$, $|w_k - v| = \delta$), each primal edge $u_k - v$ is orthogonal to the dual chord $w_k - w_{k-1}$ via $(\tan\theta_k)(u_k - v) = -i(w_k - w_{k-1})$. Summing around the closed dual cycle $\sum_{k=1}^d (w_k - w_{k-1}) = 0$ yields the exact first-order cancellation $\sum_{k=1}^d \tan\theta_k\,(u_k - v) = 0$.
+      </p>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Theorem 3.1 (Chelkak--Smirnov Discrete Mean Value Theorem [CS, p. 1593]).</span>
+        <span class="latex-thm-body">
+          Let $W_{\tan}(v) = \sum_{k=1}^d \tan\theta_k &gt; 0$ and $\mu_{\Gamma}(v) = \frac{1}{4}\sum_{k=1}^d \tan\theta_k\,|u_k - v|^2 &gt; 0$. For every $H : \mathbb{C} \to \mathbb{R}$, the discrete Laplacian $\Delta^{\delta}$ and discrete mean value operator $M^{\delta}$ satisfy
+          \begin{equation}\label{eq:cs-mvt}
+            (\Delta^{\delta} H)(v) := \frac{1}{\mu_{\Gamma}(v)} \sum_{k=1}^d \tan\theta_k\,\bigl(H(u_k) - H(v)\bigr)
+            = \frac{W_{\tan}(v)}{\mu_{\Gamma}(v)}\bigl((M^{\delta} H)(v) - H(v)\bigr).
+          \end{equation}
+          Consequently, $(\Delta^{\delta} H)(v) = 0 \iff H(v) = (M^{\delta} H)(v)$. Every real affine function $H(z) = a\operatorname{Re} z + b\operatorname{Im} z + c$ is exactly discrete harmonic, and every discrete harmonic function satisfies the local discrete maximum principle.
+        </span>
+      </div>
+
+      <!-- STEP 3.1: Discrete MVT in Lean 4 -->
+      <div class="step-block" id="step-3-1">
+        <div class="level1-row" onclick="toggleL2('step-3-1', event)">
+          <span style="font-size:0.9rem; color:var(--muted);"><em>Click to inspect Level 2 (Why $\tan\theta_k$ weights eliminate random-walk drift identically) and Level 3 (Lean 4 proofs of Dual-Circle Telescoping &amp; Discrete MVT).</em></span>
+          <span class="step-controls">
+            <button class="pill-toggle" onclick="toggleL2('step-3-1', event)">+L2</button>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-3-1', event)">+L3 Lean</button>
+          </span>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — Dual-Circle Orthogonality Makes the Isoradial Random Walk a Martingale</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-3-1', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <p>
+            On a general polar grid where radial step sizes $r_{2n+2} - r_{2n}$ vary with $r$, an unweighted random walk has radial drift. Chelkak and Smirnov's tangent weights $\tan\theta_k / W_{\tan}(v)$ convert each primal displacement $(\tan\theta_k)(u_k - v)$ into $-i(w_k - w_{k-1})$, which telescopes to $0$ around the closed dual cycle of circumcenters. Thus $\mathbf{E}[\xi_v] = 0$, every affine function is an exact discrete harmonic function, and harmonicity $\Delta^\delta H = 0$ is equivalent to the Discrete Mean Value Property $H(v) = (M^\delta H)(v)$.
+          </p>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>SlitHarmonicMeasure.lean</code> (Lines 1668–1852)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/SlitHarmonicMeasure.lean#L1668-L1852">Open in Editor</a>
+            </div>
+            <pre class="lean-code"><span class="kw">theorem</span> <span class="fn">isoradialStar_weighted_displacement_sum_eq_zero</span> {d : <span class="tp">ℕ</span>} (S : IsoradialVertexStar d) :
+    ∑ k : Fin d, (((Real.tan (S.theta k) : <span class="tp">ℝ</span>) : <span class="tp">ℂ</span>) * (S.u k - S.v)) = <span class="ac">0</span> := <span class="kw">by</span> {
+  have h_congr :
+      ∑ k : Fin d, (((Real.tan (S.theta k) : <span class="tp">ℝ</span>) : <span class="tp">ℂ</span>) * (S.u k - S.v)) =
+      ∑ k : Fin d, (-I * (S.w_next k - S.w_prev k)) := <span class="kw">by</span> {
+    apply Finset.sum_congr rfl
+    intro k _
+    exact S.hDualOrthog k
+  }
+  rw [h_congr, ← Finset.mul_sum, S.hDualCycle, mul_zero]
+}
+
+<span class="kw">theorem</span> <span class="fn">isDiscreteHarmonicAt_iff_meanValueProperty</span> {d : <span class="tp">ℕ</span>}
+    (S : IsoradialVertexStar d) (H : <span class="tp">ℂ</span> → <span class="tp">ℝ</span>) :
+    IsDiscreteHarmonicAt S H ↔ H S.v = isoradialDiscreteMeanValue S H := <span class="kw">by</span> {
+  unfold IsDiscreteHarmonicAt
+  rw [isoradialDiscreteLaplacian_eq_meanValue_diff]
+  have h_ratio_pos : <span class="ac">0</span> &lt; isoradialStarTotalTan S / isoradialStarAreaWeight S :=
+    div_pos S.hTanSumPos S.hAreaPos
+  rw [mul_eq_zero, or_iff_right (ne_of_gt h_ratio_pos), sub_eq_zero, eq_comm]
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBSECTION 3.2 -->
+      <h3 class="subsec-heading" id="subsec-transfer"><span class="subsec-num">3.2.</span>Second-Order Laplacian Consistency and Analytic--Discrete Proof Transfer</h3>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Theorem 3.2 (Second-Order Laplacian Consistency &amp; Analytic--Discrete Proof Transfer).</span>
+        <span class="latex-thm-body">
+          On any quadratically balanced star ($\sum_{k=1}^d \tan\theta_k\,(u_k - v)^2 = 0$), the discrete Laplacian of a second-order Taylor polynomial $T_2(z)$ at $v$ equals the exact continuum Laplacian:
+          \begin{equation}\label{eq:taylor-lap}
+            (\Delta^{\delta} T_2)(v) = h_{xx} + h_{yy}.
+          \end{equation}
+          If $h$ is continuum harmonic (<code>IsRealHarmonicOn_eps</code>, so $h_{xx} + h_{yy} = 0$), then $T_2$ satisfies the exact Discrete Mean Value Property $T_2(v) = (M^{\delta} T_2)(v)$ and $(\Delta^{\delta} h)(v) = (\Delta^{\delta}(h - T_2))(v) \to 0$ as $\delta \to 0$. Consequently, under the Chelkak--Smirnov ($\delta \to 0$) and Beurling--Nevanlinna ($R = \|w\| \to \infty$) convergence bridge, monotone channel angles $\Delta\theta_k \le \Delta\theta_{k+1}$ ($\iff \sigma_k \le \sigma_{k+1}$) imply continuum channel monotonicity $\omega(0; \partial C_k; \Omega) \le \omega(0; \partial C_{k+1}; \Omega)$ (<code>MonotoneChannelStatement_eps</code>), and under bank monotonicity imply $\omega(0; R_k; \Omega) \le \omega(0; R_{k+1}; \Omega)$ (<code>MonotoneSlitStatement_eps</code>).
+        </span>
+      </div>
+
+      <!-- STEP 3.2: Laplacian Consistency & Analytic-Discrete Transfer -->
+      <div class="step-block" id="step-3-2">
+        <div class="level1-row" onclick="toggleL2('step-3-2', event)">
+          <span style="font-size:0.9rem; color:var(--muted);"><em>Click to inspect Level 2 (How Sarason's <code>IsRealHarmonicOn_eps</code>, <code>HasLimitAt_eps</code>, and <code>HasLimitAtInf_eps</code> complete the transfer) and Level 3 (Lean 4 proofs of Theorem 3.2).</em></span>
+          <span class="step-controls">
+            <button class="pill-toggle" onclick="toggleL2('step-3-2', event)">+L2</button>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-3-2', event)">+L3 Lean</button>
+          </span>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — Connecting <code>IsRealHarmonicOn_eps</code> to the Discrete Laplacian and $\varepsilon$-$\delta$ Proof Transfer</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-3-2', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <p>
+            In <code>SlitHarmonicMeasure.lean</code>, <code>isoradialDiscreteLaplacian_secondOrderTaylorAt</code> decomposes the quadratic terms of $T_2(u_k) - T_2(v)$ into the trace part $\frac{1}{4}(h_{xx} + h_{yy})|u_k - v|^2$ (which integrates against $\tan\theta_k$ to $(h_{xx} + h_{yy})\mu_{\Gamma}(v)$) and the traceless harmonic polynomials $\Delta x_k^2 - \Delta y_k^2$ and $\Delta x_k \Delta y_k$ (which vanish by quadratic balance). When $h$ satisfies <code>IsRealHarmonicOn_eps</code>, $h_{xx} + h_{yy} = 0$, so $T_2$ satisfies the exact Discrete Mean Value Property and $\Delta^\delta h = \Delta^\delta(h - T_2) \to 0$. Chaining <code>chelkak_smirnov_analytic_discrete_transfer_eps</code> ($\delta \to 0$) with <code>analytic_monotone_channel_of_hasLimitAtInf_eps</code> ($R \to \infty$) proves <code>monotoneChannelStatement_eps_proven</code>.
+          </p>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>SlitHarmonicMeasure.lean</code> (Lines 1912–1994 &amp; 1511–1563)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/SlitHarmonicMeasure.lean#L1912-L1994">Open in Editor</a>
+            </div>
+            <pre class="lean-code"><span class="kw">theorem</span> <span class="fn">isoradialDiscreteLaplacian_secondOrderTaylorAt</span> {d : <span class="tp">ℕ</span>}
+    (S : IsoradialVertexStar d) (hBal : IsQuadraticallyBalancedStar S)
+    (h₀ hx hy hxx hxy hyy : <span class="tp">ℝ</span>) :
+    isoradialDiscreteLaplacian S (secondOrderTaylorAt S.v h₀ hx hy hxx hxy hyy) =
+      hxx + hyy
+
+<span class="kw">theorem</span> <span class="fn">isRealHarmonicOn_eps_imp_discreteMeanValue_and_remainder</span> {d : <span class="tp">ℕ</span>}
+    (S : IsoradialVertexStar d) (hBal : IsQuadraticallyBalancedStar S)
+    {h : <span class="tp">ℂ</span> → <span class="tp">ℝ</span>} {G : Set <span class="tp">ℂ</span>} (hHarm : IsRealHarmonicOn_eps h G)
+    (hv : S.v ∈ G) (hxy : <span class="tp">ℝ</span>) :
+    ∃ (ux uy uxx uyy : <span class="tp">ℝ</span> × <span class="tp">ℝ</span> → <span class="tp">ℝ</span>),
+      <span class="kw">let</span> pv := (S.v.re, S.v.im)
+      <span class="kw">let</span> T₂ := secondOrderTaylorAt S.v (h S.v) (ux pv) (uy pv) (uxx pv) hxy (uyy pv)
+      uxx pv + uyy pv = <span class="ac">0</span> ∧
+      IsDiscreteHarmonicAt S T₂ ∧
+      T₂ S.v = isoradialDiscreteMeanValue S T₂ ∧
+      isoradialDiscreteLaplacian S h =
+        isoradialDiscreteLaplacian S (<span class="kw">fun</span> z =&gt; h z - T₂ z)
+
+<span class="kw">theorem</span> <span class="fn">monotoneChannelStatement_eps_proven</span> {m : <span class="tp">ℕ</span>}
+    (C : AnalyticOrderedSlitConfiguration_eps m)
+    (B : IsoradialContinuumBridge_eps C) (N : <span class="tp">ℕ</span>) :
+    MonotoneChannelStatement_eps C N</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 4: SPANDREL PROBLEM ON INFINITE DYADIC POLAR GRAPHS       -->
+    <!-- ================================================================= -->
+    <section id="sec-spandrel">
+      <h2 class="sec-heading"><span class="sec-num">4.</span>A Spandrel Problem on Infinite Dyadic Polar Isoradial Graphs</h2>
+
+      <p class="prose">
+        We use the term <em>spandrel</em> in the sense of evolutionary biology, rather than architecture. A question unimportant to the original goal of research, but curious in its own right, arose while we wrote code in Python and Sagemath to produce images of isoradial graphs. We were unable to find an algorithm that could generate an infinite graph fitting the appropriate starlike property. Given $\delta &gt; 0$, we define an <em>infinite dyadic polar isoradial starlike graph</em> to be an isoradial graph $\Gamma^{\delta}$ with the following properties:
+      </p>
+      <ul class="paper-list">
+        <li><strong>(Dyadic)</strong> $v \in V(\Gamma^{\delta})$ implies $\arg v = 2\pi / 2^n$ for some integer $n$;</li>
+        <li><strong>(Starlike)</strong> $re^{i\theta} \in V(\Gamma^{\delta})$ implies $r' e^{i\theta} \in V(\Gamma^{\delta})$, where $r' = r \cos(\pi/m) + \sqrt{(r \cos(\pi/m))^2 - r^2 + \delta^2}$;</li>
+        <li><strong>(Infinite)</strong> for all $r &gt; 0$, there exists $v \in V(\Gamma^{\delta})$ such that $|v| &gt; r$.</li>
+      </ul>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Question 4.1 (Spandrel Question).</span>
+        <span class="latex-thm-body">Does an infinite dyadic polar isoradial starlike graph exist?</span>
+      </div>
+
+      <p class="prose">
+        We conjecture the answer is no, mostly because we failed to produce one. If $N(r)$ is the number of vertices on the polar graph with modulus $r$, a successful one would double $N$ at every modulus in a cleverly chosen sequence $\{r_k\}$, which seems to be subject to too many constraints to exist. Below are some images created by our algorithms.
+      </p>
+
+      <!-- STEP 4.1: Spandrel Formalization -->
+      <div class="step-block" id="step-4-1">
+        <div class="level1-row" onclick="toggleL2('step-4-1', event)">
+          <span style="font-size:0.9rem; color:var(--muted);"><em>Click to inspect Level 2 (Why Proposition 2.1 forces dyadic ray-doubling transitions) and Level 3 (Lean 4 formalization of <code>Question_2_3_Spandrel</code>).</em></span>
+          <span class="step-controls">
+            <button class="pill-toggle" onclick="toggleL2('step-4-1', event)">+L2</button>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-4-1', event)">+L3 Lean</button>
+          </span>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — Geometric Origin of the Spandrel Obstruction</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-4-1', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <p>
+            By Proposition 2.1, a polar isoradial graph with fixed angular count $m = 2^n$ cannot extend past $r_{\max}^\delta = \delta / \sin(\pi / 2^n)$ because the discriminant $\delta^2 - r^2\sin^2(\pi / 2^n)$ becomes negative. To reach $r \to \infty$ with fixed rhombic radius $\delta$, the graph must repeatedly double its angular resolution $2^n \mapsto 2^{n+1}$ at transition circles while preserving isoradiality of all intermediate faces.
+          </p>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>SlitHarmonicMeasure.lean</code> (Lines 1176–1188)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/SlitHarmonicMeasure.lean#L1176-L1188">Open in Editor</a>
+            </div>
+            <pre class="lean-code"><span class="kw">def</span> <span class="fn">IsInfiniteDyadicPolarIsoradialStarlikeGraph</span> (m : <span class="tp">ℕ</span>) (δ : <span class="tp">ℝ</span>) (V_Gamma : Set <span class="tp">ℂ</span>) : <span class="tp">Prop</span> :=
+  (∀ v ∈ V_Gamma, ∃ n : <span class="tp">ℤ</span>, arg v = (<span class="ac">2</span> * Real.pi) / (<span class="ac">2</span> : <span class="tp">ℝ</span>) ^ n) ∧
+  (∀ r θ : <span class="tp">ℝ</span>, polarPoint r θ ∈ V_Gamma →
+    polarPoint (isoradialModulusStep m δ r) θ ∈ V_Gamma) ∧
+  (∀ r : <span class="tp">ℝ</span>, <span class="ac">0</span> &lt; r → ∃ v ∈ V_Gamma, r &lt; ‖v‖)
+
+<span class="kw">def</span> <span class="fn">Question_2_3_Spandrel</span> (m : <span class="tp">ℕ</span>) (δ : <span class="tp">ℝ</span>) : <span class="tp">Prop</span> :=
+  ∃ V_Gamma : Set <span class="tp">ℂ</span>, IsInfiniteDyadicPolarIsoradialStarlikeGraph m δ V_Gamma</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="fig-box">
+        <img src="isorad_figures/iso1.png" alt="Spandrel algorithm figure 1"/>
+        <div class="fig-caption">Figure 4.1. Algorithmic attempt at dyadic polar isoradial continuation (1).</div>
+      </div>
+
+      <div class="fig-box">
+        <img src="isorad_figures/iso2.png" alt="Spandrel algorithm figure 2" style="max-width:340px;"/>
+        <div class="fig-caption">Figure 4.2. Algorithmic attempt at dyadic polar isoradial continuation (2).</div>
+      </div>
+
+      <div class="fig-box">
+        <img src="isorad_figures/iso3.png" alt="Spandrel algorithm figure 3"/>
+        <div class="fig-caption">Figure 4.3. Algorithmic attempt at dyadic polar isoradial continuation (3).</div>
+      </div>
+
+      <div class="fig-box">
+        <img src="isorad_figures/stargraph20.png" alt="Spandrel stargraph20"/>
+        <div class="fig-caption">Figure 4.4. High-density polar isoradial stargraph generated by radial recursion.</div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- REFERENCES                                                        -->
+    <!-- ================================================================= -->
+    <section id="sec-refs">
+      <h2 class="sec-heading">References</h2>
+      <ul class="bib-list">
+        <li>
+          <span class="bib-key">[CS]</span>
+          D. Chelkak (<a href="https://www-personal.umich.edu/~chelkak/">https://www-personal.umich.edu/~chelkak/</a>) and S. Smirnov (<a href="http://www.unige.ch/~smirnov/">http://www.unige.ch/~smirnov/</a>),
+          <em>Discrete complex analysis on isoradial graphs</em>, Adv. Math. <strong>228</strong> (2011), no. 3, 1590–1630
+          (<a href="https://doi.org/10.1016/j.aim.2011.06.025">doi:10.1016/j.aim.2011.06.025</a>,
+          <a href="https://arxiv.org/abs/0810.2188">arXiv:0810.2188</a>).
+        </li>
+        <li>
+          <span class="bib-key">[Pom]</span>
+          Ch. Pommerenke, <em>Boundary Behaviour of Conformal Maps</em>, Grundlehren der mathematischen Wissenschaften, vol. 299, Springer-Verlag, Berlin, 1992.
+        </li>
+        <li>
+          <span class="bib-key">[Sar]</span>
+          D. Sarason, <em>Complex Function Theory</em>, 2nd ed., American Mathematical Society, Providence, RI, 2007.
+        </li>
+      </ul>
+    </section>
+
+  </main>
+
+  <script>
+    function toggleL2(stepId, event) {
+      if (event) event.stopPropagation();
+      const block = document.getElementById(stepId);
+      if (!block) return;
+      block.classList.toggle('open-l2');
+    }
+
+    function toggleL3(stepId, event) {
+      if (event) event.stopPropagation();
+      const block = document.getElementById(stepId);
+      if (!block) return;
+      block.classList.add('open-l2');
+      const l2 = block.querySelector('.level2-drawer');
+      if (l2) l2.classList.toggle('open-l3');
+    }
+
+    function collapseAll() {
+      document.querySelectorAll('.step-block').forEach(b => b.classList.remove('open-l2'));
+      document.querySelectorAll('.level2-drawer').forEach(d => d.classList.remove('open-l3'));
+    }
+
+    function expandAllL2() {
+      document.querySelectorAll('.step-block').forEach(b => b.classList.add('open-l2'));
+      document.querySelectorAll('.level2-drawer').forEach(d => d.classList.remove('open-l3'));
+    }
+
+    function expandAllL3() {
+      document.querySelectorAll('.step-block').forEach(b => b.classList.add('open-l2'));
+      document.querySelectorAll('.level2-drawer').forEach(d => d.classList.add('open-l3'));
+    }
+  </script>
+</body>
+</html>
+

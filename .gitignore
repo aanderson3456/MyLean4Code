@@ -1,6 +1,17 @@
 # OS & Editor files
 .DS_Store
+**/.DS_Store
 .agents/
+.vscode/
+
+# External Cloned Repositories
+ComplexAnalysis/brennanOAI/
+NavierStokesAndEuler/
+
+# Secrets
+.env
+.env.*
+**/.env
 
 # Lean / Lake build artifacts
 .lake/
