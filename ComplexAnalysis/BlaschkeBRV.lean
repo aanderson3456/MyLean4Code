@@ -279,6 +279,25 @@ theorem pseudohyperbolic_dist_consecutive_le_inv_k {k : ℝ} (hk : 1 ≤ k) :
 /-! ## Section 3. The Universal Pole-Free Pointwise Blaschke Derivative Bound -/
 
 /--
+  **Exact Derivative of a Single Real-Zero Blaschke Factor:**
+  For any real $a \in \mathbb{R}$ and $z \in \mathbb{C}$ with $1 - a z \neq 0$, the Blaschke factor
+  $b_a(z) = \frac{a - z}{1 - a z}$ has complex derivative
+  $$b_a'(z) = \frac{-(1 - a^2)}{(1 - a z)^2}.$$
+-/
+theorem hasDerivAt_blaschke_factor (a : ℝ) (z : ℂ)
+    (h_denom : (1 : ℂ) - (a : ℂ) * z ≠ 0) :
+    HasDerivAt (fun w : ℂ => ((a : ℂ) - w) / ((1 : ℂ) - (a : ℂ) * w))
+      (-((1 : ℂ) - (a : ℂ) ^ 2) / ((1 : ℂ) - (a : ℂ) * z) ^ 2) z := by
+{
+  have h_num : HasDerivAt (fun w : ℂ => (a : ℂ) - w) (0 - 1) z :=
+    (hasDerivAt_const z (a : ℂ)).sub (hasDerivAt_id z)
+  have h_den : HasDerivAt (fun w : ℂ => (1 : ℂ) - (a : ℂ) * w) (0 - (a : ℂ) * 1) z :=
+    (hasDerivAt_const z (1 : ℂ)).sub ((hasDerivAt_id z).const_mul (a : ℂ))
+  have h_quot := h_num.div h_den h_denom
+  exact h_quot.congr_deriv (by congr 1; ring)
+}
+
+/--
   **Exact Algebraic Identity for the Modulus of a Real-Zero Blaschke Factor:**
   For any real $a \in \mathbb{R}$ and any complex $z = x + i y \in \mathbb{C}$,
   $$|1 - a z|^2 - |a - z|^2 = (1 - a^2)(1 - |z|^2).$$
@@ -308,6 +327,26 @@ theorem blaschke_factor_one_sub_norm_sq (a : ℝ) (z : ℂ)
 }
 
 /--
+  **Two-Sided Bound $0 \le u_a(z) \le 1$ on the Unit Disk:**
+  Whenever $|a| \le 1$, $|z| \le 1$, and $1 - a z \neq 0$, the quantity
+  $u_a(z) = 1 - |b_a(z)|^2 = \frac{(1 - a^2)(1 - |z|^2)}{|1 - a z|^2}$ satisfies $0 \le u_a(z) \le 1$.
+-/
+theorem blaschke_factor_u_bounds (a : ℝ) (z : ℂ)
+    (ha : a ^ 2 ≤ 1) (hz : ‖z‖ ^ 2 ≤ 1)
+    (h_denom : ‖(1 : ℂ) - (a : ℂ) * z‖ ≠ 0) :
+    0 ≤ (1 - a ^ 2) * (1 - ‖z‖ ^ 2) / ‖(1 : ℂ) - (a : ℂ) * z‖ ^ 2 ∧
+    (1 - a ^ 2) * (1 - ‖z‖ ^ 2) / ‖(1 : ℂ) - (a : ℂ) * z‖ ^ 2 ≤ 1 := by
+{
+  constructor
+  · apply div_nonneg
+    · exact mul_nonneg (by linarith) (by linarith)
+    · exact sq_nonneg _
+  · rw [← blaschke_factor_one_sub_norm_sq a z h_denom]
+    have h_sq_nonneg : 0 ≤ (‖(a : ℂ) - z‖ / ‖(1 : ℂ) - (a : ℂ) * z‖) ^ 2 := sq_nonneg _
+    linarith
+}
+
+/--
   **Single-Factor Exponential Decay Bound:**
   Since $b^2 = 1 - (1 - b^2) \le \exp(-(1 - b^2))$, any non-negative modulus $b \ge 0$ with
   $1 - b^2 = u$ satisfies $b^2 \le \exp(-u)$.
@@ -318,6 +357,70 @@ theorem blaschke_factor_sq_le_exp_neg (b u : ℝ) (h_id : 1 - b ^ 2 = u) :
   have h_eq : b ^ 2 = 1 - u := by linarith
   rw [h_eq]
   linarith [Real.add_one_le_exp (-u)]
+}
+
+/--
+  **Square-Root Exponential Trick ($\sqrt{1 - u} \le e^{-u/2}$):**
+  For any $u \le 1$, since $0 \le 1 - u \le e^{-u} = (e^{-u/2})^2$, taking square roots yields
+  $$\sqrt{1 - u} \le \exp(-u / 2).$$
+-/
+theorem sqrt_one_sub_le_exp_neg_half (u : ℝ) :
+    Real.sqrt (1 - u) ≤ Real.exp (-u / 2) := by
+{
+  rw [Real.sqrt_le_left (by positivity)]
+  have h_sq : Real.exp (-u / 2) ^ 2 = Real.exp (-u) := by
+  {
+    rw [sq, ← Real.exp_add]
+    ring_nf
+  }
+  rw [h_sq]
+  linarith [Real.add_one_le_exp (-u)]
+}
+
+/--
+  **Omitted-Subproduct Finite Product Bound ($\prod_{j \neq k} \sqrt{1 - u_j} \le e^{1/2} e^{-\frac{1}{2}\sum_j u_j}$):**
+  For any finite index set $s$, any $k \in s$, and any weights $u_j \le 1$, multiplying
+  $\sqrt{1 - u_j} \le e^{-u_j/2}$ over $j \in s \setminus \{k\}$ and restoring the single omitted term
+  $u_k \le 1$ via `Finset.add_sum_erase` yields:
+  $$\prod_{j \in s \setminus \{k\}} \sqrt{1 - u_j} \le e^{1/2} \exp\!\left(-\frac{1}{2} \sum_{j \in s} u_j\right).$$
+-/
+theorem blaschke_subproduct_prod_bound
+    {ι : Type*} [DecidableEq ι] (s : Finset ι) (u : ι → ℝ) (k : ι)
+    (hk : k ∈ s) (hu_le_one : u k ≤ 1) :
+    ∏ j ∈ s.erase k, Real.sqrt (1 - u j) ≤
+      Real.exp (1 / 2 : ℝ) * Real.exp (-(1 / 2 : ℝ) * ∑ j ∈ s, u j) := by
+{
+  have h_prod : ∏ j ∈ s.erase k, Real.sqrt (1 - u j) ≤
+      ∏ j ∈ s.erase k, Real.exp (-u j / 2) := by
+  {
+    apply Finset.prod_le_prod
+    · intro j _
+      exact Real.sqrt_nonneg (1 - u j)
+    · intro j _
+      exact sqrt_one_sub_le_exp_neg_half (u j)
+  }
+  have h_exp_sum : ∏ j ∈ s.erase k, Real.exp (-u j / 2) =
+      Real.exp (∑ j ∈ s.erase k, (-u j / 2)) :=
+    (Real.exp_sum (s.erase k) (fun j => -u j / 2)).symm
+  have h_erase : ∑ j ∈ s.erase k, (-u j / 2) =
+      -(1 / 2 : ℝ) * ((∑ j ∈ s, u j) - u k) := by
+  {
+    have h1 := Finset.add_sum_erase s (fun j => -u j / 2) hk
+    have h2 : ∑ j ∈ s, (-u j / 2) = -(1 / 2 : ℝ) * ∑ j ∈ s, u j := by
+    {
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl (fun j _ => by ring)
+    }
+    linarith
+  }
+  calc ∏ j ∈ s.erase k, Real.sqrt (1 - u j)
+    _ ≤ ∏ j ∈ s.erase k, Real.exp (-u j / 2) := h_prod
+    _ = Real.exp (-(1 / 2 : ℝ) * ((∑ j ∈ s, u j) - u k)) := by
+        rw [h_exp_sum, h_erase]
+    _ ≤ Real.exp (1 / 2 : ℝ) * Real.exp (-(1 / 2 : ℝ) * ∑ j ∈ s, u j) := by
+        rw [← Real.exp_add]
+        apply Real.exp_le_exp.mpr
+        linarith
 }
 
 /--
@@ -368,6 +471,32 @@ theorem universal_pole_free_blaschke_deriv_bound
     _ = E * ∑ k ∈ s, w_k k := by rw [← Finset.mul_sum]
     _ = Real.exp (1 / 2 : ℝ) * (∑ k ∈ s, w_k k) *
           Real.exp (-(1 / 2 : ℝ) * (1 - z_norm) * (∑ k ∈ s, w_k k)) := by ring
+}
+
+/--
+  **Reduction from $1 - |z|^2$ to $1 - |z|$ in the Pole-Free Exponential Bound (Equation \eqref{eq:blue_polefree}):**
+  For any $z \in \mathbb{D}$ with $0 \le |z| \le 1$ and $S(z) \ge 0$, since
+  $1 - |z|^2 = (1 + |z|)(1 - |z|) \ge 1 - |z|$, we have
+  $$-\frac{1}{2}(1 - |z|^2) S(z) \le -\frac{1}{2}(1 - |z|) S(z),$$
+  and consequently
+  $$e^{1/2} S(z) \exp\!\left(-\frac{1}{2}(1 - |z|^2) S(z)\right) \le e^{1/2} S(z) \exp\!\left(-\frac{1}{2}(1 - |z|) S(z)\right).$$
+-/
+theorem pole_free_bound_one_sub_sq_le_one_sub
+    (S_z r : ℝ) (hS : 0 ≤ S_z) (hr0 : 0 ≤ r) (hr1 : r ≤ 1) :
+    Real.exp (1 / 2 : ℝ) * S_z * Real.exp (-(1 / 2 : ℝ) * (1 - r ^ 2) * S_z) ≤
+      Real.exp (1 / 2 : ℝ) * S_z * Real.exp (-(1 / 2 : ℝ) * (1 - r) * S_z) := by
+{
+  have h_pref_nonneg : 0 ≤ Real.exp (1 / 2 : ℝ) * S_z := mul_nonneg (Real.exp_pos _).le hS
+  apply mul_le_mul_of_nonneg_left _ h_pref_nonneg
+  apply Real.exp_le_exp.mpr
+  have h_diff : (1 - r ^ 2) - (1 - r) = r * (1 - r) := by ring
+  have h_r_one_sub : 0 ≤ r * (1 - r) := mul_nonneg hr0 (by linarith)
+  have h_prod_nonneg : 0 ≤ ((1 - r ^ 2) - (1 - r)) * S_z := by
+  {
+    rw [h_diff]
+    exact mul_nonneg h_r_one_sub hS
+  }
+  linarith
 }
 
 /-! ## Section 4. Two-Sided Kernel Comparison $S(t e^{i\theta}) \asymp ((1-t) + 2|\sin(\theta/2)|)^{-3/2}$ -/
@@ -462,6 +591,106 @@ theorem denominator_two_sided_scale_bound
 }
 
 /--
+  **Exact 4-Step Polar Denominator Comparison Chain (Step 1 of the Blue Resolution):**
+  For $a_k, t \in [1/2, 1]$ with $x = 1 - t \ge 0$, $y_k = 1 - a_k \ge 0$, $s = 2|\sin(\theta/2)| \ge 0$,
+  and $\delta = x + s$, the polar denominator $D_k = (1 - a_k t)^2 + a_k t s^2 = (x + y_k - x y_k)^2 + a_k t s^2$
+  satisfies the exact 4-step chain of inequalities from the Blue Section:
+  $$\frac{1}{8}(y_k + \delta)^2 \le \frac{1}{4}\bigl((x + y_k)^2 + s^2\bigr)
+    \le (1 - a_k t)^2 + a_k t s^2 \le (x + y_k)^2 + s^2 \le (y_k + \delta)^2.$$
+-/
+theorem blue_polar_denominator_chain
+    (a_k t x y_k s δ : ℝ)
+    (hak_low : (1 / 2 : ℝ) ≤ a_k) (hak_high : a_k ≤ 1)
+    (ht_low : (1 / 2 : ℝ) ≤ t) (ht_high : t ≤ 1)
+    (hx : x = 1 - t) (hy : y_k = 1 - a_k)
+    (hs : 0 ≤ s) (hδ : δ = x + s) :
+    (1 - a_k * t) ^ 2 + a_k * t * s ^ 2 = (x + y_k - x * y_k) ^ 2 + a_k * t * s ^ 2 ∧
+    (1 / 8 : ℝ) * (y_k + δ) ^ 2 ≤ (1 / 4 : ℝ) * ((x + y_k) ^ 2 + s ^ 2) ∧
+    (1 / 4 : ℝ) * ((x + y_k) ^ 2 + s ^ 2) ≤ (1 - a_k * t) ^ 2 + a_k * t * s ^ 2 ∧
+    (1 - a_k * t) ^ 2 + a_k * t * s ^ 2 ≤ (x + y_k) ^ 2 + s ^ 2 ∧
+    (x + y_k) ^ 2 + s ^ 2 ≤ (y_k + δ) ^ 2 := by
+{
+  have hx_nonneg : 0 ≤ x := by linarith
+  have hy_nonneg : 0 ≤ y_k := by linarith
+  have h_1_sub_akt_id : 1 - a_k * t = x + y_k - x * y_k := by
+  {
+    rw [hx, hy]
+    ring
+  }
+  have h_1_sub_akt_alt : 1 - a_k * t = y_k + a_k * x := by
+  {
+    rw [hx, hy]
+    ring
+  }
+  have h_akt_bounds : (1 / 4 : ℝ) ≤ a_k * t ∧ a_k * t ≤ 1 := by
+  {
+    constructor <;> nlinarith
+  }
+  have h_rad_bounds :
+      (1 / 2 : ℝ) * (x + y_k) ≤ 1 - a_k * t ∧ 1 - a_k * t ≤ x + y_k := by
+  {
+    rw [h_1_sub_akt_alt]
+    constructor <;> nlinarith
+  }
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · rw [h_1_sub_akt_id]
+  · -- Step 1a: (1/8)(y_k + δ)^2 ≤ (1/4)((x + y_k)^2 + s^2) via 2(A^2 + B^2) - (A + B)^2 = (A - B)^2 ≥ 0
+    rw [hδ]
+    have h_cauchy : 0 ≤ (x + y_k - s) ^ 2 := sq_nonneg (x + y_k - s)
+    linarith
+  · -- Step 1b: (1/4)((x + y_k)^2 + s^2) ≤ (1 - a_k t)^2 + a_k t s^2
+    have h_sq1 : (1 / 4 : ℝ) * (x + y_k) ^ 2 ≤ (1 - a_k * t) ^ 2 := by
+      nlinarith [h_rad_bounds.1]
+    have h_sq2 : (1 / 4 : ℝ) * s ^ 2 ≤ a_k * t * s ^ 2 :=
+      mul_le_mul_of_nonneg_right h_akt_bounds.1 (sq_nonneg s)
+    linarith
+  · -- Step 1c: (1 - a_k t)^2 + a_k t s^2 ≤ (x + y_k)^2 + s^2
+    have h_sq1 : (1 - a_k * t) ^ 2 ≤ (x + y_k) ^ 2 := by
+      nlinarith [h_rad_bounds.1, h_rad_bounds.2]
+    have h_sq2 : a_k * t * s ^ 2 ≤ s ^ 2 := by
+    {
+      calc a_k * t * s ^ 2 ≤ 1 * s ^ 2 := mul_le_mul_of_nonneg_right h_akt_bounds.2 (sq_nonneg s)
+        _ = s ^ 2 := one_mul (s ^ 2)
+    }
+    linarith
+  · -- Step 1d: (x + y_k)^2 + s^2 ≤ (y_k + δ)^2 = (x + y_k + s)^2 since 2(x + y_k)s ≥ 0
+    rw [hδ]
+    have h_cross : 0 ≤ 2 * (x + y_k) * s := by positivity
+    linarith
+}
+
+/--
+  **Two-Sided Power-Law Substitution into the Pole-Free Derivative Bound (Step 2 of the Blue Resolution):**
+  Given the two-sided power law $C_1 \delta^{-(1+1/p)} \le S(t e^{i\theta}) \le C_2 \delta^{-(1+1/p)}$,
+  substituting the upper bound on $S$ into the positive prefactor and the lower bound on $S$ into the
+  negative exponent $-\frac{1}{2} x S$ (with $x = 1 - t \ge 0$) yields:
+  $$e^{1/2} S \exp\!\left(-\frac{1}{2} x S\right) \le e^{1/2} C_2 \delta^{-(1+1/p)} \exp\!\left(-c x \delta^{-(1+1/p)}\right)$$
+  where $c = \frac{1}{2} C_1$.
+-/
+theorem blue_polefree_power_law_substitution
+    (S_val C₁ C₂ c x δ_pow : ℝ)
+    (hS_low : C₁ * δ_pow ≤ S_val) (hS_high : S_val ≤ C₂ * δ_pow)
+    (hx : 0 ≤ x) (hS_nonneg : 0 ≤ S_val)
+    (hc : c = (1 / 2 : ℝ) * C₁) :
+    Real.exp (1 / 2 : ℝ) * S_val * Real.exp (-(1 / 2 : ℝ) * x * S_val) ≤
+      Real.exp (1 / 2 : ℝ) * C₂ * δ_pow * Real.exp (-c * x * δ_pow) := by
+{
+  have h_exp_le : Real.exp (-(1 / 2 : ℝ) * x * S_val) ≤ Real.exp (-c * x * δ_pow) := by
+  {
+    apply Real.exp_le_exp.mpr
+    rw [hc]
+    nlinarith
+  }
+  have h_pref_le : Real.exp (1 / 2 : ℝ) * S_val ≤ Real.exp (1 / 2 : ℝ) * C₂ * δ_pow := by
+  {
+    rw [mul_assoc]
+    exact mul_le_mul_of_nonneg_left hS_high (Real.exp_pos _).le
+  }
+  exact mul_le_mul h_pref_le h_exp_le (Real.exp_pos _).le
+    (le_trans (mul_nonneg (Real.exp_pos _).le hS_nonneg) h_pref_le)
+}
+
+/--
   **Bulk Band Lower Bound on the Kernel Sum $\Sigma(\delta) = \sum_{k=2}^N \frac{k^2}{(1 + \delta k^2)^2}$:**
   For every index $k$ in the bulk band where $\delta k^2 \le 1$, we have $1 + \delta k^2 \le 2$ and
   $(1 + \delta k^2)^2 \le 4$, so each summand is bounded below by $\frac{1}{4} k^2$:
@@ -502,6 +731,70 @@ theorem kernel_term_tail_upper_bound
 }
 
 /-! ## Section 5. Exact Elementary Antiderivatives in Regimes I & II and Resolution of Problem 4.3 -/
+
+/--
+  **Zone I Pointwise Integrand Reduction ($0 < x \le s$, Step 3a of the Blue Resolution):**
+  In Zone I ($0 \le x \le s$), $(x + s)^{-\alpha} \in [2^{-\alpha} s^{-\alpha}, s^{-\alpha}]$.
+  With $c' = 2^{-\alpha} c$, substituting $(x + s)^{-\alpha} \le s^{-\alpha}$ in the prefactor
+  and $(x + s)^{-\alpha} \ge 2^{-\alpha} s^{-\alpha}$ in the negative exponent yields:
+  $$e^{1/2} C_2 (x + s)^{-\alpha} \exp\!\left(-c x (x + s)^{-\alpha}\right)
+    \le e^{1/2} C_2 s^{-\alpha} \exp\!\left(-c' s^{-\alpha} x\right).$$
+-/
+theorem blue_zone_I_integrand_bound
+    (C₂ c c' x xs_pow s_pow two_neg_alpha : ℝ)
+    (hC₂ : 0 ≤ C₂) (hc : 0 ≤ c) (hx : 0 ≤ x) (hxs_nonneg : 0 ≤ xs_pow)
+    (h_pow_low : two_neg_alpha * s_pow ≤ xs_pow)
+    (h_pow_high : xs_pow ≤ s_pow)
+    (hc' : c' = two_neg_alpha * c) :
+    Real.exp (1 / 2 : ℝ) * C₂ * xs_pow * Real.exp (-c * x * xs_pow) ≤
+      Real.exp (1 / 2 : ℝ) * C₂ * s_pow * Real.exp (-c' * s_pow * x) := by
+{
+  have h_pref_nonneg : 0 ≤ Real.exp (1 / 2 : ℝ) * C₂ := mul_nonneg (Real.exp_pos _).le hC₂
+  have h_pref_le : Real.exp (1 / 2 : ℝ) * C₂ * xs_pow ≤ Real.exp (1 / 2 : ℝ) * C₂ * s_pow :=
+    mul_le_mul_of_nonneg_left h_pow_high h_pref_nonneg
+  have h_exp_le : Real.exp (-c * x * xs_pow) ≤ Real.exp (-c' * s_pow * x) := by
+  {
+    apply Real.exp_le_exp.mpr
+    rw [hc']
+    have h_cx_nonneg : 0 ≤ c * x := mul_nonneg hc hx
+    have h_mul := mul_le_mul_of_nonneg_left h_pow_low h_cx_nonneg
+    linarith
+  }
+  exact mul_le_mul h_pref_le h_exp_le (Real.exp_pos _).le
+    (le_trans (mul_nonneg h_pref_nonneg hxs_nonneg) h_pref_le)
+}
+
+/--
+  **Zone II Pointwise Integrand Reduction ($s \le x \le x_0$, Step 3b of the Blue Resolution):**
+  In Zone II ($0 \le s \le x$), $(x + s)^{-\alpha} \in [2^{-\alpha} x^{-\alpha}, x^{-\alpha}]$ and
+  $x (x + s)^{-\alpha} \ge 2^{-\alpha} x^{1 - \alpha} = 2^{-\alpha} x^{-1/p}$.
+  With $c' = 2^{-\alpha} c$, substituting $(x + s)^{-\alpha} \le x^{-(1+1/p)}$ in the prefactor
+  and $x (x + s)^{-\alpha} \ge 2^{-\alpha} x^{-1/p}$ in the negative exponent yields:
+  $$e^{1/2} C_2 (x + s)^{-\alpha} \exp\!\left(-c x (x + s)^{-\alpha}\right)
+    \le e^{1/2} C_2 x^{-(1 + 1/p)} \exp\!\left(-c' x^{-1/p}\right).$$
+-/
+theorem blue_zone_II_integrand_bound
+    (C₂ c c' x xs_pow x_pow_pref x_pow_exp two_neg_alpha : ℝ)
+    (hC₂ : 0 ≤ C₂) (hc : 0 ≤ c) (hxs_nonneg : 0 ≤ xs_pow)
+    (h_pow_low : two_neg_alpha * x_pow_exp ≤ x * xs_pow)
+    (h_pow_high : xs_pow ≤ x_pow_pref)
+    (hc' : c' = two_neg_alpha * c) :
+    Real.exp (1 / 2 : ℝ) * C₂ * xs_pow * Real.exp (-c * x * xs_pow) ≤
+      Real.exp (1 / 2 : ℝ) * C₂ * x_pow_pref * Real.exp (-c' * x_pow_exp) := by
+{
+  have h_pref_nonneg : 0 ≤ Real.exp (1 / 2 : ℝ) * C₂ := mul_nonneg (Real.exp_pos _).le hC₂
+  have h_pref_le : Real.exp (1 / 2 : ℝ) * C₂ * xs_pow ≤ Real.exp (1 / 2 : ℝ) * C₂ * x_pow_pref :=
+    mul_le_mul_of_nonneg_left h_pow_high h_pref_nonneg
+  have h_exp_le : Real.exp (-c * x * xs_pow) ≤ Real.exp (-c' * x_pow_exp) := by
+  {
+    apply Real.exp_le_exp.mpr
+    rw [hc']
+    have h_mul := mul_le_mul_of_nonneg_left h_pow_low hc
+    linarith
+  }
+  exact mul_le_mul h_pref_le h_exp_le (Real.exp_pos _).le
+    (le_trans (mul_nonneg h_pref_nonneg hxs_nonneg) h_pref_le)
+}
 
 /--
   **Exact Derivative of the Regime I Boundary-Layer Antiderivative:**
