@@ -8,7 +8,7 @@ scope = "leanprover-community"
 
 [[lean_lib]]
 name = "ComplexAnalysis"
-roots = ["ComplexAnalysis", "Basic", "brennan", "CauchyRiemann", "R2", "Sarason", "Contour", "Laplace", "Zeta", "PNT", "Newman"]
+roots = ["ComplexAnalysis", "Basic", "brennan", "CauchyRiemann", "R2", "Sarason", "Contour", "Laplace", "Zeta", "PNT", "Newman", "SlitHarmonicMeasure"]
 
 [[lean_exe]]
 name = "complexanalysis"

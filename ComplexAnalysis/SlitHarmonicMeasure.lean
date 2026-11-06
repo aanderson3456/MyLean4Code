@@ -1852,8 +1852,13 @@ theorem affine_isDiscreteHarmonicAt {d : ℕ}
 }
 
 /--
-  Second-order Taylor polynomial `T₂(z)` of a twice-differentiable function `h : ℂ → ℝ` centered at `v`:
-  `T₂(z) = h₀ + h_x Δx + h_y Δy + (1/2) h_xx Δx² + h_xy Δx Δy + (1/2) h_yy Δy²`.
+  **Second-Order Taylor Jet (`secondOrderTaylorAt`):**
+  A *second-order Taylor jet* (or *2-jet*) of a twice-differentiable function `h : ℂ → ℝ` at a
+  point `v = x₀ + i y₀ ∈ ℂ` is its second-order Taylor polynomial centered at `v`—the local
+  quadratic approximation built from the function's value `h₀ = h(v)`, its first partial
+  derivatives `(h_x, h_y)`, and its second partial derivatives `(h_xx, h_xy, h_yy)`:
+  `T₂(z) = h₀ + h_x Δx + h_y Δy + (1/2) h_xx Δx² + h_xy Δx Δy + (1/2) h_yy Δy²`,
+  where `Δx = (z - v).re` and `Δy = (z - v).im`.
 -/
 noncomputable def secondOrderTaylorAt (v : ℂ) (h₀ hx hy hxx hxy hyy : ℝ) (z : ℂ) : ℝ :=
   let dx := (z - v).re

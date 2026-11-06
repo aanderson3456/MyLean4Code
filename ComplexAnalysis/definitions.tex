@@ -1064,6 +1064,56 @@ def IsQuadraticallyBalancedStar {d : $\mathbb{N}$} (S : IsoradialVertexStar d) :
   ($\sum$ k : Fin d, Real.tan (S.theta k) * ((S.u k - S.v).re * (S.u k - S.v).im) = 0)
 \end{lstlisting}
     \[ (\Delta^\delta T_2)(v) = h_{xx} + h_{yy}, \qquad (\Delta^\delta h)(v) = (h_{xx} + h_{yy}) + \Delta^\delta(h - T_2)(v) \]
+
+    \item \textbf{\texttt{CompleteIsoradialStar}} ($d \in \mathbb{N}$): Complete Chelkak--Smirnov isoradial vertex star extending \texttt{IsoradialVertexStar} with the rhombic diagonal midpoint-bisection law $u_k + v = w_{\text{next}}(k) + w_{\text{prev}}(k)$ and closed-cycle telescoping $\sum_{k=1}^d (w_{\text{next}}(k)^2 - w_{\text{prev}}(k)^2) = 0$, from which \texttt{IsQuadraticallyBalancedStar} follows unconditionally (\texttt{brennan/ChelkakSmirnov.lean}, Lemma~2.2 of [CS11]).
+\begin{lstlisting}[language=Caml, mathescape=true]
+structure CompleteIsoradialStar (d : $\mathbb{N}$) extends IsoradialVertexStar d where
+  hRhombicMidpoint : $\forall$ k : Fin d, u k + v = w_next k + w_prev k
+  hDualSqCycle : $\sum$ k : Fin d, (w_next k ^ 2 - w_prev k ^ 2) = 0
+\end{lstlisting}
+    \[ \tan\theta_k\,(u_k^2 - v^2) = -i\bigl(w_{\text{next}}(k)^2 - w_{\text{prev}}(k)^2\bigr) \implies \sum_{k=1}^d \tan\theta_k\,(u_k - v)^2 = 0 \]
+
+    \item \textbf{\texttt{isoradialStarExpectation}} \& \textbf{\texttt{isoradialStarTimeScale}} ($S : \texttt{IsoradialVertexStar}\ d$, $f : \operatorname{Fin} d \to \mathbb{R} \to \mathbb{R}$): Random-walk expectation operator $\mathbf{E}[f(\xi_v)]$ and isotropic variance time-scale $T_v = 2\mu_\Gamma^\delta(v) / \sum_{k=1}^d \tan\theta_k$ (\texttt{brennan/ChelkakSmirnov.lean}, Eq.~(1.2) of [CS11]).
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def isoradialStarExpectation {d : $\mathbb{N}$}
+    (S : IsoradialVertexStar d) (f : Fin d $\to$ $\mathbb{R}$) : $\mathbb{R}$ :=
+  $\sum$ k : Fin d, isoradialStarProb S k * f k
+
+noncomputable def isoradialStarTimeScale {d : $\mathbb{N}$} (S : IsoradialVertexStar d) : $\mathbb{R}$ :=
+  (2 * isoradialStarAreaWeight S) / isoradialStarTotalTan S
+\end{lstlisting}
+    \[ \mathbf{E}[\operatorname{Re}\xi_v] = \mathbf{E}[\operatorname{Im}\xi_v] = 0, \qquad \mathbf{E}[(\operatorname{Re}\xi_v)^2] = \mathbf{E}[(\operatorname{Im}\xi_v)^2] = T_v, \qquad \mathbf{E}[\operatorname{Re}\xi_v \operatorname{Im}\xi_v] = 0 \]
+
+    \item \textbf{\texttt{IsoradialRhombus}}, \textbf{\texttt{rhombicDel}}, \textbf{\texttt{rhombicDelBar}}, \& \textbf{\texttt{IsDiscreteHolomorphicOnRhombus}} ($R : \texttt{IsoradialRhombus}$, $H : \mathbb{C} \to \mathbb{C} \to \mathbb{C}$): Chelkak--Smirnov discrete Wirtinger operators $\partial^\delta H(z)$ and $\bar{\partial}^\delta H(z)$ on a rhombus $z \in \diamondsuit$ with orthogonal diagonals $w^+ - w^- = i\tan\theta_z\,(u^+ - u^-)$ (\texttt{brennan/ChelkakSmirnov.lean}, Def.~2.12 \& Eq.~(2.7) of [CS11]).
+\begin{lstlisting}[language=Caml, mathescape=true]
+structure IsoradialRhombus where
+  u_minus : $\mathbb{C}$
+  u_plus : $\mathbb{C}$
+  w_minus : $\mathbb{C}$
+  w_plus : $\mathbb{C}$
+  theta : $\mathbb{R}$
+  hTanPos : 0 < Real.tan theta
+  hPrimalNe : u_plus - u_minus $\neq$ 0
+  hDualDiag : w_plus - w_minus = I * ((Real.tan theta : $\mathbb{R}$) : $\mathbb{C}$) * (u_plus - u_minus)
+
+noncomputable def rhombicDel (R : IsoradialRhombus) (H : $\mathbb{C}$ $\to$ $\mathbb{C}$) : $\mathbb{C}$ :=
+  (1 / 2 : $\mathbb{C}$) * (rhombicPrimalQuotient R H + rhombicDualQuotient R H)
+
+noncomputable def rhombicDelBar (R : IsoradialRhombus) (H : $\mathbb{C}$ $\to$ $\mathbb{C}$) : $\mathbb{C}$ :=
+  (1 / 2 : $\mathbb{C}$) * ((R.u_plus - R.u_minus) / star (R.u_plus - R.u_minus)) *
+    (rhombicPrimalQuotient R H - rhombicDualQuotient R H)
+
+def IsDiscreteHolomorphicOnRhombus (R : IsoradialRhombus) (H : $\mathbb{C}$ $\to$ $\mathbb{C}$) : Prop :=
+  rhombicDelBar R H = 0
+\end{lstlisting}
+    \[ \bar{\partial}^\delta H(z) = 0 \iff \frac{H(u^+) - H(u^-)}{u^+ - u^-} = \frac{H(w^+) - H(w^-)}{w^+ - w^-} = \partial^\delta H(z) \]
+
+    \item \textbf{\texttt{sarasonLinearJet}} ($z_0, f_0 \in \mathbb{C}$, $u_x, u_y, v_x, v_y \in \mathbb{R}$, $z \in \mathbb{C} \to \mathbb{C}$): First-order real-linear Taylor jet constructed from Sarason's \texttt{ConformalLinearMap\_eps}, satisfying $\partial^\delta T_1(R) = \texttt{del\_eps}(u_x, u_y, v_x, v_y)$ and $\bar{\partial}^\delta T_1(R) = \texttt{delBar\_eps}(u_x, u_y, v_x, v_y)$ identically on every \texttt{IsoradialRhombus}.
+\begin{lstlisting}[language=Caml, mathescape=true]
+noncomputable def sarasonLinearJet (z$_0$ f$_0$ : $\mathbb{C}$) (ux uy vx vy : $\mathbb{R}$) (z : $\mathbb{C}$) : $\mathbb{C}$ :=
+  f$_0$ + ConformalLinearMap_eps ux uy vx vy (z - z$_0$)
+\end{lstlisting}
+    \[ \partial^\delta T_1(R) = \frac{1}{2}\bigl((u_x + v_y) + i(v_x - u_y)\bigr), \qquad \bar{\partial}^\delta T_1(R) = \frac{1}{2}\bigl((u_x - v_y) + i(v_x + u_y)\bigr) \]
 \end{itemize}
 
 \end{document}
