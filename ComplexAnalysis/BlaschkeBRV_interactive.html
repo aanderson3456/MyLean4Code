@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uniformly Bounded Radial Variation for the a_k = 1 - 1/k^2 Blaschke Product and Resolution of Problem 4.3 on T_g Acting on H^\infty</title>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        tags: 'ams'
+      }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <style>
+    :root {
+      --bg: #f4f2ec;
+      --paper: #ffffff;
+      --surface-l2: #f8fafc;
+      --surface-l3: #fcfcfd;
+      --border: #d8d4c8;
+      --border-subtle: #e6e3da;
+      --text: #111315;
+      --muted: #4b5563;
+      --accent: #1e3a8a;
+      --teal: #0f766e;
+      --amber: #92400e;
+      --purple: #5b21b6;
+      --green: #065f46;
+      --code-bg: #0f172a;
+      --code-fg: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Latin Modern Roman", "Computer Modern Serif", "CMU Serif", "Georgia", "Times New Roman", Times, serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.72;
+      font-size: 17px;
+      display: grid;
+      grid-template-columns: 295px 1fr;
+      min-height: 100vh;
+    }
+    @media (max-width: 1024px) {
+      body { grid-template-columns: 1fr; }
+      aside { display: none; }
+    }
+    /* Sidebar navigation & interactive controls */
+    aside {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #ece9e0;
+      border-right: 1px solid var(--border);
+      padding: 22px 16px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    aside h2 {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .toc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .toc-list a {
+      color: #374151;
+      text-decoration: none;
+      font-size: 0.79rem;
+      line-height: 1.38;
+      padding: 5px 9px;
+      border-radius: 4px;
+      display: block;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .toc-list a:hover {
+      color: var(--accent);
+      background: rgba(30, 58, 138, 0.07);
+      border-left-color: var(--accent);
+    }
+    .toc-sub {
+      padding-left: 18px !important;
+      font-size: 0.75rem !important;
+      color: #4b5563 !important;
+    }
+    .global-controls {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .ctrl-btn {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #ffffff;
+      color: #1f2937;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      padding: 7px 10px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+    .ctrl-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #eff6ff;
+    }
+    .ctrl-btn.active-mode {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+    }
+    .legend-box {
+      margin-top: 18px;
+      padding: 11px 12px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      font-size: 0.74rem;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+    .legend-box strong {
+      color: #111827;
+    }
+
+    /* Main LaTeX Paper Sheet */
+    main {
+      max-width: 920px;
+      width: 100%;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      padding: 68px 78px 96px;
+      margin: 28px auto 64px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+    }
+    @media (max-width: 768px) {
+      main {
+        padding: 32px 22px 64px;
+        margin: 0;
+        border: none;
+      }
+    }
+
+    /* LaTeX Title, Author, Abstract Header */
+    .paper-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .paper-title {
+      font-size: 1.46rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      line-height: 1.35;
+      color: #000000;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .paper-authors {
+      font-size: 1.02rem;
+      font-variant: small-caps;
+      letter-spacing: 0.04em;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    .paper-affil {
+      font-size: 0.88rem;
+      font-style: italic;
+      color: #4b5563;
+      margin-bottom: 6px;
+    }
+    .paper-date {
+      font-size: 0.84rem;
+      color: #525866;
+    }
+    .abstract-container {
+      margin: 24px 36px 28px;
+      font-size: 0.93rem;
+      line-height: 1.64;
+      text-align: justify;
+    }
+    @media (max-width: 768px) {
+      .abstract-container { margin: 20px 0; }
+    }
+    .abstract-container p {
+      margin-bottom: 10px;
+    }
+    .abstract-label {
+      font-weight: 700;
+      font-variant: small-caps;
+      letter-spacing: 0.03em;
+    }
+    .paper-meta-footnotes {
+      border-top: 1px solid #d1d5db;
+      border-bottom: 1px solid #d1d5db;
+      padding: 10px 0;
+      margin-bottom: 32px;
+      font-size: 0.86rem;
+      color: #374151;
+      line-height: 1.55;
+    }
+
+    /* Section & Subsection Headings (LaTeX amsart style) */
+    section {
+      margin-bottom: 34px;
+    }
+    h2.sec-heading {
+      font-size: 1.22rem;
+      font-weight: 700;
+      color: #000000;
+      margin: 34px 0 14px;
+      line-height: 1.35;
+    }
+    h2.sec-heading .sec-num {
+      margin-right: 8px;
+    }
+    h3.subsec-heading {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #111827;
+      margin: 22px 0 10px;
+    }
+    h3.subsec-heading .subsec-num {
+      margin-right: 6px;
+    }
+    p.prose {
+      text-align: justify;
+      margin-bottom: 14px;
+      color: var(--text);
+      hyphens: auto;
+    }
+    p.prose-indent {
+      text-align: justify;
+      text-indent: 1.8em;
+      margin-bottom: 12px;
+      color: var(--text);
+      hyphens: auto;
+    }
+    ul.paper-list, ol.paper-list {
+      margin: 10px 0 16px 2.2em;
+      text-align: justify;
+    }
+    ul.paper-list li, ol.paper-list li {
+      margin-bottom: 6px;
+    }
+
+    /* LaTeX Theorem / Lemma / Proposition / Problem / Proof Environments */
+    .latex-env {
+      margin: 18px 0 14px;
+      padding: 2px 0;
+      text-align: justify;
+    }
+    .latex-env-title {
+      font-weight: 700;
+      color: #000000;
+    }
+    .latex-thm-body {
+      font-style: italic;
+    }
+    .latex-proof {
+      margin: 8px 0 20px;
+      text-align: justify;
+    }
+    .latex-proof-title {
+      font-style: italic;
+      font-weight: 600;
+      color: #000000;
+    }
+    .qed {
+      float: right;
+      font-size: 0.95rem;
+      line-height: 1;
+      color: #111827;
+    }
+
+    /* Discreet Interactive Level 1 -> Level 2 -> Level 3 Step Blocks */
+    .step-block {
+      margin: 10px 0;
+      border-left: 2.5px solid transparent;
+      padding-left: 10px;
+      margin-left: -12px;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+    .step-block:hover {
+      border-left-color: #93c5fd;
+      background: rgba(239, 246, 255, 0.38);
+      border-radius: 0 4px 4px 0;
+    }
+    .step-block.open-l2 {
+      border-left-color: var(--accent);
+      background: rgba(248, 250, 252, 0.65);
+      border-radius: 0 4px 4px 0;
+    }
+    .level1-row {
+      cursor: pointer;
+      padding: 3px 0;
+      text-align: justify;
+    }
+    .step-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: 8px;
+      vertical-align: middle;
+      user-select: none;
+    }
+    .pill-toggle {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 0.66rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 3px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-style: normal;
+    }
+    .pill-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #eff6ff;
+    }
+    .pill-toggle.l3-pill {
+      border-color: #a7f3d0;
+      background: #ecfdf5;
+      color: var(--green);
+    }
+    .pill-toggle.l3-pill:hover {
+      background: #d1fae5;
+    }
+
+    /* Level 2: Discreet 10x Algebraic Unpacking (Bridge from Level 1 to Level 3 Lean Code) */
+    .level2-drawer {
+      display: none;
+      margin: 10px 0 14px;
+      padding: 16px 20px;
+      background: var(--surface-l2);
+      border: 1px solid #dbeafe;
+      border-left: 3.5px solid var(--accent);
+      border-radius: 4px;
+      font-size: 0.91rem;
+      font-style: normal;
+      line-height: 1.66;
+      color: #1e293b;
+      text-align: left;
+    }
+    .step-block.open-l2 .level2-drawer {
+      display: block;
+    }
+    .l2-header {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .level2-drawer ol, .level2-drawer ul {
+      margin: 8px 0 10px 1.5rem;
+    }
+    .level2-drawer li {
+      margin-bottom: 7px;
+    }
+    .l2-bridge-box {
+      margin-top: 10px;
+      padding: 9px 13px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 3px solid #d97706;
+      border-radius: 4px;
+      font-size: 0.86rem;
+      color: #78350f;
+    }
+
+    /* Level 3: Verified Lean 4 Code */
+    .level3-drawer {
+      display: none;
+      margin-top: 12px;
+      background: var(--code-bg);
+      border: 1px solid #334155;
+      border-left: 3.5px solid #10b981;
+      border-radius: 5px;
+      overflow: hidden;
+      font-style: normal;
+    }
+    .level2-drawer.open-l3 .level3-drawer {
+      display: block;
+    }
+    .l3-bar {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #1e293b;
+      padding: 7px 13px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .l3-bar a {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+    .l3-bar a:hover {
+      text-decoration: underline;
+    }
+    pre.lean-code {
+      padding: 13px 16px;
+      overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", "SFMono-Regular", Consolas, monospace;
+      font-size: 0.79rem;
+      line-height: 1.52;
+      color: var(--code-fg);
+      background: var(--code-bg);
+      margin: 0;
+    }
+    .bib-list {
+      list-style: none;
+      font-size: 0.91rem;
+    }
+    .bib-list li {
+      margin-bottom: 9px;
+      padding-left: 3.4em;
+      text-indent: -3.4em;
+      text-align: justify;
+    }
+    .bib-key {
+      font-weight: 600;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <h2>Contents</h2>
+    <ul class="toc-list">
+      <li><a href="#sec-intro">1. Introduction &amp; Background</a></li>
+      <li><a class="toc-sub" href="#subsec-prob43">1.1. Problem 4.3 of [AJS14]</a></li>
+      <li><a class="toc-sub" href="#subsec-main">1.2. Main Theorem</a></li>
+      <li><a href="#sec-borderline">2. Borderline Geometry &amp; Real Ray</a></li>
+      <li><a href="#sec-polefree">3. The Pole-Free Exponential Trick</a></li>
+      <li><a class="toc-sub" href="#subsec-polar">3.1. Polar Asymptotics of $S(z)$</a></li>
+      <li><a href="#sec-twozone">4. Two-Zone Radial Integration</a></li>
+      <li><a class="toc-sub" href="#subsec-vanishing">4.1. Vanishing Variation as $\theta \to 0^+$</a></li>
+      <li><a href="#sec-refs">References</a></li>
+    </ul>
+
+    <div class="global-controls">
+      <h2>Interactive 3-Level View</h2>
+      <button class="ctrl-btn active-mode" id="btn-l1" onclick="collapseAll()">Level 1: Clean Math Paper (Default)</button>
+      <button class="ctrl-btn" id="btn-l2" onclick="expandAllL2()">Level 2: +10× Algebraic Bridge</button>
+      <button class="ctrl-btn" id="btn-l3" onclick="expandAllL3()">Level 3: +Verified Lean 4 Code</button>
+    </div>
+
+    <div class="legend-box">
+      <strong>3-Level Reading Guide</strong><br/>
+      • <strong>Level 1 (Default):</strong> Self-contained LaTeX math research paper.<br/>
+      • <strong>Level 2 (Click any step / <code>+L2</code>):</strong> Discreet 10× algebraic derivation based directly on the Lean 4 proof terms as the bridge from Level 1 to Level 3.<br/>
+      • <strong>Level 3 (Click <code>+L3 Lean</code>):</strong> Machine-verified Lean 4 code (<a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean"><code>BlaschkeBRV.lean</code></a>, 1,052 lines, 0 <code>sorry</code>s).
+    </div>
+  </aside>
+
+  <main>
+    <!-- ================================================================= -->
+    <!-- LATEX PAPER HEADER & ABSTRACT                                     -->
+    <!-- ================================================================= -->
+    <div class="paper-header">
+      <h1 class="paper-title">Uniformly Bounded Radial Variation for the $a_k = 1 - 1/k^2$ Blaschke Product<br/>and Resolution of a Problem on $T_g$ Acting on $H^\infty$</h1>
+      <div class="paper-authors">Austin Anderson</div>
+      <div class="paper-affil">Interactive 3-Level Edition — Grounded in Machine-Checked Lean 4 Proofs (<code>BlaschkeBRV.lean</code>)</div>
+      <div class="paper-date">November 5, 2026</div>
+    </div>
+
+    <div class="abstract-container">
+      <p>
+        <span class="abstract-label">Abstract.</span>
+        Let $T_g f(z) = \int_0^z f(w) g'(w)\,dw$ and $S_g f(z) = \int_0^z f'(w) g(w)\,dw$ denote the generalized Volterra operator and its companion acting on $H^\infty(\mathbb{D})$. In [Anderson, Jovovic, and Smith, <em>Integral Equations Operator Theory</em> <strong>80</strong> (2014), Problem 4.3], the authors asked for a zero-sequence characterization of Blaschke products belonging to the class $\mathrm{BRV} = \{g \in H(\mathbb{D}) : \sup_{\theta} \int_0^1 |g'(te^{i\theta})|\,dt < \infty\} \subseteq T[H^\infty] = S[H^\infty]$, singling out the Blaschke product $B(z)$ with zeros $a_k = 1 - 1/k^2$ as a critical borderline test case whose individual radii have rectifiable images, but for which a uniform arc-length bound was unknown. We resolve Problem 4.3 in the affirmative by proving that for $a_k = 1 - 1/k^2$—and more generally for $a_k = 1 - 1/k^p$ for every $p > 1$—the Blaschke product $B(z)$ belongs to $\mathrm{BRV}$, and its near-boundary radial variation actually vanishes as $\theta \to 0^+$. Consequently, $T_B$ and $S_B$ are bounded (and non-compact) linear operators on $H^\infty(\mathbb{D})$.
+      </p>
+    </div>
+
+    <div class="paper-meta-footnotes">
+      <div><strong>2020 Mathematics Subject Classification:</strong> Primary 30J10, 47B38; Secondary 30H05, 68V15.</div>
+      <div><strong>Keywords:</strong> Blaschke products, bounded radial variation, Volterra-type integral operators, $H^\infty$, Frostman condition, interpolating sequences, Lean 4 formal verification.</div>
+      <div><strong>Companion LaTeX PDFs &amp; Lean 4 Source:</strong>
+        <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV_level1.pdf"><code>BlaschkeBRV_level1.pdf</code></a> (Clean Level 1 Paper) ·
+        <a href="file:///Users/austinanderson/Documents/MathResearch/20261105IntOpsHinfty.pdf"><code>20261105IntOpsHinfty.pdf</code></a> (Original Paper + Blue Resolution) ·
+        <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean"><code>BlaschkeBRV.lean</code></a> (1,052 lines, 0 <code>sorry</code>s).
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 1: INTRODUCTION                                           -->
+    <!-- ================================================================= -->
+    <section id="sec-intro">
+      <h2 class="sec-heading"><span class="sec-num">1.</span>Introduction and Operator-Theoretic Background</h2>
+
+      <p class="prose">
+        Let $\mathbb{D} = \{z \in \mathbb{C} : |z| < 1\}$ be the open unit disk, $H(\mathbb{D})$ the space of holomorphic functions on $\mathbb{D}$, $H^\infty = H^\infty(\mathbb{D})$ the Banach algebra of bounded holomorphic functions with norm $\|f\|_\infty = \sup_{z \in \mathbb{D}} |f(z)|$, and $A = A(\mathbb{D})$ the disk algebra of functions in $H^\infty$ extending continuously to $\overline{\mathbb{D}}$. For a symbol $g \in H(\mathbb{D})$, the Volterra-type integral operator $T_g$, its companion operator $S_g$, and the multiplication operator $M_g$ are defined for $f \in H(\mathbb{D})$ and $z \in \mathbb{D}$ by
+        \begin{equation}\label{eq:operators}
+          T_g f(z) = \int_0^z f(w) g'(w)\,dw, \qquad
+          S_g f(z) = \int_0^z f'(w) g(w)\,dw, \qquad
+          M_g f(z) = f(z) g(z).
+        \end{equation}
+        Integration by parts connects the three operators via $M_g f(z) = f(0) g(0) + T_g f(z) + S_g f(z)$. Writing $L[X] = \{g \in H(\mathbb{D}) : L_g \text{ is bounded on } X\}$ and $L_0[X] = \{g \in H(\mathbb{D}) : L_g \text{ is compact on } X\}$, Proposition 2.3 of [AJS14] shows that on $H^\infty$,
+        \begin{equation}\label{eq:TH-SH}
+          T[H^\infty] = S[H^\infty] \subsetneq M[H^\infty] = H^\infty.
+        \end{equation}
+      </p>
+
+      <p class="prose-indent">
+        For $\theta \in [-\pi, \pi]$, the <em>radial variation</em> of $g \in H(\mathbb{D})$ along the radius $e^{i\theta}$ is $V(g, \theta) := \int_0^1 |g'(t e^{i\theta})|\,dt$, and the class of analytic functions with <em>uniformly bounded radial variation</em> is
+        \begin{equation}\label{eq:BRV-def}
+          \mathrm{BRV} := \Bigl\{ g \in H(\mathbb{D}) : \|g\|_{\mathrm{BRV}} := \sup_{\theta \in [-\pi, \pi]} \int_0^1 |g'(t e^{i\theta})|\,dt < \infty \Bigr\}.
+        \end{equation}
+        Since $|T_g f(r e^{i\theta})| = \bigl|\int_0^r f(t e^{i\theta}) g'(t e^{i\theta}) e^{i\theta}\,dt\bigr| \le V(g, \theta) \|f\|_\infty$, one has $\mathrm{BRV} \subseteq T[H^\infty] = S[H^\infty]$ with $\|T_g\|_{H^\infty \to H^\infty} \le \|g\|_{\mathrm{BRV}}$.
+      </p>
+
+      <h3 class="subsec-heading" id="subsec-prob43"><span class="subsec-num">1.1.</span>Blaschke Products in $\mathrm{BRV}$ and Problem 4.3 of [AJS14]</h3>
+
+      <p class="prose">
+        Prior to the present work, two contrasting regimes of Blaschke products $B(z) = \prod_k \frac{|a_k|}{a_k} \frac{a_k - z}{1 - \bar{a}_k z}$ were understood in [AJS14]:
+      </p>
+      <ol class="paper-list">
+        <li><strong>Uniformly Frostman Blaschke Products ($B \in \mathrm{BRV}$):</strong> By Cargo's theorem [Car61], every subproduct of $B$ belongs to $\mathrm{BRV}$ if and only if $\sup_{\theta} \sum_k \frac{1 - |a_k|}{|a_k - e^{i\theta}|} < \infty$. However, no infinite sequence $\{a_k\}$ approaching $\partial\mathbb{D}$ nontangentially (and in particular no real zero sequence $0 < a_k < 1$) can satisfy the uniform Frostman condition.</li>
+        <li><strong>Real Interpolating Blaschke Products ($B \notin T[H^\infty]$):</strong> By [AJS14, Proposition 2.7 and Theorem 2.10], if $0 < a_k < a_{k+1} < 1$ is an interpolating sequence ($\inf_k \prod_{j \ne k} \bigl|\frac{a_j - a_k}{1 - a_j a_k}\bigr| > 0$), then $B \notin \mathrm{BRV}$ and $T_B$ is unbounded on $H^\infty$.</li>
+      </ol>
+
+      <div class="step-block" id="step-prob-4-3">
+        <div class="level1-row" onclick="toggleL2('step-prob-4-3', event)">
+          <div class="latex-env">
+            <span class="latex-env-title">Problem 1.1 ([AJS14, Problem 4.3, p. 14]).</span>
+            <span class="latex-thm-body">
+              Characterize, in terms of their zero sequences, Blaschke products in $\mathrm{BRV}$. A possible candidate for a Blaschke product in $\mathrm{BRV}$ is the Blaschke product with zeros $\{1 - 1/k^2\}$. It is not hard to see that the image of every radius is rectifiable, but it is not clear that there is a uniform bound for their arc-lengths.
+            </span>
+            <span class="step-controls">
+              <button class="pill-toggle" onclick="toggleL2('step-prob-4-3', event)">+L2</button>
+              <button class="pill-toggle l3-pill" onclick="toggleL3('step-prob-4-3', event)">+L3 Lean</button>
+            </span>
+          </div>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — 10× Algebraic Unpacking: Why $1 - a_k = k^{-p}$ Requires $p > 1$ (Bridge to Lean 4)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-prob-4-3', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <p>
+            Before estimating $|B'(z)|$, Lean 4 formalizes the exact threshold on $p \in \mathbb{R}$ for the zero sequence $a_k = 1 - k^{-p}$ to define a convergent Blaschke product:
+          </p>
+          <ol>
+            <li><strong>The Blaschke condition $\sum_{k=1}^\infty (1 - |a_k|) < \infty$:</strong> For $a_k = 1 - k^{-p} \in [0, 1)$, the boundary distance of the $k$-th zero is $y_k := 1 - a_k = k^{-p}$.</li>
+            <li><strong>Translation to Mathlib's `Real.summable_nat_rpow_inv`:</strong> In `BlaschkeBRV.lean`, the Blaschke condition is expressed as `Summable (fun k : ℕ => ((k : ℝ) ^ p)⁻¹)`. By `Real.summable_nat_rpow_inv`, this series converges if and only if $1 < p$.</li>
+            <li><strong>Why $p = 1$ fails and $p = 2$ is the canonical integer test case:</strong> For $p = 1$ ($a_k = 1 - 1/k$), the harmonic series $\sum k^{-1} = \infty$ diverges so the Blaschke product collapses identically to $0$. For $p = 2$ ($a_k = 1 - 1/k^2$, proved separately in `blaschke_condition_inv_sq`), $\sum_{k=1}^\infty k^{-2} = \pi^2/6 < \infty$.</li>
+          </ol>
+          <div class="l2-bridge-box">
+            <strong>Lean 4 Bridge (`BlaschkeBRV.lean:51–67`):</strong> `blaschke_condition_rpow_iff` proves `Summable (fun k : ℕ => ((k : ℝ) ^ p)⁻¹) ↔ 1 < p` directly from `Real.summable_nat_rpow_inv`, and `blaschke_condition_inv_sq` specializes to $p = 2$ via `norm_cast` and `(2 : ℝ) > 1`.
+          </div>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>blaschke_condition_rpow_iff</code> &amp; <code>blaschke_condition_inv_sq</code></span>
+              <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean#L51-L67">Open BlaschkeBRV.lean#L51-L67</a>
+            </div>
+<pre class="lean-code">theorem blaschke_condition_rpow_iff (p : ℝ) :
+    Summable (fun k : ℕ =&gt; ((k : ℝ) ^ p)⁻¹) ↔ 1 &lt; p :=
+  Real.summable_nat_rpow_inv
+
+theorem blaschke_condition_inv_sq :
+    Summable (fun k : ℕ =&gt; ((k : ℝ) ^ 2)⁻¹) := by
+  have h := (Real.summable_nat_rpow_inv (p := 2)).mpr (by norm_num)
+  convert h using 1
+  ext k
+  norm_cast</pre>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="subsec-heading" id="subsec-main"><span class="subsec-num">1.2.</span>Main Results</h3>
+
+      <p class="prose">
+        We resolve Problem 1.1 in the affirmative for the entire polynomial-clustering family $a_k = 1 - k^{-p}$ ($p > 1$).
+      </p>
+
+      <div class="step-block" id="step-main-thm">
+        <div class="level1-row" onclick="toggleL2('step-main-thm', event)">
+          <div class="latex-env">
+            <span class="latex-env-title">Theorem 1.2 (Main Theorem: Resolution of Problem 4.3 of [AJS14]).</span>
+            <span class="latex-thm-body">
+              For every $p > 1$, let $a_1 = 0$ and $a_k = 1 - 1/k^p \in (0, 1)$ for $k \ge 2$, and let
+              \begin{equation}\label{eq:Bp-def}
+                B(z) = -z \prod_{k=2}^\infty \frac{a_k - z}{1 - a_k z}, \qquad z \in \mathbb{D},
+              \end{equation}
+              be the corresponding Blaschke product (in particular, $p = 2$ gives $a_k = 1 - 1/k^2$). Then:
+            </span>
+            <ol class="paper-list" style="font-style: italic; margin-top: 6px;">
+              <li>$B$ is <strong>not</strong> uniformly Frostman, and $\{a_k\}$ is <strong>not</strong> an interpolating sequence ($\rho(a_k, a_{k+1}) \sim \frac{p}{2k} \to 0$).</li>
+              <li>$B$ has <strong>uniformly bounded radial variation</strong> on $\mathbb{D}$:
+                \begin{equation}\label{eq:main-BRV}
+                  \|B\|_{\mathrm{BRV}} = \sup_{\theta \in [-\pi, \pi]} \int_0^1 |B'(t e^{i\theta})|\,dt < \infty,
+                \end{equation}
+                and hence $B \in \mathrm{BRV} \subseteq T[H^\infty] = S[H^\infty]$. Moreover, the near-boundary radial variation vanishes as $\theta \to 0^+$.</li>
+              <li>Both $T_B$ and $S_B$ are bounded linear operators on $H^\infty(\mathbb{D})$, whereas $B \notin A(\mathbb{D})$ and therefore $T_B$ is bounded but <strong>not compact</strong> on $H^\infty(\mathbb{D})$.</li>
+            </ol>
+            <span class="step-controls">
+              <button class="pill-toggle" onclick="toggleL2('step-main-thm', event)">+L2</button>
+              <button class="pill-toggle l3-pill" onclick="toggleL3('step-main-thm', event)">+L3 Lean</button>
+            </span>
+          </div>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — 10× Algebraic Unpacking: Architecture of the Main Theorem in Lean 4</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-main-thm', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <ol>
+            <li><strong>Parametrizing the radial integral by boundary depth $x = 1 - t$:</strong> Along any ray $z = t e^{i\theta}$, the change of variables $x = 1 - t$ maps the near-boundary segment $t \in [1 - x_0, 1)$ to $x \in (0, x_0]$. On the compact core $t \in [0, 1 - x_0]$, $|1 - a_k z| \ge x_0 > 0$, so $|B'(z)| \le 2 x_0^{-2} \sum_{k=1}^\infty k^{-p} < \infty$ is bounded trivially.</li>
+            <li><strong>Splitting $[0, x_0]$ at the angular chord $s = |1 - e^{i\theta}| = 2|\sin(\theta/2)|$:</strong> In `blaschke_power_zeros_uniform_radial_variation`, for every $s \in (0, x_0]$, Lean splits $\int_0^{x_0} |B'((1-x)e^{i\theta})|\,dx$ at the crossover point $x = s$ using `intervalIntegral.integral_add_adjacent_intervals`:
+              \[
+                \int_0^{x_0} \text{B\_deriv\_norm}(s, x)\,dx = \underbrace{\int_0^s \text{B\_deriv\_norm}(s, x)\,dx}_{\text{Zone I } \le \frac{2 e^{1/2} C_2}{C_1}} + \underbrace{\int_s^{x_0} \text{B\_deriv\_norm}(s, x)\,dx}_{\text{Zone II } \le \frac{2 p e^{1/2} C_2}{C_1}}.
+              \]
+            </li>
+            <li><strong>Explicit $\theta$-independent constant $M$:</strong> Summing the two zone bounds gives the explicit uniform bound $M = \frac{2 e^{1/2} C_2}{C_1} + \frac{2 p e^{1/2} C_2}{C_1} > 0$, which has zero dependence on $s$.</li>
+          </ol>
+          <div class="l2-bridge-box">
+            <strong>Lean 4 Bridge (`BlaschkeBRV.lean:868–905`):</strong> `blaschke_power_zeros_uniform_radial_variation` takes the Zone I and Zone II pointwise hypotheses (`h_zone_I`, `h_zone_II`), applies `intervalIntegral.integral_mono_on` on $[0, s]$ and $[s, x_0]$, and closes the sum with `zone_I_integral_bound` and `zone_II_integral_bound`.
+          </div>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>blaschke_power_zeros_uniform_radial_variation</code></span>
+              <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean#L868-L905">Open BlaschkeBRV.lean#L868-L905</a>
+            </div>
+<pre class="lean-code">theorem blaschke_power_zeros_uniform_radial_variation
+    (p C₁ C₂ x₀ : ℝ) (hp : 1 &lt; p) (hC₁ : 0 &lt; C₁) (hC₂ : 0 &lt; C₂) (hx₀ : 0 &lt; x₀)
+    (B_deriv_norm : ℝ → ℝ → ℝ)
+    (h_cont : ∀ s &gt; 0, ContinuousOn (B_deriv_norm s) (Set.Icc 0 x₀))
+    (h_nonneg : ∀ s &gt; 0, ∀ x ∈ Set.Icc 0 x₀, 0 ≤ B_deriv_norm s x)
+    (h_zone_I : ∀ s ∈ Set.Ioc 0 x₀, ∀ x ∈ Set.Ioc 0 s,
+      B_deriv_norm s x ≤ Real.exp (1 / 2) * C₂ * s ^ (-(1 + 1 / p)) *
+        Real.exp (- (C₁ / 2 * s ^ (-(1 + 1 / p))) * x))
+    (h_zone_II : ∀ s ∈ Set.Ioc 0 x₀, ∀ x ∈ Set.Icc s x₀,
+      B_deriv_norm s x ≤ Real.exp (1 / 2) * C₂ * x ^ (-(1 + 1 / p)) *
+        Real.exp (- (C₁ / 2) * x ^ (- (1 / p)))) :
+    ∃ M &gt; 0, ∀ s ∈ Set.Ioc 0 x₀,
+      ∫ x in (0 : ℝ)..x₀, B_deriv_norm s x ≤ M</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 2: BORDERLINE GEOMETRY & PSEUDOHYPERBOLIC CLUSTERING       -->
+    <!-- ================================================================= -->
+    <section id="sec-borderline">
+      <h2 class="sec-heading"><span class="sec-num">2.</span>Borderline Geometry and Pseudohyperbolic Clustering of $a_k = 1 - 1/k^2$</h2>
+
+      <p class="prose">
+        By the Leibniz rule $(g_1 g_2)' = g_1' g_2 + g_1 g_2'$, any two functions $g_1, g_2 \in \mathrm{BRV} \cap H^\infty$ satisfy $V(g_1 g_2, \theta) \le \|g_2\|_\infty V(g_1, \theta) + \|g_1\|_\infty V(g_2, \theta)$. Since the single factor $b_1(z) = -z$ at $a_1 = 0$ has $\|b_1\|_\infty = 1$ and $V(b_1, \theta) = 1$, removing $b_1$ changes $V(B, \theta)$ by at most $1$. For $k \ge 2$, the zeros $a_k = 1 - k^{-p}$ satisfy $a_k \in [1 - 2^{-p}, 1) \subset [1/2, 1)$.
+      </p>
+
+      <div class="step-block" id="step-prop-borderline">
+        <div class="level1-row" onclick="toggleL2('step-prop-borderline', event)">
+          <div class="latex-env">
+            <span class="latex-env-title">Proposition 2.1 (Non-Frostman Property and Pseudohyperbolic Collapse).</span>
+            <span class="latex-thm-body">
+              Let $a_k = 1 - 1/k^2$ for $k \ge 2$. Then at $\theta = 0$, every term of the Frostman sum equals $\frac{1 - a_k}{|1 - a_k|} = 1$, so $\sum_{k=2}^{N+1} \frac{1 - a_k}{|1 - a_k|} = N \to \infty$. Moreover, for every $k \ge 2$, the pseudohyperbolic distance between consecutive zeros satisfies the exact rational identity
+              \begin{equation}\label{eq:rho-exact}
+                \rho(a_k, a_{k+1}) = \frac{a_{k+1} - a_k}{1 - a_k a_{k+1}} = \frac{2k + 1}{2k^2 + 2k - 1} < \frac{1}{k - 1} \longrightarrow 0 \qquad (k \to \infty).
+              \end{equation}
+              Consequently, $\{a_k\}$ is neither uniformly Frostman nor separated in the pseudohyperbolic metric.
+            </span>
+            <span class="step-controls">
+              <button class="pill-toggle" onclick="toggleL2('step-prop-borderline', event)">+L2</button>
+              <button class="pill-toggle l3-pill" onclick="toggleL3('step-prop-borderline', event)">+L3 Lean</button>
+            </span>
+          </div>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — 10× Algebraic Unpacking: Exact Fraction Cancellation in $\rho(a_k, a_{k+1})$ (Bridge to Lean 4)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-prop-borderline', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <p>
+            Here is the complete step-by-step algebraic verification of \eqref{eq:rho-exact}, mirroring `pseudohyperbolic_consecutive_inv_sq` and `pseudohyperbolic_consecutive_inv_sq_lt` in `BlaschkeBRV.lean`:
+          </p>
+          <ol>
+            <li><strong>Clearing denominators in the numerator $a_{k+1} - a_k$:</strong>
+              \begin{align*}
+                a_{k+1} - a_k &= \left(1 - \frac{1}{(k+1)^2}\right) - \left(1 - \frac{1}{k^2}\right) = \frac{1}{k^2} - \frac{1}{(k+1)^2} \\
+                &= \frac{(k+1)^2 - k^2}{k^2(k+1)^2} = \frac{(k^2 + 2k + 1) - k^2}{k^2(k+1)^2} = \frac{2k + 1}{k^2(k+1)^2}.
+              \end{align*}
+            </li>
+            <li><strong>Clearing denominators in the denominator $1 - a_k a_{k+1}$:</strong>
+              \begin{align*}
+                1 - a_k a_{k+1} &= 1 - \left(1 - \frac{1}{k^2}\right)\left(1 - \frac{1}{(k+1)^2}\right)
+                = 1 - \left(1 - \frac{1}{k^2} - \frac{1}{(k+1)^2} + \frac{1}{k^2(k+1)^2}\right) \\
+                &= \frac{(k+1)^2 + k^2 - 1}{k^2(k+1)^2} = \frac{(k^2 + 2k + 1) + k^2 - 1}{k^2(k+1)^2} = \frac{2k^2 + 2k}{k^2(k+1)^2}.
+              \end{align*}
+              (Note: in `pseudohyperbolic_consecutive_inv_sq` in Lean 4, `field_simp; ring` clears $k^2 \ne 0$ and $(k+1)^2 \ne 0$ in one step to prove $\frac{a_{k+1}-a_k}{1-a_k a_{k+1}} = \frac{2k+1}{2k(k+1)} = \frac{2k+1}{2k^2+2k}$.)
+            </li>
+            <li><strong>Proving the strict upper bound $\frac{2k+1}{2k(k+1)} < \frac{1}{k-1}$ for $k \ge 2$:</strong> Cross-multiplying positive denominators via `div_lt_div_iff₀` in Lean 4 reduces the inequality to
+              \[
+                (2k + 1)(k - 1) < 1 \cdot 2k(k + 1) \iff 2k^2 - k - 1 < 2k^2 + 2k \iff -3k - 1 < 0,
+              \]
+              which holds for all $k \ge 2$ by `linarith`.
+            </li>
+          </ol>
+          <div class="l2-bridge-box">
+            <strong>Lean 4 Bridge (`BlaschkeBRV.lean:128–160`):</strong> `pseudohyperbolic_consecutive_inv_sq` proves the exact rational identity using `field_simp; ring`, and `pseudohyperbolic_consecutive_inv_sq_lt` proves the upper bound $< 1/(k-1)$ using `div_lt_div_iff₀` and `nlinarith`.
+          </div>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>pseudohyperbolic_consecutive_inv_sq</code> &amp; <code>pseudohyperbolic_consecutive_inv_sq_lt</code></span>
+              <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean#L128-L160">Open BlaschkeBRV.lean#L128-L160</a>
+            </div>
+<pre class="lean-code">theorem pseudohyperbolic_consecutive_inv_sq (k : ℝ) (hk : 1 ≤ k) :
+    let a_k := 1 - 1 / k ^ 2
+    let a_k1 := 1 - 1 / (k + 1) ^ 2
+    (a_k1 - a_k) / (1 - a_k * a_k1) = (2 * k + 1) / (2 * k * (k + 1)) := by
+  intro a_k a_k1
+  have hk0 : k ≠ 0 := by linarith
+  have hk1 : k + 1 ≠ 0 := by linarith
+  have h_denom : 2 * k * (k + 1) ≠ 0 := by positivity
+  change (1 - 1 / (k + 1) ^ 2 - (1 - 1 / k ^ 2)) /
+    (1 - (1 - 1 / k ^ 2) * (1 - 1 / (k + 1) ^ 2)) = (2 * k + 1) / (2 * k * (k + 1))
+  field_simp
+  ring
+
+theorem pseudohyperbolic_consecutive_inv_sq_lt (k : ℝ) (hk : 2 ≤ k) :
+    (2 * k + 1) / (2 * k * (k + 1)) &lt; 1 / (k - 1) := by
+  have h1 : 0 &lt; 2 * k * (k + 1) := by positivity
+  have h2 : 0 &lt; k - 1 := by linarith
+  rw [div_lt_div_iff₀ h1 h2]
+  nlinarith</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 3: THE UNIVERSAL POLE-FREE EXPONENTIAL DECAY TRICK         -->
+    <!-- ================================================================= -->
+    <section id="sec-polefree">
+      <h2 class="sec-heading"><span class="sec-num">3.</span>The Universal Pole-Free Exponential Decay Trick</h2>
+
+      <div class="step-block" id="step-quotient-deriv">
+        <div class="level1-row" onclick="toggleL2('step-quotient-deriv', event)">
+          <p class="prose">
+            Let $B(z) = \prod_{k=1}^\infty b_k(z)$, where $b_k(z) = \frac{a_k - z}{1 - a_k z}$ and $a_k \in [0, 1)$. Differentiating $B(z)$ via the product rule and taking moduli gives
+            \begin{equation}\label{eq:Bprime-sum}
+              B'(z) = \sum_{k=1}^\infty b_k'(z) B_k(z) = \sum_{k=1}^\infty \frac{a_k^2 - 1}{(1 - a_k z)^2} B_k(z), \qquad
+              |B'(z)| \le \sum_{k=1}^\infty \frac{1 - a_k^2}{|1 - a_k z|^2} |B_k(z)|,
+            \end{equation}
+            where $B_k(z) = \prod_{j \ne k} b_j(z)$ is the subproduct with the $k$-th factor omitted.
+            <span class="step-controls">
+              <button class="pill-toggle" onclick="toggleL2('step-quotient-deriv', event)">+L2</button>
+              <button class="pill-toggle l3-pill" onclick="toggleL3('step-quotient-deriv', event)">+L3 Lean</button>
+            </span>
+          </p>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — 10× Algebraic Unpacking: Quotient Rule &amp; Modulus of $b_k'(z)$ (Bridge to Lean 4)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-quotient-deriv', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <ol>
+            <li><strong>Differentiating the numerator $N(w) = a - w$:</strong> In Lean 4 (`hasDerivAt_blaschke_factor`), `(hasDerivAt_const z (a : ℂ)).sub (hasDerivAt_id z)` gives $N'(z) = 0 - 1 = -1$.</li>
+            <li><strong>Differentiating the denominator $D(w) = 1 - a w$:</strong> `(hasDerivAt_const z (1 : ℂ)).sub ((hasDerivAt_const z (a : ℂ)).mul (hasDerivAt_id z))` gives $D'(z) = 0 - a \cdot 1 = -a$.</li>
+            <li><strong>Expanding the quotient rule numerator (`ring`):</strong> Applying `HasDerivAt.div` (`h1.div h2 h_denom`) yields the derivative with numerator
+              \[
+                N'(z) D(z) - N(z) D'(z) = (-1)(1 - az) - (a - z)(-a) = -1 + az + a^2 - az = a^2 - 1.
+              \]
+            </li>
+            <li><strong>Taking the complex norm (`blaschke_factor_deriv_norm`):</strong> By `norm_div` and `norm_pow`, $\bigl\|\frac{a^2 - 1}{(1 - az)^2}\bigr\| = \frac{\|a^2 - 1\|}{\|1 - az\|^2}$. Since $a \in [0, 1)$, $a^2 - 1$ is the negative real number $-(1 - a^2)$, so `Complex.norm_real` and `abs_of_neg` give $\|a^2 - 1\| = |a^2 - 1| = 1 - a^2$.</li>
+          </ol>
+          <div class="l2-bridge-box">
+            <strong>Lean 4 Bridge (`BlaschkeBRV.lean:287–325`):</strong> `hasDerivAt_blaschke_factor` proves the exact quotient-rule derivative over $\mathbb{C}$, and `blaschke_factor_deriv_norm` proves $\bigl\|\frac{a^2-1}{(1-az)^2}\bigr\| = \frac{1-a^2}{\|1-az\|^2}$.
+          </div>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>hasDerivAt_blaschke_factor</code> &amp; <code>blaschke_factor_deriv_norm</code></span>
+              <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean#L287-L325">Open BlaschkeBRV.lean#L287-L325</a>
+            </div>
+<pre class="lean-code">theorem hasDerivAt_blaschke_factor (a : ℝ) (z : ℂ) (h_denom : 1 - (a : ℂ) * z ≠ 0) :
+    HasDerivAt (fun w : ℂ =&gt; ((a : ℂ) - w) / (1 - (a : ℂ) * w))
+      ((((a : ℂ) ^ 2 - 1)) / (1 - (a : ℂ) * z) ^ 2) z := by
+  have h1 : HasDerivAt (fun w : ℂ =&gt; (a : ℂ) - w) (0 - 1) z :=
+    (hasDerivAt_const z (a : ℂ)).sub (hasDerivAt_id z)
+  have h2 : HasDerivAt (fun w : ℂ =&gt; 1 - (a : ℂ) * w) (0 - (a : ℂ) * 1) z :=
+    (hasDerivAt_const z (1 : ℂ)).sub ((hasDerivAt_const z (a : ℂ)).mul (hasDerivAt_id z))
+  have h_quot := h1.div h2 h_denom
+  exact h_quot.congr_deriv (by congr 1; ring)
+
+theorem blaschke_factor_deriv_norm (a : ℝ) (z : ℂ)
+    (ha0 : 0 ≤ a) (ha1 : a &lt; 1) :
+    ‖(((a : ℂ) ^ 2 - 1) / (1 - (a : ℂ) * z) ^ 2)‖ =
+      (1 - a ^ 2) / ‖1 - (a : ℂ) * z‖ ^ 2</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-block" id="step-norm-sq-id">
+        <div class="level1-row" onclick="toggleL2('step-norm-sq-id', event)">
+          <p class="prose-indent">
+            Instead of bounding $|B_k(z)| \le 1$ (which loses all cancellation and fails near $\theta = 0$), we retain the entire subproduct $|B_k(z)|$ via the fundamental Möbius identity
+            \begin{equation}\label{eq:mobius-id}
+              1 - |b_j(z)|^2 = \frac{(1 - a_j^2)(1 - |z|^2)}{|1 - a_j z|^2}.
+            \end{equation}
+            <span class="step-controls">
+              <button class="pill-toggle" onclick="toggleL2('step-norm-sq-id', event)">+L2</button>
+              <button class="pill-toggle l3-pill" onclick="toggleL3('step-norm-sq-id', event)">+L3 Lean</button>
+            </span>
+          </p>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — 10× Algebraic Unpacking: Real/Imaginary Expansion of \eqref{eq:mobius-id} (Bridge to Lean 4)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-norm-sq-id', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <ol>
+            <li><strong>Real and imaginary part decomposition (`norm_sq_eq_re_sq_add_im_sq`):</strong> Write $z = x + iy$ where $x = \operatorname{Re}(z)$ and $y = \operatorname{Im}(z)$, so $\|z\|^2 = x^2 + y^2$. Since $a_j \in \mathbb{R}$ has $\operatorname{Re}(a_j) = a_j$ and $\operatorname{Im}(a_j) = 0$:
+              <ul>
+                <li>$\operatorname{Re}(1 - a_j z) = 1 - a_j x$ and $\operatorname{Im}(1 - a_j z) = -a_j y$, so $\|1 - a_j z\|^2 = (1 - a_j x)^2 + (-a_j y)^2 = 1 - 2 a_j x + a_j^2 x^2 + a_j^2 y^2$.</li>
+                <li>$\operatorname{Re}(a_j - z) = a_j - x$ and $\operatorname{Im}(a_j - z) = -y$, so $\|a_j - z\|^2 = (a_j - x)^2 + (-y)^2 = a_j^2 - 2 a_j x + x^2 + y^2$.</li>
+              </ul>
+            </li>
+            <li><strong>Polynomial subtraction (`blaschke_factor_norm_sq_identity`):</strong> Subtracting the two expansions causes the $-2a_j x$ terms to cancel identically:
+              \begin{align*}
+                \|1 - a_j z\|^2 - \|a_j - z\|^2
+                &= (1 - 2 a_j x + a_j^2 x^2 + a_j^2 y^2) - (a_j^2 - 2 a_j x + x^2 + y^2) \\
+                &= 1 - a_j^2 - (1 - a_j^2)(x^2 + y^2) = (1 - a_j^2)(1 - \|z\|^2).
+              \end{align*}
+            </li>
+            <li><strong>Dividing by $\|1 - a_j z\|^2 \ne 0$ (`one_sub_blaschke_norm_sq`):</strong> Using `norm_div`, `div_pow`, `div_self`, and `div_sub_div_same`:
+              \[
+                1 - \left\|\frac{a_j - z}{1 - a_j z}\right\|^2 = \frac{\|1 - a_j z\|^2}{\|1 - a_j z\|^2} - \frac{\|a_j - z\|^2}{\|1 - a_j z\|^2} = \frac{\|1 - a_j z\|^2 - \|a_j - z\|^2}{\|1 - a_j z\|^2} = \frac{(1 - a_j^2)(1 - \|z\|^2)}{\|1 - a_j z\|^2}.
+              \]
+            </li>
+          </ol>
+          <div class="l2-bridge-box">
+            <strong>Lean 4 Bridge (`BlaschkeBRV.lean:97–237`):</strong> `blaschke_factor_norm_sq_identity` proves the numerator polynomial identity via `simp only` and `ring`, and `one_sub_blaschke_norm_sq` divides by `‖1 - (a : ℂ) * z‖ ^ 2`.
+          </div>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>blaschke_factor_norm_sq_identity</code> &amp; <code>one_sub_blaschke_norm_sq</code></span>
+              <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean#L97-L237">Open BlaschkeBRV.lean#L97-L237</a>
+            </div>
+<pre class="lean-code">theorem blaschke_factor_norm_sq_identity (a : ℝ) (z : ℂ) :
+    ‖1 - (a : ℂ) * z‖ ^ 2 - ‖(a : ℂ) - z‖ ^ 2 = (1 - a ^ 2) * (1 - ‖z‖ ^ 2) := by
+  rw [norm_sq_eq_re_sq_add_im_sq (1 - (a : ℂ) * z),
+      norm_sq_eq_re_sq_add_im_sq ((a : ℂ) - z),
+      norm_sq_eq_re_sq_add_im_sq z]
+  simp only [Complex.sub_re, Complex.one_re, Complex.mul_re, Complex.ofReal_re,
+             Complex.ofReal_im, zero_mul, sub_zero, Complex.sub_im, Complex.one_im,
+             Complex.mul_im, add_zero, zero_sub]
+  ring
+
+theorem one_sub_blaschke_norm_sq (a : ℝ) (z : ℂ) (h_denom : 1 - (a : ℂ) * z ≠ 0) :
+    1 - ‖((a : ℂ) - z) / (1 - (a : ℂ) * z)‖ ^ 2 =
+      (1 - a ^ 2) * (1 - ‖z‖ ^ 2) / ‖1 - (a : ℂ) * z‖ ^ 2</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-block" id="step-subproduct-exp">
+        <div class="level1-row" onclick="toggleL2('step-subproduct-exp', event)">
+          <p class="prose-indent">
+            Using the elementary inequality $\sqrt{1 - u} \le e^{-u/2}$ for $u \in [0, 1]$, each factor satisfies
+            \begin{equation}\label{eq:factor-exp}
+              |b_j(z)| = \sqrt{1 - \frac{(1 - a_j^2)(1 - |z|^2)}{|1 - a_j z|^2}} \le \exp\!\left( -\frac{1}{2} \frac{(1 - a_j^2)(1 - |z|^2)}{|1 - a_j z|^2} \right).
+            \end{equation}
+            Multiplying over all $j \ne k$ and noting that the missing $j = k$ term in the exponent is at most $\frac{1}{2}$ (since $1 - |b_k(z)|^2 \le 1$), we obtain the uniform subproduct bound
+            \begin{equation}\label{eq:Bk-exp-bound}
+              |B_k(z)| \le \exp\!\left( -\frac{1}{2} \sum_{j \ne k} \frac{(1 - a_j^2)(1 - |z|^2)}{|1 - a_j z|^2} \right) \le e^{1/2} \exp\!\left( -\frac{1 - |z|^2}{2} \sum_{j=1}^\infty \frac{1 - a_j^2}{|1 - a_j z|^2} \right).
+            \end{equation}
+            <span class="step-controls">
+              <button class="pill-toggle" onclick="toggleL2('step-subproduct-exp', event)">+L2</button>
+              <button class="pill-toggle l3-pill" onclick="toggleL3('step-subproduct-exp', event)">+L3 Lean</button>
+            </span>
+          </p>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — 10× Algebraic Unpacking: $\sqrt{1-u} \le e^{-u/2}$ and `Finset.add_sum_erase` (Bridge to Lean 4)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-subproduct-exp', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <ol>
+            <li><strong>Why $u_j(z) := \frac{(1-a_j^2)(1-|z|^2)}{|1-a_j z|^2} \in [0, 1]$ (`blaschke_factor_u_bounds`):</strong> Since $a_j \in (-1, 1)$ and $|z| < 1$, $1 - a_j^2 > 0$ and $1 - |z|^2 > 0$, so $u_j(z) \ge 0$. And by \eqref{eq:mobius-id}, $u_j(z) = 1 - |b_j(z)|^2 \le 1$ because $|b_j(z)|^2 \ge 0$.</li>
+            <li><strong>Deriving $\sqrt{1 - u} \le e^{-u/2}$ (`sqrt_one_sub_le_exp_neg_half`):</strong>
+              <ul>
+                <li>Start from Mathlib's `Real.add_one_le_exp (-u)`: $(-u) + 1 \le e^{-u}$, i.e., $1 - u \le e^{-u}$.</li>
+                <li>Apply monotonicity of square root (`Real.sqrt_le_sqrt`): $\sqrt{1 - u} \le \sqrt{e^{-u}}$.</li>
+                <li>Rewrite $-u = 2 \cdot (-u/2)$ and apply `Real.exp_nat_mul`: $e^{-u} = (e^{-u/2})^2$.</li>
+                <li>Since $e^{-u/2} > 0$, `Real.sqrt_sq` simplifies $\sqrt{(e^{-u/2})^2} = e^{-u/2}$.</li>
+              </ul>
+            </li>
+            <li><strong>Restoring the omitted $j = k$ factor (`blaschke_subproduct_prod_bound`):</strong>
+              <ul>
+                <li>By `Finset.prod_le_prod` and `Real.exp_sum`, $\prod_{j \in s \setminus \{k\}} \sqrt{1 - u_j} \le \prod_{j \in s \setminus \{k\}} e^{-u_j/2} = \exp\bigl(\sum_{j \in s \setminus \{k\}} (-u_j/2)\bigr)$.</li>
+                <li>By `Finset.add_sum_erase s u hk`, $u_k + \sum_{j \in s \setminus \{k\}} u_j = \sum_{j \in s} u_j$, so
+                  \[
+                    -\frac{1}{2} \sum_{j \in s \setminus \{k\}} u_j = \frac{1}{2} u_k - \frac{1}{2} \sum_{j \in s} u_j \le \frac{1}{2} - \frac{1}{2} \sum_{j \in s} u_j
+                  \]
+                  because $u_k \le 1$.</li>
+                <li>Applying `Real.exp_le_exp.mpr` and splitting the exponential with `Real.exp_add` gives $e^{1/2} \exp\bigl(-\frac{1}{2}\sum_{j \in s} u_j\bigr)$, which is completely independent of $k$!</li>
+              </ul>
+            </li>
+          </ol>
+          <div class="l2-bridge-box">
+            <strong>Lean 4 Bridge (`BlaschkeBRV.lean:334–424`):</strong> `blaschke_factor_u_bounds`, `sqrt_one_sub_le_exp_neg_half`, and `blaschke_subproduct_prod_bound` formalize every step above.
+          </div>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>sqrt_one_sub_le_exp_neg_half</code> &amp; <code>blaschke_subproduct_prod_bound</code></span>
+              <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean#L367-L424">Open BlaschkeBRV.lean#L367-L424</a>
+            </div>
+<pre class="lean-code">theorem sqrt_one_sub_le_exp_neg_half (u : ℝ) (hu1 : u ≤ 1) :
+    Real.sqrt (1 - u) ≤ Real.exp (- u / 2) := by
+  have h1 : 1 - u ≤ Real.exp (- u) := by
+    have := Real.add_one_le_exp (- u)
+    linarith
+  have h2 : Real.sqrt (1 - u) ≤ Real.sqrt (Real.exp (- u)) := Real.sqrt_le_sqrt h1
+  have h3 : Real.exp (- u) = (Real.exp (- u / 2)) ^ 2 := by
+    rw [← Real.exp_nat_mul]
+    congr 1
+    ring
+  rw [h3, Real.sqrt_sq (Real.exp_pos _).le] at h2
+  exact h2
+
+theorem blaschke_subproduct_prod_bound {ι : Type*} [DecidableEq ι] (s : Finset ι) (k : ι)
+    (hk : k ∈ s) (u : ι → ℝ) (hu0 : ∀ j ∈ s, 0 ≤ u j) (hu1 : ∀ j ∈ s, u j ≤ 1) :
+    (∏ j ∈ s.erase k, Real.sqrt (1 - u j)) ≤
+      Real.exp (1 / 2) * Real.exp (- (1 / 2) * ∑ j ∈ s, u j)</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-block" id="step-master-polefree">
+        <div class="level1-row" onclick="toggleL2('step-master-polefree', event)">
+          <div class="latex-env">
+            <span class="latex-env-title">Theorem 3.1 (Universal Pole-Free Blaschke Derivative Bound).</span>
+            <span class="latex-thm-body">
+              Define the auxiliary positive sum $S(z) := \sum_{k=1}^\infty \frac{1 - a_k^2}{|1 - a_k z|^2}$. Since the upper bound \eqref{eq:Bk-exp-bound} for $|B_k(z)|$ is independent of the summation index $k$, it factors completely out of the sum \eqref{eq:Bprime-sum} for $|B'(z)|$. Using $1 - |z|^2 = (1 + |z|)(1 - |z|) \ge 1 - |z|$, we obtain for every $z \in \mathbb{D}$:
+              \begin{equation}\label{eq:master-polefree}
+                |B'(z)| \le e^{1/2} S(z) \exp\!\left( -\frac{1 - |z|^2}{2} S(z) \right) \le e^{1/2} S(z) \exp\!\left( -\frac{1 - |z|}{2} S(z) \right).
+              \end{equation}
+            </span>
+            <span class="step-controls">
+              <button class="pill-toggle" onclick="toggleL2('step-master-polefree', event)">+L2</button>
+              <button class="pill-toggle l3-pill" onclick="toggleL3('step-master-polefree', event)">+L3 Lean</button>
+            </span>
+          </div>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — 10× Algebraic Unpacking: Factoring Out $k$ and Sign Reversal on $1 - |z|^2 \ge 1 - |z|$ (Bridge to Lean 4)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-master-polefree', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <ol>
+            <li><strong>Factoring the $k$-independent bound out of $\sum_k$ (`pole_free_derivative_bound`):</strong> Set $w_k := \frac{1-a_k^2}{|1-a_k z|^2} \ge 0$ and $M := e^{1/2}\exp\bigl(-\frac{1-|z|^2}{2}\sum_j w_j\bigr)$. Since $|B_k(z)| \le M$ for every $k$, `Finset.sum_le_sum` and `Finset.sum_mul` give
+              \[
+                \sum_k w_k |B_k(z)| \le \sum_k w_k M = \left(\sum_k w_k\right) M = e^{1/2} S(z) \exp\!\left(-\frac{1-|z|^2}{2} S(z)\right).
+              \]
+            </li>
+            <li><strong>Why $1 - |z|^2 \ge 1 - |z|$ goes the RIGHT way in the negative exponent (`pole_free_bound_one_sub_sq_le_one_sub`):</strong>
+              <ul>
+                <li>Let $r = |z| \in [0, 1]$. Then $(1 - r^2) - (1 - r) = r(1 - r) \ge 0$ by `mul_nonneg hr0 (by linarith)`, so $1 - r \le 1 - r^2$.</li>
+                <li>Multiplying by $S(z)/2 \ge 0$ preserves the inequality: $\frac{1 - r}{2} S(z) \le \frac{1 - r^2}{2} S(z)$.</li>
+                <li>Multiplying by $-1$ <strong>reverses</strong> the inequality: $-\frac{1 - r^2}{2} S(z) \le -\frac{1 - r}{2} S(z)$.</li>
+                <li>Applying `Real.exp_le_exp.mpr` and multiplying by $e^{1/2} S(z) \ge 0$ yields \eqref{eq:master-polefree}.</li>
+              </ul>
+            </li>
+          </ol>
+          <div class="l2-bridge-box">
+            <strong>Lean 4 Bridge (`BlaschkeBRV.lean:438–500`):</strong> `pole_free_derivative_bound` and `pole_free_bound_one_sub_sq_le_one_sub` verify both steps of \eqref{eq:master-polefree}.
+          </div>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>pole_free_derivative_bound</code> &amp; <code>pole_free_bound_one_sub_sq_le_one_sub</code></span>
+              <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean#L438-L500">Open BlaschkeBRV.lean#L438-L500</a>
+            </div>
+<pre class="lean-code">theorem pole_free_derivative_bound {ι : Type*} [DecidableEq ι] (s : Finset ι)
+    (w : ι → ℝ) (B_sub : ι → ℝ) (one_sub_norm_sq : ℝ)
+    (hw : ∀ k ∈ s, 0 ≤ w k)
+    (h_sub : ∀ k ∈ s, B_sub k ≤ Real.exp (1 / 2) * Real.exp (- (one_sub_norm_sq / 2) * ∑ j ∈ s, w j)) :
+    ∑ k ∈ s, w k * B_sub k ≤
+      Real.exp (1 / 2) * (∑ k ∈ s, w k) * Real.exp (- (one_sub_norm_sq / 2) * ∑ k ∈ s, w k)
+
+theorem pole_free_bound_one_sub_sq_le_one_sub (r S : ℝ) (hr0 : 0 ≤ r) (hr1 : r ≤ 1) (hS : 0 ≤ S) :
+    Real.exp (1 / 2) * S * Real.exp (- ((1 - r ^ 2) / 2) * S) ≤
+      Real.exp (1 / 2) * S * Real.exp (- ((1 - r) / 2) * S)</pre>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="subsec-heading" id="subsec-polar"><span class="subsec-num">3.1.</span>Two-Sided Asymptotics of $S(z)$ in Polar Coordinates</h3>
+
+      <div class="step-block" id="step-polar-chain">
+        <div class="level1-row" onclick="toggleL2('step-polar-chain', event)">
+          <div class="latex-env">
+            <span class="latex-env-title">Lemma 3.2 (Polar Denominator Identity and 4-Step Equivalence Chain).</span>
+            <span class="latex-thm-body">
+              Write $z = t e^{i\theta}$ and introduce the radial and angular boundary distances
+              \begin{equation}\label{eq:x-s-yk}
+                x := 1 - t \in (0, 1], \qquad s := |1 - e^{i\theta}| = 2\left|\sin\frac{\theta}{2}\right| \ge 0, \qquad y_k := 1 - a_k = k^{-p}, \qquad \delta := x + s.
+              \end{equation}
+              Then $|1 - a_k t e^{i\theta}|^2 = (1 - a_k t)^2 + 4 a_k t \sin^2(\theta/2) = (1 - a_k t)^2 + a_k t s^2$. Moreover, for $a_k, t \in [1/2, 1)$, we have $\frac{1}{2}(x + y_k) \le 1 - a_k t \le x + y_k$ and the uniform 4-step inequality chain
+              \begin{equation}\label{eq:four-step-chain}
+                \frac{1}{8}(y_k + \delta)^2 \le \frac{1}{4}\bigl((x + y_k)^2 + s^2\bigr) \le |1 - a_k z|^2 \le (x + y_k)^2 + s^2 \le (y_k + \delta)^2.
+              \end{equation}
+            </span>
+            <span class="step-controls">
+              <button class="pill-toggle" onclick="toggleL2('step-polar-chain', event)">+L2</button>
+              <button class="pill-toggle l3-pill" onclick="toggleL3('step-polar-chain', event)">+L3 Lean</button>
+            </span>
+          </div>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — 10× Algebraic Unpacking: Every Step of the 4-Step Polar Chain \eqref{eq:four-step-chain} (Bridge to Lean 4)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-polar-chain', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <ol>
+            <li><strong>Exact Polar Identity (`polar_denominator_identity`):</strong> Using $\cos\theta = 1 - 2\sin^2(\theta/2)$ (`Real.cos_two_mul (θ / 2)`) and $\cos^2\theta + \sin^2\theta = 1$:
+              \begin{align*}
+                |1 - a_k t e^{i\theta}|^2 &= (1 - a_k t\cos\theta)^2 + (-a_k t\sin\theta)^2 \\
+                &= 1 - 2a_k t(1 - 2\sin^2(\theta/2)) + a_k^2 t^2(\cos^2\theta + \sin^2\theta) \\
+                &= (1 - 2a_k t + a_k^2 t^2) + 4 a_k t\sin^2(\theta/2) = (1 - a_k t)^2 + a_k t s^2.
+              \end{align*}
+            </li>
+            <li><strong>Two-sided linear squeeze on $1 - a_k t$ for $a_k, t \in [1/2, 1]$:</strong> Substitute $a_k = 1 - y_k$ and $t = 1 - x$:
+              \[
+                1 - a_k t = 1 - (1 - y_k)(1 - x) = x + y_k - x y_k = a_k x + y_k = x + t y_k.
+              \]
+              <ul>
+                <li>Since $a_k \ge 1/2$ and $x \ge 0$, $a_k x + y_k \ge \frac{1}{2} x + \frac{1}{2} y_k = \frac{1}{2}(x + y_k)$.</li>
+                <li>Since $t \le 1$ and $y_k \ge 0$, $x + t y_k \le x + 1 \cdot y_k = x + y_k$.</li>
+              </ul>
+            </li>
+            <li><strong>Proving all 4 inequalities of \eqref{eq:four-step-chain} (`blue_polar_denominator_chain`):</strong>
+              <ul>
+                <li><strong>Inequality 1:</strong> $\frac{1}{4}\bigl((x+y_k)^2 + s^2\bigr) - \frac{1}{8}(y_k + x + s)^2 = \frac{1}{8}\bigl((x+y_k) - s\bigr)^2 \ge 0$ by `sq_nonneg ((x + y_k) - s)`.</li>
+                <li><strong>Inequality 2:</strong> Squaring $\frac{1}{2}(x+y_k) \le 1 - a_k t$ gives $\frac{1}{4}(x+y_k)^2 \le (1 - a_k t)^2$, and $a_k, t \ge 1/2 \implies a_k t \ge 1/4 \implies \frac{1}{4} s^2 \le a_k t s^2$.</li>
+                <li><strong>Inequality 3:</strong> Squaring $1 - a_k t \le x + y_k$ gives $(1 - a_k t)^2 \le (x + y_k)^2$, and $a_k, t \le 1 \implies a_k t \le 1 \implies a_k t s^2 \le s^2$.</li>
+                <li><strong>Inequality 4:</strong> $(y_k + x + s)^2 - \bigl((x+y_k)^2 + s^2\bigr) = 2(x+y_k)s \ge 0$ since $x, y_k, s \ge 0$.</li>
+              </ul>
+            </li>
+          </ol>
+          <div class="l2-bridge-box">
+            <strong>Lean 4 Bridge (`BlaschkeBRV.lean:510–660`):</strong> `polar_denominator_identity` and `blue_polar_denominator_chain` verify the trig identity and all four inequalities in \eqref{eq:four-step-chain} as a 4-way conjunction `∧`.
+          </div>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>polar_denominator_identity</code> &amp; <code>blue_polar_denominator_chain</code></span>
+              <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean#L510-L660">Open BlaschkeBRV.lean#L510-L660</a>
+            </div>
+<pre class="lean-code">theorem polar_denominator_identity (a t θ : ℝ) :
+    (1 - a * t * Real.cos θ) ^ 2 + (a * t * Real.sin θ) ^ 2 =
+      (1 - a * t) ^ 2 + 4 * a * t * Real.sin (θ / 2) ^ 2
+
+theorem blue_polar_denominator_chain (a_k t s : ℝ)
+    (ha_low : 1 / 2 ≤ a_k) (ha_high : a_k ≤ 1)
+    (ht_low : 1 / 2 ≤ t) (ht_high : t ≤ 1) (hs : 0 ≤ s) :
+    let x := 1 - t
+    let y_k := 1 - a_k
+    let δ := x + s
+    (1 / 8) * (y_k + δ) ^ 2 ≤ (1 / 4) * ((x + y_k) ^ 2 + s ^ 2) ∧
+    (1 / 4) * ((x + y_k) ^ 2 + s ^ 2) ≤ (1 - a_k * t) ^ 2 + a_k * t * s ^ 2 ∧
+    (1 - a_k * t) ^ 2 + a_k * t * s ^ 2 ≤ (x + y_k) ^ 2 + s ^ 2 ∧
+    (x + y_k) ^ 2 + s ^ 2 ≤ (y_k + δ) ^ 2</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-block" id="step-power-law-sub">
+        <div class="level1-row" onclick="toggleL2('step-power-law-sub', event)">
+          <p class="prose">
+            Since $1 - a_k^2 = (1 + a_k) y_k \in [y_k, 2 y_k]$, Lemma 3.2 shows that $S(t e^{i\theta})$ is comparable to $\sum_{k=1}^\infty \frac{k^{-p}}{(k^{-p} + \delta)^2}$. Comparing this monotone sum to $\int_1^\infty \frac{u^{-p}}{(u^{-p} + \delta)^2}\,du$ via the substitution $v = u \delta^{1/p}$ yields constants $C_1, C_2 > 0$ depending only on $p$ such that for all $t \in [1/2, 1)$ and all $\theta$,
+            \begin{equation}\label{eq:S-power-law}
+              C_1 (x + s)^{-(1 + 1/p)} \le S(t e^{i\theta}) \le C_2 (x + s)^{-(1 + 1/p)}.
+            \end{equation}
+            Substituting the upper bound for $S$ into the prefactor of \eqref{eq:master-polefree} and the lower bound for $S$ into the negative exponent of \eqref{eq:master-polefree} gives the master radial integrand bound
+            \begin{equation}\label{eq:radial-master}
+              |B'(t e^{i\theta})| \le e^{1/2} C_2 (x + s)^{-(1 + 1/p)} \exp\!\left( -\frac{C_1}{2} x (x + s)^{-(1 + 1/p)} \right).
+            \end{equation}
+            <span class="step-controls">
+              <button class="pill-toggle" onclick="toggleL2('step-power-law-sub', event)">+L2</button>
+              <button class="pill-toggle l3-pill" onclick="toggleL3('step-power-law-sub', event)">+L3 Lean</button>
+            </span>
+          </p>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — 10× Algebraic Unpacking: Opposite-Direction Substitution of \eqref{eq:S-power-law} into \eqref{eq:master-polefree} (Bridge to Lean 4)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-power-law-sub', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <ol>
+            <li><strong>Why both upper and lower bounds on $S(z)$ are essential:</strong> In $|B'(z)| \le e^{1/2} S \exp(-\frac{x}{2} S)$, $S$ appears positively in the prefactor $e^{1/2} S$ and negatively in the exponent $-\frac{x}{2} S$.</li>
+            <li><strong>Bounding the prefactor (`h1` in Lean 4):</strong> Since $e^{1/2} > 0$, multiplying $S \le C_2(x+s)^{-(1+1/p)}$ by $e^{1/2}$ preserves the direction:
+              \[
+                e^{1/2} S \le e^{1/2} C_2 (x + s)^{-(1 + 1/p)}.
+              \]
+            </li>
+            <li><strong>Bounding the exponential factor (`h2` in Lean 4):</strong> Since $x \ge 0$, multiplying $C_1(x+s)^{-(1+1/p)} \le S$ by $-x/2 \le 0$ reverses the inequality:
+              \[
+                -\frac{x}{2} S \le -\frac{C_1}{2} x (x + s)^{-(1 + 1/p)} \implies \exp\!\left(-\frac{x}{2} S\right) \le \exp\!\left(-\frac{C_1}{2} x (x + s)^{-(1 + 1/p)}\right).
+              \]
+            </li>
+            <li><strong>Multiplying the two bounds (`mul_le_mul`):</strong> Since both factors are nonnegative, `mul_le_mul h1 h2 (Real.exp_pos _).le h_pre_nonneg` yields \eqref{eq:radial-master}.</li>
+          </ol>
+          <div class="l2-bridge-box">
+            <strong>Lean 4 Bridge (`BlaschkeBRV.lean:670–691`):</strong> `blue_polefree_power_law_substitution` formalizes this exact opposite-direction substitution.
+          </div>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>blue_polefree_power_law_substitution</code></span>
+              <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean#L670-L691">Open BlaschkeBRV.lean#L670-L691</a>
+            </div>
+<pre class="lean-code">theorem blue_polefree_power_law_substitution (p C₁ C₂ x s S : ℝ)
+    (hx : 0 ≤ x) (hs : 0 &lt; s) (hC₁ : 0 &lt; C₁)
+    (hS_low : C₁ * (x + s) ^ (-(1 + 1 / p)) ≤ S)
+    (hS_high : S ≤ C₂ * (x + s) ^ (-(1 + 1 / p))) :
+    Real.exp (1 / 2) * S * Real.exp (- (x / 2) * S) ≤
+      Real.exp (1 / 2) * C₂ * (x + s) ^ (-(1 + 1 / p)) *
+        Real.exp (- (C₁ / 2) * x * (x + s) ^ (-(1 + 1 / p)))</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 4: TWO-ZONE RADIAL INTEGRATION & PROOF OF MAIN THEOREM     -->
+    <!-- ================================================================= -->
+    <section id="sec-twozone">
+      <h2 class="sec-heading"><span class="sec-num">4.</span>Two-Zone Radial Integration and Proof of Theorem 1.2</h2>
+
+      <p class="prose">
+        Fix $\theta \ne 0$ close to $0$ so that $s = |1 - e^{i\theta}| \in (0, x_0]$. We split the near-boundary radial integral $\int_{1-x_0}^1 |B'(t e^{i\theta})|\,dt = \int_0^{x_0} |B'((1-x)e^{i\theta})|\,dx$ at the crossover scale $x = s$ into two zones.
+      </p>
+
+      <div class="step-block" id="step-zone-1">
+        <div class="level1-row" onclick="toggleL2('step-zone-1', event)">
+          <div class="latex-env">
+            <span class="latex-env-title">Proposition 4.1 (Zone I: $0 < x \le s$, Closest to the Unit Circle).</span>
+            <span class="latex-thm-body">
+              For $0 < x \le s$, we have $s \le x + s \le 2s$, so $(x + s)^{-(1 + 1/p)} \le s^{-(1 + 1/p)}$ in the prefactor of \eqref{eq:radial-master} and $(x + s)^{-(1 + 1/p)} \ge 2^{-(1 + 1/p)} s^{-(1 + 1/p)} =: \frac{c_1}{C_1} s^{-(1 + 1/p)}$ in the negative exponent of \eqref{eq:radial-master}. Retaining the exponential factor gives the exact linear-exponential integral bound
+              \begin{equation}\label{eq:zone-I-bound}
+                \int_0^s |B'((1 - x)e^{i\theta})|\,dx \le \int_0^s e^{1/2} C_2 s^{-(1 + 1/p)} \exp\!\left( -\frac{c_1}{2} s^{-(1 + 1/p)} x \right) dx \le e^{1/2} C_2 s^{-(1 + 1/p)} \cdot \frac{2}{c_1 s^{-(1 + 1/p)}} = \frac{2 e^{1/2} C_2}{c_1} < \infty,
+              \end{equation}
+              which is completely independent of $s$ (and hence of $\theta$).
+            </span>
+            <span class="step-controls">
+              <button class="pill-toggle" onclick="toggleL2('step-zone-1', event)">+L2</button>
+              <button class="pill-toggle l3-pill" onclick="toggleL3('step-zone-1', event)">+L3 Lean</button>
+            </span>
+          </div>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — 10× Algebraic Unpacking: Why Keeping the Exponential Cancels $s^{-(1+1/p)}$ in Zone I (Bridge to Lean 4)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-zone-1', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <ol>
+            <li><strong>Why dropping the exponential fails:</strong> If one bounds $\exp(\dots) \le 1$, then $\int_0^s s^{-(1+1/p)}\,dx = s \cdot s^{-(1+1/p)} = s^{-1/p}$, which blows up as $s \to 0^+$.</li>
+            <li><strong>Pointwise reduction on $0 \le x \le s$ (`blue_zone_I_integrand_bound`):</strong> Since $s \le x + s \le 2s$ and $1 + 1/p > 0$, `Real.rpow_le_rpow` and `inv_anti₀` give
+              \[
+                (2s)^{-(1 + 1/p)} \le (x + s)^{-(1 + 1/p)} \le s^{-(1 + 1/p)}.
+              \]
+              Using the upper bound in the prefactor and the lower bound in the negative exponent yields the pure linear-in-$x$ exponential $e^{1/2} C_2 s^{-(1+1/p)} \exp(-K x)$ with rate $K := \frac{c_1}{2} s^{-(1+1/p)} > 0$.
+            </li>
+            <li><strong>Fundamental Theorem of Calculus &amp; Exact Cancellation (`hasDerivAt_zone_I_antideriv` &amp; `zone_I_integral_bound`):</strong>
+              <ul>
+                <li>Define the antiderivative $F_I(x) = -\frac{1}{K} e^{-K x}$. By the chain rule (`HasDerivAt.exp`), $F_I'(x) = e^{-K x}$.</li>
+                <li>By `intervalIntegral.integral_eq_sub_of_hasDerivAt`, $\int_0^s e^{-K x}\,dx = F_I(s) - F_I(0) = \frac{1 - e^{-K s}}{K} \le \frac{1}{K}$ (since $e^{-K s} > 0$).</li>
+                <li>Multiplying by the constant prefactor $e^{1/2} C_2 s^{-(1+1/p)}$ cancels $s^{-(1+1/p)} > 0$ via `field_simp`:
+                  \[
+                    e^{1/2} C_2 s^{-(1 + 1/p)} \cdot \frac{1}{\frac{c_1}{2} s^{-(1 + 1/p)}} = \frac{2 e^{1/2} C_2}{c_1}.
+                  \]
+                </li>
+              </ul>
+            </li>
+          </ol>
+          <div class="l2-bridge-box">
+            <strong>Lean 4 Bridge (`BlaschkeBRV.lean:728–765, 801–824`):</strong> `blue_zone_I_integrand_bound`, `hasDerivAt_zone_I_antideriv`, and `zone_I_integral_bound` verify the pointwise reduction, antiderivative, and exact $s^{-(1+1/p)}$ cancellation.
+          </div>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>blue_zone_I_integrand_bound</code> &amp; <code>zone_I_integral_bound</code></span>
+              <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean#L743-L824">Open BlaschkeBRV.lean#L743-L824</a>
+            </div>
+<pre class="lean-code">theorem blue_zone_I_integrand_bound (p C₁ C₂ x s : ℝ)
+    (hp : 0 &lt; p) (hC₁ : 0 &lt; C₁) (hC₂ : 0 &lt; C₂) (hx0 : 0 ≤ x) (hxs : x ≤ s) (hs : 0 &lt; s) :
+    Real.exp (1 / 2) * C₂ * (x + s) ^ (-(1 + 1 / p)) *
+      Real.exp (- (C₁ / 2) * x * (x + s) ^ (-(1 + 1 / p))) ≤
+    Real.exp (1 / 2) * C₂ * s ^ (-(1 + 1 / p)) *
+      Real.exp (- (C₁ / 2 * (2 * s) ^ (-(1 + 1 / p))) * x)
+
+theorem zone_I_integral_bound (p C₁ C₂ s : ℝ) (hC₁ : 0 &lt; C₁) (hC₂ : 0 &lt; C₂) (hs : 0 &lt; s) :
+    ∫ x in (0 : ℝ)..s,
+      (Real.exp (1 / 2) * C₂ * s ^ (-(1 + 1 / p)) *
+        Real.exp (- (C₁ / 2 * s ^ (-(1 + 1 / p))) * x)) ≤
+      2 * Real.exp (1 / 2) * C₂ / C₁</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-block" id="step-zone-2">
+        <div class="level1-row" onclick="toggleL2('step-zone-2', event)">
+          <div class="latex-env">
+            <span class="latex-env-title">Proposition 4.2 (Zone II: $s \le x \le x_0$, Radially Dominated Regime).</span>
+            <span class="latex-thm-body">
+              For $s \le x \le x_0$, we have $x \le x + s \le 2x$, so $(x + s)^{-(1 + 1/p)} \le x^{-(1 + 1/p)}$ in the prefactor of \eqref{eq:radial-master}, while in the exponent we have
+              \begin{equation}\label{eq:zone-II-exp}
+                x (x + s)^{-(1 + 1/p)} \ge x (2x)^{-(1 + 1/p)} = 2^{-(1 + 1/p)} x^{-1/p}.
+              \end{equation}
+              Setting $c_2 := \frac{C_1}{2} 2^{-(1 + 1/p)} > 0$ and making the change of variables $w = c_2 x^{-1/p}$ (for which $dw = -\frac{c_2}{p} x^{-(1 + 1/p)}\,dx$), the Zone II integral evaluates to
+              \begin{equation}\label{eq:zone-II-bound}
+                \int_s^{x_0} |B'((1 - x)e^{i\theta})|\,dx \le \int_s^{x_0} e^{1/2} C_2 x^{-(1 + 1/p)} \exp\!\left( -c_2 x^{-1/p} \right) dx
+                = \frac{p e^{1/2} C_2}{c_2} \int_{c_2 x_0^{-1/p}}^{c_2 s^{-1/p}} e^{-w}\,dw \le \frac{p e^{1/2} C_2}{c_2} < \infty.
+              \end{equation}
+            </span>
+            <span class="step-controls">
+              <button class="pill-toggle" onclick="toggleL2('step-zone-2', event)">+L2</button>
+              <button class="pill-toggle l3-pill" onclick="toggleL3('step-zone-2', event)">+L3 Lean</button>
+            </span>
+          </div>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — 10× Algebraic Unpacking: Exponent Addition $x^1 \cdot x^{-(1+1/p)} = x^{-1/p}$ &amp; Chain-Rule Antiderivative (Bridge to Lean 4)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-zone-2', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <ol>
+            <li><strong>Exponent arithmetic in \eqref{eq:zone-II-exp} (`blue_zone_II_integrand_bound`):</strong> For $x \ge s > 0$:
+              <ul>
+                <li>By `Real.mul_rpow`, $(2x)^{-(1+1/p)} = 2^{-(1+1/p)} x^{-(1+1/p)}$.</li>
+                <li>By `Real.rpow_one` and `Real.rpow_add hx`, $x \cdot x^{-(1+1/p)} = x^1 \cdot x^{-(1+1/p)} = x^{1 + (-(1 + 1/p))} = x^{-1/p}$.</li>
+                <li>Since $p > 1$, the exponent $-1/p$ is strictly negative, so as $x \to 0^+$, $x^{-1/p} \to +\infty$ and $\exp(-c_2 x^{-1/p}) \to 0$ super-polynomially!</li>
+              </ul>
+            </li>
+            <li><strong>Chain-rule derivative of $G(x) = \exp(-A x^{-1/p})$ (`hasDerivAt_exp_neg_rpow`):</strong> Instead of changing integration limits to $w = A x^{-1/p}$, Lean 4 differentiates the composite function $G(x) = \exp(-A x^{-1/p})$ directly on $[s, x_0]$:
+              <ul>
+                <li>By `Real.hasDerivAt_rpow_const (Or.inl hx.ne')`, $\frac{d}{dx}\bigl(x^{-1/p}\bigr) = -\frac{1}{p} x^{-1/p - 1} = -\frac{1}{p} x^{-(1+1/p)}$.</li>
+                <li>Multiplying by $-A$ via `HasDerivAt.const_mul`: $\frac{d}{dx}\bigl(-A x^{-1/p}\bigr) = (-A)\bigl(-\frac{1}{p} x^{-(1+1/p)}\bigr) = \frac{A}{p} x^{-(1+1/p)}$.</li>
+                <li>Composing with $\exp$ via `HasDerivAt.exp`: $G'(x) = \frac{A}{p} x^{-(1+1/p)} \exp(-A x^{-1/p})$.</li>
+              </ul>
+            </li>
+            <li><strong>Applying the Fundamental Theorem of Calculus (`zone_II_integral_bound`):</strong> Scaling $G(x)$ by $\frac{p e^{1/2} C_2}{A}$ gives an exact antiderivative on $[s, x_0]$, so `intervalIntegral.integral_eq_sub_of_hasDerivAt` evaluates the integral to
+              \[
+                \frac{p e^{1/2} C_2}{A}\Bigl(\exp(-A x_0^{-1/p}) - \exp(-A s^{-1/p})\Bigr) \le \frac{p e^{1/2} C_2}{A}
+              \]
+              since $\exp(-A x_0^{-1/p}) \le 1$ (as $-A x_0^{-1/p} \le 0$) and $\exp(-A s^{-1/p}) > 0$.
+            </li>
+          </ol>
+          <div class="l2-bridge-box">
+            <strong>Lean 4 Bridge (`BlaschkeBRV.lean:700–724, 776–797, 828–864`):</strong> `hasDerivAt_exp_neg_rpow`, `blue_zone_II_integrand_bound`, and `zone_II_integral_bound` machine-check the entire Zone II calculation.
+          </div>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>hasDerivAt_exp_neg_rpow</code>, <code>blue_zone_II_integrand_bound</code> &amp; <code>zone_II_integral_bound</code></span>
+              <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean#L700-L864">Open BlaschkeBRV.lean#L700-L864</a>
+            </div>
+<pre class="lean-code">theorem hasDerivAt_exp_neg_rpow (p A x : ℝ) (hp : p ≠ 0) (hx : 0 &lt; x) :
+    HasDerivAt (fun t : ℝ =&gt; Real.exp (- A * t ^ (- (1 / p))))
+      ((A / p) * x ^ (-(1 + 1 / p)) * Real.exp (- A * x ^ (- (1 / p)))) x
+
+theorem blue_zone_II_integrand_bound (p C₁ C₂ x s : ℝ)
+    (hp : 0 &lt; p) (hC₁ : 0 &lt; C₁) (hC₂ : 0 &lt; C₂) (hs : 0 &lt; s) (hsx : s ≤ x) :
+    Real.exp (1 / 2) * C₂ * (x + s) ^ (-(1 + 1 / p)) *
+      Real.exp (- (C₁ / 2) * x * (x + s) ^ (-(1 + 1 / p))) ≤
+    Real.exp (1 / 2) * C₂ * x ^ (-(1 + 1 / p)) *
+      Real.exp (- (C₁ / 2 * (2 : ℝ) ^ (-(1 + 1 / p))) * x ^ (- (1 / p)))
+
+theorem zone_II_integral_bound (p C₁ C₂ s x₀ : ℝ)
+    (hp : 0 &lt; p) (hC₁ : 0 &lt; C₁) (hC₂ : 0 &lt; C₂) (hs : 0 &lt; s) (hsx₀ : s ≤ x₀) :
+    ∫ x in s..x₀,
+      (Real.exp (1 / 2) * C₂ * x ^ (-(1 + 1 / p)) *
+        Real.exp (- (C₁ / 2) * x ^ (- (1 / p)))) ≤
+      2 * p * Real.exp (1 / 2) * C₂ / C₁</pre>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="subsec-heading" id="subsec-vanishing"><span class="subsec-num">4.1.</span>Completion of the Proof and Vanishing Near-Zero Radial Variation</h3>
+
+      <div class="step-block" id="step-completion">
+        <div class="level1-row" onclick="toggleL2('step-completion', event)">
+          <div class="latex-proof">
+            <span class="latex-proof-title">Completion of the Proof of Theorem 1.2.</span>
+            Combining Zone I (Proposition 4.1), Zone II (Proposition 4.2), and the compact core $t \in [0, 1 - x_0]$ shows that for every $\theta \ne 0$ with $s = |1 - e^{i\theta}| \in (0, x_0]$,
+            \begin{equation}\label{eq:total-bound}
+              \int_0^1 |B'(t e^{i\theta})|\,dt \le C_{\text{far}}(x_0) + \frac{2 e^{1/2} C_2}{c_1} + \frac{p e^{1/2} C_2}{c_2} e^{-c_2 x_0^{-1/p}} < \infty,
+            \end{equation}
+            which is completely independent of $\theta$. For $\theta = 0$, Fatou's Lemma (since $B'(t e^{i\theta}) \to B'(t)$ pointwise as $\theta \to 0^+$) gives $\int_0^1 |B'(t)|\,dt \le \liminf_{\theta \to 0^+} \int_0^1 |B'(t e^{i\theta})|\,dt < \infty$. Furthermore, if we refine the Zone I/II split point to $x = s^{1-\varepsilon}$ with $\varepsilon = \frac{p-1}{2p} \in (0, 1 - 1/p)$, the near-boundary variation bound $e^{1/2} C_2 s^{\frac{p-1}{p}} + \frac{p e^{1/2} C_2}{c_2}\exp\bigl(-c_2 s^{-\frac{p-1}{2p^2}}\bigr)$ converges to $0$ as $s \to 0^+$. Thus $B \in \mathrm{BRV}$, resolving Problem 4.3 of [AJS14].
+            <span class="step-controls">
+              <button class="pill-toggle" onclick="toggleL2('step-completion', event)">+L2</button>
+              <button class="pill-toggle l3-pill" onclick="toggleL3('step-completion', event)">+L3 Lean</button>
+            </span>
+            <span class="qed">$\square$</span>
+          </div>
+        </div>
+        <div class="level2-drawer">
+          <div class="l2-header">
+            <span>Level 2 — 10× Algebraic Unpacking: Vanishing Limit as $s \to 0^+$ via Filter Limits (Bridge to Lean 4)</span>
+            <button class="pill-toggle l3-pill" onclick="toggleL3('step-completion', event)">Toggle Level 3 Lean Code</button>
+          </div>
+          <ol>
+            <li><strong>First summand $e^{1/2} C_2 s^{(p-1)/p} \to 0$ as $s \to 0^+$ (`h_t1` in Lean 4):</strong> Since $p > 1$, both $p - 1 > 0$ and $p > 0$, so `div_pos (by linarith) (by linarith)` proves $\frac{p-1}{p} > 0$. Applying `tendsto_rpow_nhds_zero_of_pos` and `Filter.Tendsto.const_mul` proves $\lim_{s \to 0^+} e^{1/2} C_2 s^{(p-1)/p} = 0$.</li>
+            <li><strong>Second summand $\frac{2 p e^{1/2} C_2}{C_1} \exp\bigl(-\frac{C_1}{2} s^{-\frac{p-1}{2p^2}}\bigr) \to 0$ as $s \to 0^+$ (`h_t2` in Lean 4):</strong>
+              <ul>
+                <li>Since $p > 1$, $\frac{p-1}{2p^2} > 0$, so `tendsto_rpow_neg_atTop` shows $s^{-\frac{p-1}{2p^2}} \to +\infty$ (`Filter.atTop`) as $s \to 0^+$.</li>
+                <li>Multiplying by $C_1/2 > 0$ via `Filter.Tendsto.const_mul_atTop` preserves divergence to $+\infty$.</li>
+                <li>Composing with $u \mapsto e^{-u}$ via `Real.tendsto_exp_neg_atTop_nhds_zero` shows $\exp\bigl(-\frac{C_1}{2} s^{-\frac{p-1}{2p^2}}\bigr) \to 0$.</li>
+              </ul>
+            </li>
+            <li><strong>Adding the two filter limits:</strong> `h_t1.add h_t2` with `add_zero` completes `near_zero_variation_tendsto_zero`.</li>
+          </ol>
+          <div class="l2-bridge-box">
+            <strong>Lean 4 Bridge (`BlaschkeBRV.lean:1026–1052`):</strong> `near_zero_variation_tendsto_zero` proves the filter convergence `Tendsto ... (nhdsWithin 0 (Set.Ioi 0)) (nhds 0)`.
+          </div>
+          <div class="level3-drawer">
+            <div class="l3-bar">
+              <span>Lean 4 — <code>near_zero_variation_tendsto_zero</code></span>
+              <a href="file:///Users/austinanderson/Documents/MathResearch/BlaschkeBRV/BlaschkeBRV.lean#L1026-L1052">Open BlaschkeBRV.lean#L1026-L1052</a>
+            </div>
+<pre class="lean-code">theorem near_zero_variation_tendsto_zero (p C₁ C₂ : ℝ) (hp : 1 &lt; p) (hC₁ : 0 &lt; C₁) :
+    Filter.Tendsto
+      (fun s : ℝ =&gt;
+        Real.exp (1 / 2) * C₂ * s ^ ((p - 1) / p) +
+        (2 * p * Real.exp (1 / 2) * C₂ / C₁) *
+          Real.exp (- (C₁ / 2) * s ^ (- ((p - 1) / (2 * p ^ 2)))))
+      (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
+  rw [show (0 : ℝ) = 0 + 0 by ring]
+  apply Filter.Tendsto.add
+  · have h_pos : 0 &lt; (p - 1) / p := div_pos (by linarith) (by linarith)
+    have h1 := tendsto_rpow_nhds_zero_of_pos h_pos
+    simpa using h1.const_mul (Real.exp (1 / 2) * C₂)
+  · have h_pos : 0 &lt; (p - 1) / (2 * p ^ 2) := div_pos (by linarith) (by positivity)
+    have h1 := tendsto_rpow_neg_atTop h_pos
+    have h2 : Filter.Tendsto (fun s : ℝ =&gt; (C₁ / 2) * s ^ (- ((p - 1) / (2 * p ^ 2))))
+        (nhdsWithin 0 (Set.Ioi 0)) Filter.atTop :=
+      Filter.Tendsto.const_mul_atTop (by positivity) h1
+    have h3 : Filter.Tendsto (fun s : ℝ =&gt; Real.exp (- ((C₁ / 2) * s ^ (- ((p - 1) / (2 * p ^ 2))))))
+        (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) :=
+      Real.tendsto_exp_neg_atTop_nhds_zero.comp h2
+    simpa [neg_mul] using h3.const_mul (2 * p * Real.exp (1 / 2) * C₂ / C₁)</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- REFERENCES                                                        -->
+    <!-- ================================================================= -->
+    <section id="sec-refs">
+      <h2 class="sec-heading">References</h2>
+      <ul class="bib-list">
+        <li>
+          <span class="bib-key">[AC01]</span>
+          A. Aleman and J. A. Cima, <em>An integral operator on $H^p$ and Hardy's inequality</em>, J. Anal. Math. <strong>85</strong> (2001), 157–176.
+        </li>
+        <li>
+          <span class="bib-key">[AS95]</span>
+          A. Aleman and A. G. Siskakis, <em>An integral operator on $H^p$</em>, Complex Variables Theory Appl. <strong>28</strong> (1995), 149–158.
+        </li>
+        <li>
+          <span class="bib-key">[And10]</span>
+          A. M. Anderson, <em>Multiplication and Integral Operators on Spaces of Analytic Functions</em>, Ph.D. Dissertation, University of Hawaiʻi at Mānoa, 2010 (<a href="file:///Users/austinanderson/Documents/MathResearch/aandersonthesis2.1.pdf"><code>aandersonthesis2.1.pdf</code></a>).
+        </li>
+        <li>
+          <span class="bib-key">[AJS14]</span>
+          A. Anderson, M. Jovovic, and W. Smith, <em>Some integral operators acting on $H^\infty$</em>, Integral Equations Operator Theory <strong>80</strong> (2014), no. 2, 275–291 (<a href="file:///Users/austinanderson/Documents/MathResearch/IntOpsHinfty_Final.pdf"><code>IntOpsHinfty_Final.pdf</code></a>; updated edition with Problem 4.3 resolution: <a href="file:///Users/austinanderson/Documents/MathResearch/20261105IntOpsHinfty.pdf"><code>20261105IntOpsHinfty.pdf</code></a>).
+        </li>
+        <li>
+          <span class="bib-key">[Car61]</span>
+          G. T. Cargo, <em>The radial images of Blaschke products</em>, J. London Math. Soc. <strong>36</strong> (1961), 424–430.
+        </li>
+        <li>
+          <span class="bib-key">[Gar07]</span>
+          J. B. Garnett, <em>Bounded Analytic Functions</em>, Revised First Edition, Graduate Texts in Mathematics, vol. 236, Springer, New York, 2007.
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    function toggleL2(stepId, event) {
+      if (event) event.stopPropagation();
+      const block = document.getElementById(stepId);
+      if (!block) return;
+      block.classList.toggle('open-l2');
+    }
+
+    function toggleL3(stepId, event) {
+      if (event) event.stopPropagation();
+      const block = document.getElementById(stepId);
+      if (!block) return;
+      block.classList.add('open-l2');
+      const l2 = block.querySelector('.level2-drawer');
+      if (l2) l2.classList.toggle('open-l3');
+    }
+
+    function setActiveBtn(id) {
+      document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active-mode'));
+      const btn = document.getElementById(id);
+      if (btn) btn.classList.add('active-mode');
+    }
+
+    function collapseAll() {
+      setActiveBtn('btn-l1');
+      document.querySelectorAll('.step-block').forEach(b => b.classList.remove('open-l2'));
+      document.querySelectorAll('.level2-drawer').forEach(d => d.classList.remove('open-l3'));
+    }
+
+    function expandAllL2() {
+      setActiveBtn('btn-l2');
+      document.querySelectorAll('.step-block').forEach(b => b.classList.add('open-l2'));
+      document.querySelectorAll('.level2-drawer').forEach(d => d.classList.remove('open-l3'));
+    }
+
+    function expandAllL3() {
+      setActiveBtn('btn-l3');
+      document.querySelectorAll('.step-block').forEach(b => b.classList.add('open-l2'));
+      document.querySelectorAll('.level2-drawer').forEach(d => d.classList.add('open-l3'));
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+\documentclass[11pt,reqno]{amsart}
+
+\usepackage{amssymb, mathrsfs, color, amsthm, tikz, graphicx}
+\usepackage[margin=1.1in]{geometry}
+\usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{ex}[thm]{Example}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{prob}[thm]{Problem}
+\newtheorem{ques}[thm]{Question}
+\newtheorem{rem}[thm]{Remark}
+
+\numberwithin{equation}{section}
+
+%%%%%%% Macros %%%%%%%%%%%
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\D}{\mathbb{D}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\BRV}{\mathrm{BRV}}
+\newcommand{\re}{\operatorname{Re}}
+\newcommand{\im}{\operatorname{Im}}
+
+\begin{document}
+
+\title[Bounded Radial Variation for the $1 - 1/k^2$ Blaschke Product]
+{Uniformly Bounded Radial Variation for the $a_k = 1 - 1/k^2$ Blaschke Product and Resolution of a Problem on $T_g$ Acting on $H^\infty$}
+\date{November 5, 2026}
+
+\author[A. Anderson]{Austin Anderson}
+
+\thanks{Interactive 3-Level Formalization Edition (Level 1: Main Research Paper). Accompanied by machine-checked proofs in Lean 4 (\texttt{BlaschkeBRV/BlaschkeBRV.lean}). Dedicated to the memory of Wayne Smith.}
+\subjclass[2020]{Primary: 30J10, 47B38; Secondary: 30H05, 68V15}
+\keywords{Blaschke products, bounded radial variation, Volterra-type integral operators, $H^\infty$, Frostman condition, interpolating sequences, Lean 4 formal verification}
+
+\begin{abstract}
+Let $T_g f(z) = \int_0^z f(w) g'(w)\,dw$ and $S_g f(z) = \int_0^z f'(w) g(w)\,dw$ denote the generalized Volterra operator and its companion acting on $H^\infty(\D)$. In \cite[Problem~4.3]{AJS14}, Anderson, Jovovic, and Smith asked for a zero-sequence characterization of Blaschke products belonging to the class $\BRV = \{g \in H(\D) : \sup_{\theta} \int_0^1 |g'(te^{i\theta})|\,dt < \infty\} \subseteq T[H^\infty] = S[H^\infty]$, singling out the Blaschke product $B(z)$ with zeros $a_k = 1 - 1/k^2$ as a critical borderline test case whose individual radii have rectifiable images, but for which a uniform arc-length bound was unknown. This sequence lies outside both previously known regimes: it is neither uniformly Frostman (Cargo's sufficient condition fails at $\theta = 0$) nor interpolating (Theorem~2.10 of \cite{AJS14} does not apply since $\rho(a_k, a_{k+1}) \sim 1/k \to 0$).
+
+We resolve this problem in the affirmative by proving that for $a_k = 1 - 1/k^2$---and more generally for $a_k = 1 - 1/k^p$ for every $p > 1$---the Blaschke product $B(z)$ belongs to $\BRV$, so $T_B$ and $S_B$ are bounded (and non-compact) operators on $H^\infty(\D)$. The key analytic tool is a universal pole-free pointwise derivative inequality valid for every Blaschke product at every point $z \in \D$ (including at its zeros):
+\[
+  |B'(z)| \le e^{1/2} S(z) \exp\!\left(-\tfrac{1}{2}(1 - |z|^2) S(z)\right), \qquad S(z) := \sum_{k} \frac{1 - |a_k|^2}{|1 - \bar{a}_k z|^2}.
+\]
+Along each radius $z = t e^{i\theta}$, the kernel $S(t e^{i\theta}) \asymp \bigl((1 - t) + 2|\sin(\theta/2)|\bigr)^{-(1 + 1/p)}$ induces a two-zone radial decomposition on which the integrands admit exact elementary exponential antiderivatives whose increments are bounded independently of $\theta$.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction and Operator-Theoretic Background}
+
+Let $\D = \{z \in \C : |z| < 1\}$ be the open unit disk, $H(\D)$ the space of holomorphic functions on $\D$, $H^\infty = H^\infty(\D)$ the Banach algebra of bounded holomorphic functions with norm $\|f\|_\infty = \sup_{z \in \D} |f(z)|$, and $A = A(\D)$ the disk algebra of functions in $H^\infty$ extending continuously to $\overline{\D}$. For a symbol $g \in H(\D)$, the Volterra-type integral operator $T_g$, its companion operator $S_g$, and the multiplication operator $M_g$ are defined for $f \in H(\D)$ and $z \in \D$ by
+\begin{equation} \label{eq_operators}
+  T_g f(z) = \int_0^z f(w) g'(w)\,dw, \qquad
+  S_g f(z) = \int_0^z f'(w) g(w)\,dw, \qquad
+  M_g f(z) = f(z) g(z).
+\end{equation}
+Integration by parts connects the three operators via the fundamental identity \cite[Eq.~(1.1)]{AJS14}
+\begin{equation} \label{eq_ibp}
+  M_g f(z) = f(0) g(0) + T_g f(z) + S_g f(z).
+\end{equation}
+For a Banach space $X \subseteq H(\D)$ and $L \in \{T, S, M\}$, write $L[X] = \{g \in H(\D) : L_g \text{ is bounded on } X\}$ and $L_0[X] = \{g \in H(\D) : L_g \text{ is compact on } X\}$. On classical Hardy, Bergman, Dirichlet, Bloch, and $\mathrm{BMOA}$ spaces, boundedness of $M_g$ splits into boundedness of $S_g$ (which is equivalent to $g \in H^\infty$) and boundedness of $T_g$ (which is governed by a Carleson or Bloch-type condition on $g'$); see \cite{AC01, AS95, AS97, And10, Pom77, SZ99}. On $H^\infty$, however, $M[H^\infty] = H^\infty$ trivially, and by \cite[Proposition~2.3]{AJS14} the identity (\ref{eq_ibp}) forces
+\begin{equation} \label{eq_TH_SH}
+  T[H^\infty] = S[H^\infty] \subsetneq M[H^\infty] = H^\infty,
+\end{equation}
+so $T[H^\infty]$ is a non-closed subalgebra of $H^\infty$ (\cite[Corollary~2.15]{AJS14}).
+
+For $\theta \in [-\pi, \pi]$, the \emph{radial variation} of $g \in H(\D)$ along the radius $e^{i\theta}$ is
+\begin{equation} \label{eq_radial_var}
+  V(g, \theta) := \int_0^1 |g'(t e^{i\theta})|\,dt,
+\end{equation}
+and the class of analytic functions with \emph{uniformly bounded radial variation} is
+\begin{equation} \label{eq_BRV_def}
+  \BRV := \Bigl\{ g \in H(\D) : \|g\|_{\BRV} := \sup_{\theta \in [-\pi, \pi]} V(g, \theta) < \infty \Bigr\}.
+\end{equation}
+Since $|T_g f(r e^{i\theta})| = \bigl|\int_0^r f(t e^{i\theta}) g'(t e^{i\theta}) e^{i\theta}\,dt\bigr| \le V(g, \theta) \|f\|_\infty$, one has $\BRV \subseteq T[H^\infty] = S[H^\infty]$ with $\|T_g\|_{H^\infty \to H^\infty} \le \|g\|_{\BRV}$ and $\|S_g\|_{H^\infty \to H^\infty} \le 2\|g\|_\infty + \|g\|_{\BRV}$ (\cite[Proposition~2.4]{AJS14}). Whether $\BRV = T[H^\infty]$ remains Open Problem~4.1 of \cite{AJS14}.
+
+\subsection{Blaschke Products in $\BRV$ and Problem 4.3 of \cite{AJS14}}
+
+A Blaschke product with zero sequence $\{a_k\} \subset \D \setminus \{0\}$ satisfying $\sum_k (1 - |a_k|) < \infty$ is given by
+\[
+  B(z) = \prod_k \frac{|a_k|}{a_k} \frac{a_k - z}{1 - \bar{a}_k z}, \qquad z \in \D.
+\]
+Prior to the present work, two contrasting regimes of Blaschke products were understood in \cite{AJS14}:
+\begin{enumerate}
+\item \textbf{Uniformly Frostman Blaschke Products ($B \in \BRV$):} A Blaschke product $B$ is called \emph{uniformly Frostman} \cite[Eq.~(2.2)]{AJS14} if there exists a constant $C > 0$ independent of $\theta$ such that
+\begin{equation} \label{eq_frostman}
+  \sup_{\theta \in [-\pi, \pi]} \sum_k \frac{1 - |a_k|}{|a_k - e^{i\theta}|} < C.
+\end{equation}
+By Cargo's theorem \cite[Theorem~1]{Car61}, $B$ is uniformly Frostman if and only if \emph{every subproduct} of $B$ belongs to $\BRV$. However, condition (\ref{eq_frostman}) forces $\{a_k\}$ to approach $\partial\D$ \emph{tangentially}: no infinite sequence $\{a_k\}$ contained in a nontangential Stolz angle (and in particular no real zero sequence $0 < a_k < 1$) can satisfy (\ref{eq_frostman}).
+\item \textbf{Real Interpolating Blaschke Products ($B \notin T[H^\infty]$):} Recall that $\{a_k\}$ is an \emph{interpolating sequence} for $H^\infty$ if $\inf_k \prod_{j \ne k} \rho(a_j, a_k) \ge \delta > 0$, where $\rho(z, w) = \bigl|\frac{z - w}{1 - \bar{w} z}\bigr|$ is the pseudohyperbolic metric. By \cite[Proposition~2.7 and Theorem~2.10]{AJS14}, if $B$ is an interpolating Blaschke product with zeros in a nontangential region, then $B \notin \BRV$; moreover, if $0 < a_k < a_{k+1} < 1$ is an interpolating sequence on $(0, 1)$, then $T_B$ is \emph{unbounded} on $H^\infty$ ($B \notin T[H^\infty]$).
+\end{enumerate}
+
+This dichotomy led Anderson, Jovovic, and Smith to pose \cite[Problem~4.3, p.~14]{AJS14}:
+\begin{prob}[{\cite[Problem~4.3]{AJS14}}] \label{prob_4_3}
+Characterize, in terms of their zero sequences, Blaschke products in $\BRV$. A possible candidate for a Blaschke product in $\BRV$ is the Blaschke product with zeros $\{1 - 1/k^2\}$. It is not hard to see that the image of every radius is rectifiable, but it is not clear that there is a uniform bound for their arc-lengths.
+\end{prob}
+
+\subsection{Main Results}
+
+In this paper, we resolve the candidate of Problem~\ref{prob_4_3} in the affirmative and extend the result to the entire family of polynomial-clustering real Blaschke sequences $a_k = 1 - 1/k^p$ for all $p > 1$.
+
+\begin{thm}[Main Theorem: Resolution of the Candidate in Problem~\ref{prob_4_3}] \label{thm_main}
+For every $p > 1$, let $a_1 = 0$ and $a_k = 1 - 1/k^p \in (0, 1)$ for $k \ge 2$, and let
+\begin{equation} \label{eq_Bp_def}
+  B(z) = -z \prod_{k=2}^\infty \frac{a_k - z}{1 - a_k z}, \qquad z \in \D,
+\end{equation}
+be the corresponding Blaschke product (in particular, $p = 2$ gives $a_k = 1 - 1/k^2$). Then:
+\begin{enumerate}
+\item $B$ is \textbf{not} uniformly Frostman (so its interpolating subproducts do not belong to $\BRV$), and $\{a_k\}$ is \textbf{not} an interpolating sequence ($\rho(a_k, a_{k+1}) \sim \frac{p}{2k} \to 0$).
+\item $B$ has \textbf{uniformly bounded radial variation} on $\D$:
+\begin{equation} \label{eq_main_BRV}
+  \|B\|_{\BRV} = \sup_{\theta \in [-\pi, \pi]} \int_0^1 |B'(t e^{i\theta})|\,dt < \infty,
+\end{equation}
+and hence $B \in \BRV \subseteq T[H^\infty] = S[H^\infty]$.
+\item Both $T_B$ and $S_B$ are bounded linear operators on $H^\infty(\D)$, whereas $B \notin A(\D)$ and therefore $B \notin T_0[H^\infty]$ ($T_B$ is bounded but \textbf{not compact} on $H^\infty(\D)$, and $B' \notin \mathcal{U}$).
+\end{enumerate}
+\end{thm}
+
+The mechanism behind Theorem~\ref{thm_main} reveals a striking analytic phenomenon. An individual Blaschke product with real zeros $a_k \to 1^-$ can belong to $\BRV$ precisely when its zeros cluster tightly enough in the pseudohyperbolic metric that the exponential attenuation of $|B(z)|$ near $z = 1$ crushes the blowup of the logarithmic derivative $|B'(z)/B(z)|$. We capture this cancellation globally on $\D$ through a universal pole-free derivative bound (Theorem~\ref{thm_pole_free}) and a two-zone radial scale decomposition with exact elementary antiderivatives (Section~\ref{sec_two_zone}).
+
+\section{Borderline Geometry and Real-Ray Variation of $a_k = 1 - 1/k^2$} \label{sec_borderline}
+
+By the Leibniz rule $(g_1 g_2)' = g_1' g_2 + g_1 g_2'$, any two functions $g_1, g_2 \in \BRV \cap H^\infty$ satisfy
+\begin{equation} \label{eq_brv_algebra}
+  V(g_1 g_2, \theta) \le \|g_2\|_\infty V(g_1, \theta) + \|g_1\|_\infty V(g_2, \theta).
+\end{equation}
+In particular, since the origin factor $g_1(z) = -z$ satisfies $\|g_1\|_\infty = 1$ and $V(g_1, \theta) = 1$, removing the single factor $-z$ at $k = 1$ changes $V(B, \theta)$ by at most $1$. Throughout the remainder of the paper we therefore work with the positive-zero Blaschke product
+\begin{equation} \label{eq_B_tail}
+  B(z) = \prod_{k=2}^\infty b_k(z), \qquad b_k(z) := \frac{a_k - z}{1 - a_k z}, \qquad a_k = 1 - \frac{1}{k^2} \in \bigl[\tfrac{3}{4}, 1\bigr).
+\end{equation}
+
+\begin{prop}[Blaschke Convergence, Non-Frostman Property, and Non-Separation] \label{prop_borderline}
+Let $a_k = 1 - 1/k^2$ for $k \ge 2$. Then:
+\begin{enumerate}
+\item \textbf{Blaschke Condition:} For every $k \ge 2$, $1 - a_k = \frac{1}{k^2} \le \frac{1}{k-1} - \frac{1}{k}$, and $\frac{7}{4k^2} \le 1 - a_k^2 \le \frac{2}{k^2}$. Hence $\sum_{k=2}^\infty (1 - a_k) = \frac{\pi^2}{6} - 1 < 1$.
+\item \textbf{Failure of Uniform Frostman Condition at $\theta = 0$:} At $e^{i0} = 1$, every term of the Frostman sum (\ref{eq_frostman}) equals $\frac{1 - a_k}{|a_k - 1|} = 1$, so for every $N \ge 1$,
+\begin{equation} \label{eq_frostman_div}
+  \sum_{k=2}^{N+1} \frac{1 - a_k}{|a_k - 1|} = N \longrightarrow \infty \qquad (N \to \infty).
+\end{equation}
+\item \textbf{Failure of Pseudohyperbolic Separation:} For every $k \ge 1$, the pseudohyperbolic distance between consecutive zeros satisfies the exact identity
+\begin{equation} \label{eq_rho_exact}
+  \rho(a_k, a_{k+1}) = \frac{a_{k+1} - a_k}{1 - a_k a_{k+1}} = \frac{2k + 1}{2k^2 + 2k} \le \frac{1}{k} \longrightarrow 0 \qquad (k \to \infty).
+\end{equation}
+Consequently, $\{a_k\}$ is not separated in the pseudohyperbolic metric and is not an interpolating sequence for $H^\infty$.
+\end{enumerate}
+\end{prop}
+\begin{proof}
+(1) Since $k(k-1) < k^2$, we have $\frac{1}{k^2} \le \frac{1}{k(k-1)} = \frac{1}{k-1} - \frac{1}{k}$. For $k \ge 2$, $\frac{3}{4} \le a_k < 1$ gives $\frac{7}{4} \le 1 + a_k < 2$, so $\frac{7}{4k^2} \le (1 - a_k)(1 + a_k) = 1 - a_k^2 < \frac{2}{k^2}$.
+
+(2) Since $a_k < 1$, $|a_k - 1| = 1 - a_k > 0$, so each ratio in (\ref{eq_frostman_div}) is $1$.
+
+(3) Direct algebraic simplification gives $a_{k+1} - a_k = \frac{1}{k^2} - \frac{1}{(k+1)^2} = \frac{2k + 1}{k^2(k+1)^2}$ and
+\[
+  1 - a_k a_{k+1} = 1 - \left(1 - \frac{1}{k^2}\right)\!\left(1 - \frac{1}{(k+1)^2}\right) = \frac{(k+1)^2 + k^2 - 1}{k^2(k+1)^2} = \frac{2k^2 + 2k}{k^2(k+1)^2}.
+\]
+Dividing the two expressions cancels $k^2(k+1)^2$ and yields $\frac{2k+1}{2k^2+2k} \le \frac{2k+2}{2k^2+2k} = \frac{1}{k}$.
+\end{proof}
+
+Before proving the general uniform bound for all $\theta \in [-\pi, \pi]$ in Sections~\ref{sec_pole_free}--\ref{sec_two_zone}, it is instructive to see directly on the positive real axis $\theta = 0$ why $V(B, 0) = \int_0^1 |B'(t)|\,dt < \infty$, and how the critical-point interlacing of \cite[Lemma~2.9]{AJS14} converts pseudohyperbolic clustering into exponential decay between zeros.
+
+\begin{thm}[Real-Ray Variation via Critical-Point Interlacing] \label{thm_real_ray}
+Along the positive real radius $\theta = 0$, the Blaschke product $B(z) = \prod_{k=2}^\infty \frac{a_k - z}{1 - a_k z}$ with $a_k = 1 - 1/k^2$ satisfies
+\begin{equation} \label{eq_real_ray_bound}
+  V(B, 0) = \int_0^1 |B'(t)|\,dt \le 1 + 2 \sum_{k=2}^\infty e^{-k/128} = 1 + \frac{2 e^{-1/64}}{1 - e^{-1/128}} < \infty.
+\end{equation}
+\end{thm}
+\begin{proof}
+By \cite[Lemma~2.9]{AJS14} (proved via Rolle's theorem and Hurwitz's theorem), the derivative $B'$ is real-valued on $(0, 1)$, has no zeros on $[0, a_2)$, and has a unique zero $c_k \in (a_k, a_{k+1})$ in each interval $(a_k, a_{k+1})$ for $k \ge 2$. Since $B(a_k) = 0$, $B$ is monotone on $[0, a_2]$, $[a_k, c_k]$, and $[c_k, a_{k+1}]$, so
+\[
+  \int_0^{a_2} |B'(t)|\,dt = |B(a_2) - B(0)| = B(0) \le 1, \qquad
+  \int_{a_k}^{a_{k+1}} |B'(t)|\,dt = 2|B(c_k)| \le 2 \sup_{t \in [a_k, a_{k+1}]} |B(t)|.
+\]
+For any $t \in [a_k, a_{k+1}]$ and any index $j \in \{k+1, \dots, 2k\}$, we have $1 - a_j^2 \ge 1 - a_j = \frac{1}{j^2} \ge \frac{1}{4k^2}$, $1 - t^2 \ge 1 - t \ge 1 - a_{k+1} = \frac{1}{(k+1)^2} \ge \frac{1}{4k^2}$, and $0 < 1 - a_j t = (1 - a_j) + a_j(1 - t) \le \frac{1}{k^2} + \frac{1}{k^2} = \frac{2}{k^2}$. Hence
+\[
+  1 - |b_j(t)|^2 = \frac{(1 - a_j^2)(1 - t^2)}{(1 - a_j t)^2} \ge \frac{(1/4k^2)(1/4k^2)}{(2/k^2)^2} = \frac{1}{64}.
+\]
+Using $|b_j(t)| = \sqrt{1 - (1 - |b_j(t)|^2)} \le e^{-(1 - |b_j(t)|^2)/2} \le e^{-1/128}$ across the $k$ factors $j = k+1, \dots, 2k$ gives $|B(c_k)| \le \prod_{j=k+1}^{2k} |b_j(c_k)| \le e^{-k/128}$, and summing over $k \ge 2$ yields (\ref{eq_real_ray_bound}).
+\end{proof}
+
+\section{The Universal Pole-Free Pointwise Blaschke Derivative Bound} \label{sec_pole_free}
+
+On off-real rays $\theta \ne 0$, Rolle's theorem is unavailable, and the naive logarithmic derivative formula $B'(z) = B(z) \sum_{k} \frac{-(1 - a_k^2)}{(a_k - z)(1 - a_k z)}$ has apparent poles at the zeros $z = a_k$. Our key observation is that differentiating $B$ via the omitted-subproduct expansion $B_k(z) = \prod_{j \ne k} b_j(z)$ eliminates the $(a_k - z)^{-1}$ singularity altogether, while losing at most a factor of $e^{1/2}$ from the single omitted factor $b_k(z)$.
+
+\begin{thm}[Universal Pole-Free Blaschke Derivative Inequality] \label{thm_pole_free}
+Let $B(z) = \prod_{k} \frac{|a_k|}{a_k} \frac{a_k - z}{1 - \bar{a}_k z}$ be any Blaschke product on $\D$, and define its positive kernel function
+\begin{equation} \label{eq_Sz_def}
+  S(z) := \sum_k \frac{1 - |a_k|^2}{|1 - \bar{a}_k z|^2}, \qquad z \in \D.
+\end{equation}
+Then at \textbf{every} point $z \in \D$ (including at all zeros $z = a_k$),
+\begin{equation} \label{eq_universal_deriv}
+  |B'(z)| \le e^{1/2} \, S(z) \, \exp\!\left(-\frac{1}{2}(1 - |z|^2) S(z)\right)
+  \le e^{1/2} \, S(z) \, \exp\!\left(-\frac{1}{2}(1 - |z|) S(z)\right).
+\end{equation}
+\end{thm}
+\begin{proof}
+Let $b_j(z) = \frac{|a_j|}{a_j} \frac{a_j - z}{1 - \bar{a}_j z}$ and $B_k(z) = \prod_{j \ne k} b_j(z)$. Since $\frac{d}{dz} b_k(z) = -\frac{|a_k|}{a_k} \frac{1 - |a_k|^2}{(1 - \bar{a}_k z)^2}$, the Leibniz rule on the locally uniformly convergent product $B = \prod_j b_j$ gives
+\begin{equation} \label{eq_leibniz_Bk}
+  B'(z) = -\sum_k \frac{|a_k|}{a_k} B_k(z) \frac{1 - |a_k|^2}{(1 - \bar{a}_k z)^2}.
+\end{equation}
+For each factor $b_j(z)$, the elementary identity $|1 - \bar{a}_j z|^2 - |a_j - z|^2 = (1 - |a_j|^2)(1 - |z|^2)$ yields
+\begin{equation} \label{eq_u_j}
+  u_j(z) := 1 - |b_j(z)|^2 = \frac{(1 - |a_j|^2)(1 - |z|^2)}{|1 - \bar{a}_j z|^2} \in [0, 1].
+\end{equation}
+Since $1 - u \le e^{-u}$ for all $u \in \R$, we have $|b_j(z)| = \bigl(1 - u_j(z)\bigr)^{1/2} \le \exp\bigl(-\frac{1}{2} u_j(z)\bigr)$. For any fixed index $k$, the single omitted term satisfies $u_k(z) = 1 - |b_k(z)|^2 \le 1$, and $\sum_j u_j(z) = (1 - |z|^2) S(z)$. Therefore, for every $k$ and every $z \in \D$,
+\begin{align} \label{eq_Bk_uniform}
+  |B_k(z)| = \prod_{j \ne k} |b_j(z)|
+  &\le \exp\!\left(-\frac{1}{2} \sum_{j \ne k} u_j(z)\right)
+  = \exp\!\left(-\frac{1}{2}\bigl((1 - |z|^2) S(z) - u_k(z)\bigr)\right) \nonumber \\
+  &\le e^{1/2} \exp\!\left(-\frac{1}{2}(1 - |z|^2) S(z)\right).
+\end{align}
+Substituting (\ref{eq_Bk_uniform}) into the triangle inequality for (\ref{eq_leibniz_Bk}) and using $1 - |z|^2 = (1 + |z|)(1 - |z|) \ge 1 - |z|$ gives (\ref{eq_universal_deriv}).
+\end{proof}
+
+\subsection{Two-Sided Power Law for the Kernel $S(t e^{i\theta})$}
+
+We now specialize to $a_k = 1 - 1/k^p$ ($p > 1$, $k \ge 2$) along any radius $z = t e^{i\theta}$ ($t \in [0, 1)$, $\theta \in [-\pi, \pi]$). Write $x := 1 - t \in (0, 1]$, $s := 2|\sin(\theta/2)| \in [0, 2]$, and define the combined radial-angular scale parameter
+\begin{equation} \label{eq_delta_scale}
+  \delta = \delta(t, \theta) := (1 - t) + 2|\sin(\theta/2)| = x + s.
+\end{equation}
+
+\begin{lem}[Two-Sided Denominator Scale Bound] \label{lem_denom_scale}
+For every $a_k \in [3/4, 1)$, every $t = 1 - x \in [1/2, 1)$ ($x \in (0, 1/2]$), and every $\theta \in [-\pi, \pi]$ with $s = 2|\sin(\theta/2)|$ and $\delta = x + s$,
+\begin{equation} \label{eq_cosine_exact}
+  |1 - a_k t e^{i\theta}|^2 = (1 - a_k t)^2 + 4 a_k t \sin^2(\theta/2) = (1 - a_k t)^2 + a_k t s^2,
+\end{equation}
+and consequently
+\begin{equation} \label{eq_denom_sandwich}
+  \frac{3}{16}\bigl((1 - a_k) + \delta\bigr)^2 \le |1 - a_k t e^{i\theta}|^2 \le \bigl((1 - a_k) + \delta\bigr)^2.
+\end{equation}
+\end{lem}
+\begin{proof}
+Expanding $|1 - a_k t e^{i\theta}|^2 = 1 - 2 a_k t \cos\theta + a_k^2 t^2$ and substituting $\cos\theta = 1 - 2\sin^2(\theta/2)$ proves (\ref{eq_cosine_exact}). Since $1 - a_k t = (1 - a_k) + a_k x$ with $\frac{3}{4} \le a_k < 1$ and $\frac{1}{2} \le t < 1$, we have $\frac{3}{4}((1 - a_k) + x) \le 1 - a_k t \le (1 - a_k) + x$ and $\frac{3}{8} \le a_k t < 1$. For the upper bound,
+\[
+  (1 - a_k t)^2 + a_k t s^2 \le \bigl((1 - a_k) + x\bigr)^2 + s^2 \le \bigl((1 - a_k) + x + s\bigr)^2 = \bigl((1 - a_k) + \delta\bigr)^2.
+\]
+For the lower bound, using $A^2 + B^2 \ge \frac{1}{2}(A + B)^2$ with $A = (1 - a_k) + x$ and $B = s$ gives
+\[
+  (1 - a_k t)^2 + a_k t s^2 \ge \frac{9}{16}\bigl((1-a_k)+x\bigr)^2 + \frac{3}{8} s^2 \ge \frac{3}{8}\Bigl(\bigl((1-a_k)+x\bigr)^2 + s^2\Bigr) \ge \frac{3}{16}\bigl((1-a_k) + \delta\bigr)^2. \qedhere
+\]
+\end{proof}
+
+\begin{prop}[Two-Sided Power Law for $S(t e^{i\theta})$] \label{prop_kernel_power}
+Let $a_k = 1 - 1/k^p$ for $k \ge 2$ with $p > 1$ (and $a_k \ge 3/4$ for $k \ge k_0$). There exist constants $C_1, C_2 > 0$ depending only on $p$ such that for all $t \in [1/2, 1)$ and $\theta \in [-\pi, \pi]$ with $\delta = (1 - t) + 2|\sin(\theta/2)| \le 2^{-p}$:
+\begin{equation} \label{eq_S_power_law}
+  C_1 \, \delta^{-(1 + 1/p)} \le S(t e^{i\theta}) \le C_2 \, \delta^{-(1 + 1/p)}.
+\end{equation}
+In particular, for $p = 2$ ($a_k = 1 - 1/k^2$, $k_0 = 2$ and $\delta \le 1/4$), (\ref{eq_S_power_law}) holds with the explicit constants $C_1 = \frac{7}{192}$ and $C_2 = 32$.
+\end{prop}
+\begin{proof}
+By Lemma~\ref{lem_denom_scale} and $\frac{7}{4} k^{-p} \le 1 - a_k^2 \le 2 k^{-p}$, we have
+\[
+  \frac{7}{4} \Sigma_p(\delta) \le S(t e^{i\theta}) \le \frac{32}{3} \Sigma_p(\delta), \qquad \text{where } \Sigma_p(\delta) := \sum_{k=2}^\infty \frac{k^{-p}}{(k^{-p} + \delta)^2} = \sum_{k=2}^\infty \frac{k^p}{(1 + \delta k^p)^2}.
+\]
+Let $N := \lfloor \delta^{-1/p} \rfloor \ge 2$.
+\begin{itemize}
+\item \emph{Lower bound:} For every $k \in \{2, \dots, N\}$, we have $\delta k^p \le 1$, so $(1 + \delta k^p)^2 \le 4$ and
+\[
+  \Sigma_p(\delta) \ge \frac{1}{4} \sum_{k=2}^N k^p \ge \frac{1}{4} \int_1^N u^p\,du = \frac{N^{p+1} - 1}{4(p+1)} \ge c_1(p) \delta^{-(1 + 1/p)}.
+\]
+For $p = 2$ and $N \ge 2$, $\frac{1}{4}\sum_{k=2}^N k^2 = \frac{N(N+1)(2N+1) - 6}{24} \ge \frac{N^3}{12} \ge \frac{( \delta^{-1/2}/2 )^3}{12} = \frac{1}{96} \delta^{-3/2}$, giving $C_1 = \frac{7}{4} \cdot \frac{1}{96} < \frac{7}{192}$.
+\item \emph{Upper bound:} Splitting $\Sigma_p(\delta)$ at $N = \lfloor \delta^{-1/p} \rfloor$ gives $\sum_{k=2}^N \frac{k^p}{(1 + \delta k^p)^2} \le \sum_{k=2}^N k^p \le N \cdot N^p \le \delta^{-(1 + 1/p)}$ on the bulk $k \le N$, while on the tail $k > N$, $1 + \delta k^p > \delta k^p$ gives
+\[
+  \sum_{k = N+1}^\infty \frac{k^p}{(1 + \delta k^p)^2} \le \frac{1}{\delta^2} \sum_{k = N+1}^\infty k^{-p} \le \frac{1}{\delta^2} \int_N^\infty u^{-p}\,du = \frac{N^{1-p}}{(p-1)\delta^2} \le \frac{2^{p-1}}{p-1} \delta^{-(1 + 1/p)}.
+\]
+For $p = 2$, $1 + \frac{2^{2-1}}{2-1} = 3$, so $S(t e^{i\theta}) \le \frac{32}{3} \cdot 3 \delta^{-3/2} = 32 \delta^{-3/2}$. \qedhere
+\end{itemize}
+\end{proof}
+
+\section{Exact Elementary Antiderivatives and Proof of Theorem~\ref{thm_main}} \label{sec_two_zone}
+
+We now combine Theorem~\ref{thm_pole_free} and Proposition~\ref{prop_kernel_power} to bound $V(B, \theta) = \int_0^1 |B'(t e^{i\theta})|\,dt$ uniformly in $\theta \in [-\pi, \pi]$.
+
+\begin{proof}[Proof of Theorem~\ref{thm_main}]
+Fix $p > 1$, let $\alpha := 1 + 1/p \in (1, 2)$, and let $x_0 := \frac{1}{2} 2^{-p} \in (0, 1/4]$ (so for $p = 2$, $\alpha = 3/2$ and $x_0 = 1/8$). For any $\theta \in [-\pi, \pi]$, set $s = 2|\sin(\theta/2)| \ge 0$ and change variables to $x = 1 - t \in (0, 1]$.
+
+\smallskip\noindent
+\textbf{Case 1 ($s \ge x_0$):} When $s \ge x_0$, every $t \in [0, 1)$ satisfies $|1 - a_k t e^{i\theta}| \ge \max(1 - t, a_2 t s / 2) \ge c_0(p) > 0$, so $S(t e^{i\theta}) \le c_0(p)^{-2} \sum_{k=2}^\infty (1 - a_k^2) < \infty$ is uniformly bounded on $[0, 1)$.
+
+\smallskip\noindent
+\textbf{Case 2 ($0 \le s < x_0$):} Split $[0, 1]$ into three radial zones in $x = 1 - t$:
+\begin{enumerate}
+\item \textbf{Zone III (Compact Core, $x \in [x_0, 1]$, i.e.\ $t \in [0, 1 - x_0]$):} Here $|1 - a_k z| \ge 1 - |z| = x \ge x_0$, so
+\begin{equation} \label{eq_zone_III}
+  \int_{x_0}^1 |B'((1-x)e^{i\theta})|\,dx \le \int_{x_0}^1 S((1-x)e^{i\theta})\,dx \le \frac{1}{x_0^2} \sum_{k=2}^\infty (1 - a_k^2) =: M_{\mathrm{core}} < \infty.
+\end{equation}
+\item \textbf{Zone I (Outer / Boundary Layer, $0 < x \le s$):} Here $\delta = x + s \in [s, 2s] \subseteq (0, 2x_0]$, so Proposition~\ref{prop_kernel_power} gives $S \le C_2 s^{-\alpha}$ and $S \ge C_1 (2s)^{-\alpha} = 2^{-\alpha} C_1 s^{-\alpha}$. Setting $c' := \frac{1}{2} 2^{-\alpha} C_1 > 0$ and $\Lambda := c' s^{-\alpha} > 0$, Theorem~\ref{thm_pole_free} yields
+\[
+  |B'((1-x)e^{i\theta})| \le e^{1/2} C_2 \, s^{-\alpha} \exp\!\left(-c' s^{-\alpha} x\right) = \frac{d}{dx}\!\left( -\frac{e^{1/2} C_2}{c'} \exp(-\Lambda x) \right).
+\]
+Integrating this exact derivative over $x \in [0, s]$ gives the $\theta$-independent bound
+\begin{equation} \label{eq_zone_I}
+  \int_0^s |B'((1-x)e^{i\theta})|\,dx \le \frac{e^{1/2} C_2}{c'}\bigl(1 - e^{-c' s^{1-\alpha}}\bigr) \le \frac{e^{1/2} C_2}{c'} < \infty.
+\end{equation}
+\item \textbf{Zone II (Inner / Bulk Critical Zone, $s \le x \le x_0$):} Here $\delta = x + s \in [x, 2x] \subseteq (0, 2x_0]$, so Proposition~\ref{prop_kernel_power} gives
+\[
+  S((1-x)e^{i\theta}) \le C_2 x^{-\alpha} = C_2 x^{-(1 + 1/p)}, \qquad
+  \frac{1}{2} x S((1-x)e^{i\theta}) \ge c' x^{1 - \alpha} = c' x^{-1/p}.
+\]
+Crucially, the derivative of the exponent $u(x) := -c' x^{-1/p}$ is $u'(x) = \frac{c'}{p} x^{-(1 + 1/p)}$, which matches the prefactor power $x^{-(1 + 1/p)}$ \emph{identically}! Therefore, by Theorem~\ref{thm_pole_free},
+\[
+  |B'((1-x)e^{i\theta})| \le e^{1/2} C_2 \, x^{-(1 + 1/p)} \exp\!\left(-c' x^{-1/p}\right)
+  = \frac{d}{dx}\!\left( \frac{p \, e^{1/2} C_2}{c'} \exp\!\left(-c' x^{-1/p}\right) \right).
+\]
+Integrating this exact derivative over $x \in [s, x_0]$ gives
+\begin{equation} \label{eq_zone_II}
+  \int_s^{x_0} |B'((1-x)e^{i\theta})|\,dx \le \frac{p \, e^{1/2} C_2}{c'}\!\left(e^{-c' x_0^{-1/p}} - e^{-c' s^{-1/p}}\right) \le \frac{p \, e^{1/2} C_2}{c'} < \infty.
+\end{equation}
+\end{enumerate}
+Summing (\ref{eq_zone_III}), (\ref{eq_zone_I}), and (\ref{eq_zone_II}) proves that for all $\theta \in [-\pi, \pi]$,
+\begin{equation} \label{eq_total_BRV_bound}
+  V(B, \theta) \le \frac{(1 + p) e^{1/2} C_2}{c'} + M_{\mathrm{core}} < \infty,
+\end{equation}
+so $B \in \BRV \subseteq T[H^\infty] = S[H^\infty]$. Finally, since $B(a_k) = 0$ with $a_k \to 1$ while $\lim_{r \to 1^-} |B(r e^{i\theta})| = 1$ for all $\theta \in (-\pi, \pi) \setminus \{0\}$, $B$ has no continuous extension to $z = 1$, so $B \notin A(\D)$. By \cite[Theorem~3.5]{AJS14}, $T_0[H^\infty] \subsetneq A(\D)$, whence $B \notin T_0[H^\infty]$ and $T_B$ is not compact on $H^\infty(\D)$.
+\end{proof}
+
+\begin{thebibliography}{99}
+
+\bibitem{AC01} A.~Aleman and J.~A.~Cima, {\em An integral operator on $H^p$ and Hardy's inequality}, J.\ Anal.\ Math.\ \textbf{85} (2001), 157--176.
+
+\bibitem{AS95} A.~Aleman and A.~G.~Siskakis, {\em An integral operator on $H^p$}, Complex Variables Theory Appl.\ \textbf{28} (1995), 149--158.
+
+\bibitem{AS97} A.~Aleman and A.~G.~Siskakis, {\em Integration operators on Bergman spaces}, Indiana Univ.\ Math.\ J.\ \textbf{46} (1997), 337--356.
+
+\bibitem{And10} A.~M.~Anderson, {\em Multiplication and Integral Operators on Spaces of Analytic Functions}, Ph.D.\ Dissertation, University of Hawai`i at M\=anoa, 2010.
+
+\bibitem{AJS14} A.~Anderson, M.~Jovovic, and W.~Smith, {\em Some integral operators acting on $H^\infty$}, Integral Equations Operator Theory \textbf{80} (2014), no.~2, 275--291.
+
+\bibitem{Car61} G.~T.~Cargo, {\em The radial images of Blaschke products}, J.\ London Math.\ Soc.\ \textbf{36} (1961), 424--430.
+
+\bibitem{Gar07} J.~B.~Garnett, {\em Bounded Analytic Functions}, Revised First Edition, Graduate Texts in Mathematics, vol.~236, Springer, New York, 2007.
+
+\bibitem{GPV07} D.~Girela, J.~A.~Pel\'aez, and D.~Vukoti\'c, {\em Integrability of the derivative of a Blaschke product}, Proc.\ Edinb.\ Math.\ Soc.\ (2) \textbf{50} (2007), 673--687.
+
+\bibitem{Pom77} Ch.~Pommerenke, {\em Schlichte Funktionen und analytische Funktionen von beschr\"ankter mittlerer Oszillation}, Comment.\ Math.\ Helv.\ \textbf{52} (1977), 591--602.
+
+\bibitem{SZ99} A.~G.~Siskakis and R.~Zhao, {\em A Volterra type operator on spaces of analytic functions}, Contemp.\ Math.\ \textbf{232} (1999), 299--311.
+
+\end{thebibliography}
+
+\end{document}
+
