@@ -719,6 +719,21 @@ noncomputable def diskArcHarmonicMeasureOrigin (φ₁ φ₂ : ℝ) : ℝ :=
   (φ₂ - φ₁) / (2 * Real.pi)
 
 /--
+  **Poisson Integral Representation of Origin Harmonic Measure (`Section 1, Conformal Invariance Bridge`):**
+  For any boundary arc `(φ₁, φ₂) ⊂ ∂𝔻`, the normalized Poisson integral at the origin `z = 0`
+  equals `diskArcHarmonicMeasureOrigin φ₁ φ₂ = (φ₂ - φ₁) / (2π)`:
+  `(1 / (2π)) * ∫ φ in φ₁..φ₂, poissonKernel_theta φ 0 = diskArcHarmonicMeasureOrigin φ₁ φ₂`.
+-/
+theorem poissonKernel_origin_integral_eq_arc_measure (φ₁ φ₂ : ℝ) :
+    (1 / (2 * Real.pi)) * (∫ φ in φ₁..φ₂, poissonKernel_theta φ 0) =
+      diskArcHarmonicMeasureOrigin φ₁ φ₂ := by
+{
+  simp only [poissonKernel_theta_at_origin, intervalIntegral.integral_const, smul_eq_mul, mul_one]
+  unfold diskArcHarmonicMeasureOrigin
+  ring
+}
+
+/--
   Analytic structure of a Pommerenke starlike radial slit configuration (`Section 1, Eq. 1.1`),
   defined using Sarason's `_eps` definitions (`HolomorphicOn_eps`, `DifferentiableAt_eps`,
   `deriv_eps`, `HasDerivAt_R_to_C_eps`) and the polar angle `θ` definitions

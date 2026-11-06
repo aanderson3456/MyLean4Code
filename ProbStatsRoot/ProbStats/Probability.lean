@@ -437,4 +437,76 @@ theorem zTable_benchmark_neg023_pos233 :
   refine ⟨by ring, by ring, by ring⟩
 }
 
+/-!
+## Post-Election Brier Score & Forecast Calibration Theory
+
+Named after meteorologist Glenn W. Brier (1950), the **Brier Score** measures the accuracy and
+calibration of probabilistic forecasts after the actual binary outcome `o ∈ {0, 1}` is observed:
+- Single-race Brier Score: `brierScore p o = (p - o) ^ 2`
+- Aggregate Mean Brier Score across `R` races: `meanBrierScore p o = (∑ i, (p i - o i) ^ 2) / R`
+- Key benchmarks:
+  - `0.0000` (`0`): Crystal-ball perfection (`p = 1, o = 1` or `p = 0, o = 0`)
+  - `0.2500` (`1/4`): Blind 50-50 coin flip (`p = 1/2`, regardless of whether `o = 1` or `o = 0`)
+  - `1.0000` (`1`): 100% confidently wrong (`p = 1, o = 0` or `p = 0, o = 1`)
+-/
+
+/-- Single-race Brier Score `(p - o)^2` for forecast probability `p` and binary outcome `o`. -/
+def brierScore (p o : ℝ) : ℝ :=
+  (p - o) ^ 2
+
+/-- Every race's Brier Score is non-negative (`0 ≤ (p - o)^2`). -/
+theorem brierScore_nonneg (p o : ℝ) :
+    0 ≤ brierScore p o := by {
+  unfold brierScore
+  exact sq_nonneg (p - o)
+}
+
+/--
+  Two-Candidate Complement Symmetry of the Brier Score:
+  Scoring Candidate A (`p` vs `o`) produces the exact same Brier Score as scoring
+  Candidate B (`1 - p` vs `1 - o`), because `((1 - p) - (1 - o))^2 = (p - o)^2`.
+-/
+theorem brierScore_complement_symm (p o : ℝ) :
+    brierScore (1 - p) (1 - o) = brierScore p o := by {
+  unfold brierScore
+  ring
+}
+
+/--
+  The 50-50 Coin-Flip Benchmark Theorem:
+  Forecasting `p = 1/2` (50%) yields `brierScore = 1/4 = 0.2500` whether Candidate A wins (`o = 1`)
+  or loses (`o = 0`). Any model with `BS < 0.2500` beats a coin toss!
+-/
+theorem brierScore_coinFlip_eq_quarter :
+    brierScore (1 / 2) 1 = 1 / 4 ∧ brierScore (1 / 2) 0 = 1 / 4 := by {
+  unfold brierScore
+  constructor <;> ring
+}
+
+/-- Crystal-Ball Perfection Benchmark (`BS = 0`) vs. 100% Confidently Wrong (`BS = 1`). -/
+theorem brierScore_perfect_and_worst :
+    brierScore 1 1 = 0 ∧ brierScore 0 0 = 0 ∧ brierScore 1 0 = 1 ∧ brierScore 0 1 = 1 := by {
+  unfold brierScore
+  refine ⟨by ring, by ring, by ring, by ring⟩
+}
+
+/-- Aggregate Mean Brier Score `(1 / R) * ∑ (p_i - o_i)^2` across `R` election races. -/
+noncomputable def meanBrierScore {R : ℕ} (p o : Fin R → ℝ) : ℝ :=
+  (∑ i : Fin R, brierScore (p i) (o i)) / (R : ℝ)
+
+/-- Aggregate Mean Brier Score is always non-negative (`0 ≤ meanBrierScore`). -/
+theorem meanBrierScore_nonneg {R : ℕ} (p o : Fin R → ℝ) :
+    0 ≤ meanBrierScore p o := by {
+  unfold meanBrierScore
+  apply div_nonneg
+  · apply sum_nonneg
+    intro i _hi
+    exact brierScore_nonneg (p i) (o i)
+  · exact Nat.cast_nonneg R
+}
+
+/-- Brier Skill Score `BSS = 1 - BS / 0.25` measuring fractional improvement over a 50-50 coin flip. -/
+noncomputable def brierSkillScore (bs : ℝ) : ℝ :=
+  1 - bs / (1 / 4)
+
 end ProbStats
