@@ -1649,8 +1649,17 @@ def extendedRealAxis : Set (OnePoint ℂ) :=
 @[simp] lemma star_re (z : ℂ) : (star z).re = z.re := by { rfl }
 @[simp] lemma star_im (z : ℂ) : (star z).im = -z.im := by { rfl }
 
+def isLine (S : Set ℂ) : Prop :=
+  {
+    ∃ a ∈ ℂ, ∃ b ∈ ℂ, ∀ c ∈ S, ∃ t ∈ ℝ, c = a + b * (t: ℂ)
+  }
+def isClircle (S : Set ℂ) : Prop :=
+  {
+    ∃ a ∈ ℂ, ∃ b ∈ ℂ, ∀ c ∈ S, ∃ t :
+  }
+
 /--
-  §III.8–§III.9 Sarason's general algebraic locus of a circle or line (cline) in `OnePoint ℂ`:
+  §III+ Sarason's general algebraic locus of a circle or line (cline) in `OnePoint ℂ`:
   Given real parameters `α, γ ∈ ℝ` and a complex parameter `β ∈ ℂ` (satisfying `‖β‖ ^ 2 > α * γ`),
   - a finite point `(z : ℂ)` lies on `clineLocus α β γ` iff `α * ‖z‖ ^ 2 + 2 * (star β * z).re + γ = 0`;
   - the point `∞` lies on `clineLocus α β γ` iff `α = 0` (the Euclidean line case).
@@ -1661,7 +1670,7 @@ def clineLocus (α : ℝ) (β : ℂ) (γ : ℝ) : Set (OnePoint ℂ) :=
     | (z : ℂ) => α * ‖z‖ ^ 2 + 2 * (star β * z).re + γ = 0}
 
 /--
-  §III.8–§III.9 Predicate `IsCline S` stating that `S ⊆ OnePoint ℂ` is a non-degenerate cline
+  §III+.8–§III+.9 Predicate `IsCline S` stating that `S ⊆ OnePoint ℂ` is a non-degenerate cline
   (a circle on the Riemann sphere, corresponding in `ℂ` to either a Euclidean circle when `α ≠ 0`
   or a Euclidean line together with `∞` when `α = 0`).
 -/
@@ -1669,7 +1678,7 @@ def IsCline (S : Set (OnePoint ℂ)) : Prop :=
   ∃ (α : ℝ) (β : ℂ) (γ : ℝ), α * γ < ‖β‖ ^ 2 ∧ S = clineLocus α β γ
 
 /--
-  §III.8 Every Euclidean circle `{z ∈ ℂ : ‖z - z₀‖ = r}` (`r > 0`) is a cline (`α = 1`, `β = -z₀`,
+  §III+.8 Every Euclidean circle `{z ∈ ℂ : ‖z - z₀‖ = r}` (`r > 0`) is a cline (`α = 1`, `β = -z₀`,
   `γ = ‖z₀‖ ^ 2 - r ^ 2`, with `‖β‖ ^ 2 - α * γ = r ^ 2 > 0`).
 -/
 lemma clineLocus_circle (z₀ : ℂ) (r : ℝ) (z : ℂ) :
@@ -1686,7 +1695,7 @@ lemma clineLocus_circle (z₀ : ℂ) (r : ℝ) (z : ℂ) :
 }
 
 /--
-  §III.8 The extended real axis `extendedRealAxis` is a cline (`α = 0`, `β = i / 2`, `γ = 0`).
+  §III+.8 The extended real axis `extendedRealAxis` is a cline (`α = 0`, `β = i / 2`, `γ = 0`).
 -/
 lemma isCline_extendedRealAxis : IsCline extendedRealAxis := by
 {
@@ -1711,7 +1720,7 @@ lemma isCline_extendedRealAxis : IsCline extendedRealAxis := by
 }
 
 /--
-  §III.8 Key algebraic identity for inversion `w = 1 / z` on a cline locus:
+  §III+.8 Key algebraic identity for inversion `w = 1 / z` on a cline locus:
   For `z ≠ 0`, `α * ‖1 / z‖ ^ 2 + 2 * (star β * (1 / z)).re + γ =
   (γ * ‖z‖ ^ 2 + 2 * (star (star β) * z).re + α) / ‖z‖ ^ 2`.
 -/
@@ -1733,7 +1742,7 @@ lemma cline_inversion_identity (α γ : ℝ) (β z : ℂ) (hz : z ≠ 0) :
 }
 
 /--
-  §III.8 Preimage of `clineLocus α β γ` under inversion `invLFT` (`z ↦ 1 / z`) is
+  §III+.8 Preimage of `clineLocus α β γ` under inversion `invLFT` (`z ↦ 1 / z`) is
   `clineLocus γ (star β) α`: inversion swaps `α ↔ γ` and conjugates `β`.
 -/
 lemma preimage_invLFT_clineLocus (α : ℝ) (β : ℂ) (γ : ℝ) :
@@ -1754,7 +1763,7 @@ lemma preimage_invLFT_clineLocus (α : ℝ) (β : ℂ) (γ : ℝ) :
 }
 
 /--
-  §III.8 Preimage of a cline under `invLFT` is a cline.
+  §III+.8 Preimage of a cline under `invLFT` is a cline.
 -/
 lemma IsCline.preimage_invLFT {S : Set (OnePoint ℂ)} (hS : IsCline S) :
     IsCline (invLFT ⁻¹' S) := by
@@ -1766,7 +1775,7 @@ lemma IsCline.preimage_invLFT {S : Set (OnePoint ℂ)} (hS : IsCline S) :
 }
 
 /--
-  §III.8 Preimage of `clineLocus α β γ` under complex scaling `scaleLFT a` (`a ≠ 0`) is
+  §III+.8 Preimage of `clineLocus α β γ` under complex scaling `scaleLFT a` (`a ≠ 0`) is
   `clineLocus (α * ‖a‖ ^ 2) (star a * β) γ`.
 -/
 lemma preimage_scaleLFT_clineLocus (α : ℝ) (β : ℂ) (γ : ℝ) {a : ℂ} (ha : a ≠ 0) :
@@ -1788,7 +1797,7 @@ lemma preimage_scaleLFT_clineLocus (α : ℝ) (β : ℂ) (γ : ℝ) {a : ℂ} (h
 }
 
 /--
-  §III.8 Preimage of a cline under `scaleLFT a` (`a ≠ 0`) is a cline.
+  §III+.8 Preimage of a cline under `scaleLFT a` (`a ≠ 0`) is a cline.
 -/
 lemma IsCline.preimage_scaleLFT {S : Set (OnePoint ℂ)} (hS : IsCline S) {a : ℂ} (ha : a ≠ 0) :
     IsCline (scaleLFT a ⁻¹' S) := by
@@ -1801,7 +1810,7 @@ lemma IsCline.preimage_scaleLFT {S : Set (OnePoint ℂ)} (hS : IsCline S) {a : �
 }
 
 /--
-  §III.8 Algebraic expansion for the translated cline equation at `z + b`:
+  §III+.8 Algebraic expansion for the translated cline equation at `z + b`:
   `α * ‖z + b‖ ^ 2 + 2 * (star β * (z + b)).re + γ` equals
   `α * ‖z‖ ^ 2 + 2 * (star (β + α * b) * z).re + (α * ‖b‖ ^ 2 + 2 * (star β * b).re + γ)`.
 -/
@@ -1817,7 +1826,7 @@ lemma cline_translation_identity (α γ : ℝ) (β b z : ℂ) :
 }
 
 /--
-  §III.8 Discriminant invariance under translation `z ↦ z + b`:
+  §III+.8 Discriminant invariance under translation `z ↦ z + b`:
   `‖β + α * b‖ ^ 2 - α * (α * ‖b‖ ^ 2 + 2 * (star β * b).re + γ) = ‖β‖ ^ 2 - α * γ`.
 -/
 lemma cline_translation_discriminant (α γ : ℝ) (β b : ℂ) :
@@ -1831,7 +1840,7 @@ lemma cline_translation_discriminant (α γ : ℝ) (β b : ℂ) :
 }
 
 /--
-  §III.8 Preimage of a cline under `transLFT b` (`z ↦ z + b`) is a cline.
+  §III+.8 Preimage of a cline under `transLFT b` (`z ↦ z + b`) is a cline.
 -/
 lemma IsCline.preimage_transLFT {S : Set (OnePoint ℂ)} (hS : IsCline S) (b : ℂ) :
     IsCline (transLFT b ⁻¹' S) := by
@@ -1850,7 +1859,7 @@ lemma IsCline.preimage_transLFT {S : Set (OnePoint ℂ)} (hS : IsCline S) (b : �
 }
 
 /--
-  §III.9 Every map generated by the four elementary transformations (`GeneratedByFourElementary φ`)
+  §III+.9 Every map generated by the four elementary transformations (`GeneratedByFourElementary φ`)
   preserves clines under preimage (`IsCline S → IsCline (φ ⁻¹' S)`).
 -/
 lemma GeneratedByFourElementary.preimage_isCline {φ : OnePoint ℂ → OnePoint ℂ}
@@ -1878,7 +1887,7 @@ lemma GeneratedByFourElementary.preimage_isCline {φ : OnePoint ℂ → OnePoint
 }
 
 /--
-  §III.9 **Theorem III_9 (Möbius Transformations Preserve Circles and Lines / Clines)**:
+  §III+.9 **Theorem III_9 (Möbius Transformations Preserve Circles and Lines / Clines)**:
   For every invertible 2×2 matrix `g ∈ GL (Fin 2) ℂ` and every cline `S ⊆ OnePoint ℂ`,
   both the preimage `(g • ·) ⁻¹' S` and the forward image `(g • ·) '' S` are clines in `OnePoint ℂ`.
 -/
@@ -1899,7 +1908,7 @@ theorem III_9 (g : GL (Fin 2) ℂ) {S : Set (OnePoint ℂ)} (hS : IsCline S) :
 }
 
 /--
-  §III.9 **Cross-Ratio Reality Criterion for Cocircularity / Collinearity**:
+  §III+.9 **Cross-Ratio Reality Criterion for Cocircularity / Collinearity**:
   Given three distinct points `z₁, z₂, z₃ ∈ OnePoint ℂ`, the set of points `z₄ ∈ OnePoint ℂ`
   whose cross-ratio `cross_ratio_Cinfty z₁ z₂ z₃ z₄` lies in `extendedRealAxis` (`ℝ ∪ {∞}`)
   is a cline passing through `z₁, z₂, z₃`.
@@ -1922,11 +1931,11 @@ theorem cross_ratio_real_isCline {z₁ z₂ z₃ : OnePoint ℂ}
 }
 
 /-!
-  §III.10 Symmetry Across Circles and Lines (Schwarz Reflection Preparation)
+  §III+.10 Symmetry Across Circles and Lines (Schwarz Reflection Preparation)
 -/
 
 /--
-  §III.10 Extended complex conjugation `w ↦ w̄` on `OnePoint ℂ`:
+  §III+.10 Extended complex conjugation `w ↦ w̄` on `OnePoint ℂ`:
   maps a finite complex number `(z : ℂ)` to `(star z : ℂ)` and fixes `∞`.
 -/
 def conjExt : OnePoint ℂ → OnePoint ℂ
@@ -1937,7 +1946,7 @@ def conjExt : OnePoint ℂ → OnePoint ℂ
 @[simp] lemma conjExt_coe (z : ℂ) : conjExt (z : ℂ) = (star z : ℂ) := rfl
 
 /--
-  §III.10 `conjExt` is an involution on `OnePoint ℂ`: `conjExt (conjExt w) = w`.
+  §III+.10 `conjExt` is an involution on `OnePoint ℂ`: `conjExt (conjExt w) = w`.
 -/
 @[simp] lemma conjExt_involutive (w : OnePoint ℂ) : conjExt (conjExt w) = w := by
 {
@@ -1947,7 +1956,7 @@ def conjExt : OnePoint ℂ → OnePoint ℂ
 }
 
 /--
-  §III.10 A point `w ∈ OnePoint ℂ` is fixed by `conjExt` if and only if `w ∈ extendedRealAxis`.
+  §III+.10 A point `w ∈ OnePoint ℂ` is fixed by `conjExt` if and only if `w ∈ extendedRealAxis`.
 -/
 lemma conjExt_fixed_iff (w : OnePoint ℂ) :
     conjExt w = w ↔ w ∈ extendedRealAxis := by
@@ -1962,14 +1971,14 @@ lemma conjExt_fixed_iff (w : OnePoint ℂ) :
 }
 
 /--
-  §III.10 Reflection (inversion) `z* = z₀ + R² / conj(z - z₀)` across the circle
+  §III+.10 Reflection (inversion) `z* = z₀ + R² / conj(z - z₀)` across the circle
   `{z ∈ ℂ : ‖z - z₀‖ = R}` in the complex plane `ℂ`.
 -/
 noncomputable def circleReflect (z₀ : ℂ) (R : ℝ) (z : ℂ) : ℂ :=
   z₀ + (R ^ 2 : ℂ) / star (z - z₀)
 
 /--
-  §III.10 Extended reflection `z*` across the circle `{z ∈ ℂ : ‖z - z₀‖ = R}` on `OnePoint ℂ`:
+  §III+.10 Extended reflection `z*` across the circle `{z ∈ ℂ : ‖z - z₀‖ = R}` on `OnePoint ℂ`:
   interchanges the center `(z₀ : ℂ)` and `∞`, and maps `(z : ℂ)` (`z ≠ z₀`) to
   `z₀ + R² / conj(z - z₀)`.
 -/
@@ -1978,7 +1987,7 @@ noncomputable def circleReflectExt (z₀ : ℂ) (R : ℝ) : OnePoint ℂ → One
   | (z : ℂ) => if z = z₀ then ∞ else (circleReflect z₀ R z : ℂ)
 
 /--
-  §III.10 For `R ≠ 0` and `z ≠ z₀`, `circleReflect z₀ R z ≠ z₀` and
+  §III+.10 For `R ≠ 0` and `z ≠ z₀`, `circleReflect z₀ R z ≠ z₀` and
   `circleReflect z₀ R (circleReflect z₀ R z) = z`.
 -/
 lemma circleReflect_involutive (z₀ : ℂ) {R : ℝ} (hR : R ≠ 0) {z : ℂ} (hz : z ≠ z₀) :
@@ -2003,7 +2012,7 @@ lemma circleReflect_involutive (z₀ : ℂ) {R : ℝ} (hR : R ≠ 0) {z : ℂ} (
 }
 
 /--
-  §III.10 For `R ≠ 0`, `circleReflectExt z₀ R` is an involution on `OnePoint ℂ`: `(z*)* = z`.
+  §III+.10 For `R ≠ 0`, `circleReflectExt z₀ R` is an involution on `OnePoint ℂ`: `(z*)* = z`.
 -/
 theorem circleReflectExt_involutive (z₀ : ℂ) {R : ℝ} (hR : R ≠ 0) (w : OnePoint ℂ) :
     circleReflectExt z₀ R (circleReflectExt z₀ R w) = w := by
@@ -2022,7 +2031,7 @@ theorem circleReflectExt_involutive (z₀ : ℂ) {R : ℝ} (hR : R ≠ 0) (w : O
 }
 
 /--
-  §III.10 A finite point `z ≠ z₀` is fixed by `circleReflect z₀ R` (`R > 0`) if and only if
+  §III+.10 A finite point `z ≠ z₀` is fixed by `circleReflect z₀ R` (`R > 0`) if and only if
   `z` lies on the circle `‖z - z₀‖ = R`.
 -/
 theorem circleReflect_fixed_iff (z₀ z : ℂ) {R : ℝ} (hR : 0 < R) (hz : z ≠ z₀) :
@@ -2045,7 +2054,7 @@ theorem circleReflect_fixed_iff (z₀ z : ℂ) {R : ℝ} (hR : 0 < R) (hz : z �
 }
 
 /--
-  §III.10 **Sarason's Cross-Ratio Definition of Symmetry with Respect to a Cline**:
+  §III+.10 **Sarason's Cross-Ratio Definition of Symmetry with Respect to a Cline**:
   Two points `z, z_star ∈ OnePoint ℂ` are symmetric with respect to the cline through three
   distinct points `z₁, z₂, z₃ ∈ OnePoint ℂ` if
   `cross_ratio_Cinfty z₁ z₂ z₃ z_star = conjExt (cross_ratio_Cinfty z₁ z₂ z₃ z)`.
@@ -2054,7 +2063,7 @@ def SymmetricWrtTriple (z₁ z₂ z₃ z z_star : OnePoint ℂ) : Prop :=
   cross_ratio_Cinfty z₁ z₂ z₃ z_star = conjExt (cross_ratio_Cinfty z₁ z₂ z₃ z)
 
 /--
-  §III.10 **Theorem III_10 (The Symmetry Principle for Linear-Fractional Transformations)**:
+  §III+.10 **Theorem III_10 (The Symmetry Principle for Linear-Fractional Transformations)**:
   Every linear-fractional transformation `ψ` (`IsLinFracTrans ψ`) preserves symmetry with respect
   to clines: if `z` and `z_star` are symmetric with respect to `(z₁, z₂, z₃)`, then `ψ z` and
   `ψ z_star` are symmetric with respect to `(ψ z₁, ψ z₂, ψ z₃)`.
@@ -2072,37 +2081,37 @@ theorem III_10_symmetry_principle (ψ : OnePoint ℂ → OnePoint ℂ) (hψ : Is
 }
 
 /-!
-  §III.11–§III.12 The Cayley Transform, the Herglotz Kernel, and Disk Automorphisms `Aut(𝔻)`
+  §III+.11–§III+.12 The Cayley Transform, the Herglotz Kernel, and Disk Automorphisms `Aut(𝔻)`
 -/
 
-/-- §III.11 The open upper half-plane `ℍ = {z ∈ ℂ : Im z > 0}`. -/
+/-- §III+.11 The open upper half-plane `ℍ = {z ∈ ℂ : Im z > 0}`. -/
 def upperHalfPlaneSet : Set ℂ := {z : ℂ | 0 < z.im}
 
-/-- §III.11 The open right half-plane `{w ∈ ℂ : Re w > 0}`. -/
+/-- §III+.11 The open right half-plane `{w ∈ ℂ : Re w > 0}`. -/
 def rightHalfPlaneSet : Set ℂ := {w : ℂ | 0 < w.re}
 
-/-- §III.11 The open unit disk `𝔻 = {z ∈ ℂ : ‖z‖ < 1}`. -/
+/-- §III+.11 The open unit disk `𝔻 = {z ∈ ℂ : ‖z‖ < 1}`. -/
 def unitDiskSet : Set ℂ := {z : ℂ | ‖z‖ < 1}
 
-/-- §III.11 The unit circle `∂𝔻 = {z ∈ ℂ : ‖z‖ = 1}`. -/
+/-- §III+.11 The unit circle `∂𝔻 = {z ∈ ℂ : ‖z‖ = 1}`. -/
 def unitCircleSet : Set ℂ := {z : ℂ | ‖z‖ = 1}
 
 /--
-  §III.11 **The Cayley Transform** `w = (z - i) / (z + i)` mapping the upper half-plane `ℍ`
+  §III+.11 **The Cayley Transform** `w = (z - i) / (z + i)` mapping the upper half-plane `ℍ`
   onto the open unit disk `𝔻`.
 -/
 noncomputable def cayleyMap (z : ℂ) : ℂ :=
   linFracTrans 1 (-Complex.I) 1 Complex.I z
 
 /--
-  §III.11 **The Inverse Cayley Transform** `z = i * (1 + w) / (1 - w)` mapping the open unit disk `𝔻`
+  §III+.11 **The Inverse Cayley Transform** `z = i * (1 + w) / (1 - w)` mapping the open unit disk `𝔻`
   onto the upper half-plane `ℍ`.
 -/
 noncomputable def cayleyInvMap (w : ℂ) : ℂ :=
   linFracTrans Complex.I Complex.I (-1) 1 w
 
 /--
-  §III.11 Fundamental norm identity for the Cayley numerator and denominator:
+  §III+.11 Fundamental norm identity for the Cayley numerator and denominator:
   `‖z + i‖ ^ 2 - ‖z - i‖ ^ 2 = 4 * z.im`.
 -/
 lemma cayley_norm_sq_diff (z : ℂ) :
@@ -2114,7 +2123,7 @@ lemma cayley_norm_sq_diff (z : ℂ) :
 }
 
 /--
-  §III.11 For any `z ∈ ℂ` with `z.im ≥ 0`, the Cayley denominator `z + i` is non-zero.
+  §III+.11 For any `z ∈ ℂ` with `z.im ≥ 0`, the Cayley denominator `z + i` is non-zero.
 -/
 lemma cayley_den_ne_zero {z : ℂ} (hz : 0 ≤ z.im) : z + Complex.I ≠ 0 := by
 {
@@ -2125,7 +2134,7 @@ lemma cayley_den_ne_zero {z : ℂ} (hz : 0 ≤ z.im) : z + Complex.I ≠ 0 := by
 }
 
 /--
-  §III.11 Fundamental radial identity for the Cayley transform:
+  §III+.11 Fundamental radial identity for the Cayley transform:
   When `z + i ≠ 0`, `1 - ‖cayleyMap z‖ ^ 2 = (4 * z.im) / ‖z + i‖ ^ 2`.
 -/
 theorem cayleyMap_one_sub_norm_sq {z : ℂ} (h_den : z + Complex.I ≠ 0) :
@@ -2139,7 +2148,7 @@ theorem cayleyMap_one_sub_norm_sq {z : ℂ} (h_den : z + Complex.I ≠ 0) :
 }
 
 /--
-  §III.11 The Cayley transform maps `ℍ` (`z.im > 0`) into `𝔻` (`‖cayleyMap z‖ < 1`),
+  §III+.11 The Cayley transform maps `ℍ` (`z.im > 0`) into `𝔻` (`‖cayleyMap z‖ < 1`),
   maps `z = i` to `0`, and maps the real axis (`z.im = 0`) into the unit circle `∂𝔻`.
 -/
 theorem III_11_cayley_maps :
@@ -2171,7 +2180,7 @@ theorem III_11_cayley_maps :
 }
 
 /--
-  §III.11 `cayleyInvMap` is the two-sided inverse of `cayleyMap`:
+  §III+.11 `cayleyInvMap` is the two-sided inverse of `cayleyMap`:
   for `z + i ≠ 0`, `cayleyInvMap (cayleyMap z) = z`, and for `1 - w ≠ 0`,
   `cayleyMap (cayleyInvMap w) = w`.
 -/
@@ -2206,14 +2215,14 @@ theorem cayleyMap_inv {z w : ℂ} (hz : z + Complex.I ≠ 0) (hw : 1 - w ≠ 0) 
 }
 
 /--
-  §III.11 **The Herglotz Kernel** `H(ζ, z) = (ζ + z) / (ζ - z)` mapping `z ∈ 𝔻` onto the
+  §III+.11 **The Herglotz Kernel** `H(ζ, z) = (ζ + z) / (ζ - z)` mapping `z ∈ 𝔻` onto the
   right half-plane `{w ∈ ℂ : Re w > 0}` for `ζ ∈ ∂𝔻`.
 -/
 noncomputable def herglotzKernel (ζ z : ℂ) : ℂ :=
   (ζ + z) / (ζ - z)
 
 /--
-  §III.11 **The Poisson Kernel Identity via the Herglotz Kernel**:
+  §III+.11 **The Poisson Kernel Identity via the Herglotz Kernel**:
   For any `ζ ∈ ∂𝔻` (`‖ζ‖ = 1`) and `z ≠ ζ`,
   `Re ((ζ + z) / (ζ - z)) = (1 - ‖z‖ ^ 2) / ‖ζ - z‖ ^ 2`.
 -/
@@ -2232,7 +2241,7 @@ theorem herglotzKernel_re {ζ z : ℂ} (hζ : ‖ζ‖ = 1) :
 }
 
 /--
-  §III.11 **Properties of the Herglotz Kernel on `𝔻` and `∂𝔻`**:
+  §III+.11 **Properties of the Herglotz Kernel on `𝔻` and `∂𝔻`**:
   For `ζ ∈ ∂𝔻` (`‖ζ‖ = 1`):
   1. `herglotzKernel ζ 0 = 1`,
   2. For every `z ∈ 𝔻` (`‖z‖ < 1`), `Re (herglotzKernel ζ z) > 0` (maps `𝔻` into the right half-plane),
@@ -2272,19 +2281,19 @@ theorem III_11_herglotz_properties {ζ : ℂ} (hζ : ‖ζ‖ = 1) :
 }
 
 /--
-  §III.12 **Blaschke / Disk Automorphism Factor** `φ_a(z) = (z - a) / (1 - ā * z)` for `a ∈ 𝔻`.
+  §III+.12 **Blaschke / Disk Automorphism Factor** `φ_a(z) = (z - a) / (1 - ā * z)` for `a ∈ 𝔻`.
 -/
 noncomputable def blaschkeFactor (a z : ℂ) : ℂ :=
   (z - a) / (1 - star a * z)
 
 /--
-  §III.12 General disk automorphism `diskAut λ a z = λ * (z - a) / (1 - ā * z)` for `‖λ‖ = 1` and `a ∈ 𝔻`.
+  §III+.12 General disk automorphism `diskAut λ a z = λ * (z - a) / (1 - ā * z)` for `‖λ‖ = 1` and `a ∈ 𝔻`.
 -/
 noncomputable def diskAut (u a z : ℂ) : ℂ :=
   u * blaschkeFactor a z
 
 /--
-  §III.12 **Fundamental Algebraic Identity for Disk Automorphisms**:
+  §III+.12 **Fundamental Algebraic Identity for Disk Automorphisms**:
   `‖1 - ā * z‖ ^ 2 - ‖z - a‖ ^ 2 = (1 - ‖a‖ ^ 2) * (1 - ‖z‖ ^ 2)`.
 -/
 theorem blaschke_norm_sq_diff (a z : ℂ) :
@@ -2296,7 +2305,7 @@ theorem blaschke_norm_sq_diff (a z : ℂ) :
 }
 
 /--
-  §III.12 For `a ∈ 𝔻` (`‖a‖ < 1`) and `‖z‖ ≤ 1`, the denominator `1 - ā * z` is non-zero.
+  §III+.12 For `a ∈ 𝔻` (`‖a‖ < 1`) and `‖z‖ ≤ 1`, the denominator `1 - ā * z` is non-zero.
 -/
 lemma blaschke_den_ne_zero {a z : ℂ} (ha : ‖a‖ < 1) (hz : ‖z‖ ≤ 1) :
     1 - star a * z ≠ 0 := by
@@ -2310,7 +2319,7 @@ lemma blaschke_den_ne_zero {a z : ℂ} (ha : ‖a‖ < 1) (hz : ‖z‖ ≤ 1) :
 }
 
 /--
-  §III.12 **Radial Identity for `blaschkeFactor`**:
+  §III+.12 **Radial Identity for `blaschkeFactor`**:
   When `1 - ā * z ≠ 0`,
   `1 - ‖blaschkeFactor a z‖ ^ 2 = (1 - ‖a‖ ^ 2) * (1 - ‖z‖ ^ 2) / ‖1 - ā * z‖ ^ 2`.
 -/
@@ -2324,7 +2333,7 @@ theorem blaschkeFactor_one_sub_norm_sq {a z : ℂ} (h_den : 1 - star a * z ≠ 0
 }
 
 /--
-  §III.12 **Theorem III_12 (Properties of Disk Automorphisms `blaschkeFactor a`)**:
+  §III+.12 **Theorem III_12 (Properties of Disk Automorphisms `blaschkeFactor a`)**:
   For every `a ∈ 𝔻` (`‖a‖ < 1`):
   1. `blaschkeFactor a a = 0` and `blaschkeFactor a 0 = -a`,
   2. `blaschkeFactor a` maps `𝔻` (`‖z‖ < 1`) into `𝔻` (`‖blaschkeFactor a z‖ < 1`),
@@ -2386,7 +2395,7 @@ theorem III_12_blaschke_properties {a : ℂ} (ha : ‖a‖ < 1) :
 }
 
 /--
-  §III.12 Complex derivative of `blaschkeFactor a` at any `z ∈ ℂ` with `1 - ā * z ≠ 0`:
+  §III+.12 Complex derivative of `blaschkeFactor a` at any `z ∈ ℂ` with `1 - ā * z ≠ 0`:
   `(d/dz) ((z - a) / (1 - ā * z)) = (1 - ‖a‖ ^ 2) / (1 - ā * z) ^ 2`.
 -/
 theorem blaschkeFactor_hasDerivAt (a z : ℂ) (h_den : 1 - star a * z ≠ 0) :
@@ -2419,7 +2428,7 @@ theorem blaschkeFactor_hasDerivAt (a z : ℂ) (h_den : 1 - star a * z ≠ 0) :
 }
 
 /-!
-  §III.13 Starlike Domains and Starlike Holomorphic Maps in Terms of Polar Angle θ.
+  §III+.13 Starlike Domains and Starlike Holomorphic Maps in Terms of Polar Angle θ.
   Connecting the polar coordinate operators `polar_partial_theta` and `polar_partial_r`
   from `Sarason/Definitions.lean` and the polar Cauchy–Riemann equations (`exercise_II_6_3`)
   and argument `arg` from `Sarason/Chapter2.lean` to starlike univalent functions and
@@ -2427,7 +2436,7 @@ theorem blaschkeFactor_hasDerivAt (a z : ℂ) (h_den : 1 - star a * z ≠ 0) :
 -/
 
 /--
-  §III.13 Polar coordinate point `z = r cos θ + i r sin θ` in `ℂ`, matching the
+  §III+.13 Polar coordinate point `z = r cos θ + i r sin θ` in `ℂ`, matching the
   `(p.1 * Real.cos p.2, p.1 * Real.sin p.2)` parameterization of `polar_partial_r`
   and `polar_partial_theta` in `Sarason/Definitions.lean`.
 -/
@@ -2504,7 +2513,7 @@ lemma polarPoint_one_mem_unitCircleSet (θ : ℝ) :
 }
 
 /--
-  §III.13 Weierstrass `HasDerivAt_R_to_C_eps` derivative of the polar circle path
+  §III+.13 Weierstrass `HasDerivAt_R_to_C_eps` derivative of the polar circle path
   `θ ↦ polarPoint r θ` with respect to the polar angle `θ`:
   `d/dθ (r cos θ + i r sin θ) = i * polarPoint r θ₀`.
 -/
@@ -2571,7 +2580,7 @@ lemma polarPoint_norm_arg (z : ℂ) : polarPoint ‖z‖ (arg z) = z := by
 }
 
 /--
-  §III.13 Geometric definition of a starlike domain `Ω ⊆ ℂ` with respect to the origin `0`
+  §III+.13 Geometric definition of a starlike domain `Ω ⊆ ℂ` with respect to the origin `0`
   in terms of the polar angle `θ`: `0 ∈ Ω`, and along every ray of fixed polar angle `θ`,
   if `polarPoint r θ ∈ Ω` (`r ≥ 0`), then `polarPoint (t * r) θ ∈ Ω` for all `t ∈ [0, 1]`.
 -/
@@ -2607,7 +2616,7 @@ theorem isStarlikeDomain_theta_iff_arg_ray (Ω : Set ℂ) :
 }
 
 /--
-  §III.13 Angular rate of change `∂(arg f)/∂θ` of the image argument along the polar circle
+  §III+.13 Angular rate of change `∂(arg f)/∂θ` of the image argument along the polar circle
   `p = (r, θ)` (`z = r cos θ + i r sin θ`), defined directly in terms of `polar_partial_theta`
   from `Sarason/Definitions.lean` and `Sarason/Chapter2.lean`:
   `(u * v_θ - v * u_θ) / (u² + v²)`.
@@ -2668,7 +2677,7 @@ theorem argPolarDeriv_theta_eq_polar_partial_r (u v ux uy vx vy : ℝ × ℝ →
 }
 
 /--
-  §III.13 Fundamental Starlike Angle-Derivative Identity:
+  §III+.13 Fundamental Starlike Angle-Derivative Identity:
   Under the Cauchy–Riemann equations at `z = polarPoint r θ`, the polar angular rate of change
   `argPolarDeriv_theta` of `arg f(r e^{iθ})` with respect to `θ` equals `Re(z f'(z) / f(z))`.
 -/
@@ -2703,7 +2712,7 @@ theorem re_logDeriv_pos_iff_cos_arg_pos {z f' f_z : ℂ} (hw : (z * f') / f_z �
 }
 
 /--
-  §III.13 Angle-based (`θ` / `polar_partial_theta`) and `_eps`-based definition of a
+  §III+.13 Angle-based (`θ` / `polar_partial_theta`) and `_eps`-based definition of a
   starlike holomorphic function `f : ℂ → ℂ` on the unit disk `unitDiskSet`:
   1. `HolomorphicOn_eps f unitDiskSet`
   2. `f 0 = 0` and `∀ z ∈ unitDiskSet, z ≠ 0 → f z ≠ 0`
@@ -2726,7 +2735,7 @@ def IsStarlikeOnDisk_theta_eps (f : ℂ → ℂ) : Prop :=
       ux uy vx vy (r, θ)
 
 /--
-  §III.13 Analytic logarithmic-derivative definition of a starlike holomorphic function on
+  §III+.13 Analytic logarithmic-derivative definition of a starlike holomorphic function on
   `unitDiskSet` using `HolomorphicOn_eps`, `DifferentiableAt_eps`, and `deriv_eps`:
   `Re(z * deriv_eps f z hd / f z) > 0` for all `z ∈ unitDiskSet \ {0}`.
 -/
@@ -2815,7 +2824,7 @@ theorem isStarlikeOnDisk_theta_eps_iff_logDeriv_eps (f : ℂ → ℂ) :
 }
 
 /--
-  §III.13 Single-factor Herglotz–Pommerenke identity: for `ζ ∈ unitCircleSet` (`‖ζ‖ = 1`),
+  §III+.13 Single-factor Herglotz–Pommerenke identity: for `ζ ∈ unitCircleSet` (`‖ζ‖ = 1`),
   `1 + 2 * (conj ζ * z) / (1 - conj ζ * z) = herglotzKernel ζ z`.
 -/
 lemma pommerenke_single_term_eq_herglotz {ζ z : ℂ}
@@ -2860,7 +2869,7 @@ lemma pommerenke_single_term_eq_herglotz {ζ z : ℂ}
 }
 
 /--
-  §III.13 The Herglotz–Pommerenke logarithmic derivative of a starlike radial slit map
+  §III+.13 The Herglotz–Pommerenke logarithmic derivative of a starlike radial slit map
   `f(z) = z ∏_{j=1}^m (1 - conj(ζ_j) z)^{-σ_j}`:
   `z f'(z) / f(z) = ∑_{j=1}^m (σ_j / 2) * herglotzKernel (ζ_j) z`.
 -/
@@ -2883,7 +2892,7 @@ lemma pommerenkeLogDeriv_re {m : ℕ} (ζ : Fin m → ℂ) (σ : Fin m → ℝ) 
 }
 
 /--
-  §III.13 Interior Starlikeness of the Pommerenke Slit Map (`∂(arg f)/∂θ > 0` on `𝔻`):
+  §III+.13 Interior Starlikeness of the Pommerenke Slit Map (`∂(arg f)/∂θ > 0` on `𝔻`):
   If `m > 0`, every `ζ_j ∈ unitCircleSet`, and every channel exponent `σ_j > 0`,
   then for every `z ∈ unitDiskSet`, `0 < (pommerenkeLogDeriv ζ σ z).re`.
 -/
@@ -2904,7 +2913,7 @@ theorem pommerenkeLogDeriv_re_pos_on_disk {m : ℕ} (hm : 0 < m)
 }
 
 /--
-  §III.13 Boundary Constant-Angle Slit Property (`∂(arg f)/∂θ = 0` on `∂𝔻`):
+  §III+.13 Boundary Constant-Angle Slit Property (`∂(arg f)/∂θ = 0` on `∂𝔻`):
   If every `ζ_j ∈ unitCircleSet`, then for every boundary point `z ∈ unitCircleSet`,
   `(pommerenkeLogDeriv ζ σ z).re = 0`, so each boundary arc `(ζ_k, ζ_{k+1}) ⊂ ∂𝔻` maps
   to a radial slit of constant polar angle `θ_k`.
@@ -2922,7 +2931,7 @@ theorem pommerenkeLogDeriv_re_zero_on_circle {m : ℕ}
 }
 
 /--
-  §III.13 Equivalence between the Herglotz kernel representation `pommerenkeLogDeriv ζ σ z`
+  §III+.13 Equivalence between the Herglotz kernel representation `pommerenkeLogDeriv ζ σ z`
   and the product logarithmic derivative `1 + ∑_{j=1}^m σ_j conj(ζ_j) z / (1 - conj(ζ_j) z)`
   when `∑_{j=1}^m σ_j = 2`.
 -/
@@ -2957,7 +2966,7 @@ theorem pommerenkeLogDeriv_eq_product_logDeriv {m : ℕ}
 }
 
 /--
-  §III.13 `herglotzKernel ζ` is the linear-fractional transformation `linFracTrans 1 ζ (-1) ζ`.
+  §III+.13 `herglotzKernel ζ` is the linear-fractional transformation `linFracTrans 1 ζ (-1) ζ`.
 -/
 lemma herglotzKernel_eq_linFracTrans (ζ : ℂ) :
     herglotzKernel ζ = linFracTrans 1 ζ (-1) ζ := by
@@ -2968,7 +2977,7 @@ lemma herglotzKernel_eq_linFracTrans (ζ : ℂ) :
 }
 
 /--
-  §III.13 For `ζ ∈ unitCircleSet` and `z ∈ unitDiskSet`, `ζ - z ≠ 0`.
+  §III+.13 For `ζ ∈ unitCircleSet` and `z ∈ unitDiskSet`, `ζ - z ≠ 0`.
 -/
 lemma unitCircle_sub_unitDisk_ne_zero {ζ z : ℂ}
     (hζ : ζ ∈ unitCircleSet) (hz : z ∈ unitDiskSet) :
@@ -2982,7 +2991,7 @@ lemma unitCircle_sub_unitDisk_ne_zero {ζ z : ℂ}
 }
 
 /--
-  §III.13 Weierstrass `HasDerivAt_eps` derivative of `herglotzKernel ζ`:
+  §III+.13 Weierstrass `HasDerivAt_eps` derivative of `herglotzKernel ζ`:
   at any `z₀` with `ζ - z₀ ≠ 0`, `d/dz ((ζ + z) / (ζ - z)) = 2 * ζ / (ζ - z₀) ^ 2`.
 -/
 theorem herglotzKernel_hasDerivAt_eps {ζ z₀ : ℂ} (hne : ζ - z₀ ≠ 0) :
@@ -3006,7 +3015,7 @@ theorem herglotzKernel_hasDerivAt_eps {ζ z₀ : ℂ} (hne : ζ - z₀ ≠ 0) :
 }
 
 /--
-  §III.13 For every `ζ ∈ unitCircleSet`, `herglotzKernel ζ` is holomorphic on `unitDiskSet`
+  §III+.13 For every `ζ ∈ unitCircleSet`, `herglotzKernel ζ` is holomorphic on `unitDiskSet`
   in the Weierstrass `_eps` sense (`HolomorphicOn_eps (herglotzKernel ζ) unitDiskSet`).
 -/
 theorem herglotzKernel_holomorphicOn_eps {ζ : ℂ} (hζ : ζ ∈ unitCircleSet) :
@@ -3018,7 +3027,7 @@ theorem herglotzKernel_holomorphicOn_eps {ζ : ℂ} (hζ : ζ ∈ unitCircleSet)
 }
 
 /--
-  §III.13 Weierstrass `HasDerivAt_eps` derivative of `pommerenkeLogDeriv ζ σ` on `unitDiskSet`.
+  §III+.13 Weierstrass `HasDerivAt_eps` derivative of `pommerenkeLogDeriv ζ σ` on `unitDiskSet`.
 -/
 theorem pommerenkeLogDeriv_hasDerivAt_eps {m : ℕ}
     (ζ : Fin m → ℂ) (σ : Fin m → ℝ)
@@ -3047,7 +3056,7 @@ theorem pommerenkeLogDeriv_hasDerivAt_eps {m : ℕ}
 }
 
 /--
-  §III.13 For `∀ j, ζ j ∈ unitCircleSet`, the Herglotz–Pommerenke logarithmic derivative
+  §III+.13 For `∀ j, ζ j ∈ unitCircleSet`, the Herglotz–Pommerenke logarithmic derivative
   `pommerenkeLogDeriv ζ σ` is holomorphic on `unitDiskSet` (`HolomorphicOn_eps`).
 -/
 theorem pommerenkeLogDeriv_holomorphicOn_eps {m : ℕ}
@@ -3060,7 +3069,7 @@ theorem pommerenkeLogDeriv_holomorphicOn_eps {m : ℕ}
 }
 
 /--
-  §III.13 Squared chordal distance on the unit circle in terms of polar angles `φ` and `t`:
+  §III+.13 Squared chordal distance on the unit circle in terms of polar angles `φ` and `t`:
   `‖polarPoint 1 φ - polarPoint 1 t‖ ^ 2 = 2 * (1 - Real.cos (t - φ))`.
 -/
 theorem polarPoint_unitCircle_dist_sq (φ t : ℝ) :
@@ -3075,7 +3084,7 @@ theorem polarPoint_unitCircle_dist_sq (φ t : ℝ) :
 }
 
 /--
-  §III.13 Boundary Cotangent Formula for the Herglotz Kernel on `∂𝔻`:
+  §III+.13 Boundary Cotangent Formula for the Herglotz Kernel on `∂𝔻`:
   For boundary points `ζ = polarPoint 1 φ` and `z = polarPoint 1 t` on `∂𝔻`,
   `Im(herglotzKernel (polarPoint 1 φ) (polarPoint 1 t)) = sin(t - φ) / (1 - cos(t - φ))`.
 -/
@@ -3099,7 +3108,7 @@ theorem herglotzKernel_unitCircle_im (φ t : ℝ) :
 }
 
 /--
-  §III.13 Imaginary part of `pommerenkeLogDeriv` on `∂𝔻`:
+  §III+.13 Imaginary part of `pommerenkeLogDeriv` on `∂𝔻`:
   At `z = polarPoint 1 t ∈ ∂𝔻` with `ζ_j = polarPoint 1 (φ j)`,
   `Im(pommerenkeLogDeriv ζ σ (polarPoint 1 t)) = ∑ j, (σ_j / 2) * sin(t - φ_j) / (1 - cos(t - φ_j))`.
 -/
@@ -3117,7 +3126,7 @@ lemma pommerenkeLogDeriv_unitCircle_im {m : ℕ}
 }
 
 /--
-  §III.13 Boundary Slit-Tip Formula for `pommerenkeLogDeriv` on `∂𝔻`:
+  §III+.13 Boundary Slit-Tip Formula for `pommerenkeLogDeriv` on `∂𝔻`:
   At `z = polarPoint 1 t ∈ ∂𝔻` with `ζ_j = polarPoint 1 (φ j)`, the logarithmic derivative
   `pommerenkeLogDeriv ζ σ (polarPoint 1 t)` is purely imaginary and given by
   `I * ∑ j, (σ_j / 2) * sin(t - φ_j) / (1 - cos(t - φ_j))`.
@@ -3142,7 +3151,7 @@ theorem pommerenkeLogDeriv_unitCircle_eq {m : ℕ}
 }
 
 /--
-  §III.13 Half-angle identities for `1 - cos α` and `sin α`:
+  §III+.13 Half-angle identities for `1 - cos α` and `sin α`:
   `1 - cos α = 2 * sin(α / 2) ^ 2` and `sin α = 2 * sin(α / 2) * cos(α / 2)`.
 -/
 lemma one_sub_cos_and_sin_halfAngle (α : ℝ) :
@@ -3167,7 +3176,7 @@ lemma one_sub_cos_and_sin_halfAngle (α : ℝ) :
 }
 
 /--
-  §III.13 Positive Half-Angle Polar Factorization of `1 - e^{i α}` (`0 < α < 2π`):
+  §III+.13 Positive Half-Angle Polar Factorization of `1 - e^{i α}` (`0 < α < 2π`):
   `1 - polarPoint 1 α = polarPoint (2 * sin(α / 2)) ((α - π) / 2)`.
   When `t > φ_j` on `(0, 2π)`, `2 * sin((t - φ_j) / 2) > 0`, so the polar angle of
   `1 - e^{i(t - φ_j)}` is `(t - φ_j - π) / 2`.
@@ -3195,7 +3204,7 @@ theorem one_sub_polarPoint_eq_pos_halfAngle (α : ℝ) :
 }
 
 /--
-  §III.13 Negative Half-Angle Polar Factorization of `1 - e^{i α}` (`-2π < α < 0`):
+  §III+.13 Negative Half-Angle Polar Factorization of `1 - e^{i α}` (`-2π < α < 0`):
   `1 - polarPoint 1 α = polarPoint (-2 * sin(α / 2)) ((α + π) / 2)`.
   When `t < φ_j` on `(0, 2π)`, `-2 * sin((t - φ_j) / 2) > 0`, so the polar angle of
   `1 - e^{i(t - φ_j)}` is `(t - φ_j + π) / 2`.
@@ -3223,7 +3232,7 @@ theorem one_sub_polarPoint_eq_neg_halfAngle (α : ℝ) :
 }
 
 /--
-  §III.13 Boundary phase contribution of the `j`-th Pommerenke factor `(1 - e^{-i φ_j} e^{i t})^{-σ_j}`:
+  §III+.13 Boundary phase contribution of the `j`-th Pommerenke factor `(1 - e^{-i φ_j} e^{i t})^{-σ_j}`:
   - Before the pole (`t < φ_j`, `beforePole = true`): `-σ_j * (t - φ_j + π) / 2`,
   - After the pole (`t > φ_j`, `beforePole = false`): `-σ_j * (t - φ_j - π) / 2`.
 -/
@@ -3231,21 +3240,21 @@ noncomputable def pommerenkeFactorPhase (φ_j σ_j t : ℝ) (beforePole : Bool) 
   -σ_j * ((t - φ_j + (if beforePole then Real.pi else -Real.pi)) / 2)
 
 /--
-  §III.13 Total boundary phase `arg f(e^{i t})` of `f(z) = z ∏_{j=0}^{m-1} (1 - e^{-i φ_j} z)^{-σ_j}`
+  §III+.13 Total boundary phase `arg f(e^{i t})` of `f(z) = z ∏_{j=0}^{m-1} (1 - e^{-i φ_j} z)^{-σ_j}`
   on the `k`-th boundary arc `(φ_{k-1}, φ_k)` (where `t > φ_j` for `j < k` and `t < φ_j` for `j ≥ k`).
 -/
 noncomputable def pommerenkeArcPhase (m k : ℕ) (φ σ : ℕ → ℝ) (t : ℝ) : ℝ :=
   t + ∑ j ∈ Finset.range m, pommerenkeFactorPhase (φ j) (σ j) t (decide (k ≤ j))
 
 /--
-  §III.13 The constant slit angle `θ_k` on the `k`-th boundary arc of the Pommerenke slit map:
+  §III+.13 The constant slit angle `θ_k` on the `k`-th boundary arc of the Pommerenke slit map:
   `θ_k = ∑_{j=0}^{m-1} σ_j (φ_j ∓ π) / 2`.
 -/
 noncomputable def pommerenkeSlitAngle (m k : ℕ) (φ σ : ℕ → ℝ) : ℝ :=
   pommerenkeArcPhase m k φ σ 0
 
 /--
-  §III.13 **Constancy of the Boundary Argument on Each Open Arc (`arg f(e^{i t}) = θ_k`):**
+  §III+.13 **Constancy of the Boundary Argument on Each Open Arc (`arg f(e^{i t}) = θ_k`):**
   When the Pommerenke exponents satisfy the starlike normalization `∑_{j=0}^{m-1} σ_j = 2`,
   the linear `t`-terms in `pommerenkeArcPhase m k φ σ t` cancel identically (`t - (∑ σ_j / 2) t = 0`),
   so `pommerenkeArcPhase m k φ σ t = pommerenkeSlitAngle m k φ σ` for all `t ∈ ℝ`.
@@ -3272,7 +3281,7 @@ theorem pommerenkeArcPhase_eq_slitAngle (m k : ℕ) (φ σ : ℕ → ℝ)
 }
 
 /--
-  §III.13 Single-factor phase jump across the `k`-th pole `φ_k`:
+  §III+.13 Single-factor phase jump across the `k`-th pole `φ_k`:
   For `j = k`, `decide (k + 1 ≤ k) = false` and `decide (k ≤ k) = true`, so the factor phase jumps
   by `σ_k * π`; for `j ≠ k`, `decide (k + 1 ≤ j) = decide (k ≤ j)`, so the difference vanishes.
 -/
@@ -3302,7 +3311,7 @@ lemma pommerenkeFactorPhase_jump (k j : ℕ) (φ_j σ_j t : ℝ) :
 }
 
 /--
-  §III.13 **Derivation of the Channel Opening Angle Formula `θ_{k+1} - θ_k = σ_k π`:**
+  §III+.13 **Derivation of the Channel Opening Angle Formula `θ_{k+1} - θ_k = σ_k π`:**
   For every `k < m`, crossing the pole `z_k = e^{i φ_k}` increases the Pommerenke slit angle
   `pommerenkeSlitAngle m k φ σ` by `σ_k * π`.
 -/
@@ -3326,7 +3335,7 @@ theorem pommerenkeSlitAngle_succ_sub_eq_sigma_mul_pi (m k : ℕ) (φ σ : ℕ �
 }
 
 /--
-  §III.13 **Derived Equivalence of Monotone Channel Opening Angles and Monotone `σ_k`:**
+  §III+.13 **Derived Equivalence of Monotone Channel Opening Angles and Monotone `σ_k`:**
   Directly from `pommerenkeSlitAngle_succ_sub_eq_sigma_mul_pi` (without assuming `Δθ_k = σ_k π`
   as an external axiom), for any `k + 1 < m`,
   `θ_{k+1} - θ_k ≤ θ_{k+2} - θ_{k+1} ↔ σ_k ≤ σ_{k+1}`.

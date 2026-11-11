@@ -1,0 +1,150 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+\definecolor{diffaddbg}{rgb}{0.92,0.98,0.92}
+
+\lstset{ 
+    backgroundcolor=\color{backcolour},   
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=none,                    
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    morekeywords={def, noncomputable, Prop, let, in, fun, if, then, else, match, with, where, abbrev, structure},
+    mathescape=true
+}
+
+\lstset{
+  literate={×}{{$\times$}}1 {γ}{{$\gamma$}}1 {δ}{{$\delta$}}1 {ε}{{$\varepsilon$}}1 {‖}{{$\|$}}1 {₀}{{$_0$}}1 {ℂ}{{$\mathbb{C}$}}1 {ℕ}{{$\mathbb{N}$}}1 {ℝ}{{$\mathbb{R}$}}1 {→}{{$\to$}}1 {∀}{{$\forall$}}1 {∃}{{$\exists$}}1 {∧}{{$\wedge$}}1 {≤}{{$\le$}}1 {≥}{{$\ge$}}1 {▸}{{$\triangleright$}}1 {⟨}{{$\langle$}}1 {⟩}{{$\rangle$}}1 {≠}{{$\neq$}}1
+}
+
+\title{Addenda Diff Document: \texttt{definitions.tex} $\longrightarrow$ \texttt{definitionsv2.tex}}
+\author{Lean Formalization Project (\texttt{QuasiRiemannSarason.lean})}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Diff Summary:}
+\begin{itemize}
+    \item \textbf{Base file (restored \& untouched):} \texttt{definitions.tex} / \texttt{definitions.pdf} (1,119 lines, 23 pages).
+    \item \textbf{Updated file:} \texttt{definitionsv2.tex} / \texttt{definitionsv2.pdf} (1,206 lines, 25 pages, $+87$ lines / $+0$ deletions).
+    \item \textbf{Scope of Addenda:} Section~9 (\texttt{QuasiRiemannSarason.lean}), melding OpenAI's Quasi-Riemann Hypothesis formalization (\texttt{OAI/NumberTheory/DirichletL/}) onto Donald Sarason's Weierstrass $\varepsilon$-$\delta$ complex analysis base (\texttt{Sarason/Definitions.lean}, \texttt{Sarason/Chapter3.lean}) and \texttt{Sarason.PNT} (\texttt{Zeta.lean}, \texttt{Contour.lean}, \texttt{Newman.lean}).
+\end{itemize}
+
+\noindent\rule{\textwidth}{0.4pt}
+
+\section*{Added Section in \texttt{definitionsv2.tex} (Lines 1119--1204)}
+
+\section{\texttt{QuasiRiemannSarason.lean} (OpenAI Quasi-Riemann Hypothesis Melded onto Sarason \texttt{\_eps} \& \texttt{Sarason.PNT})}
+
+\begin{itemize}
+    \item \textbf{\texttt{+ rightHalfPlane}}, \textbf{\texttt{+ elevenTwelfthsHalfPlane}}, \& \textbf{\texttt{+ sevenEighthsHalfPlane}} ($\sigma_0 \in \mathbb{R} \to \mathcal{P}(\mathbb{C})$): Open right half-plane $\Omega_{\sigma_0} = \{s \in \mathbb{C} : \sigma_0 < \operatorname{Re}(s)\}$, together with the Stage I zero-free half-plane $\Omega_{11/12}$ (Theorem~3.1) and Stage II Quasi-Riemann zero-free half-plane $\Omega_{7/8}$ (Theorem~1.1).
+\begin{lstlisting}[language=Caml, backgroundcolor=\color{diffaddbg}, mathescape=true]
++ def rightHalfPlane ($\sigma_0$ : $\mathbb{R}$) : Set $\mathbb{C}$ :=
++   {s : $\mathbb{C}$ | $\sigma_0$ < s.re}
++
++ def elevenTwelfthsHalfPlane : Set $\mathbb{C}$ :=
++   rightHalfPlane (11 / 12)
++
++ def sevenEighthsHalfPlane : Set $\mathbb{C}$ :=
++   rightHalfPlane (7 / 8)
+\end{lstlisting}
+    \[ \Omega_{\sigma_0} = \{s \in \mathbb{C} : \operatorname{Re}(s) > \sigma_0\}, \qquad \Omega_1 \subsetneq \Omega_{11/12} \subsetneq \Omega_{7/8} \subsetneq \Omega_{1/2} \]
+
+    \item \textbf{\texttt{+ IsZeroFreeOn\_eps}} \& \textbf{\texttt{+ logDeriv\_eps}} ($f : \mathbb{C} \to \mathbb{C}$, $G \subseteq \mathbb{C}$, $s \in \mathbb{C}$): Sarason Weierstrass $\varepsilon$-$\delta$ zero-free holomorphy predicate and logarithmic derivative $\frac{f'(s)}{f(s)}$ extracted via \texttt{deriv\_eps}.
+\begin{lstlisting}[language=Caml, backgroundcolor=\color{diffaddbg}, mathescape=true]
++ def IsZeroFreeOn_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}$) : Prop :=
++   HolomorphicOn_eps f G $\wedge$ $\forall$ s $\in$ G, f s $\neq$ 0
++
++ noncomputable def logDeriv_eps (f : $\mathbb{C}$ $\to$ $\mathbb{C}$) (s : $\mathbb{C}$) (hd : DifferentiableAt_eps f s) : $\mathbb{C}$ :=
++   deriv_eps f s hd / f s
+\end{lstlisting}
+    \[ \operatorname{IsZeroFreeOn\_eps}(f, G) \iff f \in \mathcal{O}_\varepsilon(G) \;\wedge\; \forall s \in G,\; f(s) \neq 0, \qquad (\operatorname{logDeriv\_eps} f)(s) = \frac{f'_\varepsilon(s)}{f(s)} \]
+
+    \item \textbf{\texttt{+ halfPlaneToDiskLFT}} ($\sigma_0 \in \mathbb{R}$, $s \in \mathbb{C} \to \mathbb{C}$): Shifted Cayley linear-fractional transformation built from \texttt{Sarason.Ch3.linFracTrans} mapping $\Omega_{\sigma_0}$ conformally onto the open unit disk $\mathbb{D}$.
+\begin{lstlisting}[language=Caml, backgroundcolor=\color{diffaddbg}, mathescape=true]
++ noncomputable def halfPlaneToDiskLFT ($\sigma_0$ : $\mathbb{R}$) (s : $\mathbb{C}$) : $\mathbb{C}$ :=
++   linFracTrans 1 (-((($\sigma_0$ + 1 : $\mathbb{R}$) : $\mathbb{C}$))) 1 (((1 - $\sigma_0$ : $\mathbb{R}$) : $\mathbb{C}$)) s
+\end{lstlisting}
+    \[ \Phi_{\sigma_0}(s) = \frac{s - (\sigma_0 + 1)}{s + (1 - \sigma_0)}, \qquad s \in \Omega_{\sigma_0} \iff |\Phi_{\sigma_0}(s)| < 1 \]
+
+    \item \textbf{\texttt{+ continuationMargin}}, \textbf{\texttt{+ signalMellin}}, \textbf{\texttt{+ RapidDecayAtZero}}, \& \textbf{\texttt{+ gaussianMultiplier}} ($\beta, \omega, \sigma, c \in \mathbb{R}$, $f : \mathbb{R} \to \mathbb{C}$, $H : \mathbb{C} \to \mathbb{C}$, $s \in \mathbb{C} \to \mathbb{C}$): Uniform continuation margin $\varepsilon_* = \min(\beta - 7/8 - \omega, \sigma)$, shifted Mellin transform $F_\eta(s)$, rapid decay at $0^+$, and Gaussian-weighted Euler correction multiplier $e^{(s - 5/6)^2} H(s)$ (Proposition~2.1 of OpenAI's Quasi-Riemann paper).
+\begin{lstlisting}[language=Caml, backgroundcolor=\color{diffaddbg}, mathescape=true]
++ def continuationMargin ($\beta$ $\omega$ $\sigma$ : $\mathbb{R}$) : $\mathbb{R}$ :=
++   min ($\beta$ - 7 / 8 - $\omega$) $\sigma$
++
++ def signalMellin (f : $\mathbb{R}$ $\to$ $\mathbb{C}$) (c : $\mathbb{R}$) (s : $\mathbb{C}$) : $\mathbb{C}$ :=
++   mellin f (-(s + (c : $\mathbb{C}$)))
++
++ def RapidDecayAtZero (f : $\mathbb{R}$ $\to$ $\mathbb{C}$) : Prop :=
++   $\forall$ B : $\mathbb{R}$, f =O[$\mathcal{N}$[>] (0 : $\mathbb{R}$)] (fun x : $\mathbb{R}$ => x ^ B)
++
++ def gaussianMultiplier (H : $\mathbb{C}$ $\to$ $\mathbb{C}$) (s : $\mathbb{C}$) : $\mathbb{C}$ :=
++   Complex.exp ((s - 5 / 6) ^ 2) * H s
+\end{lstlisting}
+    \[ \varepsilon_* = \min(\beta - \tfrac{7}{8} - \omega, \sigma), \qquad F_\eta(s) = \int_0^\infty f(Z)\,Z^{-(s+c)} \frac{dZ}{Z}, \qquad G(s) = e^{(s - 5/6)^2} H(s) \]
+
+    \item \textbf{\texttt{+ eulerFactor}}, \textbf{\texttt{+ deletedEulerProduct}}, \& \textbf{\texttt{+ normalizedProbe}} ($N \in \mathbb{R}$, $a, c, s \in \mathbb{C}$, $S \subseteq \iota$, $I, A : \mathbb{R} \to \mathbb{C}$, $Z \in \mathbb{R} \to \mathbb{C}$): Local Euler factor $1 - a N^{-s}$, finite product of deleted Euler factors, and normalized common probe $J_\eta(Z) = I(Z)/(c A(Z))$.
+\begin{lstlisting}[language=Caml, backgroundcolor=\color{diffaddbg}, mathescape=true]
++ def eulerFactor (N : $\mathbb{R}$) (a s : $\mathbb{C}$) : $\mathbb{C}$ :=
++   1 - a * (N : $\mathbb{C}$) ^ (-s)
++
++ def deletedEulerProduct {$\iota$ : Type*} (S : Finset $\iota$) (N : $\iota$ $\to$ $\mathbb{R}$) (a : $\iota$ $\to$ $\mathbb{C}$) (s : $\mathbb{C}$) : $\mathbb{C}$ :=
++   $\prod$ p $\in$ S, eulerFactor (N p) (a p) s
++
++ def normalizedProbe (I A : $\mathbb{R}$ $\to$ $\mathbb{C}$) (c : $\mathbb{C}$) (Z : $\mathbb{R}$) : $\mathbb{C}$ :=
++   I Z / (c * A Z)
+\end{lstlisting}
+    \[ E_S(s) = \prod_{p \in S} \bigl(1 - a_p N_p^{-s}\bigr), \qquad J_\eta(Z) = \frac{I_\eta(Z)}{c_\eta A_\eta(Z)} \]
+
+    \item \textbf{\texttt{+ EisensteinCoordinates}}, \textbf{\texttt{+ eisensteinMul}}, \textbf{\texttt{+ eisensteinConj}}, \& \textbf{\texttt{+ eisensteinNorm}} ($x, y \in \mathbb{Z} \times \mathbb{Z}$): Coordinate arithmetic on the Eisenstein ring $\mathcal{O} = \mathbb{Z}[\omega]$ ($\omega^2 + \omega + 1 = 0$) of $\mathbb{Q}(\sqrt{-3})$ representing $a + b\omega$ as $(a, b) \in \mathbb{Z}^2$.
+\begin{lstlisting}[language=Caml, backgroundcolor=\color{diffaddbg}, mathescape=true]
++ abbrev EisensteinCoordinates := $\mathbb{Z}$ $\times$ $\mathbb{Z}$
++
++ def eisensteinMul (x y : EisensteinCoordinates) : EisensteinCoordinates :=
++   (x.1 * y.1 - x.2 * y.2, x.1 * y.2 + x.2 * y.1 - x.2 * y.2)
++
++ def eisensteinConj (x : EisensteinCoordinates) : EisensteinCoordinates :=
++   (x.1 - x.2, -x.2)
++
++ def eisensteinNorm (x : EisensteinCoordinates) : $\mathbb{Z}$ :=
++   x.1 ^ 2 - x.1 * x.2 + x.2 ^ 2
+\end{lstlisting}
+    \[ N(a + b\omega) = (a + b\omega)(a + b\bar{\omega}) = a^2 - ab + b^2, \qquad N(xy) = N(x)N(y) \]
+
+    \item \textbf{\texttt{+ DirichletQuasiRiemannTarget}}: The Stage II Quasi-Riemann Hypothesis predicate (\texttt{OAI.Nonvanishing}) stating that every Dirichlet $L$-function $L(s, \chi)$ is nonvanishing on $\Omega_{7/8} = \{\operatorname{Re}(s) > 7/8\}$ away from the principal pole $(\chi = 1, s = 1)$.
+\begin{lstlisting}[language=Caml, backgroundcolor=\color{diffaddbg}, mathescape=true]
++ def DirichletQuasiRiemannTarget : Prop :=
++   $\forall$ (q : $\mathbb{N}$) [NeZero q] ($\chi$ : DirichletCharacter $\mathbb{C}$ q) (s : $\mathbb{C}$),
++     s $\in$ sevenEighthsHalfPlane $\to$ $\neg$ ($\chi$ = 1 $\wedge$ s = 1) $\to$
++       DirichletCharacter.LFunction $\chi$ s $\neq$ 0
+\end{lstlisting}
+    \[ \forall q \ge 1,\; \forall \chi \bmod q,\; \forall s \in \mathbb{C},\quad \operatorname{Re}(s) > \frac{7}{8} \;\wedge\; (\chi, s) \neq (1, 1) \implies L(s, \chi) \neq 0 \]
+
+    \item \textbf{\texttt{+ stageIIVThreshold}} \& \textbf{\texttt{+ generalizedZeroFreeThreshold}} ($\ell, \delta_\ell, \delta_{\mathrm{Gram}}, b \in \mathbb{R} \to \mathbb{R}$): The Stage II V-curve zero-free threshold $\sigma_{\mathrm{II}}(\ell) = \frac{11}{12} - \frac{\ell}{4} + \frac{\max(0, \ell - 1/6)}{2}$ (attaining its unique minimum $\frac{7}{8}$ at $\ell = \frac{1}{6}$) and the generalized threshold $\sigma_0(\delta_\ell, \delta_{\mathrm{Gram}}, b) = \frac{7}{8} - \frac{\delta_\ell}{4} - \frac{\delta_{\mathrm{Gram}}\,b}{2}$ reaching $\frac{6}{7}$ at $\frac{\delta_\ell}{4} + \frac{\delta_{\mathrm{Gram}}\,b}{2} = \frac{1}{56}$.
+\begin{lstlisting}[language=Caml, backgroundcolor=\color{diffaddbg}, mathescape=true]
++ def stageIIVThreshold ($\ell$ : $\mathbb{R}$) : $\mathbb{R}$ :=
++   11 / 12 - $\ell$ / 4 + max 0 ($\ell$ - 1 / 6) / 2
++
++ def generalizedZeroFreeThreshold ($\delta_\ell$ $\delta_{\mathrm{Gram}}$ b : $\mathbb{R}$) : $\mathbb{R}$ :=
++   7 / 8 - $\delta_\ell$ / 4 - $\delta_{\mathrm{Gram}}$ * b / 2
+\end{lstlisting}
+    \[ \sigma_{\mathrm{II}}(\ell) = \frac{11}{12} - \frac{\ell}{4} + \frac{\max(0, \ell - 1/6)}{2} \ge \frac{7}{8}, \qquad \sigma_0(\delta_\ell, \delta_{\mathrm{Gram}}, b) = \frac{7}{8} - \frac{\delta_\ell}{4} - \frac{\delta_{\mathrm{Gram}}\,b}{2} \]
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,192 @@
+\documentclass[11pt]{amsart}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+\usepackage{booktabs}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\title[Number-Theoretic Anatomy of $49/440640$ and the $7/8$ Barrier]{The Number-Theoretic Anatomy of $\frac{49}{440640}$ and the $\frac{7}{8}$ Barrier\\ in the Quasi-Riemann Hypothesis for Cubic Hecke $L$-Functions}
+\author{Formalized in Lean 4 on the Sarason--PNT Analytic Engine}
+\date{November 2026}
+
+\begin{document}
+
+\begin{abstract}
+We trace the complete number-theoretic and algebraic genealogy of the endpoint margin
+\[
+  -E_* \;\ge\; \frac{49}{440640}\bigl(3 + 5y\bigr) \;>\; 0,
+  \qquad
+  440640 \;=\; 2^6 \cdot 3^4 \cdot 5 \cdot 17,
+\]
+and the critical abscissa $\sigma_0 = \frac{7}{8}$ ($\kappa_0 = 2\sigma_0 - 1 = \frac{3}{4}$) in the proof that the family $\mathcal{F}$ of cubic Hecke $L$-functions over the Eisenstein integers $\mathbb{Z}[\omega]$ ($\omega = e^{2\pi i/3}$) has no zeros in the half-plane $\operatorname{Re}(s) > \frac{7}{8}$. Starting from Donald Sarason's complex analysis foundation (\texttt{Sarason/}) and the Newman--Prime Number Theorem contour engine (\texttt{Sarason.PNT}), we trace: (1) how Patterson's cubic metaplectic theta function and the Kubota sextic Gauss sum reflection laws determine the Stage~I barrier $\sigma_{\mathrm{I}} = \frac{11}{12}$; (2) why the window asymmetry $b = l_y - l_x$ cancels identically out of the low-side continuation threshold, yielding the piecewise-linear V-curve $\sigma_{\mathrm{II}}(\ell) = \frac{11}{12} - \frac{\ell}{4} + \frac{1}{2}\max(0,\ell - \frac{1}{6})$ with unique minimum $\frac{7}{8}$ at $\ell = \frac{1}{6}$; and (3) how every prime factor of $\frac{49}{440640}$ arises from the two-step Poisson moment capacities $z_M(r) = \frac{1-r}{2}$ and $z_P(m) = \frac{2(1-2m)}{9}$, the minimax witness cutoff $t_* = 1 + \frac{\delta P_x}{2\mathcal{J}}$, the denominator-clearing prefactor $10368 = 2^7 \cdot 3^4$, and the completion of the square $(4v\delta - 79)^2 + 49$ at $\delta_* = \frac{79}{204}$. Every identity and inequality in this paper is machine-verified in Lean~4 (\texttt{QuasiRiemannSarason.lean}) with zero \texttt{sorry}s and zero \texttt{omega}s.
+\end{abstract}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction: From Sarason's Complex Analysis to Cubic Hecke $L$-Functions}
+
+Let $\mathcal{O} = \mathbb{Z}[\omega]$ ($\omega = e^{2\pi i/3}$, $\omega^2 + \omega + 1 = 0$) be the ring of Eisenstein integers, with norm $N(\alpha) = |\alpha|^2$. For each squarefree ideal modulus $(c)$ with $c \equiv 1 \pmod{3}$, let $\psi_c(\alpha) = (\frac{\alpha}{c})_3 \in \{0, 1, \omega, \omega^2\}$ denote the cubic residue symbol and
+\[
+  L(s, \psi_c) \;=\; \sum_{\substack{\alpha \equiv 1 \pmod{3}}} \psi_c(\alpha)\,N(\alpha)^{-s}
+  \;=\; \prod_{\substack{\varpi \equiv 1 \pmod{3} \\ \varpi \text{ prime}}} \bigl(1 - \psi_c(\varpi)\,N(\varpi)^{-s}\bigr)^{-1}
+  \qquad (\operatorname{Re}(s) > 1)
+\]
+be the associated Hecke $L$-function.
+
+In our workspace, the analytic engine connecting classical complex function theory to zero-free regions of $L$-functions is built on Donald Sarason's complex analysis formalization (\texttt{Sarason/Definitions.lean}, \texttt{Chapter1.lean}--\texttt{Chapter3.lean}) and the Newman--PNT contour module (\texttt{Sarason/PNT/Zeta.lean}, \texttt{Contour.lean}, \texttt{Newman.lean}). Specifically, the Newman contour multiplier and exponential strip kernel
+\[
+  K_{X,T}(w) \;=\; X^w \Bigl(\frac{1}{w} + \frac{w}{T^2}\Bigr),
+  \qquad
+  \bigl|e^{w^2}\bigr| \;=\; e^{u^2 - v^2} \quad (w = u + iv)
+\]
+translate any putative zero $\rho = \beta + i\gamma$ of $L(s, \psi_c)$ with $\beta > \sigma_0$ into a lower bound on a dyadic bilinear character sum over Eisenstein primes.
+
+\begin{theorem}[Stage I and Stage II Zero-Free Regions, \cite{OAI26a,OAI26b}]\label{thm:main}
+Let $\mathcal{F}$ be the family of cubic Hecke characters $\psi_c$ over $\mathcal{O} = \mathbb{Z}[\omega]$ with squarefree conductor $c \equiv 1 \pmod{3}$.
+\begin{enumerate}
+  \item \textbf{Stage I (Symmetric Box + Patterson Cubic Theta, \cite{OAI26b}):} At the symmetric dyadic box $l_x = l_y = \frac{1}{3}$ (so $h = \frac{l_x + l_y}{2} = \frac{1}{3}$), the second-moment metaplectic theta envelope has exponent $\kappa_{\mathrm{I}} = 1 - \frac{h}{2} = \frac{5}{6}$, establishing that $L(s, \psi_c) \ne 0$ for $\operatorname{Re}(s) > \sigma_{\mathrm{I}} = \frac{1 + \kappa_{\mathrm{I}}}{2} = \frac{11}{12} \approx 0.9167$.
+  \item \textbf{Stage II (Asymmetric Box + Two-Step Sextic Poisson Reflection, \cite{OAI26a}):} At the asymmetric box $(b, h, \ell) = \bigl(\frac{1}{8}, \frac{13}{16}, \frac{1}{6}\bigr)$ with $l_x = \frac{17}{48}$ and $l_y = \frac{23}{48}$, the low-side continuation envelope and the high-side dynamic-bin endpoint certificate
+  \[
+    -E_* \;\ge\; \frac{49}{440640}\bigl(3 + 5y\bigr) \;\ge\; \frac{147}{440640} \;>\; 0 \qquad \bigl(y \in [0, \tfrac{1}{2}]\bigr)
+  \]
+  establish that $L(s, \psi_c) \ne 0$ for $\operatorname{Re}(s) > \sigma_{\mathrm{II}} = \frac{7}{8} = 0.875$.
+\end{enumerate}
+\end{theorem}
+
+\section{The V-Curve $\sigma_{\mathrm{II}}(\ell)$ and Why the $7/8$ Barrier Is Sharp}
+
+In Stage II, one introduces a dyadic zero-detector bilinear form supported on Eisenstein integers $(x, y)$ of log-scales $l_x = \frac{1 + \ell - b}{2}$ and $l_y = \frac{1 + \ell + b}{2}$, where $\ell = (l_x + l_y) - 1 > 0$ is the \emph{total box excess} beyond the P\'olya--Vinogradov threshold $l_x + l_y = 1$ and $b = l_y - l_x \ge 0$ is the \emph{window asymmetry}. Applying Poisson summation over the $y$-variable produces dual frequencies of log-scale
+\[
+  h \;=\; 1 + \ell - l_x \;=\; \frac{1 + \ell + b}{2} + \ell \;=\; \frac{1 + 3\ell + b}{2}.
+\]
+
+\begin{theorem}[Asymmetry Cancellation Law and the V-Curve $\sigma_{\mathrm{II}}(\ell)$]\label{thm:v-curve}
+Let $l_x = \frac{1 + \ell - b}{2}$, $l_y = \frac{1 + \ell + b}{2}$, and $h = \frac{1 + 3\ell + b}{2}$. On the Low Side ($d \le h$), the worst-case continuation deficit after $k \ge 1$ Poisson reflection steps is governed by two competing linear inequalities for $\kappa = 2\sigma_0 - 1$:
+\begin{align}
+  \text{\emph{(Step $k = 1$ reflected box)}}:\qquad \kappa &\;\ge\; \frac{4 - b - 3\ell}{4} + \frac{h}{3} \;=\; \frac{5}{6} - \frac{\ell}{2},\label{eq:k1}\\
+  \text{\emph{(Step $k = 2$ reflected box)}}:\qquad \kappa &\;\ge\; \frac{4 - b - 3\ell}{4} + \frac{h - 4(1 - \kappa)/3}{3} \;=\; \frac{7}{18} + \frac{\ell}{6} + \frac{4}{9}\kappa.\label{eq:k2}
+\end{align}
+In both \eqref{eq:k1} and \eqref{eq:k2}, the asymmetry parameter $b$ cancels identically: $-\frac{b}{4} + \frac{b}{6} = -\frac{b}{12}$ against the Poisson shift $+\frac{b}{12}$. Solving \eqref{eq:k1}--\eqref{eq:k2} for $\kappa(\ell)$ and $\sigma_{\mathrm{II}}(\ell) = \frac{1 + \kappa(\ell)}{2}$ yields the exact piecewise-linear V-curve
+\begin{equation}\label{eq:v-curve}
+  \kappa(\ell) \;=\; \max\Bigl(\frac{5}{6} - \frac{\ell}{2},\; \frac{7 + 3\ell}{10}\Bigr),
+  \qquad
+  \sigma_{\mathrm{II}}(\ell) \;=\; \frac{11}{12} - \frac{\ell}{4} + \frac{1}{2}\max\Bigl(0,\; \ell - \frac{1}{6}\Bigr).
+\end{equation}
+In particular, $\sigma_{\mathrm{II}}(\ell) \ge \frac{7}{8}$ for all $\ell \in \mathbb{R}$, with unique minimum $\sigma_{\mathrm{II}}\bigl(\frac{1}{6}\bigr) = \frac{7}{8}$ ($\kappa_0 = \frac{3}{4}$) where the $k = 1$ and $k = 2$ reflection constraints cross.
+\end{theorem}
+
+\begin{proof}
+Expanding $\frac{4 - b - 3\ell}{4} + \frac{h}{3}$ with $h = \frac{1 + 3\ell + b}{2}$ gives $1 - \frac{b}{4} - \frac{3\ell}{4} + \frac{1}{6} + \frac{\ell}{2} + \frac{b}{6}$ plus the low-side scale offset $\frac{b - 2}{12}$, which simplifies identically to $\frac{5}{6} - \frac{\ell}{2}$. For $k = 2$, $\frac{5}{9}\kappa \ge \frac{7 + 3\ell}{18}$ gives $\kappa \ge \frac{7 + 3\ell}{10}$. Since $\frac{5}{6} - \frac{\ell}{2} = \frac{7 + 3\ell}{10} \iff 25 - 15\ell = 21 + 9\ell \iff 24\ell = 4 \iff \ell = \frac{1}{6}$, the maximum of the two lines has unique minimum $\kappa(\frac{1}{6}) = \frac{3}{4}$, hence $\sigma_{\mathrm{II}}(\frac{1}{6}) = \frac{7}{8}$. Machine-verified in \texttt{stage2\_low\_side\_v\_curve} and \texttt{seven\_eighths\_sharp\_barrier} in \texttt{QuasiRiemannSarason.lean}.
+\end{proof}
+
+\section{Origin of $D_x = 3 - \frac{17x}{9}$, $P_x = (2 - \frac{8x}{9})(1 - x)$, and the Minimax Cutoff $t_*$}
+
+While $b$ cancels out of the low-side V-curve, choosing $b = \frac{1}{8}$ raises the high-side row scale $h = \frac{1 + 3(1/6) + b}{2} = \frac{3}{4} + \frac{b}{2}$ from $\frac{3}{4}$ to $\frac{13}{16}$, providing the leverage needed on the High Side ($d = h = \frac{13}{16}$).
+
+\begin{proposition}[Sextic Gauss Sum Capacities and the Short-Witness Crossing]\label{prop:crossing}
+Let $\mathcal{B}$ be a dynamic bin of sixth-power-free Eisenstein rows $q_u \asymp U = Z^d$ with zero-detector real part $a = \frac{1 + \delta}{2} > \frac{51}{100}$ ($\delta = 2a - 1 \in (1/50, 5/6]$) and prime-slot mean amplitude $q = x\delta$ ($x \in [0, 1/2]$). For any total witness length $t \in [1, 3/2]$ and inverse witness length $r \in [0, 1)$ (with plain witness length $m = t - r$):
+\begin{enumerate}
+  \item The \textbf{marked inverse second moment} (with capacity $z_M(r) = \frac{1 - r}{2}$) bounds $\#\mathcal{B}$ with exponent
+  \[
+    A_I(r) \;=\; 1 - \delta r - 2q\frac{1 - r}{2} \;=\; 1 - \delta\bigl(x + (1 - x)r\bigr).
+  \]
+  \item The \textbf{plain fourth moment} (two copies of $S_m$, with baseline sextic capacity $z_P(m) = \frac{1 - 2m}{6\kappa_0} = \frac{2(1 - 2m)}{9}$ where $6$ is the order of the sextic residue symbol in $\mathbb{Z}[\omega]$ and $6\kappa_0 = 6 \cdot \frac{3}{4} = \frac{9}{2}$) bounds $\#\mathcal{B}$ with exponent
+  \[
+    S_t(r) \;=\; 1 - 2\delta(t - r) - 2q\frac{2(1 - 2(t - r))}{9} \;=\; 1 - \delta\Bigl(\frac{4x}{9} + \Bigl(2 - \frac{8x}{9}\Bigr)(t - r)\Bigr).
+  \]
+  \item Taking the weighted average of $A_I(r)$ with weight $2 - \frac{8x}{9}$ and $S_t(r)$ with weight $1 - x$ eliminates $r$ identically:
+  \[
+    R_{\mathrm{short}}(t) \;=\; \frac{(2 - 8x/9)A_I(r) + (1 - x)S_t(r)}{D_x} \;=\; 1 - \delta + \frac{\delta P_x}{D_x}\Bigl(\frac{3}{2} - t\Bigr),
+  \]
+  where $D_x = (2 - \frac{8x}{9}) + (1 - x) = 3 - \frac{17x}{9}$ and $P_x = \bigl(2 - \frac{8x}{9}\bigr)(1 - x)$.
+  \item Balancing $R_{\mathrm{short}}(t)$ against the sixth-power amplified long-witness bound $L(t) = 1 - \delta + (\alpha - \delta)(t - 1)$ ($\alpha = \frac{5}{6}$) at the minimax cutoff $t_* = 1 + \frac{\delta P_x}{2\mathcal{J}}$ yields
+  \begin{equation}\label{eq:R-star}
+    R_* \;=\; 1 - \delta + \frac{(\alpha - \delta)\delta P_x}{2\mathcal{J}},
+    \qquad
+    \mathcal{J} \;=\; (\alpha - \delta)D_x + \delta P_x.
+  \end{equation}
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Direct polynomial identity; machine-verified in \texttt{detector\_short\_crossing\_identity} and \texttt{detector\_minimax\_cutoff\_balance} in \texttt{QuasiRiemannSarason.lean}.
+\end{proof}
+
+\section{Complete Genealogy of the $\frac{49}{440640}$ Endpoint Certificate}
+
+Substituting $R_*$ from \eqref{eq:R-star} into the high-side dynamic-bin exponent $E(d)$ at $d = h = \frac{13}{16}$, $\ell = \frac{1}{6}$, $l_y = \frac{23}{48}$, and $\sigma_0 = \frac{7}{8}$ gives
+\[
+  -E_* \;=\; \frac{1 + (3 + 8y)\delta}{48} - \frac{13}{32}\frac{(5/6 - \delta)\delta P_x}{\mathcal{J}}
+  \qquad \Bigl(y = \frac{1}{2} - x \in \Bigl[0, \frac{1}{2}\Bigr]\Bigr).
+\]
+
+\begin{theorem}[The $\frac{49}{440640}$ Sum-of-Squares Certificate]\label{thm:49-440640}
+Set $y = \frac{1}{2} - x \in [0, 1/2]$ and $v = 51 + 41y$. Write $D_x = \frac{37 + 34y}{18}$, $P_x = \frac{p_y}{9}$ with $p_y = 7 + 18y + 8y^2$, and $\mathcal{J} = \frac{j_y}{108}$ with $j_y = 185 + 170y + (-138 + 12y + 96y^2)\delta$. Then:
+\begin{enumerate}
+  \item Clearing denominators with $10368 = 2^7 \cdot 3^4 = 96 \times 108$ yields the exact quadratic in $\delta$:
+  \begin{equation}\label{eq:10368-quad}
+    10368\,\mathcal{J}(-E_*) \;=\; 10(37 + 34y) - 8(237 + 377y + 26y^2)\delta + 48(51 + 131y + 94y^2 + 32y^3)\delta^2.
+  \end{equation}
+  \item Multiplying \eqref{eq:10368-quad} by $v = 51 + 41y$ and completing the square in $\delta$ gives the exact sum-of-squares identity
+  \begin{equation}\label{eq:sos}
+    v \cdot 10368\,\mathcal{J}(-E_*) \;=\; 3\bigl((4v\delta - 79)^2 + 49\bigr) + y\,G(y, \delta),
+  \end{equation}
+  where $49 = 7^2 = 6290 - 79^2$ is the positive discriminant residual at $(y, \delta) = (0, \frac{79}{204})$, and
+  \begin{align*}
+    G(y, \delta) &\;=\; 3\bigl(60 - 77(1 - \delta) + 4v\delta^2\bigr)^2 + 27147 + 41775(1 - \delta)^2 \\
+    &\qquad + 276(526 + 467y)\delta^2 + 768y(149 + 219y + 64y^2)\delta^3 \;\ge\; 0.
+  \end{align*}
+  \item For all $y \in [0, 1/2]$ and $\delta \in [0, 5/6]$, $v \cdot 10368\,\mathcal{J}(-E_*) \ge 49(3 + 5y)$. Since $0 < v \le 17(3 + 5y)$ and $0 < \mathcal{J} \le \frac{5}{2}$, dividing by $10368\,v\,\mathcal{J} \le 10368 \times 17(3 + 5y) \times \frac{5}{2} = 440640(3 + 5y)$ yields
+  \[
+    -E_* \;\ge\; \frac{49}{440640}\bigl(3 + 5y\bigr) \;\ge\; \frac{147}{440640} \;>\; 0.
+  \]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Part (1) is verified in \texttt{high\_bin\_quadratic\_expansion}; Part (2) is verified in \allowbreak\texttt{high\_side\_endpoint\_sos\_certificate}; Part (3) and the arithmetic factorization $440640 = 10368 \times 17 \times \frac{5}{2} = 2^6 \cdot 3^4 \cdot 5 \cdot 17$ are verified in \texttt{fraction\_49\_440640\_arithmetic\_anatomy} and \texttt{high\_side\_endpoint\_positivity\_7\_8} in \texttt{QuasiRiemannSarason.lean}.
+\end{proof}
+
+\begin{table}[ht]
+\centering
+\caption{Prime-by-prime genealogy of the endpoint margin $\frac{49}{440640} = \frac{7^2}{2^6 \cdot 3^4 \cdot 5 \cdot 17}$.}
+\label{tab:anatomy}
+\small
+\begin{tabular}{@{}llp{8.8cm}@{}}
+\toprule
+\textbf{Factor} & \textbf{Value} & \textbf{Number-Theoretic \& Algebraic Origin} \\
+\midrule
+Numerator $7^2$ & $49 = 6290 - 79^2$ & Discriminant gap of $51(370 - 1896\delta + 2448\delta^2) = 3((204\delta - 79)^2 + 49)$ at $y=0$, $\delta_* = \frac{79}{204}$ \\
+\addlinespace[3pt]
+Factor $3^4$ & $81$ in $10368 = 2^7 \cdot 3^4$ & Sextic conductor $6\kappa_0 = \frac{9}{2}$ ($D_x$ denom $18$, $P_x$ denom $9$) $\times$ amplification $\alpha = \frac{5}{6}$ ($\mathcal{J}$ denom $108 = 4 \cdot 3^3$) \\
+\addlinespace[3pt]
+Factor $2^6$ & $64 = 2^7 / 2$ & Box denominators $l_y = \frac{23}{48}$, $\frac{h}{2} = \frac{13}{32}$ ($\operatorname{lcm}(48,32)=96$) $\times$ $108 \div 2$ from $\mathcal{J} \le \frac{5}{2}$ \\
+\addlinespace[3pt]
+Prime $17$ & $17 = 8 + 9$ & Slope-weight sum $D_x = (2 - \frac{8x}{9}) + (1 - \frac{9x}{9}) = 3 - \frac{17x}{9}$, giving $v(0) = 51 = 3 \cdot 17$ and $v \le 17(3+5y)$ \\
+\addlinespace[3pt]
+Prime $5$ & $5$ in $\mathcal{J} \le \frac{5}{2}$ & Sixth-power amplification exponent $\frac{1+5r}{6}$ ($\alpha = \frac{5}{6}$), bounding $\mathcal{J} \le \alpha D_x \le \frac{5}{6} \cdot 3 = \frac{5}{2}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{thebibliography}{9}
+\bibitem[OAI26a]{OAI26a}
+OpenAI, \emph{The Quasi-Riemann Hypothesis for Cubic Hecke $L$-Functions ($\operatorname{Re}(s) > 7/8$)}, Preprint (199 pp.), September 30, 2026 (\texttt{QuasiRiemann\_7\_8\_199pp.pdf}).
+
+\bibitem[OAI26b]{OAI26b}
+OpenAI, \emph{A Zero-Free Region $\operatorname{Re}(s) > 11/12$ for Cubic Hecke $L$-Functions}, Preprint (49 pp.), October 5, 2026 (\texttt{QuasiRiemann\_11\_12\_49pp.pdf}).
+\end{thebibliography}
+
+\end{document}

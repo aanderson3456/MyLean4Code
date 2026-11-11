@@ -1,5 +1,0 @@
-import Mathlib
-
-#check Convex.is_const_of_fderivWithin_eq_zero
-#check IsPreconnected.is_const_of_hasFDerivWithinAt_eq_zero
-#check IsConnected.is_const_of_hasFDerivAt_eq_zero

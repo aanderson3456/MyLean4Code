@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anatomy of the 49/440640 Endpoint Certificate, the 7/8 V-Curve Barrier, and the Path to 6/7 in the Quasi-Riemann Hypothesis</title>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        tags: 'ams'
+      }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <style>
+    :root {
+      --bg: #f4f2ec;
+      --paper: #ffffff;
+      --surface-l2: #f8fafc;
+      --surface-l3: #fcfcfd;
+      --border: #d8d4c8;
+      --border-subtle: #e6e3da;
+      --text: #111315;
+      --muted: #4b5563;
+      --accent: #1e3a8a;
+      --teal: #0f766e;
+      --amber: #92400e;
+      --purple: #5b21b6;
+      --green: #065f46;
+      --code-bg: #0f172a;
+      --code-fg: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Latin Modern Roman", "Computer Modern Serif", "CMU Serif", "Georgia", "Times New Roman", Times, serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.72;
+      font-size: 17px;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: 100vh;
+    }
+    @media (max-width: 1024px) {
+      body { grid-template-columns: 1fr; }
+      aside { display: none; }
+    }
+    aside {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #ece9e0;
+      border-right: 1px solid var(--border);
+      padding: 22px 16px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    aside h2 {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .toc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .toc-list a {
+      color: #374151;
+      text-decoration: none;
+      font-size: 0.79rem;
+      line-height: 1.38;
+      padding: 5px 9px;
+      border-radius: 4px;
+      display: block;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .toc-list a:hover {
+      color: var(--accent);
+      background: rgba(30, 58, 138, 0.07);
+      border-left-color: var(--accent);
+    }
+    .toc-sub {
+      padding-left: 18px !important;
+      font-size: 0.75rem !important;
+      color: #4b5563 !important;
+    }
+    .global-controls {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .ctrl-btn {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #ffffff;
+      color: #1f2937;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      padding: 7px 10px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+    .ctrl-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #eff6ff;
+    }
+    .ctrl-btn.active-mode {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+    }
+    .legend-box {
+      margin-top: 18px;
+      padding: 11px 12px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      font-size: 0.74rem;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+    .legend-box strong {
+      color: #111827;
+    }
+    main {
+      max-width: 920px;
+      width: 100%;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      padding: 68px 78px 96px;
+      margin: 28px auto 64px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+    }
+    @media (max-width: 768px) {
+      main {
+        padding: 32px 22px 64px;
+        margin: 0;
+        border: none;
+      }
+    }
+    .paper-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .paper-title {
+      font-size: 1.44rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      line-height: 1.35;
+      color: #000000;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .paper-authors {
+      font-size: 1.02rem;
+      font-variant: small-caps;
+      letter-spacing: 0.04em;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    .paper-affil {
+      font-size: 0.88rem;
+      font-style: italic;
+      color: #4b5563;
+      margin-bottom: 6px;
+    }
+    .paper-date {
+      font-size: 0.84rem;
+      color: #525866;
+    }
+    .abstract-container {
+      margin: 24px 36px 28px;
+      font-size: 0.93rem;
+      line-height: 1.64;
+      text-align: justify;
+    }
+    @media (max-width: 768px) {
+      .abstract-container { margin: 20px 0; }
+    }
+    .abstract-container p {
+      margin-bottom: 10px;
+    }
+    .abstract-label {
+      font-weight: 700;
+      font-variant: small-caps;
+      letter-spacing: 0.03em;
+    }
+    .paper-meta-footnotes {
+      border-top: 1px solid #d1d5db;
+      border-bottom: 1px solid #d1d5db;
+      padding: 10px 0;
+      margin-bottom: 32px;
+      font-size: 0.86rem;
+      color: #374151;
+      line-height: 1.55;
+    }
+    section {
+      margin-bottom: 34px;
+    }
+    h2.sec-heading {
+      font-size: 1.22rem;
+      font-weight: 700;
+      color: #000000;
+      margin: 34px 0 14px;
+      line-height: 1.35;
+    }
+    h2.sec-heading .sec-num {
+      margin-right: 8px;
+    }
+    h3.subsec-heading {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #111827;
+      margin: 22px 0 10px;
+    }
+    h3.subsec-heading .subsec-num {
+      margin-right: 6px;
+    }
+    p.prose {
+      text-align: justify;
+      margin-bottom: 14px;
+      color: var(--text);
+      hyphens: auto;
+    }
+    ul.paper-list, ol.paper-list {
+      margin: 10px 0 16px 2.2em;
+      text-align: justify;
+    }
+    ul.paper-list li, ol.paper-list li {
+      margin-bottom: 6px;
+    }
+    .latex-env {
+      margin: 18px 0 14px;
+      padding: 2px 0;
+      text-align: justify;
+    }
+    .latex-env-title {
+      font-weight: 700;
+      color: #000000;
+    }
+    .latex-thm-body {
+      font-style: italic;
+    }
+    .latex-proof {
+      margin: 8px 0 20px;
+      text-align: justify;
+    }
+    .latex-proof-title {
+      font-style: italic;
+      font-weight: 600;
+      color: #000000;
+    }
+    .qed {
+      float: right;
+      font-size: 0.95rem;
+      line-height: 1;
+      color: #111827;
+    }
+    .step-block {
+      margin: 10px 0;
+      border-left: 2.5px solid transparent;
+      padding-left: 10px;
+      margin-left: -12px;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+    .step-block:hover {
+      border-left-color: #93c5fd;
+      background: rgba(239, 246, 255, 0.38);
+      border-radius: 0 4px 4px 0;
+    }
+    .step-block.open-l2 {
+      border-left-color: var(--accent);
+      background: rgba(248, 250, 252, 0.65);
+      border-radius: 0 4px 4px 0;
+    }
+    .level1-row {
+      cursor: pointer;
+      padding: 3px 0;
+      text-align: justify;
+    }
+    .step-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: 8px;
+      vertical-align: middle;
+      user-select: none;
+    }
+    .pill-toggle {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 0.66rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 3px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-style: normal;
+    }
+    .pill-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #eff6ff;
+    }
+    .pill-toggle.l3-pill {
+      border-color: #a7f3d0;
+      background: #ecfdf5;
+      color: var(--green);
+    }
+    .pill-toggle.l3-pill:hover {
+      background: #d1fae5;
+    }
+    .level2-drawer {
+      display: none;
+      margin: 10px 0 14px;
+      padding: 16px 20px;
+      background: var(--surface-l2);
+      border: 1px solid #dbeafe;
+      border-left: 3.5px solid var(--accent);
+      border-radius: 4px;
+      font-size: 0.91rem;
+      font-style: normal;
+      line-height: 1.66;
+      color: #1e293b;
+      text-align: left;
+    }
+    .step-block.open-l2 .level2-drawer {
+      display: block;
+    }
+    .l2-header {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .level2-drawer ol, .level2-drawer ul {
+      margin: 8px 0 10px 1.5rem;
+    }
+    .level2-drawer li {
+      margin-bottom: 7px;
+    }
+    .l2-bridge-box {
+      margin-top: 10px;
+      padding: 9px 13px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 3px solid #d97706;
+      border-radius: 4px;
+      font-size: 0.86rem;
+      color: #78350f;
+    }
+    .level3-drawer {
+      display: none;
+      margin-top: 12px;
+      background: var(--code-bg);
+      border: 1px solid #334155;
+      border-left: 3.5px solid #10b981;
+      border-radius: 5px;
+      overflow: hidden;
+      font-style: normal;
+    }
+    .level2-drawer.open-l3 .level3-drawer {
+      display: block;
+    }
+    .l3-bar {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #1e293b;
+      padding: 7px 13px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .l3-bar a {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+    .l3-bar a:hover {
+      text-decoration: underline;
+    }
+    pre.lean-code {
+      padding: 13px 16px;
+      overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", "SFMono-Regular", Consolas, monospace;
+      font-size: 0.79rem;
+      line-height: 1.52;
+      color: var(--code-fg);
+      background: var(--code-bg);
+      margin: 0;
+    }
+    .bib-list {
+      list-style: none;
+      font-size: 0.91rem;
+    }
+    .bib-list li {
+      margin-bottom: 9px;
+      padding-left: 3.4em;
+      text-indent: -3.4em;
+      text-align: justify;
+    }
+    .bib-key {
+      font-weight: 600;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <h2>Contents</h2>
+    <ul class="toc-list">
+      <li><a href="#sec-intro">1. Introduction &amp; The $49/440640$ Mystery</a></li>
+      <li><a class="toc-sub" href="#subsec-sarason">1.1. Sarason <code>_eps</code> Continuation</a></li>
+      <li><a href="#sec-vcurve">2. Asymmetry Cancellation &amp; V-Curve</a></li>
+      <li><a href="#sec-witnesses">3. Sextic Moments, $D_x$, and $P_x$</a></li>
+      <li><a class="toc-sub" href="#subsec-crossing">3.1. Crossing $r_*(t)$ &amp; Minimax $t_*$</a></li>
+      <li><a href="#sec-49-440640">4. Genealogy of $49/440640$</a></li>
+      <li><a class="toc-sub" href="#subsec-sos">4.1. Completing the Square at $79/204$</a></li>
+      <li><a href="#sec-6-7">5. Breaking $7/8$: The Path to $6/7$</a></li>
+      <li><a href="#sec-refs">References</a></li>
+    </ul>
+
+    <div class="global-controls">
+      <h2>Interactive 3-Level View</h2>
+      <button class="ctrl-btn active-mode" id="btn-l1" onclick="collapseAll()">Level 1: Clean Math Paper (Default)</button>
+      <button class="ctrl-btn" id="btn-l2" onclick="expandAllL2()">Level 2: +10× Algebraic Bridge</button>
+      <button class="ctrl-btn" id="btn-l3" onclick="expandAllL3()">Level 3: +Verified Lean 4 Code</button>
+    </div>
+
+    <div class="legend-box">
+      <strong>3-Level Reading Guide</strong><br/>
+      • <strong>Level 1 (Default):</strong> Self-contained LaTeX math research paper.<br/>
+      • <strong>Level 2 (Click any step / <code>+L2</code>):</strong> Discreet 10× algebraic derivation tracing every number-theoretic exponent and polynomial coefficient.<br/>
+      • <strong>Level 3 (Click <code>+L3 Lean</code>):</strong> Machine-verified Lean 4 code (<a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/QuasiRiemannSarason.lean"><code>QuasiRiemannSarason.lean</code></a>, 1,597 lines, 0 <code>sorry</code>s).
+    </div>
+  </aside>
+
+  <main>
+    <!-- ================================================================= -->
+    <!-- LATEX PAPER HEADER & ABSTRACT                                     -->
+    <!-- ================================================================= -->
+    <div class="paper-header">
+      <h1 class="paper-title">Number-Theoretic Anatomy of the $\frac{49}{440640}$ Endpoint Certificate,<br/>the $\frac{7}{8}$ V-Curve Barrier, and the Path to $\frac{6}{7}$ in the Quasi-Riemann Hypothesis</h1>
+      <div class="paper-authors">Austin Anderson</div>
+      <div class="paper-affil">Interactive 3-Level Edition — Grounded in Sarason's Complex Analysis &amp; Machine-Checked Lean 4 Proofs (<code>QuasiRiemannSarason.lean</code>)</div>
+      <div class="paper-date">November 5, 2026</div>
+    </div>
+
+    <div class="abstract-container">
+      <p>
+        <span class="abstract-label">Abstract.</span>
+        In OpenAI's 199-page resolution of the Quasi-Riemann Hypothesis [<em>The Quasi-Riemann Hypothesis: A Zero-Free Half-Plane $\operatorname{Re}(s) &gt; 7/8$</em>, Sept. 30, 2026], the nonvanishing of all finite-order Hecke $L$-functions over $F = \mathbb{Q}(\sqrt{-3})$ and all Dirichlet $L$-functions on $\Omega_{7/8} = \{s \in \mathbb{C} : \operatorname{Re}(s) &gt; 7/8\}$ hinges on a striking rational inequality at the climax of Section 13 (Lemma 13.3): the worst-case compensated high-side Poisson row exponent $E_*$ satisfies $-E_* \ge \frac{49}{440640} &gt; 10^{-4}$. In this paper, we trace the complete number-theoretic origin of every prime factor in $\frac{49}{440640}$ from Kubota–Patterson cubic theta reflection, two-step Poisson moment recursions over the Eisenstein integers $\mathcal{O} = \mathbb{Z}[\omega]$, and minimax witness balancing. Furthermore, we prove an exact <em>Asymmetry Cancellation Law</em> showing that the scale asymmetry $b = l_y - l_x$ cancels identically from the continuation balance equation, reducing the zero-free threshold to a piecewise-linear V-curve $\sigma_{\mathrm{II}}(\ell) = \frac{11}{12} - \frac{\ell}{4} + \frac{1}{2}\max(0, \ell - \frac{1}{6})$ with unique global minimum $\frac{7}{8}$ at $\ell = \frac{1}{6}$. Because the high side retains strict slack $\frac{49}{440640} &gt; 0$, the $\frac{7}{8}$ barrier is held in place purely by two low-side trivial-bound exponents, and we give the exact linear criterion required to push the zero-free half-plane to $\frac{7}{8} - \varepsilon$ and $\frac{6}{7}$.
+      </p>
+    </div>
+
+    <div class="paper-meta-footnotes">
+      <div><strong>2020 Mathematics Subject Classification:</strong> Primary 11M26, 11M06; Secondary 11F27, 11R11, 30C85.</div>
+      <div><strong>Keywords:</strong> Quasi-Riemann Hypothesis, Dirichlet $L$-functions, Hecke $L$-functions over $\mathbb{Q}(\sqrt{-3})$, Patterson cubic theta series, sextic Gauss sums, Sarason $\varepsilon$-$\delta$ holomorphy, Lean 4 formal verification.</div>
+      <div><strong>Companion PDFs &amp; Lean 4 Source:</strong>
+        <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/QuasiRiemann_49_440640_level1.pdf"><code>QuasiRiemann_49_440640_level1.pdf</code></a> (Clean Level 1 PDF) ·
+        <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/QuasiRiemann_7_8_199pp.pdf"><code>QuasiRiemann_7_8_199pp.pdf</code></a> (199-page $7/8$ Paper) ·
+        <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/QuasiRiemann_11_12_49pp.pdf"><code>QuasiRiemann_11_12_49pp.pdf</code></a> (49-page $11/12$ Paper) ·
+        <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/QuasiRiemannSarason.lean"><code>QuasiRiemannSarason.lean</code></a> (1,597 lines, 0 <code>sorry</code>s).
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 1: INTRODUCTION & SARASON CONTINUATION                    -->
+    <!-- ================================================================= -->
+    <section id="sec-intro">
+      <h2 class="sec-heading"><span class="sec-num">1.</span>Introduction &amp; Sarason <code>_eps</code> Common-Signal Continuation</h2>
+
+      <p class="prose">
+        Let $F = \mathbb{Q}(\sqrt{-3}) = \mathbb{Q}(\omega)$ ($\omega^2 + \omega + 1 = 0$) with ring of integers $\mathcal{O} = \mathbb{Z}[\omega]$, and let $\Omega_{\sigma_0} = \{s \in \mathbb{C} : \operatorname{Re}(s) &gt; \sigma_0\}$ denote the open right half-plane above $\sigma_0 \in \mathbb{R}$. By quadratic norm factorization, composing a Dirichlet character $\chi \bmod q$ with the ideal norm $N_{F/\mathbb{Q}}$ produces a finite-order Hecke character over $F$ whose $L$-function factors (up to finitely many nonvanishing Euler factors in $\Omega_0$) as
+        $$L_F(s, \chi \circ N_{F/\mathbb{Q}}) = L(s, \chi)\,L(s, \chi \chi_{-3}).$$
+        Consequently, any zero-free half-plane $\Omega_{\sigma_0}$ for primitive finite-order Hecke $L$-functions $L_F(s, \eta)$ over $F$ transfers immediately to all Dirichlet $L$-functions $L(s, \chi)$ and to the Riemann zeta function $\zeta(s)$.
+      </p>
+
+      <h3 class="subsec-heading" id="subsec-sarason"><span class="subsec-num">1.1.</span>Common-Signal Continuation in Sarason's $\varepsilon$-$\delta$ Framework</h3>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Proposition 1.1 (Common-Signal Continuation in Sarason <code>_eps</code> Form).</span>
+        <span class="latex-thm-body">
+          Let $\beta_* = \sup(\{1/2\} \cup \{\operatorname{Re}(\rho) : L_F(\rho, \eta) = 0,\; 1/2 \le \operatorname{Re}(\rho) \le 1\})$. Fix a target boundary $\sigma_0 \in (1/2, 1)$ (such as $\sigma_0 = 7/8$) and an affine Mellin shift $C(s) = s + c$. If $\beta_* &gt; \sigma_0$ and there exist target-independent margins $0 &lt; \omega &lt; \beta_* - \sigma_0$ and $\sigma &gt; 0$ such that for every primitive target $\eta$ there is a normalized probe $J_\eta(Z)$ and Mellin signal $f_\eta(Z)$ satisfying
+          $$|J_\eta(Z)| \ll_\eta Z^{\sigma_0 + c + \omega}, \qquad |J_\eta(Z) - f_\eta(Z)| \ll_\eta Z^{\beta_* + c - \sigma} \qquad (Z \to \infty),$$
+          then the shifted Mellin transform $F_\eta(s) = \int_0^\infty f_\eta(Z) Z^{-(s+c)}\,\frac{dZ}{Z}$ is holomorphic in Donald Sarason's Weierstrass $\varepsilon$-$\delta$ sense (<code>HolomorphicOn_eps</code>) on $\Omega_{\beta_* - \varepsilon_*}$ with $\varepsilon_* = \min(\beta_* - \sigma_0 - \omega, \sigma) &gt; 0$, forcing $L_F(\rho, \eta) \neq 0$ across $\operatorname{Re}(\rho) &gt; \beta_* - \varepsilon_*$ and contradicting the supremum definition of $\beta_*$.
+        </span>
+      </div>
+
+      <div class="latex-proof">
+        <span class="latex-proof-title">Proof.</span>
+        <div class="step-block" id="step-1-1">
+          <div class="level1-row" onclick="toggleL2('step-1-1', event)">
+            <strong>Step 1.1 (Triangle Inequality &amp; Continuation Margin).</strong>
+            By the triangle inequality $f_\eta(Z) = J_\eta(Z) - (J_\eta(Z) - f_\eta(Z))$, the signal satisfies $f_\eta(Z) = O(Z^{\max(\sigma_0 + c + \omega, \beta_* + c - \sigma)}) = O(Z^{\beta_* + c - \varepsilon_*})$, where $\varepsilon_* = \min(\beta_* - \sigma_0 - \omega, \sigma) &gt; 0$. By Goursat's theorem and <code>differentiableAt_iff_eps</code>, absolute convergence and complex differentiability of the Mellin integral on $\operatorname{Re}(s) &gt; \beta_* - \varepsilon_*$ yield <code>HolomorphicOn_eps (signalMellin f c) (rightHalfPlane (β - continuationMargin β ω σ))</code>, and the identity principle on connected open half-planes prevents $L_F(\rho, \eta)$ from vanishing on $\Omega_{\beta_* - \varepsilon_*}$.
+            <span class="step-controls">
+              <span class="pill-toggle" onclick="toggleL2('step-1-1', event)">+L2</span>
+              <span class="pill-toggle l3-pill" onclick="toggleL3('step-1-1', event)">+L3 Lean</span>
+            </span>
+          </div>
+          <div class="level2-drawer">
+            <div class="l2-header">
+              <span>Level 2 — 10× Algebraic Bridge: Supremum &amp; Mellin Continuation</span>
+              <span class="pill-toggle l3-pill" onclick="toggleL3('step-1-1', event)">Toggle Level 3 Lean 4</span>
+            </div>
+            <ol>
+              <li>Write $a = \sigma_0 + c + \omega$ and $b = \beta_* + c - \sigma$. Then
+                $$\max(a, b) = \beta_* + c + \max\bigl(-(\beta_* - \sigma_0 - \omega), -\sigma\bigr) = \beta_* + c - \min(\beta_* - \sigma_0 - \omega, \sigma) = \beta_* + c - \varepsilon_*.$$
+              </li>
+              <li>For $\operatorname{Re}(s) &gt; \beta_* - \varepsilon_*$, we have $\operatorname{Re}(-(s+c)) = -\operatorname{Re}(s) - c &lt; -(\beta_* + c - \varepsilon_*)$, so $\int_1^\infty |f_\eta(Z)| Z^{-\operatorname{Re}(s)-c-1}\,dZ &lt; \infty$, while rapid decay at $Z \downarrow 0$ controls $\int_0^1$.</li>
+              <li>On $\operatorname{Re}(s) &gt; 1$, Mellin inversion gives $L_{\mathrm{reg}}(s)\,F_\eta(s) = R(s)\,e^{(s-5/6)^2} H_\eta(s)$ with $\|H_\eta(s) - 1\| \le 1/2$ on $\Omega_{7/8}$. Analytic continuation across the preconnected half-plane $\Omega_{\beta_* - \varepsilon_*}$ forces $L_{\mathrm{reg}}(\rho) \neq 0$ since $e^{(\rho-5/6)^2} H_\eta(\rho) \neq 0$.</li>
+            </ol>
+            <div class="l2-bridge-box">
+              <strong>Lean 4 Bridge:</strong> Verified in <code>max_signal_exponents</code>, <code>signalMellin_holomorphicOn_eps</code>, and <code>nonzero_of_common_signal_eps</code> in <code>QuasiRiemannSarason.lean</code>.
+            </div>
+            <div class="level3-drawer">
+              <div class="l3-bar">
+                <span>Level 3 — Verified Lean 4 (<code>QuasiRiemannSarason.lean</code>, lines 471–501)</span>
+                <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/QuasiRiemannSarason.lean#L471-L501">Open in Editor</a>
+              </div>
+              <pre class="lean-code">theorem nonzero_of_common_signal_eps (β ω σ c : ℝ) (hω : 0 &lt; ω)
+    (L Lregular R H : ℂ → ℂ) (J f : ℝ → ℂ)
+    (hL : HolomorphicOn_eps Lregular
+      (rightHalfPlane (β - continuationMargin β ω σ)))
+    (hR : HolomorphicOn_eps R
+      (rightHalfPlane (β - continuationMargin β ω σ)))
+    (hH : HolomorphicOn_eps H sevenEighthsHalfPlane)
+    (hcontract : ∀ s : ℂ, 7 / 8 &lt; s.re → ‖H s - 1‖ ≤ (1 / 2 : ℝ))
+    (hlocal : LocallyIntegrableOn f (Set.Ioi 0))
+    (hzero : RapidDecayAtZero f)
+    (hJ : J =O[atTop] (fun x : ℝ =&gt; x ^ (7 / 8 + c + ω)))
+    (herror : (fun x =&gt; J x - f x) =O[atTop]
+      (fun x : ℝ =&gt; x ^ (β + c - σ)))
+    (heq : ∀ s : ℂ, max (β - continuationMargin β ω σ) 1 &lt; s.re →
+      Lregular s * signalMellin f c s = R s * gaussianMultiplier H s)
+    {ρ : ℂ} (hρ : β - continuationMargin β ω σ &lt; ρ.re)
+    (hregular : Lregular ρ = R ρ * L ρ) (hRρ : R ρ ≠ 0) : L ρ ≠ 0 := by {
+  have hboundary := continuation_boundary_gt (β := β) (σ := σ) hω
+  have hH' : HolomorphicOn_eps H (rightHalfPlane (β - continuationMargin β ω σ)) :=
+    fun s hs =&gt; hH s (lt_trans hboundary hs)
+  have htop : f =O[atTop] (fun x : ℝ =&gt;
+      x ^ ((β - continuationMargin β ω σ) + c)) := by {
+    have hexp : (β - continuationMargin β ω σ) + c =
+        β + c - continuationMargin β ω σ := by ring
+    simpa only [hexp] using common_signal_bound_with_margin J f β ω σ c hJ herror
+  }
+  exact nonzero_of_regularized_signal_eps _ 1 c L Lregular R (gaussianMultiplier H) f
+    hL hR (gaussianMultiplier_holomorphicOn_eps (isOpen_rightHalfPlane _) hH')
+    hlocal htop hzero heq hρ hregular
+    hRρ (gaussianMultiplier_ne_zero (hcontract ρ (lt_trans hboundary hρ)))
+}</pre>
+            </div>
+          </div>
+        </div>
+        <span class="qed">$\square$</span>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 2: ASYMMETRY CANCELLATION & THE V-CURVE                   -->
+    <!-- ================================================================= -->
+    <section id="sec-vcurve">
+      <h2 class="sec-heading"><span class="sec-num">2.</span>The Asymmetry Cancellation Law &amp; the V-Curve $\sigma_{\mathrm{II}}(\ell)$</h2>
+
+      <p class="prose">
+        In Part II of [OAI26a, Section 5, Eq. (5.1)], the completed cubic-theta probe $I_{\eta,\mathrm{modified}}(Z)$ is parameterized by five log-scale exponents $(b, h, \ell, l_x, l_y)$ subject to three structural relations:
+        \begin{equation}\label{eq:scale-relations}
+          l_x = 1 + \ell - h, \qquad l_y = l_x + b, \qquad M = l_x + l_y = 1 - \ell \quad (M + \ell = 1),
+        \end{equation}
+        where $X = Z^{l_x}$ is the completed cubic-theta length, $Y = Z^{l_y}$ is the averaging modulus length, $b = l_y - l_x \ge 0$ is the scale asymmetry, $\ell = \sum_{i=1}^K \ell_i$ is the total prime-compensation slot length, and $h$ is the Poisson dual cutoff exponent.
+      </p>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Theorem 2.1 (Asymmetry Cancellation Law &amp; Sharpness of the $7/8$ V-Curve).</span>
+        <span class="latex-thm-body">
+          Under the scale relations \eqref{eq:scale-relations}, the principal Mellin shift is $C(s) = \frac{l_x}{2} + s - 1 + \frac{h}{6}$ and the low-side Cauchy–Schwarz probe exponent (combining Lemma 6.1 and Proposition 6.3 of [OAI26a]) is
+          $$E_{\mathrm{low}}(\ell, b) = \frac{l_x}{2} + \frac{b}{12} + \frac{\max(0, \ell - 1/6)}{2}.$$
+          Equating $C(\sigma_0) = E_{\mathrm{low}}(\ell, b)$ cancels both $l_x/2$ and the asymmetry $b = l_y - l_x$ identically, yielding the universal V-curve
+          \begin{equation}\label{eq:v-curve}
+            \sigma_{\mathrm{II}}(\ell) = \frac{11}{12} - \frac{\ell}{4} + \frac{\max(0, \ell - 1/6)}{2} =
+            \begin{cases}
+              \dfrac{11}{12} - \dfrac{\ell}{4}, &amp; \ell \le \dfrac{1}{6}, \\[8pt]
+              \dfrac{19}{24} + \dfrac{\ell}{2}, &amp; \ell \ge \dfrac{1}{6}.
+            \end{cases}
+          \end{equation}
+          In particular, $\sigma_{\mathrm{II}}(0) = \frac{11}{12}$ (Stage I), $\sigma_{\mathrm{II}}(1/6) = \frac{7}{8}$ (Stage II), and $\sigma_{\mathrm{II}}(\ell) \ge \frac{7}{8}$ for all $\ell \in \mathbb{R}$ with equality if and only if $\ell = \frac{1}{6}$.
+        </span>
+      </div>
+
+      <div class="latex-proof">
+        <span class="latex-proof-title">Proof.</span>
+        <div class="step-block" id="step-2-1">
+          <div class="level1-row" onclick="toggleL2('step-2-1', event)">
+            <strong>Step 2.1 (Exact Cancellation of $l_x$ and $b$).</strong>
+            Subtracting $l_x/2$ from both sides of $\frac{l_x}{2} + \sigma_0 - 1 + \frac{h}{6} = \frac{l_x}{2} + \frac{b}{12} + \frac{1}{2}\max(0, \ell - 1/6)$ gives $\sigma_0 = 1 - \frac{2h - b}{12} + \frac{1}{2}\max(0, \ell - 1/6)$. From $l_x = 1 + \ell - h$ and $l_y = l_x + b$, we have $l_x + l_y + \ell = 2 + 3\ell - 2h + b = 1$, whence $2h - b = 1 + 3\ell$ is independent of $b$. Substituting $2h - b = 1 + 3\ell$ gives $1 - \frac{1 + 3\ell}{12} = \frac{11}{12} - \frac{\ell}{4}$, proving \eqref{eq:v-curve}. For $\ell &lt; 1/6$ the slope is $-1/4 &lt; 0$, and for $\ell &gt; 1/6$ the slope is $-1/4 + 1/2 = +1/4 &gt; 0$, so $\ell = 1/6$ is the unique global minimizer with value $\frac{11}{12} - \frac{1}{24} = \frac{7}{8}$.
+            <span class="step-controls">
+              <span class="pill-toggle" onclick="toggleL2('step-2-1', event)">+L2</span>
+              <span class="pill-toggle l3-pill" onclick="toggleL3('step-2-1', event)">+L3 Lean</span>
+            </span>
+          </div>
+          <div class="level2-drawer">
+            <div class="l2-header">
+              <span>Level 2 — 10× Algebraic Bridge: Why $b = l_y - l_x$ Cancels &amp; Where the Kink Comes From</span>
+              <span class="pill-toggle l3-pill" onclick="toggleL3('step-2-1', event)">Toggle Level 3 Lean 4</span>
+            </div>
+            <ol>
+              <li><strong>Origin of $\frac{b}{12}$:</strong> In Proposition 6.3 of [OAI26a], the additive polynomial on the reflected side has effective modulus $P_a = Y'^2 / Q = Z^{2(l_y - d) - (l_x + l_y - 2d)} = Z^{l_y - l_x} = Z^b$. Exceptional sixth-power frequencies $(k) = a_1^6 e$ in the 4D Poisson Gram matrix contribute $P_a^{1/6} = Z^{b/6}$, and Cauchy–Schwarz takes the square root to give $P_a^{1/12} = Z^{b/12}$.</li>
+              <li><strong>Origin of $-\frac{h}{6}$:</strong> On the Poisson high side, the principal row $u = 1$ evaluates the local Euler factor at the sixth-power residue pole $w = 1, z = 1/6$, shifting the Mellin power by $+h/6$ where $h = 1 + \ell - l_x = \frac{1 + 3\ell + b}{2}$. Thus $\frac{h}{6} = \frac{1 + 3\ell}{12} + \frac{b}{12}$, and the $+\frac{b}{12}$ matches the Gram exponent $\frac{b}{12}$ term-for-term!</li>
+              <li><strong>Origin of $\frac{1}{2}\max(0, \ell - 1/6)$:</strong> In Lemma 6.1 of [OAI26a] (Eq. 5.4), the reflected completed-row mean square has exponent $M' + \bigl(\frac{d - 1/6}{4}\bigr)_+$ because the dual reflected length $T_d$ satisfies $\frac{1 + 3\ell' - 2M'}{4} = \frac{d - 1/6}{4}$ when $M + \ell = 1$.</li>
+            </ol>
+            <div class="l2-bridge-box">
+              <strong>Lean 4 Bridge:</strong> Verified in <code>zeroFreeThreshold_eq_of_scale_conservation</code> and <code>seven_eighths_sharp_v_curve_min</code> in <code>QuasiRiemannSarason.lean</code>.
+            </div>
+            <div class="level3-drawer">
+              <div class="l3-bar">
+                <span>Level 3 — Verified Lean 4 (<code>QuasiRiemannSarason.lean</code>, lines 1403–1452)</span>
+                <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/QuasiRiemannSarason.lean#L1403-L1452">Open in Editor</a>
+              </div>
+              <pre class="lean-code">def stageIIVThreshold (ℓ : ℝ) : ℝ :=
+  11 / 12 - ℓ / 4 + max 0 (ℓ - 1 / 6) / 2
+
+theorem zeroFreeThreshold_eq_of_scale_conservation
+    {b h ℓ lx ly σ₀ : ℝ}
+    (hlx : lx = 1 + ℓ - h)
+    (hly : ly = lx + b)
+    (hM : lx + ly + ℓ = 1)
+    (hbal : lx / 2 + σ₀ - 1 + h / 6 = lx / 2 + b / 12 + max 0 (ℓ - 1 / 6) / 2) :
+    σ₀ = stageIIVThreshold ℓ := by {
+  unfold stageIIVThreshold
+  linarith
+}
+
+theorem seven_eighths_sharp_v_curve_min (ℓ : ℝ) :
+    (7 / 8 : ℝ) ≤ stageIIVThreshold ℓ ∧
+    (stageIIVThreshold ℓ = 7 / 8 ↔ ℓ = 1 / 6) := by {
+  unfold stageIIVThreshold
+  rcases le_total (ℓ - 1 / 6) 0 with hle | hge
+  · rw [max_eq_left hle]
+    constructor
+    · linarith
+    · constructor &lt;;&gt; intro h &lt;;&gt; linarith
+  · rw [max_eq_right hge]
+    constructor
+    · linarith
+    · constructor &lt;;&gt; intro h &lt;;&gt; linarith
+}</pre>
+            </div>
+          </div>
+        </div>
+        <span class="qed">$\square$</span>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 3: SEXTIC MOMENTS, D_x, P_x, AND WITNESS BALANCING        -->
+    <!-- ================================================================= -->
+    <section id="sec-witnesses">
+      <h2 class="sec-heading"><span class="sec-num">3.</span>Two-Poisson Moment Capacities, $D_x$, $P_x$, and Minimax Witness Balancing</h2>
+
+      <p class="prose">
+        While the asymmetry $b = l_y - l_x$ cancels out of the low-side continuation threshold $\sigma_{\mathrm{II}}(\ell)$, it plays a decisive role on the <strong>High Side</strong> (Sections 10–13 of [OAI26a]): choosing $b = 1/8$ raises $h = \frac{1 + 3\ell + b}{2} = \frac{3}{4} + \frac{b}{2}$ from $\frac{3}{4}$ to $\frac{13}{16}$, giving the high-side moment estimates enough leverage to beat the nonprincipal Poisson rows. Let us trace how the polynomials $D_x = 3 - \frac{17x}{9}$ and $P_x = \bigl(2 - \frac{8x}{9}\bigr)(1 - x)$ emerge from the number theory of $\mathbb{Z}[\omega]$.
+      </p>
+
+      <h3 class="subsec-heading" id="subsec-crossing"><span class="subsec-num">3.1.</span>From Sextic Gauss Sums to the Short-Witness Crossing $R_{\mathrm{short}}(t)$</h3>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Proposition 3.1 (Origin of $D_x$, $P_x$, $R_{\mathrm{short}}(t)$, and $R_*$).</span>
+        <span class="latex-thm-body">
+          Let $\mathcal{B}$ be a dynamic bin of sixth-power-free Eisenstein rows $q_u \asymp U = Z^d$ with zero-detector real part $a = \frac{1 + \delta}{2} &gt; \frac{51}{100}$ ($\delta = 2a - 1 \in (1/50, 5/6]$) and prime-slot mean amplitude $q = x\delta$ ($x \in [0, 1/2]$). For any total witness length $t \in [1, 3/2]$ and inverse witness length $r \in [0, 1)$ (with plain witness length $m = t - r$):
+          <ol class="paper-list">
+            <li>The <strong>marked inverse second moment</strong> (with capacity $z_M(r) = \frac{1 - r}{2}$) bounds $\#\mathcal{B}$ with exponent
+              $$A_I(r) = 1 - \delta r - 2q\frac{1 - r}{2} = 1 - \delta\bigl(x + (1 - x)r\bigr).$$
+            </li>
+            <li>The <strong>plain fourth moment</strong> (two copies of $S_m$, baseline sextic capacity $z_P(m) = \frac{1 - 2m}{6\kappa_0} = \frac{2(1 - 2m)}{9}$ at $\kappa_0 = 3/4$) bounds $\#\mathcal{B}$ with exponent
+              $$S_t(r) = 1 - 2\delta(t - r) - 2q\frac{2(1 - 2(t - r))}{9} = 1 - \delta\left(\frac{4x}{9} + \left(2 - \frac{8x}{9}\right)(t - r)\right).$$
+            </li>
+            <li>Taking the weighted average of $A_I(r)$ (weight $2 - \frac{8x}{9}$) and $S_t(r)$ (weight $1 - x$) eliminates $r$ identically:
+              $$R_{\mathrm{short}}(t) = \frac{(2 - 8x/9)A_I(r) + (1 - x)S_t(r)}{D_x} = 1 - \delta + \frac{\delta P_x}{D_x}\left(\frac{3}{2} - t\right),$$
+              where $D_x = 3 - \frac{17x}{9}$ and $P_x = \bigl(2 - \frac{8x}{9}\bigr)(1 - x)$.
+            </li>
+            <li>Balancing $R_{\mathrm{short}}(t)$ against the sixth-power amplified long-witness bound $L(t) = 1 - \delta + (\alpha - \delta)(t - 1)$ ($\alpha = 5/6$) at $t_* = 1 + \frac{\delta P_x}{2\mathcal{J}}$ yields the minimax row exponent
+              \begin{equation}\label{eq:R-star}
+                R_* = 1 - \delta + \frac{(\alpha - \delta)\delta P_x}{2\mathcal{J}}, \qquad \mathcal{J} = (\alpha - \delta)D_x + \delta P_x.
+              \end{equation}
+            </li>
+          </ol>
+        </span>
+      </div>
+
+      <div class="latex-proof">
+        <span class="latex-proof-title">Proof.</span>
+        <div class="step-block" id="step-3-1">
+          <div class="level1-row" onclick="toggleL2('step-3-1', event)">
+            <strong>Step 3.1 (Elimination of $r$ and Minimax Cutoff $t_*$).</strong>
+            In $A_I(r)$, the coefficient of $r$ is $-\delta(1 - x)$; in $S_t(r)$, the coefficient of $r$ is $+\delta(2 - 8x/9)$. Multiplying $A_I(r)$ by $2 - 8x/9$ and $S_t(r)$ by $1 - x$ and summing cancels $r$, while the weights sum to $(2 - 8x/9) + (1 - x) = 3 - 17x/9 = D_x$. Setting $R_{\mathrm{short}}(t_*) = L(t_*)$ gives $\frac{\delta P_x}{D_x}\bigl(\frac{1}{2} - (t_* - 1)\bigr) = (\alpha - \delta)(t_* - 1)$, or $\bigl((\alpha - \delta)D_x + \delta P_x\bigr)(t_* - 1) = \frac{1}{2}\delta P_x$, which is \eqref{eq:R-star}.
+            <span class="step-controls">
+              <span class="pill-toggle" onclick="toggleL2('step-3-1', event)">+L2</span>
+              <span class="pill-toggle l3-pill" onclick="toggleL3('step-3-1', event)">+L3 Lean</span>
+            </span>
+          </div>
+          <div class="level2-drawer">
+            <div class="l2-header">
+              <span>Level 2 — 10× Algebraic Bridge: Why $9$, $17$, and $5/6$ Appear in $D_x$, $P_x$, and $\mathcal{J}$</span>
+              <span class="pill-toggle l3-pill" onclick="toggleL3('step-3-1', event)">Toggle Level 3 Lean 4</span>
+            </div>
+            <ol>
+              <li><strong>Why the denominator $9$ appears in $z_P(m) = \frac{2(1 - 2m)}{9}$:</strong> In Lemma 11.1 of [OAI26a] (Plain Fourth Moment), each prime slot of log-length $z_i$ undergoes two finite Poisson transformations over $\mathcal{O} = \mathbb{Z}[\omega]$, where the sextic residue symbol $(\frac{\cdot}{\mathfrak{p}})_6$ has conductor degree $6$. The child width condition $2m + 6\kappa z \le 1$ at the baseline $\kappa_0 = 2(7/8) - 1 = 3/4$ has $6\kappa_0 = 6 \cdot \frac{3}{4} = \frac{9}{2}$, so $z_P(m) = \frac{1 - 2m}{9/2} = \frac{2(1 - 2m)}{9}$.</li>
+              <li><strong>Why $17$ appears in $D_x = 3 - \frac{17x}{9}$ and $v = 51 + 41y$:</strong> Adding the plain slope weight $2 - \frac{8x}{9}$ and the inverse slope weight $1 - x = 1 - \frac{9x}{9}$ gives $3 - \frac{(8 + 9)x}{9} = 3 - \frac{17x}{9}$. In terms of $y = \frac{1}{2} - x$,
+                $$D_x = 3 - \frac{17(1/2 - y)}{9} = \frac{37 + 34y}{18},$$
+                where $34 = 2 \times 17$, and the quadratic $\delta^2$ coefficient $48(51 + 131y + 94y^2 + 32y^3)$ has constant term $51 = 3 \times 17$, giving the linear multiplier $v = 51 + 41y \le 17(3 + 5y)$.
+              </li>
+              <li><strong>Why $\alpha = 5/6$ appears in $L(t)$:</strong> When $r \ge 1$, the sixth-power amplification (Lemma 9.4 of [OAI26a]) exploits the fact that Poisson frequencies $u a^6$ are sixth-power-free, giving moment exponent $\frac{1 + 5r}{6} = 1 - \frac{5}{6} + \frac{5}{6}r = 1 - \alpha + \alpha r$ with $\alpha = \frac{5}{6}$.</li>
+            </ol>
+            <div class="l2-bridge-box">
+              <strong>Lean 4 Bridge:</strong> Verified in <code>detector_short_crossing_identity</code> and <code>detector_minimax_cutoff_balance</code> in <code>QuasiRiemannSarason.lean</code>.
+            </div>
+            <div class="level3-drawer">
+              <div class="l3-bar">
+                <span>Level 3 — Verified Lean 4 (<code>QuasiRiemannSarason.lean</code>, lines 1455–1487)</span>
+                <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/QuasiRiemannSarason.lean#L1455-L1487">Open in Editor</a>
+              </div>
+              <pre class="lean-code">theorem detector_short_crossing_identity (δ x t r : ℝ) :
+    let Dx : ℝ := 3 - 17 * x / 9
+    let Px : ℝ := (2 - 8 * x / 9) * (1 - x)
+    let AI : ℝ := 1 - δ * (x + (1 - x) * r)
+    let St : ℝ := 1 - δ * (4 * x / 9 + (2 - 8 * x / 9) * (t - r))
+    (2 - 8 * x / 9) * AI + (1 - x) * St =
+      Dx * (1 - δ) + δ * Px * (3 / 2 - t) := by {
+  dsimp only
+  ring
+}
+
+theorem detector_minimax_cutoff_balance {α δ Dx Px J : ℝ}
+    (hDx : Dx ≠ 0) (hJ : J ≠ 0)
+    (hJ_def : J = (α - δ) * Dx + δ * Px) :
+    let t_star : ℝ := 1 + (δ * Px) / (2 * J)
+    let R_star : ℝ := 1 - δ + ((α - δ) * δ * Px) / (2 * J)
+    1 - δ + (δ * Px / Dx) * (3 / 2 - t_star) = R_star ∧
+    1 - δ + (α - δ) * (t_star - 1) = R_star := by {
+  dsimp only
+  constructor
+  · field_simp [hDx, hJ]
+    rw [hJ_def]
+    ring
+  · field_simp [hJ]
+    ring
+}</pre>
+            </div>
+          </div>
+        </div>
+        <span class="qed">$\square$</span>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 4: GENEALOGY OF 49/440640                                 -->
+    <!-- ================================================================= -->
+    <section id="sec-49-440640">
+      <h2 class="sec-heading"><span class="sec-num">4.</span>Complete Genealogy of the $\frac{49}{440640}$ Endpoint Certificate</h2>
+
+      <p class="prose">
+        We now substitute the minimax row exponent $R_*$ from \eqref{eq:R-star} into the high-side dynamic-bin exponent $E(d)$ (Lemma 13.1 of [OAI26a], Eq. 15732) at the critical row scale $d = h = \frac{13}{16}$, $\ell = \frac{1}{6}$, $l_y = \frac{23}{48}$, and $\sigma_0 = \frac{7}{8}$:
+        \begin{equation}\label{eq:E-h}
+          E_* = E(h)\big|_{R = R_*,\, q = x\delta} = -\frac{1}{48} + \frac{2}{3}\delta + \frac{x\delta}{6} - \frac{13}{16}(1 - R_*).
+        \end{equation}
+      </p>
+
+      <h3 class="subsec-heading" id="subsec-sos"><span class="subsec-num">4.1.</span>Quadratic Clearing, Completing the Square at $\delta = 79/204$, and Factoring $440640$</h3>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Theorem 4.1 (The $\frac{49}{440640}$ Sum-of-Squares Certificate, Lemma 13.3 of [OAI26a]).</span>
+        <span class="latex-thm-body">
+          Set $y = \frac{1}{2} - x \in [0, 1/2]$ and $v = 51 + 41y$. Write $D_x = \frac{37 + 34y}{18}$, $P_x = \frac{p_y}{9}$ with $p_y = 7 + 18y + 8y^2$, and $\mathcal{J} = \frac{j_y}{108}$ with $j_y = 185 + 170y + (-138 + 12y + 96y^2)\delta$. Then:
+          <ol class="paper-list">
+            <li>Clearing the denominators $48$, $32$, $9$, and $108$ with $10368 = 2^7 \cdot 3^4 = 96 \times 108$ yields the exact polynomial in $(y, \delta)$:
+              \begin{equation}\label{eq:10368-quad}
+                10368\,\mathcal{J}(-E_*) = 10(37 + 34y) - 8(237 + 377y + 26y^2)\delta + 48(51 + 131y + 94y^2 + 32y^3)\delta^2.
+              \end{equation}
+            </li>
+            <li>Multiplying \eqref{eq:10368-quad} by $v = 51 + 41y$ and completing the square in $\delta$ gives the exact sum-of-squares identity
+              \begin{equation}\label{eq:sos-49}
+                10368\,v\,\mathcal{J}(-E_*) = (3 + 5y)\bigl\{(4v\delta - 79)^2 + 49\bigr\} + 4y\bigl\{4v\delta\bigl[(1 + 3y)(15 + 32y)\delta + (9 - 13y)\bigr] + 265 + 3485y\bigr\}.
+              \end{equation}
+            </li>
+            <li>Since $y \in [0, 1/2]$, $\delta \in [0, 5/6]$, $9 - 13y \ge 5/2 &gt; 0$, $v = 51 + 41y \le 17(3 + 5y)$, and $\mathcal{J} \le 5/2$, we have
+              $$-E_* \ge \frac{49(3 + 5y)}{10368\,v\,\mathcal{J}} \ge \frac{49}{10368 \times 17 \times \mathcal{J}} = \frac{49}{176256\,\mathcal{J}} \ge \frac{49}{440640} &gt; \frac{1}{10000}.$$
+            </li>
+          </ol>
+        </span>
+      </div>
+
+      <div class="latex-proof">
+        <span class="latex-proof-title">Proof.</span>
+        <div class="step-block" id="step-4-1">
+          <div class="level1-row" onclick="toggleL2('step-4-1', event)">
+            <strong>Step 4.1 (Where $49 = 7^2$ and $440640 = 2^6 \cdot 3^4 \cdot 5 \cdot 17$ Come From).</strong>
+            Substituting $1 - R_* = \delta - \frac{(5/6 - \delta)\delta P_x}{2\mathcal{J}}$ and $x = 1/2 - y$ into \eqref{eq:E-h} gives
+            $$-E_* = \frac{1}{48} + \left(\frac{13}{16} - \frac{2}{3} - \frac{1/2 - y}{6}\right)\delta - \frac{13}{32}\frac{(5/6 - \delta)\delta P_x}{\mathcal{J}} = \frac{1 + (3 + 8y)\delta}{48} - \frac{13}{32}\frac{(5/6 - \delta)\delta P_x}{\mathcal{J}}.$$
+            Multiplying by $10368\,\mathcal{J} = 96\,j_y$ produces \eqref{eq:10368-quad}. At the worst-case boundary $y = 0$ ($x = 1/2$, maximum prime-slot amplitude $q = \delta/2$), \eqref{eq:10368-quad} reduces to the quadratic $370 - 1896\delta + 2448\delta^2$. Multiplying by $v(0) = 51$ yields
+            $$51(370 - 1896\delta + 2448\delta^2) = 3\bigl(6290 - 2 \cdot 79 \cdot (204\delta) + (204\delta)^2\bigr) = 3\bigl((204\delta - 79)^2 + (6290 - 79^2)\bigr) = 3\bigl((204\delta - 79)^2 + 49\bigr).$$
+            Thus <strong>$49 = 6290 - 79^2 = 6290 - 6241$</strong> is the exact reduced discriminant residual of the quadratic at $y = 0$, attained at $\delta_* = \frac{79}{204} \approx 0.38725$ ($a_* = \frac{283}{408} \approx 0.6936$). Dividing by $10368 \times 17 = 176256$ (since $\frac{v}{3 + 5y} = \frac{51 + 41y}{3 + 5y} \le 17$ with equality at $y = 0$) and by $\mathcal{J}_{\max} = \frac{5}{2}$ gives $176256 \times \frac{5}{2} = 440640$.
+            <span class="step-controls">
+              <span class="pill-toggle" onclick="toggleL2('step-4-1', event)">+L2</span>
+              <span class="pill-toggle l3-pill" onclick="toggleL3('step-4-1', event)">+L3 Lean</span>
+            </span>
+          </div>
+          <div class="level2-drawer">
+            <div class="l2-header">
+              <span>Level 2 — 10× Algebraic Bridge: Factor-by-Factor Breakdown of $49 / 440640$</span>
+              <span class="pill-toggle l3-pill" onclick="toggleL3('step-4-1', event)">Toggle Level 3 Lean 4</span>
+            </div>
+            <ol>
+              <li><strong>Factor $108 = 2^2 \cdot 3^3$ in $\mathcal{J} = j_y / 108$:</strong> Since $\alpha = 5/6$, $D_x = \frac{37 + 34y}{18}$ has denominator $18$, and $(\alpha - \delta)D_x = \frac{5 - 6\delta}{6}\cdot\frac{37 + 34y}{18}$ has denominator $6 \times 18 = 108$.</li>
+              <li><strong>Factor $10368 = 96 \times 108 = 2^7 \cdot 3^4$:</strong> In $-E_* = \frac{1 + (3+8y)\delta}{48} - \frac{13}{32}\frac{(5/6-\delta)\delta p_y}{9\mathcal{J}}$, clearing $\mathcal{J} = j_y/108$ and $\operatorname{lcm}(48, 32) = 96$ multiplies by $96 \times 108 = 10368$.</li>
+              <li><strong>Factor $17$ in $176256 = 10368 \times 17$:</strong> At $y = 0$, the leading $\delta^2$ coefficient in \eqref{eq:10368-quad} is $48 \times 51 = 3 \times 16 \times (3 \times 17)$. To make $3 \times 16 \times 51\,\delta^2$ a $3 \times (\text{square})$ after factoring out $3 + 5y = 3$, we multiply by $v(0) = 51 = 3 \times 17$, so the ratio $\frac{v}{3 + 5y} = \frac{51 + 41y}{3 + 5y} = 17 - \frac{44y}{3 + 5y} \le 17$ contributes the prime factor $17$ (which traced back to $D_{1/2} = 3 - 17/18$!).</li>
+              <li><strong>Numerator $49 = 6290 - 79^2$:</strong> At $y = 0$, the constant term of $v \cdot 10368\,\mathcal{J}(-E_*)$ is $51 \times 370 = 3 \times 17 \times 370 = 3 \times 6290$, while half the linear coefficient divided by $\sqrt{3 \cdot 48 \cdot 51}$ is $\frac{8 \times 237 \times 51}{2 \times 3 \times 204} = \frac{237}{3} = 79$. Completing the square leaves $6290 - 79^2 = 6290 - 6241 = 49$!</li>
+              <li><strong>Factor $5/2$ in $440640 = 176256 \times \frac{5}{2}$:</strong> Since $D_x \le 3$ and $\alpha = 5/6$, $\mathcal{J} = (5/6 - \delta)D_x + \delta P_x \le \frac{5}{6} \cdot 3 = \frac{5}{2}$, giving $176256 \times \frac{5}{2} = 440640$.</li>
+            </ol>
+            <div class="l2-bridge-box">
+              <strong>Lean 4 Bridge:</strong> Verified in <code>high_bin_quadratic_expansion</code>, <code>fraction_49_440640_arithmetic_anatomy</code>, <code>high_side_endpoint_sos_certificate</code>, and <code>high_side_endpoint_margin</code> in <code>QuasiRiemannSarason.lean</code>.
+            </div>
+            <div class="level3-drawer">
+              <div class="l3-bar">
+                <span>Level 3 — Verified Lean 4 (<code>QuasiRiemannSarason.lean</code>, lines 1489–1572)</span>
+                <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/QuasiRiemannSarason.lean#L1489-L1572">Open in Editor</a>
+              </div>
+              <pre class="lean-code">theorem high_bin_quadratic_expansion (y δ : ℝ) :
+    let py : ℝ := 7 + 18 * y + 8 * y ^ 2
+    let jy : ℝ := 185 + 170 * y + (-138 + 12 * y + 96 * y ^ 2) * δ
+    let Dx : ℝ := (37 + 34 * y) / 18
+    let Px : ℝ := py / 9
+    let J : ℝ := jy / 108
+    (J = (5 / 6 - δ) * Dx + δ * Px) ∧
+    (10368 * (jy / 108 * ((1 + (3 + 8 * y) * δ) / 48) -
+      (13 / 32) * (5 / 6 - δ) * δ * Px) =
+      2 * jy * (1 + (3 + 8 * y) * δ) - 468 * (5 / 6 - δ) * δ * py) ∧
+    (2 * jy * (1 + (3 + 8 * y) * δ) - 468 * (5 / 6 - δ) * δ * py =
+      10 * (37 + 34 * y) - 8 * (237 + 377 * y + 26 * y ^ 2) * δ +
+        48 * (51 + 131 * y + 94 * y ^ 2 + 32 * y ^ 3) * δ ^ 2) := by {
+  dsimp only
+  refine ⟨by ring, by ring, by ring⟩
+}
+
+theorem fraction_49_440640_arithmetic_anatomy :
+    (6290 - 79 ^ 2 : ℤ) = 49 ∧
+    (10368 * 17 : ℕ) = 176256 ∧
+    (176256 * (5 / 2 : ℝ)) = 440640 ∧
+    (2 ^ 6 * 3 ^ 4 * 5 * 17 : ℕ) = 440640 := by {
+  refine ⟨by norm_num, by norm_num, by norm_num, by norm_num⟩
+}
+
+theorem high_side_endpoint_sos_certificate (y δ : ℝ) :
+    let v : ℝ := 51 + 41 * y
+    let py : ℝ := 7 + 18 * y + 8 * y ^ 2
+    let jy : ℝ := 185 + 170 * y + (-138 + 12 * y + 96 * y ^ 2) * δ
+    v * (2 * jy * (1 + (3 + 8 * y) * δ) - 468 * (5 / 6 - δ) * δ * py) =
+      (3 + 5 * y) * ((4 * v * δ - 79) ^ 2 + 49) +
+        4 * y * (4 * v * δ * ((1 + 3 * y) * (15 + 32 * y) * δ + (9 - 13 * y)) +
+          265 + 3485 * y) := by {
+  dsimp only
+  ring
+}</pre>
+            </div>
+          </div>
+        </div>
+        <span class="qed">$\square$</span>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 5: BREAKING 7/8 AND REACHING 6/7                          -->
+    <!-- ================================================================= -->
+    <section id="sec-6-7">
+      <h2 class="sec-heading"><span class="sec-num">5.</span>Breaking the $7/8$ Barrier: Exact Criteria for $7/8 - \varepsilon$ and $6/7$</h2>
+
+      <p class="prose">
+        Because Theorem 4.1 establishes that the high-side Poisson moment system at $\sigma_0 = 7/8$ retains a strict uniform margin $-E_* \ge \frac{49}{440640} &gt; 10^{-4}$ (along with $5\ell - h = \frac{1}{48} &gt; 0$ and $l_y - \ell - \frac{11}{6}b = \frac{1}{12} &gt; 0$), the $7/8$ threshold is not obstructed by the high-side moment recursion at the infinitesimal level. Instead, by Theorem 2.1, any improvement $\delta_\ell &gt; 0$ to the completed-row reflected-energy cutoff $\ell_{\max} = \frac{1}{6} + \delta_\ell$ or any power saving $\delta_{\mathrm{Gram}} &gt; 0$ over the trivial sixth-power count $P_a^{1/6 - \delta_{\mathrm{Gram}}}$ in Proposition 6.3 of [OAI26a] lowers the zero-free threshold linearly.
+      </p>
+
+      <div class="latex-env">
+        <span class="latex-env-title">Theorem 5.1 (Generalized Zero-Free Threshold &amp; the $6/7$ Criterion).</span>
+        <span class="latex-thm-body">
+          If the reflected-energy cutoff is $\ell_{\max} = \frac{1}{6} + \delta_\ell$ ($\delta_\ell \ge 0$) and the exceptional sixth-power Gram exponent is $\gamma_{\mathrm{Gram}} = \frac{1}{6} - \delta_{\mathrm{Gram}}$ ($\delta_{\mathrm{Gram}} \ge 0$), the continuation balance threshold is
+          \begin{equation}\label{eq:gen-threshold}
+            \sigma_0(\delta_\ell, \delta_{\mathrm{Gram}}, b) = \frac{7}{8} - \frac{\delta_\ell}{4} - \frac{\delta_{\mathrm{Gram}}\,b}{2}.
+          \end{equation}
+          In particular:
+          <ol class="paper-list">
+            <li>Any $\delta_{\mathrm{Gram}} &gt; 0$ in the 20-line exceptional sixth-power Gram estimate ([OAI26a, lines 8534–8556]) with $0 &lt; \frac{\delta_{\mathrm{Gram}}\,b}{2} &lt; \frac{49}{440640}$ immediately yields a $\frac{7}{8} - \varepsilon$ zero-free half-plane without altering the high-side moment architecture.</li>
+            <li>The threshold reaches $\sigma_0 = \frac{6}{7}$ ($\frac{7}{8} - \frac{6}{7} = \frac{1}{56}$) if and only if $\frac{\delta_\ell}{4} + \frac{\delta_{\mathrm{Gram}}\,b}{2} = \frac{1}{56}$ (for instance at $\delta_\ell = \frac{1}{14}$, i.e., $\ell = \frac{5}{21}$, with $\delta_{\mathrm{Gram}} = 0$), and reaches $\sigma_0 = \frac{5}{6}$ at $\delta_\ell = \frac{1}{6}$ ($\ell = \frac{1}{3}$).</li>
+          </ol>
+        </span>
+      </div>
+
+      <div class="latex-proof">
+        <span class="latex-proof-title">Proof.</span>
+        <div class="step-block" id="step-5-1">
+          <div class="level1-row" onclick="toggleL2('step-5-1', event)">
+            <strong>Step 5.1 (Exact Threshold Shift).</strong>
+            Replacing $\frac{b}{12} = \frac{(1/6)b}{2}$ by $\frac{(1/6 - \delta_{\mathrm{Gram}})b}{2}$ in $E_{\mathrm{low}}$ subtracts $\frac{\delta_{\mathrm{Gram}}\,b}{2}$ from $\sigma_0$, and setting $\ell = \frac{1}{6} + \delta_\ell$ in $\frac{11}{12} - \frac{\ell}{4}$ subtracts $\frac{\delta_\ell}{4}$ from $\frac{11}{12} - \frac{1}{24} = \frac{7}{8}$, yielding \eqref{eq:gen-threshold}. Since $\frac{7}{8} - \frac{6}{7} = \frac{49 - 48}{56} = \frac{1}{56}$, setting $\frac{\delta_\ell}{4} + \frac{\delta_{\mathrm{Gram}}\,b}{2} = \frac{1}{56}$ gives $\sigma_0 = \frac{6}{7}$.
+            <span class="step-controls">
+              <span class="pill-toggle" onclick="toggleL2('step-5-1', event)">+L2</span>
+              <span class="pill-toggle l3-pill" onclick="toggleL3('step-5-1', event)">+L3 Lean</span>
+            </span>
+          </div>
+          <div class="level2-drawer">
+            <div class="l2-header">
+              <span>Level 2 — 10× Algebraic Bridge: Linear Program for $7/8 - \varepsilon$, $6/7$, and $5/6$</span>
+              <span class="pill-toggle l3-pill" onclick="toggleL3('step-5-1', event)">Toggle Level 3 Lean 4</span>
+            </div>
+            <ol>
+              <li>At $\delta_\ell = 0$ and $b = 1/8$, any saving $\delta_{\mathrm{Gram}} \in (0, \frac{49}{27540})$ in the sixth-power Gram bound produces $\varepsilon = \frac{\delta_{\mathrm{Gram}}}{16} \in (0, \frac{49}{440640})$, which is strictly smaller than the verified high-side slack $-E_* \ge \frac{49}{440640}$.</li>
+              <li>At $\delta_\ell = \frac{1}{14}$ and $\delta_{\mathrm{Gram}} = 0$, $\ell = \frac{1}{6} + \frac{1}{14} = \frac{5}{21}$ gives $\sigma_0 = \frac{7}{8} - \frac{1}{56} = \frac{6}{7}$.</li>
+              <li>At $\delta_\ell = \frac{1}{6}$ and $\delta_{\mathrm{Gram}} = 0$, $\ell = \frac{1}{3}$ gives $\sigma_0 = \frac{7}{8} - \frac{1}{24} = \frac{5}{6}$ (the exact center of the Gaussian multiplier $e^{(s - 5/6)^2}$).</li>
+            </ol>
+            <div class="l2-bridge-box">
+              <strong>Lean 4 Bridge:</strong> Verified in <code>generalizedZeroFreeThreshold</code> and <code>six_sevenths_criterion</code> in <code>QuasiRiemannSarason.lean</code>.
+            </div>
+            <div class="level3-drawer">
+              <div class="l3-bar">
+                <span>Level 3 — Verified Lean 4 (<code>QuasiRiemannSarason.lean</code>, lines 1574–1595)</span>
+                <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/QuasiRiemannSarason.lean#L1574-L1595">Open in Editor</a>
+              </div>
+              <pre class="lean-code">def generalizedZeroFreeThreshold (δ_ℓ δ_Gram b : ℝ) : ℝ :=
+  7 / 8 - δ_ℓ / 4 - δ_Gram * b / 2
+
+theorem six_sevenths_criterion (δ_ℓ δ_Gram b : ℝ) :
+    (generalizedZeroFreeThreshold δ_ℓ δ_Gram b = 6 / 7 ↔
+      δ_ℓ / 4 + δ_Gram * b / 2 = 1 / 56) ∧
+    generalizedZeroFreeThreshold (1 / 14) 0 b = 6 / 7 ∧
+    generalizedZeroFreeThreshold (1 / 6) 0 b = 5 / 6 := by {
+  unfold generalizedZeroFreeThreshold
+  refine ⟨?_, by norm_num, by norm_num⟩
+  constructor &lt;;&gt; intro h &lt;;&gt; linarith
+}</pre>
+            </div>
+          </div>
+        </div>
+        <span class="qed">$\square$</span>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- REFERENCES                                                        -->
+    <!-- ================================================================= -->
+    <section id="sec-refs">
+      <h2 class="sec-heading">References</h2>
+      <ul class="bib-list">
+        <li>
+          <span class="bib-key">[BGL14]</span>
+          V. Blomer, L. Goldmakher, and B. Louvel, <em>$L$-functions with $n$-th-order twists</em>, Int. Math. Res. Not. IMRN <strong>2014</strong> (2014), no. 7, 1925–1955.
+        </li>
+        <li>
+          <span class="bib-key">[GM26]</span>
+          L. Guth and J. Maynard, <em>New large value estimates for Dirichlet polynomials</em>, Ann. of Math. (2) <strong>203</strong> (2026), no. 2, 623–675.
+        </li>
+        <li>
+          <span class="bib-key">[HB00]</span>
+          D. R. Heath-Brown, <em>Kummer's conjecture for cubic Gauss sums</em>, Israel J. Math. <strong>120</strong> (2000), Part A, 97–124.
+        </li>
+        <li>
+          <span class="bib-key">[OAI26a]</span>
+          OpenAI, <em>The Quasi-Riemann Hypothesis: A Zero-Free Half-Plane $\operatorname{Re}(s) &gt; 7/8$</em>, OpenAI Math Release Preprint, September 30, 2026, 199 pp. (<a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/QuasiRiemann_7_8_199pp.pdf"><code>QuasiRiemann_7_8_199pp.pdf</code></a>).
+        </li>
+        <li>
+          <span class="bib-key">[OAI26b]</span>
+          OpenAI, <em>The Quasi-Riemann Hypothesis ($\operatorname{Re}(s) &gt; 11/12$)</em>, OpenAI Math Release Preprint, October 5, 2026, 49 pp. (<a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/QuasiRiemann_11_12_49pp.pdf"><code>QuasiRiemann_11_12_49pp.pdf</code></a>).
+        </li>
+        <li>
+          <span class="bib-key">[Pat77]</span>
+          S. J. Patterson, <em>A cubic analogue of the theta series</em>, J. Reine Angew. Math. <strong>296</strong> (1977), 125–161.
+        </li>
+        <li>
+          <span class="bib-key">[Sar07]</span>
+          D. Sarason, <em>Complex Function Theory</em>, Second Edition, American Mathematical Society, Providence, RI, 2007 (<a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/Sarason/Definitions.lean"><code>Sarason/Definitions.lean</code></a>).
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    function toggleL2(stepId, event) {
+      if (event) event.stopPropagation();
+      const block = document.getElementById(stepId);
+      if (!block) return;
+      block.classList.toggle('open-l2');
+    }
+
+    function toggleL3(stepId, event) {
+      if (event) event.stopPropagation();
+      const block = document.getElementById(stepId);
+      if (!block) return;
+      block.classList.add('open-l2');
+      const l2 = block.querySelector('.level2-drawer');
+      if (l2) l2.classList.toggle('open-l3');
+    }
+
+    function setActiveBtn(id) {
+      document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active-mode'));
+      const btn = document.getElementById(id);
+      if (btn) btn.classList.add('active-mode');
+    }
+
+    function collapseAll() {
+      setActiveBtn('btn-l1');
+      document.querySelectorAll('.step-block').forEach(b => b.classList.remove('open-l2'));
+      document.querySelectorAll('.level2-drawer').forEach(d => d.classList.remove('open-l3'));
+    }
+
+    function expandAllL2() {
+      setActiveBtn('btn-l2');
+      document.querySelectorAll('.step-block').forEach(b => b.classList.add('open-l2'));
+      document.querySelectorAll('.level2-drawer').forEach(d => d.classList.remove('open-l3'));
+    }
+
+    function expandAllL3() {
+      setActiveBtn('btn-l3');
+      document.querySelectorAll('.step-block').forEach(b => b.classList.add('open-l2'));
+      document.querySelectorAll('.level2-drawer').forEach(d => d.classList.add('open-l3'));
+    }
+  </script>
+</body>
+</html>

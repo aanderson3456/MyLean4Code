@@ -1228,3 +1228,245 @@ lemma prefix_max_bound_at_zero (n : ℕ) (hn_pos : n > 0) (hn_zero : vanEckNthTe
       omega
 }
 
+/--
+Unconditional local step-2 collision rule: whenever `a(i) = a(i + 2)` at any index `i`,
+the very next term `a(i + 3)` must equal `2`, since `a(i + 1) = a(i + 2)` would create
+a forbidden three-in-a-row run.
+-/
+lemma eq_add_two_implies_next_two (i : ℕ)
+    (h_eq : vanEckNthTerm i = vanEckNthTerm (i + 2)) :
+    vanEckNthTerm (i + 3) = 2 := by {
+  by_cases h_mid : vanEckNthTerm (i + 1) = vanEckNthTerm (i + 2)
+  · exfalso
+    exact vanEck_triple_impossible i (vanEckNthTerm (i + 2)) ⟨h_eq, h_mid, rfl⟩
+  · exact gap_2_implies_two i h_eq h_mid
+}
+
+/--
+In a `2`-free tail (`∀ m > N_0, a(m) ≠ 2`), no two terms at distance `2` can be equal
+once `i + 3 > N_0`.
+-/
+lemma no_step_two_repeat_of_no_twos (N_0 i : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hi : i + 3 > N_0) :
+    vanEckNthTerm i ≠ vanEckNthTerm (i + 2) := by {
+  intro h_eq
+  have h_two : vanEckNthTerm (i + 3) = 2 := eq_add_two_implies_next_two i h_eq
+  exact h_no_twos (i + 3) hi h_two
+}
+
+/--
+Global non-stuttering of the even-index track `k ↦ a(2k)` in a `2`-free tail:
+consecutive terms of the even-index subsequence are never equal once `2k + 3 > N_0`.
+-/
+lemma even_track_non_stuttering (N_0 k : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hk : 2 * k + 3 > N_0) :
+    vanEckNthTerm (2 * k) ≠ vanEckNthTerm (2 * (k + 1)) := by {
+  have h_step : 2 * (k + 1) = 2 * k + 2 := by { omega }
+  rw [h_step]
+  exact no_step_two_repeat_of_no_twos N_0 (2 * k) h_no_twos hk
+}
+
+/--
+Global non-stuttering of the odd-index track `k ↦ a(2k + 1)` in a `2`-free tail:
+consecutive terms of the odd-index subsequence are never equal once `2k + 4 > N_0`.
+-/
+lemma odd_track_non_stuttering (N_0 k : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hk : 2 * k + 4 > N_0) :
+    vanEckNthTerm (2 * k + 1) ≠ vanEckNthTerm (2 * (k + 1) + 1) := by {
+  have h_step : 2 * (k + 1) + 1 = (2 * k + 1) + 2 := by { omega }
+  have hi : (2 * k + 1) + 3 > N_0 := by { omega }
+  rw [h_step]
+  exact no_step_two_repeat_of_no_twos N_0 (2 * k + 1) h_no_twos hi
+}
+
+/--
+Shifted (`k ↦ k + 1`) even-track non-stuttering in a `2`-free tail:
+`a(2(k + 1)) ≠ a(2(k + 2))` once `2k + 5 > N_0`.
+-/
+lemma even_track_succ_non_stuttering (N_0 k : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hk : 2 * k + 5 > N_0) :
+    vanEckNthTerm (2 * (k + 1)) ≠ vanEckNthTerm (2 * (k + 2)) := by {
+  exact even_track_non_stuttering N_0 (k + 1) h_no_twos (by { omega })
+}
+
+/--
+Shifted (`k ↦ k + 1`) odd-track non-stuttering in a `2`-free tail:
+`a(2(k + 1) + 1) ≠ a(2(k + 2) + 1)` once `2k + 6 > N_0`.
+-/
+lemma odd_track_succ_non_stuttering (N_0 k : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hk : 2 * k + 6 > N_0) :
+    vanEckNthTerm (2 * (k + 1) + 1) ≠ vanEckNthTerm (2 * (k + 2) + 1) := by {
+  exact odd_track_non_stuttering N_0 (k + 1) h_no_twos (by { omega })
+}
+
+/--
+Arbitrary shift (`k ↦ k + n` for any `n : ℕ`) even-track non-stuttering in a `2`-free tail:
+`a(2(k + n)) ≠ a(2(k + n + 1))` whenever `2(k + n) + 3 > N_0`.
+-/
+lemma even_track_add_non_stuttering (N_0 k n : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hk : 2 * (k + n) + 3 > N_0) :
+    vanEckNthTerm (2 * (k + n)) ≠ vanEckNthTerm (2 * (k + n + 1)) := by {
+  exact even_track_non_stuttering N_0 (k + n) h_no_twos hk
+}
+
+/--
+Arbitrary shift (`k ↦ k + n` for any `n : ℕ`) odd-track non-stuttering in a `2`-free tail:
+`a(2(k + n) + 1) ≠ a(2(k + n + 1) + 1)` whenever `2(k + n) + 4 > N_0`.
+-/
+lemma odd_track_add_non_stuttering (N_0 k n : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hk : 2 * (k + n) + 4 > N_0) :
+    vanEckNthTerm (2 * (k + n) + 1) ≠ vanEckNthTerm (2 * (k + n + 1) + 1) := by {
+  exact odd_track_non_stuttering N_0 (k + n) h_no_twos hk
+}
+
+/--
+Threshold-free tail form (`n = N_0`): for *every* `k : ℕ` unconditionally,
+both shifted tracks `k ↦ a(2(k + N_0))` and `k ↦ a(2(k + N_0) + 1)` never stutter.
+-/
+lemma tail_tracks_non_stuttering (N_0 k : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2) :
+    vanEckNthTerm (2 * (k + N_0)) ≠ vanEckNthTerm (2 * (k + N_0 + 1)) ∧
+      vanEckNthTerm (2 * (k + N_0) + 1) ≠ vanEckNthTerm (2 * (k + N_0 + 1) + 1) := by {
+  constructor
+  · exact even_track_add_non_stuttering N_0 k N_0 h_no_twos (by { omega })
+  · exact odd_track_add_non_stuttering N_0 k N_0 h_no_twos (by { omega })
+}
+
+/--
+Unconditional exclusion of back-to-back equal pairs `(x, x, y, y)`:
+if `a(i) = a(i + 1)`, then `a(i + 2) = 1`, so `a(i + 2) = a(i + 3)` would force two
+consecutive `1`s. In particular, `a(2k) = a(2k + 1)` and `a(2(k + 1)) = a(2(k + 1) + 1)`
+can never both hold.
+-/
+lemma vanEck_no_consecutive_pairs (i : ℕ) :
+    ¬(vanEckNthTerm i = vanEckNthTerm (i + 1) ∧
+      vanEckNthTerm (i + 2) = vanEckNthTerm (i + 3)) := by {
+  rintro ⟨h01, h23⟩
+  have h2_one : vanEckNthTerm (i + 2) = 1 :=
+    vanEck_consecutive_eq_implies_next_one i h01
+  have h3_one : vanEckNthTerm (i + 3) = 1 := by {
+    rw [← h23]
+    exact h2_one
+  }
+  exact vanEck_no_consecutive_ones (i + 2) ⟨h2_one, h3_one⟩
+}
+
+/--
+After index `0`, two zeros in the Van Eck sequence can never be adjacent:
+for any `0 < z_prev < z` with `a(z_prev) = 0` and `a(z) = 0`, we have `z - z_prev ≥ 2`.
+-/
+lemma consecutive_zeros_gap_ge_two (z z_prev : ℕ)
+    (hz_prev_pos : z_prev > 0)
+    (hz : vanEckNthTerm z = 0)
+    (hz_prev : vanEckNthTerm z_prev = 0)
+    (h_prev_lt : z_prev < z) :
+    z - z_prev ≥ 2 := by {
+  by_contra h_lt_two
+  have hz_eq : z = (z_prev - 1) + 2 := by { omega }
+  have hz_iff := vanEck_mth_term_eq_zero_iff_prev_term_new (z_prev - 1)
+  rw [← hz_eq] at hz_iff
+  have h_new := hz_iff.mp hz
+  have hz_sub : z_prev - 1 + 1 = z_prev := by { omega }
+  rw [hz_sub] at h_new
+  have h0_neq := h_new 0 hz_prev_pos
+  have h0_zero : vanEckNthTerm 0 = 0 := rfl
+  rw [h0_zero, hz_prev] at h0_neq
+  exact h0_neq rfl
+}
+
+/--
+If `0 < z_prev < z` are consecutive zeros and `a(z + 1) ≠ 2`, then the zero-to-zero
+distance satisfies `z - z_prev ≥ 3` (so `z_prev < z - 2 < z - 1`).
+-/
+lemma consecutive_zeros_gap_ge_three_of_ne_two (z z_prev : ℕ)
+    (hz_prev_pos : z_prev > 0)
+    (hz : vanEckNthTerm z = 0)
+    (hz_prev : vanEckNthTerm z_prev = 0)
+    (h_prev_lt : z_prev < z)
+    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0)
+    (h_ne_two : vanEckNthTerm (z + 1) ≠ 2) :
+    z - z_prev ≥ 3 := by {
+  have h_ge_two : z - z_prev ≥ 2 :=
+    consecutive_zeros_gap_ge_two z z_prev hz_prev_pos hz hz_prev h_prev_lt
+  have hz_pos : z > 0 := by { omega }
+  have h_dist : vanEckNthTerm (z + 1) = z - z_prev :=
+    gap_between_zeros z z_prev hz hz_pos hz_prev h_prev_lt h_gap
+  rw [h_dist] at h_ne_two
+  omega
+}
+
+/--
+In a `2`-free tail (`∀ m > N_0, a(m) ≠ 2`), any consecutive zeros `0 < z_prev < z`
+with `z > N_0` satisfy `3 ≤ z - z_prev ≤ vanEckPrefixMax z_prev`, and the term at
+`z - 2` (which generates the new value `a(z - 1)`) is bounded by `vanEckPrefixMax z_prev`.
+-/
+lemma no_twos_zero_gap_and_predecessor_bounds (N_0 z z_prev : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hz_prev_pos : z_prev > 0)
+    (hz : vanEckNthTerm z = 0)
+    (hz_gt : z > N_0)
+    (hz_prev : vanEckNthTerm z_prev = 0)
+    (h_prev_lt : z_prev < z)
+    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0) :
+    3 ≤ z - z_prev ∧
+      z - z_prev ≤ vanEckPrefixMax z_prev ∧
+      vanEckNthTerm (z - 2) ≤ vanEckPrefixMax z_prev := by {
+  have hz1_ne_two : vanEckNthTerm (z + 1) ≠ 2 := h_no_twos (z + 1) (by { omega })
+  have h_ge_three : 3 ≤ z - z_prev :=
+    consecutive_zeros_gap_ge_three_of_ne_two z z_prev hz_prev_pos hz hz_prev
+      h_prev_lt h_gap hz1_ne_two
+  have h_post : vanEckNthTerm (z + 1) ≤ vanEckPrefixMax z_prev :=
+    post_zero_bounded N_0 z z_prev h_no_twos hz hz_gt hz_prev h_prev_lt h_gap
+  have h_dist : vanEckNthTerm (z + 1) = z - z_prev :=
+    gap_between_zeros z z_prev hz (by { omega }) hz_prev h_prev_lt h_gap
+  rw [h_dist] at h_post
+  have h_G : z_prev + (z - z_prev) = z := Nat.add_sub_of_le (Nat.le_of_lt h_prev_lt)
+  have h_nonzero : ∀ j, z_prev < j → j < z_prev + (z - z_prev) → vanEckNthTerm j ≠ 0 := by {
+    intro j hj1 hj2
+    rw [h_G] at hj2
+    exact h_gap j hj1 hj2
+  }
+  have h_all := gap_contains_all_terms z_prev (z - z_prev) h_nonzero
+  have hz2_lt : z - 2 < z_prev + (z - z_prev) - 1 := by { omega }
+  exact ⟨h_ge_three, h_post, h_all (z - 2) hz2_lt⟩
+}
+
+/--
+At any consecutive zero pair `0 < z_prev < z` in a `2`-free tail (`z > N_0`),
+the new value `a(z - 1)` is positive, strictly less than `z - 1`, and arises as a
+lookback gap of a value `a(z - 2) ≤ vanEckPrefixMax z_prev` matching `a(z - 2 - a(z - 1))`.
+-/
+lemma pre_zero_new_value_from_bounded_predecessor (N_0 z z_prev : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hz_prev_pos : z_prev > 0)
+    (hz : vanEckNthTerm z = 0)
+    (hz_gt : z > N_0)
+    (hz_prev : vanEckNthTerm z_prev = 0)
+    (h_prev_lt : z_prev < z)
+    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0) :
+    0 < vanEckNthTerm (z - 1) ∧
+      vanEckNthTerm (z - 1) < z - 1 ∧
+      vanEckNthTerm (z - 2) ≤ vanEckPrefixMax z_prev ∧
+      vanEckNthTerm (z - 2 - vanEckNthTerm (z - 1)) = vanEckNthTerm (z - 2) := by {
+  have h_bounds :=
+    no_twos_zero_gap_and_predecessor_bounds N_0 z z_prev h_no_twos
+      hz_prev_pos hz hz_gt hz_prev h_prev_lt h_gap
+  rcases h_bounds with ⟨h_ge_three, _, hz2_le⟩
+  have hz1_ne_zero : vanEckNthTerm (z - 1) ≠ 0 :=
+    h_gap (z - 1) (by { omega }) (by { omega })
+  have hz1_pos : 0 < vanEckNthTerm (z - 1) := Nat.pos_of_ne_zero hz1_ne_zero
+  have hz1_ge_two : z - 1 ≥ 2 := by { omega }
+  have h_lookback :=
+    pos_value_implies_gap (z - 1) (vanEckNthTerm (z - 1)) hz1_ge_two rfl hz1_pos
+  have hz_sub : z - 1 - 1 = z - 2 := by { omega }
+  rw [hz_sub] at h_lookback
+  exact ⟨hz1_pos, h_lookback.1, hz2_le, h_lookback.2⟩
+}
+

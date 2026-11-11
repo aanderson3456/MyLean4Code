@@ -1207,453 +1207,160 @@ lemma combinatorial_squeeze (P : ℕ) (hP : P ≥ 4)
   exact mirsky_newman_exact_cover P hP_pos S h_min h_div cover h_partition h_ap
 }
 
+/--
+In any locally periodic window `a(n_1 + k) = a(n_2 + k)` (`0 ≤ k ≤ K`) with `n_1 < n_2`,
+every term `a(n_2 + k)` for `1 ≤ k ≤ K` is strictly positive because `a(n_2 + k - 1)` already
+appeared earlier at `n_1 + k - 1 < n_2 + k - 1`.
+-/
+lemma local_period_no_zero (n_1 n_2 K : ℕ)
+    (hn1_lt_n2 : n_1 < n_2)
+    (h_per : ∀ k ≤ K, vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_2 + k)) :
+    ∀ k, 1 ≤ k → k ≤ K → vanEckNthTerm (n_2 + k) ≠ 0 := by {
+  intro k hk1 hkK h_zero
+  have h_n2_pos : n_2 ≥ 1 := Nat.succ_le_of_lt (Nat.lt_of_le_of_lt (Nat.zero_le n_1) hn1_lt_n2)
+  have h1 : n_2 + k ≥ 2 := Nat.add_le_add h_n2_pos hk1
+  have h_m2 : n_2 + k - 2 + 2 = n_2 + k := Nat.sub_add_cancel h1
+  have h_iff := vanEck_mth_term_eq_zero_iff_prev_term_new (n_2 + k - 2)
+  rw [h_m2] at h_iff
+  have h_new := h_iff.mp h_zero
+  have h_m1 : n_2 + k - 2 + 1 = n_2 + k - 1 := Nat.sub_add_cancel (Nat.le_sub_one_of_lt h1)
+  rw [h_m1] at h_new
+  have h_sub1 : n_1 + k - 1 = n_1 + (k - 1) := Nat.add_sub_assoc hk1 n_1
+  have h_sub2 : n_2 + k - 1 = n_2 + (k - 1) := Nat.add_sub_assoc hk1 n_2
+  have h_prev_eq : vanEckNthTerm (n_1 + k - 1) = vanEckNthTerm (n_2 + k - 1) := by {
+    rw [h_sub1, h_sub2]
+    exact h_per (k - 1) (Nat.le_trans (Nat.sub_le k 1) hkK)
+  }
+  have h_not_new := h_new (n_1 + k - 1) (by {
+    rw [h_sub1, h_sub2]
+    exact Nat.add_lt_add_right hn1_lt_n2 (k - 1)
+  })
+  exact h_not_new h_prev_eq
+}
+
+/--
+Any natural number `X ≤ 2P - 2` whose remainder modulo `P ≥ 1` equals `P - 1`
+must equal `P - 1` itself.
+-/
+lemma mod_eq_pred_of_le_two_mul_sub_two (X P : ℕ)
+    (hP : P ≥ 1) (hX : X ≤ 2 * P - 2) (hmod : X % P = P - 1) :
+    X = P - 1 := by {
+  by_cases hlt : X < P
+  · have hm : X % P = X := Nat.mod_eq_of_lt hlt
+    rw [hm] at hmod
+    exact hmod
+  · exfalso
+    have hge : P ≤ X := Nat.le_of_not_lt hlt
+    have hsub_lt : X - P < P := by { omega }
+    have hm1 : X % P = (X - P) % P := Nat.mod_eq_sub_mod hge
+    have hm2 : (X - P) % P = X - P := Nat.mod_eq_of_lt hsub_lt
+    rw [hm1, hm2] at hmod
+    omega
+}
+
+/--
+Backward determinism across a local period: surjectivity of the displacement bijection
+`f : Fin P → Fin P` (`P = n_2 - n_1`) hits `P - 1`, yielding an offset `k < P` with
+`a(n_2 + k + 1) = k + 1 = a(n_1 + k + 1)` that steps backward to `a(n_1 - 1) = a(n_2 - 1)`.
+-/
+lemma local_period_step_backward (n_1 n_2 K : ℕ)
+    (hn1_pos : n_1 ≥ 1)
+    (hn1_lt_n2 : n_1 < n_2)
+    (h_K_large : K ≥ n_2 - n_1 + 3)
+    (h_per : ∀ k ≤ K, vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_2 + k)) :
+    vanEckNthTerm (n_1 - 1) = vanEckNthTerm (n_2 - 1) := by {
+  let P := n_2 - n_1
+  have hP_pos : P ≥ 1 := Nat.sub_pos_of_lt hn1_lt_n2
+  have h_no_zero := local_period_no_zero n_1 n_2 K hn1_lt_n2 h_per
+  have f_bij :=
+    vanEck_displacement_bijective n_1 n_2 K P rfl hn1_lt_n2 h_K_large h_per h_no_zero
+  rcases f_bij.2 ⟨P - 1, by { omega }⟩ with ⟨k, hk_eq⟩
+  have hk_mod : (k.val + P - vanEckNthTerm (n_2 + k.val + 1)) % P = P - 1 :=
+    congrArg Fin.val hk_eq
+  have hk1 : 1 ≤ k.val + 1 := Nat.le_add_left 1 k.val
+  have hkK : k.val + 1 ≤ K := by { have hklt := k.isLt; omega }
+  have hd_pos : vanEckNthTerm (n_2 + k.val + 1) ≥ 1 :=
+    Nat.pos_of_ne_zero (h_no_zero (k.val + 1) hk1 hkK)
+  have hd_le_P : vanEckNthTerm (n_2 + k.val + 1) ≤ P :=
+    vanEck_val_le_P n_1 n_2 K P (k.val + 1) rfl hn1_lt_n2 h_K_large h_per hk1 hkK
+  have h_num_le : k.val + P - vanEckNthTerm (n_2 + k.val + 1) ≤ 2 * P - 2 := by {
+    have hklt := k.isLt; omega
+  }
+  have h_num_eq : k.val + P - vanEckNthTerm (n_2 + k.val + 1) = P - 1 :=
+    mod_eq_pred_of_le_two_mul_sub_two _ P hP_pos h_num_le hk_mod
+  have hd_eq : vanEckNthTerm (n_2 + k.val + 1) = k.val + 1 := by {
+    have hklt := k.isLt; omega
+  }
+  have h_n1_step : vanEckNthTerm (n_1 + k.val + 1) = k.val + 1 := by {
+    have hp := h_per (k.val + 1) hkK
+    have ha1 : n_1 + (k.val + 1) = n_1 + k.val + 1 := by { omega }
+    have ha2 : n_2 + (k.val + 1) = n_2 + k.val + 1 := by { omega }
+    rw [ha1, ha2] at hp
+    rw [hp]
+    exact hd_eq
+  }
+  have hg1 := gap_determines_value (n := 1) (n_1 + k.val) (by { omega }) (k.val + 1)
+    (Nat.le_refl 1) h_n1_step (by { omega })
+  have hg2 := gap_determines_value (n := 1) (n_2 + k.val) (by { omega }) (k.val + 1)
+    (Nat.le_refl 1) hd_eq (by { omega })
+  have hs1 : n_1 + k.val - (k.val + 1) = n_1 - 1 := by { omega }
+  have hs2 : n_2 + k.val - (k.val + 1) = n_2 - 1 := by { omega }
+  rw [hs1] at hg1
+  rw [hs2] at hg2
+  have hp0 := h_per k.val (by { have hklt := k.isLt; omega })
+  rw [← hg1, ← hg2]
+  exact hp0
+}
+
+/--
+No local period of length `K ≥ (n_2 - n_1) + 3` can ever occur anywhere in the Van Eck
+sequence: stepping the periodic window backward to `n_1 = 0` forces `a(n_2 - n_1 + 1) = a(1) = 0`,
+contradicting `local_period_no_zero`.
+-/
+lemma local_period_impossible_unconditional (n_1 : ℕ) :
+    ∀ n_2 K : ℕ, n_1 < n_2 → K ≥ n_2 - n_1 + 3 →
+    (∀ k ≤ K, vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_2 + k)) → False := by {
+  induction n_1 with
+  | zero =>
+    intro n_2 K hn1_lt_n2 h_K_large h_per
+    have h_no_zero := local_period_no_zero 0 n_2 K hn1_lt_n2 h_per
+    have hk1_le_K : 1 ≤ K := by { omega }
+    have h_per_1 := h_per 1 hk1_le_K
+    have h_0_add : 0 + 1 = 1 := rfl
+    rw [h_0_add] at h_per_1
+    have hv1 : vanEckNthTerm 1 = 0 := rfl
+    rw [hv1] at h_per_1
+    exact h_no_zero 1 (Nat.le_refl 1) hk1_le_K h_per_1.symm
+  | succ m ih =>
+    intro n_2 K hn1_lt_n2 h_K_large h_per
+    have hm_pos : m + 1 ≥ 1 := Nat.le_add_left 1 m
+    have h_prev := local_period_step_backward (m + 1) n_2 K hm_pos hn1_lt_n2 h_K_large h_per
+    have hm_sub : m + 1 - 1 = m := rfl
+    rw [hm_sub] at h_prev
+    have h_per' : ∀ k ≤ K + 1, vanEckNthTerm (m + k) = vanEckNthTerm (n_2 - 1 + k) := by {
+      intro k hk
+      cases k with
+      | zero =>
+        simp only [Nat.add_zero]
+        exact h_prev
+      | succ j =>
+        have hj : j ≤ K := by { omega }
+        have hp := h_per j hj
+        have ha1 : m + (j + 1) = m + 1 + j := by { omega }
+        have ha2 : n_2 - 1 + (j + 1) = n_2 + j := by { omega }
+        rw [ha1, ha2]
+        exact hp
+    }
+    exact ih (n_2 - 1) (K + 1) (by { omega }) (by { omega }) h_per'
+}
+
 lemma finite_cycle_gap_collapse (n_1 n_2 K : ℕ)
     (hn1_lt_n2 : n_1 < n_2)
     (h_K_large : K ≥ n_2 - n_1 + 3)
-    (h_no_zero : ∀ k, 1 ≤ k → k ≤ K → vanEckNthTerm (n_2 + k) ≠ 0)
-    (h_no_twos : ∀ m > n_1, vanEckNthTerm m ≠ 2)
+    (_h_no_zero : ∀ k, 1 ≤ k → k ≤ K → vanEckNthTerm (n_2 + k) ≠ 0)
+    (_h_no_twos : ∀ m > n_1, vanEckNthTerm m ≠ 2)
     (h_per : ∀ k ≤ K, vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_2 + k)) : False := by {
-  -- The user requested we attempt induction on K or n_2 and write the edge-sum deductions,
-  -- summarizing where we get stuck.
-  let P := n_2 - n_1
-  have h_P_pos : P ≥ 1 := Nat.sub_pos_of_lt hn1_lt_n2
-  --
-  -- We proceed by induction on the evaluation length K.
-  -- To capture the sum of edges, we would define a Finset sum over the period.
-  -- Since we need to prove False, we can extract the local properties first.
-  --
-  -- 1. Bound the values: every gap is bounded by P.
-  have h_val_le_P : ∀ k, 1 ≤ k → k ≤ K → vanEckNthTerm (n_2 + k) ≤ P := by {
-    intro k hk1 hkK
-    have h_P_eq : P = n_2 - n_1 := rfl
-    have h_K_sub : K ≥ P + 3 := by
-      have h1 : n_2 - n_1 + 3 = P + 3 := by rw [h_P_eq]
-      rw [← h1]
-      exact h_K_large
-    exact vanEck_val_le_P n_1 n_2 K P k h_P_eq hn1_lt_n2 h_K_sub h_per hk1 hkK
-  }
-  --
-  -- 2. No alternating pairs implies gaps cannot be 2.
-  -- 3. We construct the graph map f(k) = k - v(n_2+k).
-  --
-  -- To get past Stuck point 1, we must formalize the Graph Permutation.
-  -- We define f(k) = (k - v(n_2+k)) % P for k ∈ {1..P}.
-  -- Stuck subpoint 1a: f(k) is well-defined and bounded, already proven above as h_val_le_P!
-  --
-  -- Stuck subpoint 1b: Proving f(k) is injective modulo P.
-  let f : Fin P → Fin P := fun k => ⟨(k.val + P - vanEckNthTerm (n_2 + k.val + 1)) % P, Nat.mod_lt _ (Nat.pos_of_ne_zero (by omega))⟩
-  have f_bij : Function.Bijective f := by {
-    have h_P_eq : P = n_2 - n_1 := rfl
-    have h_K_sub : K ≥ P + 3 := by
-      have h1 : n_2 - n_1 + 3 = P + 3 := by rw [h_P_eq]
-      rw [← h1]
-      exact h_K_large
-    exact vanEck_displacement_bijective n_1 n_2 K P h_P_eq hn1_lt_n2 h_K_sub h_per h_no_zero
-  }
-  --
-  -- Stuck point 3: The Numeric Contradiction
-  -- We would then need to prove V * P = \sum v(n_2+k).
-  -- Since we have `h_no_twos` and `h_no_zero`, we know v(n_2+k) ∈ {1} ∪ [3, P].
-  -- The only way the average gap can be an integer V without hitting 2 or 0
-  -- is if V = 1 (meaning all 1s, which creates alternating pairs) or through
-  -- a strictly symmetric permutation of {1, 3} gaps, which contradicts the
-  -- sequence's fundamental injection rules.
-  -- This entire chain requires ~500-1000 lines of `Finset.sum_bij` and `Finset.sum_partition`
-  -- deductions, which Lean 4 struggles with without heavy automation.
-  --
-  -- We can evaluate the sum of the bijection over the period:
-  have h_sum_bij : ∑ k : Fin P, (f k).val = ∑ k : Fin P, k.val := by {
-    have heq : ∑ k : Fin P, (f k).val = ∑ k : Fin P, (fun x => x.val) (f k) := rfl
-    rw [heq]
-    exact Equiv.sum_comp (Equiv.ofBijective f f_bij) (fun k => k.val)
-  }
-  --
-  -- We deploy our omega-powered Finset summation tool!
-  let v_fn : Fin P → ℕ := fun k => vanEckNthTerm (n_2 + k.val + 1)
-  have hv1 : ∀ k, 1 ≤ v_fn k := by
-    intro k
-    have hz := h_no_zero (k.val + 1) (Nat.le_add_left 1 k.val) (by
-      calc k.val + 1 ≤ P := k.isLt
-           _ ≤ P + 3 := Nat.le_add_right P 3
-           _ ≤ K := h_K_large
-    )
-    exact Nat.pos_of_ne_zero hz
-  have hvP : ∀ k, v_fn k ≤ P := by
-    intro k
-    have h1 : 1 ≤ k.val + 1 := Nat.le_add_left 1 k.val
-    have h2 : k.val + 1 ≤ K := by
-      have hp : P = n_2 - n_1 := rfl
-      calc k.val + 1 ≤ P := k.isLt
-           _ ≤ P + 3 := Nat.le_add_right P 3
-           _ = n_2 - n_1 + 3 := by rw [hp]
-           _ ≤ K := h_K_large
-    exact h_val_le_P (k.val + 1) h1 h2
-  --
-  have h_mod_eq : ∀ k : Fin P, (f k).val = (k.val + P - v_fn k) % P := fun k => rfl
-  --
-  have h_sum_multiple := fin_sum_mod_P_multiple P h_P_pos v_fn hv1 hvP f h_mod_eq f_bij
-  --
-  rcases h_sum_multiple with ⟨C, hC⟩
-  --
-  -- From here, we know ∑ v_k = C * P.
-  -- C cannot be 1 (all 1s -> alternating pairs).
-  -- C cannot be > 1 without violating the strict distance bijection graph.
-  --
-  -- The full graph-theoretic partition of this sum into unique sequence elements
-  -- requires evaluating Finset.sum_fiberwise over the modulo bijections.
-  -- Instead, we formally bound C using our step-wise displacement tracking.
-  have h_C_ge_1 : C ≥ 1 := by {
-    by_contra h_C_lt_1
-    have h_C_zero : C = 0 := by omega
-    have h_sum_zero : ∑ k : Fin P, v_fn k = 0 := by
-      calc ∑ k : Fin P, v_fn k = C * P := hC
-           _ = 0 * P := by rw [h_C_zero]
-           _ = 0 := Nat.zero_mul P
-  --
-    have h_P_pos2 : 0 < P := h_P_pos
-    have h_nonempty : Nonempty (Fin P) := Fin.pos_iff_nonempty.mp h_P_pos2
-    have h_v_pos : 0 < ∑ k : Fin P, v_fn k := Finset.sum_pos (fun i _ => hv1 i) Finset.univ_nonempty
-    omega
-  }
-  --
-  have h_C_neq_1 : C ≠ 1 := by {
-    intro h_C1
-    have h_sum_P : ∑ k : Fin P, v_fn k = P := by
-      calc ∑ k : Fin P, v_fn k = C * P := hC
-           _ = 1 * P := by rw [h_C1]
-           _ = P := Nat.one_mul P
-  --
-    have h_sub_sum : ∑ k : Fin P, (v_fn k - 1) = 0 := by {
-      have h1 : ∑ k : Fin P, (v_fn k - 1) + ∑ k : Fin P, 1 = ∑ k : Fin P, v_fn k := by {
-        rw [← Finset.sum_add_distrib]
-        apply Finset.sum_congr rfl
-        intro x _
-        exact Nat.sub_add_cancel (hv1 x)
-      }
-      have h2 : ∑ k : Fin P, 1 = P := by {
-        have hz : ∑ k : Fin P, 1 = (Finset.card (Finset.univ : Finset (Fin P))) * 1 := Finset.sum_const 1
-        have hc : Finset.card (Finset.univ : Finset (Fin P)) = P := Fintype.card_fin P
-        omega
-      }
-      omega
-    }
-  --
-    have h_v_all_1 : ∀ k : Fin P, v_fn k = 1 := by {
-      intro k
-      have hz := Finset.sum_eq_zero_iff.mp h_sub_sum k (Finset.mem_univ k)
-      have hk := hv1 k
-      omega
-    }
-  --
-    have h_v0_1 : vanEckNthTerm (n_2 + 1) = 1 := by {
-      have h0 := h_v_all_1 ⟨0, h_P_pos⟩
-      exact h0
-    }
-  --
-    have h_v1_1 : vanEckNthTerm (n_2 + 2) = 1 := by {
-      by_cases hp_eq_1 : P = 1
-      · have h_n2_eq : n_2 = n_1 + 1 := by omega
-        have hk2 : 2 ≤ K := by omega
-        have h_per_2 : vanEckNthTerm (n_1 + 2) = vanEckNthTerm (n_2 + 2) := h_per 2 hk2
-        have h_n1_2 : n_1 + 2 = n_2 + 1 := by omega
-        rw [h_n1_2] at h_per_2
-        rw [← h_per_2]
-        exact h_v0_1
-      · have h_p_ge_2 : P ≥ 2 := by omega
-        have h_v1 := h_v_all_1 ⟨1, h_p_ge_2⟩
-        exact h_v1
-    }
-  --
-    have h_no_cons := vanEck_no_consecutive_ones (n_2 + 1)
-    have h_cons : vanEckNthTerm (n_2 + 1) = 1 ∧ vanEckNthTerm (n_2 + 1 + 1) = 1 := ⟨h_v0_1, h_v1_1⟩
-    exact h_no_cons h_cons
-  }
-  --
-  -- C ≥ 2 from h_C_ge_1 and h_C_neq_1.
-  have h_C_ge_2 : C ≥ 2 := by {
-    have h1 := h_C_ge_1
-    have h2 := h_C_neq_1
-    omega
-  }
-  --
-  -- The C ≥ 2 contradiction splits by period length P.
-  -- For P ≤ 2, periodicity directly forces a gap of 2 or consecutive 1s.
-  -- For P ≥ 3, the C analysis combined with no-twos forces structural collapse.
-  --
-  -- First establish periodicity extends to val(n_1+k) = val(n_2+k) = val(n_1+k+P).
-  have h_P_le_K : P ≤ K := by {
-    calc P ≤ P + 3 := Nat.le_add_right P 3
-         _ = n_2 - n_1 + 3 := rfl
-         _ ≤ K := h_K_large
-  }
-  --
-  -- Case P = 1: consecutive equal values → 1s → consecutive 1s.
-  by_cases hP1 : P = 1
-  · have h_n2 : n_2 = n_1 + 1 := by omega
-    have h0 : vanEckNthTerm n_1 = vanEckNthTerm (n_1 + 1) := by {
-      have hp0 := h_per 0 (Nat.zero_le K)
-      simp only [Nat.add_zero] at hp0; rw [h_n2] at hp0; exact hp0
-    }
-    have h1 : vanEckNthTerm (n_1 + 2) = 1 :=
-      vanEck_consecutive_eq_implies_next_one n_1 h0
-    have h2 : vanEckNthTerm (n_1 + 2) = vanEckNthTerm (n_1 + 3) := by {
-      have hp2 := h_per 2 (by omega)
-      rw [h_n2] at hp2
-      have : n_1 + 1 + 2 = n_1 + 3 := by omega
-      rw [this] at hp2; exact hp2
-    }
-    have h3 : vanEckNthTerm (n_1 + 3) = 1 := by rw [← h2]; exact h1
-    have h_cons : vanEckNthTerm (n_1 + 2) = 1 ∧ vanEckNthTerm (n_1 + 2 + 1) = 1 := by {
-      constructor
-      · exact h1
-      · have : n_1 + 2 + 1 = n_1 + 3 := by omega
-        rw [this]; exact h3
-    }
-    exact vanEck_no_consecutive_ones (n_1 + 2) h_cons
-  --
-  -- Case P = 2: alternating pairs → gap = 2 contradiction.
-  · by_cases hP2 : P = 2
-    · -- v(n_1+k) = v(n_1+k+2) for all k ≤ K by periodicity.
-      have h_alt : ∀ k ≤ K, vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_1 + k + 2) := by {
-        intro k hk
-        have hp := h_per k hk
-        have h_n2 : n_2 = n_1 + 2 := by omega
-        rw [h_n2] at hp
-        have : n_1 + 2 + k = n_1 + k + 2 := by omega
-        rw [this] at hp; exact hp
-      }
-      -- v(n_1+1) = v(n_1+3). Two sub-cases on v(n_1+2) vs v(n_1+3).
-      have h13 := h_alt 1 (by omega)
-      have h24 := h_alt 2 (by omega)
-      by_cases heq : vanEckNthTerm (n_1 + 2) = vanEckNthTerm (n_1 + 3)
-      · -- Consecutive equal at n_1+2, n_1+3 → v(n_1+4) = 1.
-        have h_next := vanEck_consecutive_eq_implies_next_one (n_1 + 2) heq
-        have h4 : n_1 + 2 + 2 = n_1 + 4 := by omega
-        rw [h4] at h_next
-        -- v(n_1+2) = v(n_1+4) = 1 by periodicity.
-        have hv2_1 : vanEckNthTerm (n_1 + 2) = 1 := by rw [h24]; exact h_next
-        have hv3_1 : vanEckNthTerm (n_1 + 3) = 1 := by rw [← heq]; exact hv2_1
-        have h_cons : vanEckNthTerm (n_1 + 2) = 1 ∧ vanEckNthTerm (n_1 + 2 + 1) = 1 := by {
-          constructor
-          · exact hv2_1
-          · have : n_1 + 2 + 1 = n_1 + 3 := by omega
-            rw [this]; exact hv3_1
-        }
-        exact vanEck_no_consecutive_ones (n_1 + 2) h_cons
-      · -- v(n_1+1) = v(n_1+3) with v(n_1+2) ≠ v(n_1+3).
-        -- This is an alternating pair at n_1+1. By the dense_block logic, v(n_1+4) = 2.
-        let i := n_1 + 1
-        have h_eq_i : vanEckNthTerm i = vanEckNthTerm (i + 2) := by {
-          have : i + 2 = n_1 + 3 := by omega
-          rw [this]; exact h13
-        }
-        have h_neq1 : vanEckNthTerm (i + 1) ≠ vanEckNthTerm (i + 2) := by {
-          have h1 : i + 1 = n_1 + 2 := by omega
-          have h2 : i + 2 = n_1 + 3 := by omega
-          rw [h1, h2]; exact heq
-        }
-        -- Derive v(i+3) = 2 via matchSearch (same argument as dense_block_without_twos).
-        have hd_2 : vanEckNthTerm (i + 3) = 2 := by {
-          have hpos : 0 < i + 3 := Nat.zero_lt_succ _
-          have hm := vanEck_term_is_matchSearch (i + 3) hpos
-          have hsub : i + 3 - 1 = i + 2 := rfl
-          rw [hsub] at hm
-          have hlen : (vanEck (i + 2)).length = i + 3 := vanEckLength (i + 2)
-          have hd_2_list : listNth (vanEck (i + 2)) (i + 2) = vanEckNthTerm (i + 2) :=
-            VanEck_deterministic (i + 2) (i + 2) (Nat.le_refl _)
-          have hd_1_list : listNth (vanEck (i + 2)) (i + 1) = vanEckNthTerm (i + 1) :=
-            VanEck_deterministic (i + 2) (i + 1) (Nat.le_succ _)
-          have hd_0_list : listNth (vanEck (i + 2)) i = vanEckNthTerm i :=
-            VanEck_deterministic (i + 2) i (Nat.le_trans (Nat.le_succ _) (Nat.le_succ _))
-          have hsub2 : i + 3 - 1 = i + 2 := rfl
-          have h_ite_1 : matchSearch (vanEck (i + 2)) (i + 2) = matchSearch (vanEck (i + 2)) (i + 1) := by {
-            have h_neq2 : listNth (vanEck (i + 2)) ((vanEck (i + 2)).length - 1) ≠ listNth (vanEck (i + 2)) (i + 1) := by {
-              rw [hlen, hsub2, hd_2_list, hd_1_list]
-              intro hc; exact h_neq1 hc.symm
-            }
-            have h_ff := matchSearch_ite_ff (vanEck (i + 2)) (i + 1) h_neq2
-            have hi2 : i + 1 + 1 = i + 2 := rfl
-            rw [hi2] at h_ff; exact h_ff
-          }
-          have h_ite_2 : matchSearch (vanEck (i + 2)) (i + 1) = 2 := by {
-            have h_eq2 : listNth (vanEck (i + 2)) ((vanEck (i + 2)).length - 1) = listNth (vanEck (i + 2)) i := by {
-              rw [hlen, hsub2, hd_2_list, hd_0_list]
-              exact h_eq_i.symm
-            }
-            have h_tt := matchSearch_ite_tt (vanEck (i + 2)) i h_eq2
-            rw [h_tt, hlen, hsub2]
-            exact Nat.add_sub_cancel_left i 2
-          }
-          rw [h_ite_1, h_ite_2] at hm; exact hm
-        }
-        have h_contra := h_no_twos (i + 3) (by omega)
-        exact h_contra hd_2
-  --
-    -- Case P ≥ 3: C ≥ 2 contradiction via counting and no-2 constraint.
-    · have h_P_ge_3 : P ≥ 3 := by omega
-      -- We must show a contradiction for P >= 3.
-      -- We know C = P + 1 - ∑ d_k.
-      -- We first prove that d_k is an indicator function: d_k ≤ 1.
-      have h_dk_bound : ∀ k : Fin P, (k.val + P - v_fn k) / P ≤ 1 := by {
-        intro k
-        -- (k + 1 + P - v) / P ≤ 1 because k + 1 + P - v < 2 * P
-        have hk_lt := k.isLt  -- k.val < P
-        have hv_ge := hv1 k   -- 1 ≤ v_fn k
-        -- k + 1 + P - v ≤ k + P ≤ (P-1) + P = 2P - 1 < 2P
-        have h_num_lt : k.val + P - v_fn k < 2 * P := by omega
-        exact Nat.div_lt_iff_lt_mul h_P_pos |>.mpr h_num_lt |> Nat.lt_succ_iff.mp
-      }
-  --
-      have h_dk_sum_le_P : ∑ k : Fin P, ((k.val + P - v_fn k) / P) ≤ P := by {
-        -- Sum of P elements each ≤ 1 is ≤ P
-        calc ∑ k : Fin P, ((k.val + P - v_fn k) / P)
-            ≤ ∑ _k : Fin P, 1 := Finset.sum_le_sum (fun k _ => h_dk_bound k)
-          _ = P := by simp [Finset.sum_const]
-      }
-  --
-      -- ══════════════════════════════════════════════════════════════
-      -- Case P = 3: values from {1, 3}, sum = C*3 ≥ 6 → all 3s → contradiction.
-      -- ══════════════════════════════════════════════════════════════
-      by_cases hP3 : P = 3
-      · -- P = 3. Let a, b, c be the three values in the period.
-        let a := v_fn ⟨0, by omega⟩
-        let b := v_fn ⟨1, by omega⟩
-        let c := v_fn ⟨2, by omega⟩
-  --
-        -- Expand the sum using our lemma
-        have h_sum_abc : a + b + c = C * 3 := by {
-          have h1 := fin_sum_three hP3 v_fn
-          rw [h1] at hC
-          have h_CP : C * P = C * 3 := by rw [hP3]
-          rw [h_CP] at hC
-          exact hC
-        }
-  --
-        -- Show a, b, c are 1 or 3
-        have ha13 : a = 1 ∨ a = 3 := by {
-          have h1 := hv1 ⟨0, by omega⟩
-          have hP_bnd := hvP ⟨0, by omega⟩
-          have h2 : a ≠ 2 := h_no_twos (n_2 + 0 + 1) (by omega)
-          have hp : P = 3 := hP3
-          omega
-        }
-        have hb13 : b = 1 ∨ b = 3 := by {
-          have h1 := hv1 ⟨1, by omega⟩
-          have hP_bnd := hvP ⟨1, by omega⟩
-          have h2 : b ≠ 2 := h_no_twos (n_2 + 1 + 1) (by omega)
-          have hp : P = 3 := hP3
-          omega
-        }
-        have hc13 : c = 1 ∨ c = 3 := by {
-          have h1 := hv1 ⟨2, by omega⟩
-          have hP_bnd := hvP ⟨2, by omega⟩
-          have h2 : c ≠ 2 := h_no_twos (n_2 + 2 + 1) (by omega)
-          have hp : P = 3 := hP3
-          omega
-        }
-  --
-        -- Use standalone lemma to force them to 3
-        have h_all_3 := period_three_forces_all_threes a b c C ha13 hb13 hc13 h_C_ge_2 h_sum_abc
-        have ha_eq := h_all_3.1
-        have hb_eq := h_all_3.2.1
-        have hc_eq := h_all_3.2.2
-  --
-        -- a = v_fn 0 = vanEckNthTerm(n_2 + 1)
-        -- b = v_fn 1 = vanEckNthTerm(n_2 + 2)
-        -- c = v_fn 2 = vanEckNthTerm(n_2 + 3)
-        have h_a_val : a = vanEckNthTerm (n_2 + 1) := rfl
-        have h_b_val : b = vanEckNthTerm (n_2 + 2) := rfl
-        have h_c_val : c = vanEckNthTerm (n_2 + 3) := rfl
-  --
-        -- a = b = 3 → consecutive equals → next = 1.
-        have h_cons : vanEckNthTerm (n_2 + 1) = vanEckNthTerm (n_2 + 2) := by omega
-        have h_next_1 : c = 1 := by {
-          rw [h_c_val]
-          have h := vanEck_consecutive_eq_implies_next_one (n_2 + 1) h_cons
-          have : n_2 + 1 + 2 = n_2 + 3 := by omega
-          rw [this] at h; exact h
-        }
-        -- c = 3 and c = 1. Contradiction!
-        omega
-  --
-      -- ══════════════════════════════════════════════════════════════
-      -- Case P ≥ 4: remaining open case.
-      -- The d_k bounds (h_dk_bound, h_dk_sum_le_P) constrain the
-      -- displacement graph. The same sum-mod argument generalizes
-      -- but requires handling more value combinations.
-      -- ══════════════════════════════════════════════════════════════
-      · have h_P_ge_4 : P ≥ 4 := by omega
-        let v_nat : ℕ → ℕ := fun k => vanEckNthTerm (n_2 + k)
-        have hv1_nat : ∀ k : Fin P, 1 ≤ v_nat (k.val + 1) := fun k => hv1 k
-        have hvP_nat : ∀ k : Fin P, v_nat (k.val + 1) ≤ P := fun k => hvP k
-        have h_no2_nat : ∀ k : Fin P, v_nat (k.val + 1) ≠ 2 := by {
-          intro k
-          have hk_gt : n_1 < n_2 + k.val + 1 := by omega
-          exact h_no_twos (n_2 + k.val + 1) hk_gt
-        }
-        have h_no1_nat : ∃ k : Fin P, v_nat (k.val + 1) ≠ 1 := by {
-          by_contra h_all
-          push Not at h_all
-          have h_sum : ∑ k : Fin P, v_fn k = P := by {
-            have h1 : ∀ k : Fin P, v_fn k = 1 := h_all
-            have h2 : ∑ k : Fin P, v_fn k = ∑ k : Fin P, 1 := Finset.sum_congr rfl (fun x _ => h1 x)
-            rw [h2]
-            simp
-          }
-          have h_sum2 : ∑ k : Fin P, v_fn k = C * P := hC
-          nlinarith
-        }
-        have hf_nat : ∀ k : Fin P, (f k).val = (k.val + P - v_nat (k.val + 1)) % P := fun k => h_mod_eq k
-        have h_recent_nat : ∀ k : Fin P, v_nat ((f k).val + 1) = v_nat (k.val + 1) := by {
-          intro k
-          dsimp [v_nat]
-          let X := vanEckNthTerm (n_2 + k.val + 1)
-          let y := (f k).val
-          have h_y_lt : y < P := (f k).isLt
-          have h_P_pos : P > 0 := by omega
-          have hX_le : X ≤ P := h_val_le_P (k.val + 1) (by omega) (by omega)
-          have h_mod_add : (P + k.val + 1 - X) % P = (y + 1) % P := by {
-            have h_eq : P + k.val + 1 - X = (k.val + P - X) + 1 := by omega
-            rw [h_eq]
-            have h_mod1 := Nat.add_mod (k.val + P - X) 1 P
-            have h_mod2 := Nat.add_mod y 1 P
-            have h_1_mod : 1 % P = 1 := Nat.mod_eq_of_lt (by omega)
-            rw [h_1_mod] at h_mod1 h_mod2
-            have h_y_mod : y % P = y := Nat.mod_eq_of_lt h_y_lt
-            rw [h_y_mod] at h_mod2
-            have h_def : (k.val + P - X) % P = y := rfl
-            rw [h_def] at h_mod1
-            rw [h_mod1, h_mod2]
-          }
-          have h_eq_mod : vanEckNthTerm (n_2 + y + 1) = vanEckNthTerm (n_2 + k.val + 1 - X) := by {
-            have h_per_y : vanEckNthTerm (n_2 + y + 1) = vanEckNthTerm (n_1 + y + 1) := by {
-              have h_y_le_K : y + 1 ≤ K := by omega
-              exact (h_per (y + 1) h_y_le_K).symm
-            }
-            have h_per_y_mod : vanEckNthTerm (n_1 + y + 1) = vanEckNthTerm (n_1 + (y + 1) % P) := by {
-              apply periodic_mod_eq n_1 n_2 K P rfl hn1_lt_n2 h_per (y + 1) (by omega)
-            }
-            have h_per_x_mod : vanEckNthTerm (n_1 + (P + k.val + 1 - X) % P) = vanEckNthTerm (n_1 + (P + k.val + 1 - X)) := by {
-              apply (periodic_mod_eq n_1 n_2 K P rfl hn1_lt_n2 h_per (P + k.val + 1 - X) (by omega)).symm
-            }
-            have h_assoc : n_1 + P + k.val + 1 - X = n_1 + (P + k.val + 1 - X) := by omega
-            have h_eq_idx : n_1 + P + k.val + 1 - X = n_2 + k.val + 1 - X := by omega
-            rw [h_per_y, h_per_y_mod, h_mod_add.symm, h_per_x_mod, h_assoc.symm, h_eq_idx]
-          }
-          change vanEckNthTerm (n_2 + y + 1) = vanEckNthTerm (n_2 + k.val + 1)
-          rw [h_eq_mod]
-          have h_eq : vanEckNthTerm (n_2 + k.val + 1 - X) = X := by {
-            sorry
-          }
-          rw [h_eq]
-        }
-        have h_no_intermediate_nat : ∀ k : Fin P, ∀ i < v_nat (k.val + 1), i > 0 → v_nat ((k.val + P - i) % P + 1) ≠ v_nat (k.val + 1) := by {
-          intro k i hi_lt hi_pos
-          dsimp [v_nat]
-          let X := vanEckNthTerm (n_2 + k.val + 1)
-          sorry
-        }
-        exact combinatorial_squeeze P h_P_ge_4 v_nat f hv1_nat hvP_nat h_no2_nat h_no1_nat hf_nat f_bij h_recent_nat h_no_intermediate_nat
+  exact local_period_impossible_unconditional n_1 n_2 K hn1_lt_n2 h_K_large h_per
 }
 
 lemma exists_max_first_occurrence (B : ℕ) :
@@ -1709,49 +1416,10 @@ break the cycle.
 lemma local_periodicity_impossible (n_1 n_2 K : ℕ)
     (hn1_lt_n2 : n_1 < n_2)
     (h_K_large : K ≥ n_2 - n_1 + 3)
-    (h_no_twos : ∀ m > n_1, vanEckNthTerm m ≠ 2)
+    (_h_no_twos : ∀ m > n_1, vanEckNthTerm m ≠ 2)
     (h_per : ∀ k ≤ K, vanEckNthTerm (n_1 + k) = vanEckNthTerm (n_2 + k)) :
     False := by {
-  -- Bounded periodicity forces the sequence to evaluate its own cycle distances.
-  -- This graph-theoretically creates cycle-breaking elements, contradicting h_per
-  -- and creating alternating pairs that contradict h_no_twos.
-  have h_no_zero : ∀ k, 1 ≤ k → k ≤ K → vanEckNthTerm (n_2 + k) ≠ 0 := by {
-    intro k hk1 hkK h_zero
-    have h_n2_pos : n_2 ≥ 1 := Nat.succ_le_of_lt (Nat.lt_of_le_of_lt (Nat.zero_le n_1) hn1_lt_n2)
-    have h1 : n_2 + k ≥ 2 := by {
-      have hA : 1 + 1 ≤ n_2 + k := Nat.add_le_add h_n2_pos hk1
-      exact hA
-    }
-    have h_m2 : n_2 + k - 2 + 2 = n_2 + k := Nat.sub_add_cancel h1
-    have h_iff := vanEck_mth_term_eq_zero_iff_prev_term_new (n_2 + k - 2)
-    rw [h_m2] at h_iff
-    have h_new := h_iff.mp h_zero
-    have h_m1 : n_2 + k - 2 + 1 = n_2 + k - 1 := by {
-      have hB : n_2 + k - 1 ≥ 1 := Nat.le_sub_one_of_lt h1
-      exact Nat.sub_add_cancel hB
-    }
-    rw [h_m1] at h_new
-    have h_sub1 : n_1 + k - 1 = n_1 + (k - 1) := by {
-      have hC : n_1 + k - 1 = n_1 + (k - 1) := Nat.add_sub_assoc hk1 n_1
-      exact hC
-    }
-    have h_sub2 : n_2 + k - 1 = n_2 + (k - 1) := by {
-      have hD : n_2 + k - 1 = n_2 + (k - 1) := Nat.add_sub_assoc hk1 n_2
-      exact hD
-    }
-    have h_prev_eq : vanEckNthTerm (n_1 + k - 1) = vanEckNthTerm (n_2 + k - 1) := by {
-      have hkm1 : k - 1 ≤ K := Nat.le_trans (Nat.sub_le k 1) hkK
-      have h_per_eval := h_per (k - 1) hkm1
-      rw [h_sub1, h_sub2]
-      exact h_per_eval
-    }
-    have h_not_new := h_new (n_1 + k - 1) (by {
-      rw [h_sub1, h_sub2]
-      exact Nat.add_lt_add_right hn1_lt_n2 (k - 1)
-    })
-    exact h_not_new h_prev_eq
-  }
-  exact finite_cycle_gap_collapse n_1 n_2 K hn1_lt_n2 h_K_large h_no_zero h_no_twos h_per
+  exact local_period_impossible_unconditional n_1 n_2 K hn1_lt_n2 h_K_large h_per
 }
 
 /--
@@ -1937,6 +1605,48 @@ lemma sequence_bounded_implies_dense (M : ℕ)
   · exact Nat.lt_succ_self N_test
   · intro i hi
     exact h_bound (N_test + 1 + i)
+}
+
+/--
+Infinitely many step-2 repeats (`a(i) = a(i + 2)`) immediately force `InfiniteTwos`.
+-/
+lemma infinite_alternating_pairs_implies_infinite_twos
+    (h_inf : ∀ N, ∃ i > N, vanEckNthTerm i = vanEckNthTerm (i + 2)) :
+    InfiniteTwos := by {
+  intro N
+  rcases h_inf N with ⟨i, hi_gt, h_eq⟩
+  refine ⟨i + 3, ?_, eq_add_two_implies_next_two i h_eq⟩
+  omega
+}
+
+/--
+If the even-index subsequence `k ↦ a(2k)` stutters infinitely often, `InfiniteTwos` holds.
+-/
+lemma infinite_even_track_stutters_implies_infinite_twos
+    (h_even : ∀ N, ∃ k > N, vanEckNthTerm (2 * k) = vanEckNthTerm (2 * (k + 1))) :
+    InfiniteTwos := by {
+  apply infinite_alternating_pairs_implies_infinite_twos
+  intro N
+  rcases h_even N with ⟨k, hk_gt, h_eq⟩
+  have h_step : 2 * (k + 1) = 2 * k + 2 := by { omega }
+  rw [h_step] at h_eq
+  refine ⟨2 * k, ?_, h_eq⟩
+  omega
+}
+
+/--
+If the odd-index subsequence `k ↦ a(2k + 1)` stutters infinitely often, `InfiniteTwos` holds.
+-/
+lemma infinite_odd_track_stutters_implies_infinite_twos
+    (h_odd : ∀ N, ∃ k > N, vanEckNthTerm (2 * k + 1) = vanEckNthTerm (2 * (k + 1) + 1)) :
+    InfiniteTwos := by {
+  apply infinite_alternating_pairs_implies_infinite_twos
+  intro N
+  rcases h_odd N with ⟨k, hk_gt, h_eq⟩
+  have h_step : 2 * (k + 1) + 1 = (2 * k + 1) + 2 := by { omega }
+  rw [h_step] at h_eq
+  refine ⟨2 * k + 1, ?_, h_eq⟩
+  omega
 }
 
 /--
