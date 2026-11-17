@@ -1470,3 +1470,1396 @@ lemma pre_zero_new_value_from_bounded_predecessor (N_0 z z_prev : ℕ)
   exact ⟨hz1_pos, h_lookback.1, hz2_le, h_lookback.2⟩
 }
 
+/--
+Strict lookback characterization of any positive Van Eck term `a(m) = n > 0` (`m ≥ 2`):
+`m - 1 - n` is strictly less than `m - 1`, matches `a(m - 1)`, and is the strictly most
+recent prior occurrence of `a(m - 1)` before `m - 1`.
+-/
+lemma pos_value_most_recent_occurrence (m n : ℕ) (hm : m ≥ 2)
+    (h_val : vanEckNthTerm m = n) (h_pos : n > 0) :
+    m - 1 - n < m - 1 ∧
+      vanEckNthTerm (m - 1 - n) = vanEckNthTerm (m - 1) ∧
+      ∀ j, m - 1 - n < j → j < m - 1 → vanEckNthTerm j ≠ vanEckNthTerm (m - 1) := by {
+  have h_gap := pos_value_implies_gap m n hm h_val h_pos
+  have h_lt : m - 1 - n < m - 1 := by { omega }
+  refine ⟨h_lt, h_gap.2, ?_⟩
+  intro j hj1 hj2 h_eq
+  have h_ms : vanEckNthTerm m = matchSearch (vanEck (m - 1)) (m - 1) :=
+    vanEck_term_is_matchSearch m (by { omega })
+  have h_ms_ne : matchSearch (vanEck (m - 1)) (m - 1) ≠ 0 := by {
+    rw [← h_ms, h_val]
+    omega
+  }
+  have h_len : (vanEck (m - 1)).length - 1 = m - 1 := by {
+    have hl := vanEckLength (m - 1)
+    omega
+  }
+  have h_match : listNth (vanEck (m - 1)) ((vanEck (m - 1)).length - 1) =
+      listNth (vanEck (m - 1)) j := by {
+    rw [h_len]
+    have hd1 := VanEck_deterministic (m - 1) (m - 1) (Nat.le_refl _)
+    have hd2 := VanEck_deterministic (m - 1) j (by { omega })
+    rw [hd1, hd2]
+    exact h_eq.symm
+  }
+  have h_first := matchSearch_first (vanEck (m - 1)) (m - 1) j h_ms_ne hj2 h_match
+  rw [← h_ms, h_val, h_len] at h_first
+  omega
+}
+
+/--
+Any term `a(z - 1)` immediately preceding a zero `a(z) = 0` (`z ≥ 2`) is strictly
+distinct from every earlier term `a(idx)` (`idx < z - 1`).
+-/
+lemma pre_zero_ne_prior_val (z idx : ℕ) (hz : vanEckNthTerm z = 0)
+    (hz_ge : z ≥ 2) (h_idx : idx < z - 1) :
+    vanEckNthTerm (z - 1) ≠ vanEckNthTerm idx := by {
+  have hz_eq : z = (z - 2) + 2 := by { omega }
+  have h_iff := vanEck_mth_term_eq_zero_iff_prev_term_new (z - 2)
+  rw [← hz_eq] at h_iff
+  have h_sub : z - 2 + 1 = z - 1 := by { omega }
+  have h_new := h_iff.mp hz
+  rw [h_sub] at h_new
+  exact Ne.symm (h_new idx h_idx)
+}
+
+/--
+Unconditional prior-occurrence specification for the new value `a(z - 1)` before any
+zero `a(z) = 0` (`z ≥ 2`): `a(z - 1) > 0` is brand-new, and `p = z - 2 - a(z - 1)` is
+the strictly most recent prior occurrence of the generator `a(z - 2)` before `z - 2`,
+with `a(z - 1) = (z - 2) - p`.
+-/
+lemma pre_zero_new_value_prior_occurrence_spec (z : ℕ)
+    (hz : vanEckNthTerm z = 0) (hz_ge : z ≥ 2) :
+    0 < vanEckNthTerm (z - 1) ∧
+      (∀ i < z - 1, vanEckNthTerm i ≠ vanEckNthTerm (z - 1)) ∧
+      z - 2 - vanEckNthTerm (z - 1) < z - 2 ∧
+      vanEckNthTerm (z - 1) = (z - 2) - (z - 2 - vanEckNthTerm (z - 1)) ∧
+      vanEckNthTerm (z - 2 - vanEckNthTerm (z - 1)) = vanEckNthTerm (z - 2) ∧
+      ∀ j, z - 2 - vanEckNthTerm (z - 1) < j → j < z - 2 →
+        vanEckNthTerm j ≠ vanEckNthTerm (z - 2) := by {
+  have hz_ne_two : z ≠ 2 := by {
+    intro hc
+    rw [hc] at hz
+    exact Nat.one_ne_zero hz
+  }
+  have hz1_ge : z - 1 ≥ 2 := by { omega }
+  have hz1_nz : vanEckNthTerm (z - 1) ≠ 0 :=
+    pre_zero_ne_prior_val z 0 hz hz_ge (by { omega })
+  have hz1_pos : 0 < vanEckNthTerm (z - 1) := Nat.pos_of_ne_zero hz1_nz
+  have hz1_le : vanEckNthTerm (z - 1) ≤ z - 2 := by {
+    have h_le := a_le_idx_minus_one hz1_ge hz1_pos
+    omega
+  }
+  have h_new : ∀ i < z - 1, vanEckNthTerm i ≠ vanEckNthTerm (z - 1) :=
+    fun i hi => Ne.symm (pre_zero_ne_prior_val z i hz hz_ge hi)
+  have h_rec :=
+    pos_value_most_recent_occurrence (z - 1) (vanEckNthTerm (z - 1)) hz1_ge rfl hz1_pos
+  have h_sub : z - 1 - 1 = z - 2 := by { omega }
+  rw [h_sub] at h_rec
+  exact ⟨hz1_pos, h_new, h_rec.1, by { omega }, h_rec.2.1, h_rec.2.2⟩
+}
+
+/--
+Any prior occurrence `q < z - 2` of the generator `a(z - 2)` before a zero `a(z) = 0`
+(`z ≥ 2`) upper-bounds the newly created value `a(z - 1)` by `(z - 2) - q`.
+-/
+lemma pre_zero_new_value_le_of_prior_occurrence (z q : ℕ)
+    (hz : vanEckNthTerm z = 0) (hz_ge : z ≥ 2)
+    (hq_lt : q < z - 2) (hq_eq : vanEckNthTerm q = vanEckNthTerm (z - 2)) :
+    vanEckNthTerm (z - 1) ≤ (z - 2) - q := by {
+  have h_spec := pre_zero_new_value_prior_occurrence_spec z hz hz_ge
+  have h_le : q ≤ z - 2 - vanEckNthTerm (z - 1) := by {
+    by_contra h_gt
+    exact h_spec.2.2.2.2.2 q (by { omega }) hq_lt hq_eq
+  }
+  omega
+}
+
+/--
+Monotonicity of `vanEckPrefixMax`: extending the prefix never decreases its maximum.
+-/
+lemma vanEckPrefixMax_mono (m n : ℕ) (hmn : m ≤ n) :
+    vanEckPrefixMax m ≤ vanEckPrefixMax n := by {
+  unfold vanEckPrefixMax
+  apply listMax_le
+  intro x hx
+  rcases mem_listNth hx with ⟨k, hk_lt, rfl⟩
+  have h_len := vanEckLength m
+  rw [h_len] at hk_lt
+  have hk_le_m : k ≤ m := Nat.le_of_lt_succ hk_lt
+  have h_det := VanEck_deterministic m k hk_le_m
+  rw [h_det]
+  exact vanEckNthTerm_le_prefixMax n k (Nat.le_trans hk_le_m hmn)
+}
+
+/--
+Unconditional prefix-maximum recurrence across any zero-free open interval `(z_prev, z)`
+ending at a zero `a(z) = 0`: every term except the brand-new value `a(z - 1)` is bounded
+by `vanEckPrefixMax z_prev`, so `vanEckPrefixMax z = max (vanEckPrefixMax z_prev) a(z - 1)`.
+-/
+lemma prefixMax_at_zero_eq_max (z z_prev : ℕ)
+    (hz : vanEckNthTerm z = 0) (h_prev_lt : z_prev < z)
+    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0) :
+    vanEckPrefixMax z = max (vanEckPrefixMax z_prev) (vanEckNthTerm (z - 1)) := by {
+  apply Nat.le_antisymm
+  · change listMax (vanEck z) ≤ max (vanEckPrefixMax z_prev) (vanEckNthTerm (z - 1))
+    apply listMax_le
+    intro x hx
+    rcases mem_listNth hx with ⟨k, hk_lt, rfl⟩
+    have h_len := vanEckLength z
+    rw [h_len] at hk_lt
+    have hk_le : k ≤ z := Nat.le_of_lt_succ hk_lt
+    have h_det : listNth (vanEck z) k = vanEckNthTerm k := VanEck_deterministic z k hk_le
+    rw [h_det]
+    by_cases hk_z : k = z
+    · rw [hk_z, hz]
+      exact Nat.zero_le _
+    · by_cases hk_z1 : k = z - 1
+      · rw [hk_z1]
+        exact Nat.le_max_right _ _
+      · have h_G : z_prev + (z - z_prev) = z := Nat.add_sub_of_le (Nat.le_of_lt h_prev_lt)
+        have h_nz : ∀ j, z_prev < j → j < z_prev + (z - z_prev) → vanEckNthTerm j ≠ 0 := by {
+          intro j hj1 hj2
+          rw [h_G] at hj2
+          exact h_gap j hj1 hj2
+        }
+        have h_le := gap_contains_all_terms z_prev (z - z_prev) h_nz k (by { omega })
+        exact Nat.le_trans h_le (Nat.le_max_left _ _)
+  · exact Nat.max_le.mpr
+      ⟨vanEckPrefixMax_mono z_prev z (Nat.le_of_lt h_prev_lt),
+        vanEckNthTerm_le_prefixMax z (z - 1) (by { omega })⟩
+}
+
+/--
+In a `2`-free tail (`∀ m > N_0, a(m) ≠ 2`), if the generator `a(z - 2)` before a zero
+`z > N_0` occurred anywhere at or after `z_prev - 1` (`z_prev - 1 ≤ q < z - 2`), then
+`a(z - 1) < vanEckPrefixMax z_prev` and `vanEckPrefixMax z = vanEckPrefixMax z_prev`.
+-/
+lemma no_twos_new_value_bounded_of_recent_generator (N_0 z z_prev q : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hz_prev_pos : z_prev > 0) (hz : vanEckNthTerm z = 0)
+    (hz_gt : z > N_0) (hz_prev : vanEckNthTerm z_prev = 0)
+    (h_prev_lt : z_prev < z)
+    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0)
+    (hq_ge : z_prev - 1 ≤ q) (hq_lt : q < z - 2)
+    (hq_eq : vanEckNthTerm q = vanEckNthTerm (z - 2)) :
+    vanEckNthTerm (z - 1) < vanEckPrefixMax z_prev ∧
+      vanEckPrefixMax z = vanEckPrefixMax z_prev := by {
+  have h_bounds :=
+    no_twos_zero_gap_and_predecessor_bounds N_0 z z_prev h_no_twos
+      hz_prev_pos hz hz_gt hz_prev h_prev_lt h_gap
+  have h_le_q :=
+    pre_zero_new_value_le_of_prior_occurrence z q hz (by { omega }) hq_lt hq_eq
+  have hz1_lt : vanEckNthTerm (z - 1) < vanEckPrefixMax z_prev := by { omega }
+  have h_pmax := prefixMax_at_zero_eq_max z z_prev hz h_prev_lt h_gap
+  exact ⟨hz1_lt, by { omega }⟩
+}
+
+/--
+Dormant-Generator Characterization of Prefix-Max Jumps: in a `2`-free tail (`z > N_0`),
+`vanEckPrefixMax z > vanEckPrefixMax z_prev` occurs only when `a(z - 1)` is the new
+prefix maximum, generated by a bounded value `1 ≤ a(z - 2) ≤ vanEckPrefixMax z_prev`
+that was completely dormant throughout `[z_prev - 1, z - 3]` (`p + 1 < z_prev`), with
+exact decomposition `a(z - 1) = (z - z_prev - 2) + (z_prev - p)`.
+-/
+lemma no_twos_prefixMax_jump_requires_dormant_generator (N_0 z z_prev : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hz_prev_pos : z_prev > 0) (hz : vanEckNthTerm z = 0)
+    (hz_gt : z > N_0) (hz_prev : vanEckNthTerm z_prev = 0)
+    (h_prev_lt : z_prev < z)
+    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0)
+    (h_jump : vanEckPrefixMax z_prev < vanEckPrefixMax z) :
+    vanEckPrefixMax z = vanEckNthTerm (z - 1) ∧
+      1 ≤ vanEckNthTerm (z - 2) ∧
+      vanEckNthTerm (z - 2) ≤ vanEckPrefixMax z_prev ∧
+      (z - 2 - vanEckNthTerm (z - 1)) + 1 < z_prev ∧
+      (∀ j, z_prev - 1 ≤ j → j < z - 2 → vanEckNthTerm j ≠ vanEckNthTerm (z - 2)) ∧
+      vanEckNthTerm (z - 1) =
+        (z - z_prev - 2) + (z_prev - (z - 2 - vanEckNthTerm (z - 1))) ∧
+      vanEckNthTerm (z - 1) ≤
+        (vanEckPrefixMax z_prev - 2) + (z_prev - (z - 2 - vanEckNthTerm (z - 1))) := by {
+  have h_bounds :=
+    no_twos_zero_gap_and_predecessor_bounds N_0 z z_prev h_no_twos
+      hz_prev_pos hz hz_gt hz_prev h_prev_lt h_gap
+  have h_pmax := prefixMax_at_zero_eq_max z z_prev hz h_prev_lt h_gap
+  have hz1_gt : vanEckPrefixMax z_prev < vanEckNthTerm (z - 1) := by { omega }
+  have hz2_nz : vanEckNthTerm (z - 2) ≠ 0 := h_gap (z - 2) (by { omega }) (by { omega })
+  have h_spec := pre_zero_new_value_prior_occurrence_spec z hz (by { omega })
+  have h_dormant : ∀ j, z_prev - 1 ≤ j → j < z - 2 →
+      vanEckNthTerm j ≠ vanEckNthTerm (z - 2) := by {
+    intro j hj_ge hj_lt hj_eq
+    have h_rec := no_twos_new_value_bounded_of_recent_generator N_0 z z_prev j
+      h_no_twos hz_prev_pos hz hz_gt hz_prev h_prev_lt h_gap hj_ge hj_lt hj_eq
+    omega
+  }
+  have hp_lt : (z - 2 - vanEckNthTerm (z - 1)) + 1 < z_prev := by {
+    by_contra hp_ge
+    exact h_dormant (z - 2 - vanEckNthTerm (z - 1)) (by { omega }) h_spec.2.2.1
+      h_spec.2.2.2.2.1
+  }
+  exact ⟨by { omega }, Nat.pos_of_ne_zero hz2_nz, h_bounds.2.2, hp_lt, h_dormant,
+    by { omega }, by { omega }⟩
+}
+
+/--
+If `vanEckPrefixMax` never strictly increases across consecutive zeros at or after a
+zero `z_0`, then `vanEckPrefixMax z ≤ vanEckPrefixMax z_0` for every zero `z ≥ z_0`.
+-/
+lemma no_prefixMax_zero_jumps_implies_bounded (z_0 : ℕ)
+    (hz0_zero : vanEckNthTerm z_0 = 0)
+    (h_no_jump : ∀ z_prev z, z_0 ≤ z_prev → z_prev < z →
+      vanEckNthTerm z_prev = 0 → vanEckNthTerm z = 0 →
+      (∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0) →
+      vanEckPrefixMax z ≤ vanEckPrefixMax z_prev) :
+    ∀ z ≥ z_0, vanEckNthTerm z = 0 → vanEckPrefixMax z ≤ vanEckPrefixMax z_0 := by {
+  intro z
+  induction z using Nat.strong_induction_on with
+  | h z ih =>
+    intro hz_ge hz_zero
+    by_cases hz_eq : z = z_0
+    · rw [hz_eq]
+    · have hz_gt : z > z_0 := Nat.lt_of_le_of_ne hz_ge (Ne.symm hz_eq)
+      let z_prev := lastZero (z - 1)
+      have hz_prev_le : z_prev ≤ z - 1 := lastZero_le (z - 1)
+      have hz_prev_lt : z_prev < z := by { omega }
+      have hz_prev_zero : vanEckNthTerm z_prev = 0 := vanEck_lastZero_is_zero (z - 1)
+      have hz_prev_ge : z_0 ≤ z_prev := by {
+        by_contra hc
+        exact no_zero_after_lastZero (z - 1) z_0 (by { omega }) (by { omega }) hz0_zero
+      }
+      have h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0 :=
+        fun k hk1 hk2 => no_zero_after_lastZero (z - 1) k hk1 (by { omega })
+      have h_step := h_no_jump z_prev z hz_prev_ge hz_prev_lt hz_prev_zero hz_zero h_gap
+      exact Nat.le_trans h_step (ih z_prev hz_prev_lt hz_prev_ge hz_prev_zero)
+}
+
+/--
+Unconditionally, `vanEckPrefixMax` strictly increases across consecutive zeros
+`z_prev < z` arbitrarily far out in the Van Eck sequence.
+-/
+lemma infinite_prefixMax_zero_jumps (K : ℕ) :
+    ∃ z_prev z, K < z_prev ∧ z_prev < z ∧
+      vanEckNthTerm z_prev = 0 ∧ vanEckNthTerm z = 0 ∧
+      (∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0) ∧
+      vanEckPrefixMax z_prev < vanEckPrefixMax z := by {
+  rcases infinite_zeros_vanEck K with ⟨z_0, hz0_gt, hz0_zero⟩
+  by_contra h_none
+  have h_no_jump : ∀ z_prev z, z_0 ≤ z_prev → z_prev < z →
+      vanEckNthTerm z_prev = 0 → vanEckNthTerm z = 0 →
+      (∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0) →
+      vanEckPrefixMax z ≤ vanEckPrefixMax z_prev := by {
+    intro z_prev z hz_ge hz_lt hzp hz h_gap
+    by_contra h_gt
+    exact h_none ⟨z_prev, z, by { omega }, hz_lt, hzp, hz, h_gap, by { omega }⟩
+  }
+  have h_zeros_le := no_prefixMax_zero_jumps_implies_bounded z_0 hz0_zero h_no_jump
+  rcases vanEck_unbounded (vanEckPrefixMax z_0) with ⟨m, hm_gt⟩
+  rcases infinite_zeros_vanEck (max z_0 m) with ⟨z, hz_gt, hz_zero⟩
+  have hm_le : vanEckNthTerm m ≤ vanEckPrefixMax z :=
+    vanEckNthTerm_le_prefixMax z m (by { omega })
+  have hz_le : vanEckPrefixMax z ≤ vanEckPrefixMax z_0 :=
+    h_zeros_le z (by { omega }) hz_zero
+  omega
+}
+
+/--
+In a `2`-free tail (`∀ m > N_0, a(m) ≠ 2`), dormant-generator prefix-maximum jumps occur
+arbitrarily far out (`K < z_prev`) and above any value floor (`V < vanEckPrefixMax z_prev`).
+-/
+lemma no_twos_infinite_dormant_generator_jumps (N_0 K V : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2) :
+    ∃ z_prev z, N_0 < z_prev ∧ K < z_prev ∧ z_prev < z ∧
+      vanEckNthTerm z_prev = 0 ∧ vanEckNthTerm z = 0 ∧
+      (∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0) ∧
+      V < vanEckPrefixMax z_prev ∧
+      vanEckPrefixMax z_prev < vanEckPrefixMax z ∧
+      vanEckPrefixMax z = vanEckNthTerm (z - 1) ∧
+      1 ≤ vanEckNthTerm (z - 2) ∧
+      vanEckNthTerm (z - 2) ≤ vanEckPrefixMax z_prev ∧
+      (z - 2 - vanEckNthTerm (z - 1)) + 1 < z_prev ∧
+      (∀ j, z_prev - 1 ≤ j → j < z - 2 → vanEckNthTerm j ≠ vanEckNthTerm (z - 2)) := by {
+  rcases vanEck_unbounded V with ⟨m_V, hmV_gt⟩
+  rcases infinite_prefixMax_zero_jumps (max (max N_0 K) m_V) with
+    ⟨z_prev, z, h_gt, hz_lt, hzp_zero, hz_zero, h_gap, h_jump⟩
+  have hV_lt : V < vanEckPrefixMax z_prev :=
+    Nat.lt_of_lt_of_le hmV_gt (vanEckNthTerm_le_prefixMax z_prev m_V (by { omega }))
+  have h_dorm := no_twos_prefixMax_jump_requires_dormant_generator N_0 z z_prev
+    h_no_twos (by { omega }) hz_zero (by { omega }) hzp_zero hz_lt h_gap h_jump
+  exact ⟨z_prev, z, by { omega }, by { omega }, hz_lt, hzp_zero, hz_zero, h_gap, hV_lt,
+    h_jump, h_dorm.1, h_dorm.2.1, h_dorm.2.2.1, h_dorm.2.2.2.1, h_dorm.2.2.2.2.1⟩
+}
+
+/--
+Generator-Reuse Bound: whenever the same generator value appears at `z - 2` and `z' - 2`
+for indices `2 ≤ z < z'` with `a(z') = 0`, the occurrence at `z - 2` caps `a(z' - 1)` by
+`z' - z`.
+-/
+lemma generator_reuse_new_value_le_zero_dist (z z' : ℕ)
+    (hz_ge : z ≥ 2) (h_lt : z < z') (hz' : vanEckNthTerm z' = 0)
+    (h_same_gen : vanEckNthTerm (z' - 2) = vanEckNthTerm (z - 2)) :
+    vanEckNthTerm (z' - 1) ≤ z' - z := by {
+  have h_le := pre_zero_new_value_le_of_prior_occurrence z' (z - 2) hz'
+    (by { omega }) (by { omega }) h_same_gen.symm
+  omega
+}
+
+/--
+Cooldown Consumption Lemma: in a `2`-free tail, firing a generator `v = a(z - 2)` resets
+its dormancy at `z - 2`, so `v` cannot trigger a prefix-maximum jump at the immediately
+following zero (`z < z'_prev`) nor until `z' - z > vanEckPrefixMax z'_prev`.
+-/
+lemma no_twos_generator_cooldown_after_use (N_0 z z'_prev z' : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hz_ge : z ≥ 2) (hz_le_prev : z ≤ z'_prev) (h_prev_lt : z'_prev < z')
+    (hz'_gt : z' > N_0) (hz'_prev : vanEckNthTerm z'_prev = 0)
+    (hz' : vanEckNthTerm z' = 0)
+    (h_gap' : ∀ k, z'_prev < k → k < z' → vanEckNthTerm k ≠ 0)
+    (h_jump' : vanEckPrefixMax z'_prev < vanEckPrefixMax z')
+    (h_same_gen : vanEckNthTerm (z' - 2) = vanEckNthTerm (z - 2)) :
+    z < z'_prev ∧ vanEckPrefixMax z'_prev < z' - z := by {
+  have h_le_dist := generator_reuse_new_value_le_zero_dist z z' hz_ge
+    (by { omega }) hz' h_same_gen
+  have h_jump_spec := no_twos_prefixMax_jump_requires_dormant_generator N_0 z' z'_prev
+    h_no_twos (by { omega }) hz' hz'_gt hz'_prev h_prev_lt h_gap' h_jump'
+  have h_bounds' := no_twos_zero_gap_and_predecessor_bounds N_0 z' z'_prev
+    h_no_twos (by { omega }) hz' hz'_gt hz'_prev h_prev_lt h_gap'
+  exact ⟨by { omega }, by { omega }⟩
+}
+
+/--
+Anchor-Slot Uniqueness: for any two zeros `2 ≤ z < z'`, the strictly most recent prior
+occurrences `p = z - 2 - a(z - 1)` and `p' = z' - 2 - a(z' - 1)` of their generators are
+distinct. Each index `p` can anchor at most one zero's pre-zero value across the sequence.
+-/
+lemma pre_zero_prior_anchor_unique (z z' : ℕ)
+    (hz_ge : z ≥ 2) (h_lt : z < z')
+    (hz : vanEckNthTerm z = 0) (hz' : vanEckNthTerm z' = 0) :
+    z - 2 - vanEckNthTerm (z - 1) ≠ z' - 2 - vanEckNthTerm (z' - 1) := by {
+  have h_spec := pre_zero_new_value_prior_occurrence_spec z hz hz_ge
+  have h_spec' := pre_zero_new_value_prior_occurrence_spec z' hz' (by { omega })
+  have h_uniq := vanEck_idx_sub_val_unique (z - 1) (z' - 1) h_spec.1 (by { omega })
+  have hp_eq := h_spec.2.2.2.1
+  have hp'_eq := h_spec'.2.2.2.1
+  omega
+}
+
+/--
+If a pre-zero birth value `a(z_1 - 1)` (`z_1 ≥ 2`) serves as the generator `a(z - 2)` of a
+later zero `z > z_1`, then `z_1 + 3 ≤ z` and its prior-occurrence anchor satisfies
+`z_1 - 1 ≤ z - 2 - a(z - 1)`.
+-/
+lemma birth_as_later_generator_min_dist (z_1 z : ℕ)
+    (hz1_ge : z_1 ≥ 2) (h_lt : z_1 < z)
+    (hz1 : vanEckNthTerm z_1 = 0) (hz : vanEckNthTerm z = 0)
+    (h_gen : vanEckNthTerm (z - 2) = vanEckNthTerm (z_1 - 1)) :
+    z_1 + 3 ≤ z ∧ z_1 - 1 ≤ z - 2 - vanEckNthTerm (z - 1) := by {
+  have h_s1 := pre_zero_new_value_prior_occurrence_spec z_1 hz1 hz1_ge
+  have h_sz := pre_zero_new_value_prior_occurrence_spec z hz (by { omega })
+  have hz_ne1 : z ≠ z_1 + 1 := by {
+    intro hc
+    have h0 := h_sz.1
+    have h_sub : z_1 + 1 - 1 = z_1 := by { omega }
+    rw [hc, h_sub, hz1] at h0
+    omega
+  }
+  have hz_ne2 : z ≠ z_1 + 2 := by {
+    intro hc
+    have h_eq := h_gen
+    have h_sub : z_1 + 2 - 2 = z_1 := by { omega }
+    rw [hc, h_sub, hz1] at h_eq
+    have h0 := h_s1.1
+    omega
+  }
+  have hp_val : vanEckNthTerm (z - 2 - vanEckNthTerm (z - 1)) =
+      vanEckNthTerm (z_1 - 1) := by { rw [h_sz.2.2.2.2.1, h_gen] }
+  have hp_ge : z_1 - 1 ≤ z - 2 - vanEckNthTerm (z - 1) := by {
+    by_contra hp_lt
+    exact h_s1.2.1 (z - 2 - vanEckNthTerm (z - 1)) (by { omega }) hp_val
+  }
+  exact ⟨by { omega }, hp_ge⟩
+}
+
+/--
+For any two zeros `2 ≤ z < z'` sharing the same generator `a(z - 2) = a(z' - 2)`, `z - 2`
+lies at or before `z'`'s prior-occurrence anchor `z' - 2 - a(z' - 1)`, so their half-open
+dormancy intervals `[z - 2 - a(z - 1), z - 2)` and `[z' - 2 - a(z' - 1), z' - 2)` are
+disjoint.
+-/
+lemma generator_dormancy_intervals_disjoint (z z' : ℕ)
+    (hz_ge : z ≥ 2) (h_lt : z < z')
+    (hz : vanEckNthTerm z = 0) (hz' : vanEckNthTerm z' = 0)
+    (h_same : vanEckNthTerm (z - 2) = vanEckNthTerm (z' - 2)) :
+    z - 2 ≤ z' - 2 - vanEckNthTerm (z' - 1) ∧
+      Disjoint (Finset.Ico (z - 2 - vanEckNthTerm (z - 1)) (z - 2))
+        (Finset.Ico (z' - 2 - vanEckNthTerm (z' - 1)) (z' - 2)) := by {
+  have h_sz := pre_zero_new_value_prior_occurrence_spec z hz hz_ge
+  have h_sz' := pre_zero_new_value_prior_occurrence_spec z' hz' (by { omega })
+  have hp_ge : z - 2 ≤ z' - 2 - vanEckNthTerm (z' - 1) := by {
+    by_contra hp_lt
+    have hz_pos := h_sz.1
+    have hz_eq := h_sz.2.2.2.1
+    have h_ne := h_sz'.2.2.2.2.2 (z - 2) (by { omega }) (by { omega })
+    exact h_ne h_same
+  }
+  refine ⟨hp_ge, Finset.disjoint_left.mpr ?_⟩
+  intro x hx1 hx2
+  have hx1' := Finset.mem_Ico.mp hx1
+  have hx2' := Finset.mem_Ico.mp hx2
+  omega
+}
+
+/--
+Single-Generator Disjoint-Interval Packing: for any finite set `S` of zeros `z ≥ 2` sharing
+generator `v = a(z - 2)` with `A_0 ≤ z - 2 - a(z - 1)` and `z ≤ B`, the sum of their newly
+created values `a(z - 1)` is at most `(B - 2) - A_0`.
+-/
+lemma single_generator_anchor_dormancy_sum_le (S : Finset ℕ) (v A_0 B : ℕ)
+    (hS : ∀ z ∈ S, z ≥ 2 ∧ vanEckNthTerm z = 0 ∧ vanEckNthTerm (z - 2) = v ∧
+      A_0 ≤ z - 2 - vanEckNthTerm (z - 1) ∧ z ≤ B) :
+    (∑ z ∈ S, vanEckNthTerm (z - 1)) ≤ (B - 2) - A_0 := by {
+  let f : ℕ → Finset ℕ := fun z => Finset.Ico (z - 2 - vanEckNthTerm (z - 1)) (z - 2)
+  have h_pw : (S : Set ℕ).PairwiseDisjoint f := by {
+    intro z hz z' hz' hne
+    rcases lt_trichotomy z z' with hlt | heq | hgt
+    · exact (generator_dormancy_intervals_disjoint z z' (hS z hz).1 hlt
+        (hS z hz).2.1 (hS z' hz').2.1 ((hS z hz).2.2.1.trans (hS z' hz').2.2.1.symm)).2
+    · exact False.elim (hne heq)
+    · exact (generator_dormancy_intervals_disjoint z' z (hS z' hz').1 hgt
+        (hS z' hz').2.1 (hS z hz).2.1 ((hS z' hz').2.2.1.trans (hS z hz).2.2.1.symm)).2.symm
+  }
+  have h_sub : S.biUnion f ⊆ Finset.Ico A_0 (B - 2) := by {
+    intro x hx
+    rcases Finset.mem_biUnion.mp hx with ⟨z, hz, hxf⟩
+    have hxf' := Finset.mem_Ico.mp hxf
+    have hz_p := hS z hz
+    exact Finset.mem_Ico.mpr ⟨by { omega }, by { omega }⟩
+  }
+  have h_card_le := Finset.card_le_card h_sub
+  rw [Finset.card_biUnion h_pw, Nat.card_Ico] at h_card_le
+  have h_sum_eq : (∑ z ∈ S, (f z).card) = ∑ z ∈ S, vanEckNthTerm (z - 1) := by {
+    apply Finset.sum_congr rfl
+    intro z hz
+    have h_sz := pre_zero_new_value_prior_occurrence_spec z (hS z hz).2.1 (hS z hz).1
+    rw [Nat.card_Ico]
+    exact h_sz.2.2.2.1.symm
+  }
+  rw [h_sum_eq] at h_card_le
+  exact h_card_le
+}
+
+/--
+Single-Generator Window Cooldown Bound: if every zero `z ∈ S` lies in `[A, B]`, shares
+generator `v = a(z - 2)`, and emits `H < a(z - 1)`, then `(S.card - 1) * (H + 1) ≤ B - A` and
+`S.card * (H + 1) ≤ (B - A) + (H + 1)`.
+-/
+lemma single_generator_window_cooldown_bound (S : Finset ℕ) (v H A B : ℕ)
+    (hS : ∀ z ∈ S, z ≥ 2 ∧ A ≤ z ∧ z ≤ B ∧ vanEckNthTerm z = 0 ∧
+      vanEckNthTerm (z - 2) = v ∧ H < vanEckNthTerm (z - 1)) :
+    (S.card - 1) * (H + 1) ≤ B - A ∧ S.card * (H + 1) ≤ (B - A) + (H + 1) := by {
+  by_cases hne : S.Nonempty
+  · let z_0 := S.min' hne
+    have hz0_mem : z_0 ∈ S := Finset.min'_mem S hne
+    have hz0_p := hS z_0 hz0_mem
+    have h_er : ∀ z ∈ S.erase z_0, z ≥ 2 ∧ vanEckNthTerm z = 0 ∧
+        vanEckNthTerm (z - 2) = v ∧ z_0 - 2 ≤ z - 2 - vanEckNthTerm (z - 1) ∧ z ≤ B := by {
+      intro z hz
+      have hz_mem := Finset.mem_of_mem_erase hz
+      have hz_p := hS z hz_mem
+      have hz_lt : z_0 < z :=
+        lt_of_le_of_ne (Finset.min'_le S z hz_mem) (Finset.ne_of_mem_erase hz).symm
+      have h_disj := generator_dormancy_intervals_disjoint z_0 z hz0_p.1 hz_lt
+        hz0_p.2.2.2.1 hz_p.2.2.2.1 (hz0_p.2.2.2.2.1.trans hz_p.2.2.2.2.1.symm)
+      exact ⟨hz_p.1, hz_p.2.2.2.1, hz_p.2.2.2.2.1, h_disj.1, hz_p.2.2.1⟩
+    }
+    have h_sum_le := single_generator_anchor_dormancy_sum_le (S.erase z_0) v (z_0 - 2) B h_er
+    have h_low : (S.erase z_0).card * (H + 1) ≤ ∑ z ∈ S.erase z_0, vanEckNthTerm (z - 1) := by {
+      have h_le : (∑ _z ∈ S.erase z_0, (H + 1)) ≤ ∑ z ∈ S.erase z_0, vanEckNthTerm (z - 1) :=
+        Finset.sum_le_sum (fun z hz => (hS z (Finset.mem_of_mem_erase hz)).2.2.2.2.2)
+      rw [Finset.sum_const, smul_eq_mul] at h_le
+      exact h_le
+    }
+    have h_card_er : (S.erase z_0).card = S.card - 1 := Finset.card_erase_of_mem hz0_mem
+    have h_card_pos : 1 ≤ S.card := Finset.card_pos.mpr hne
+    rw [h_card_er] at h_low
+    have h_first : (S.card - 1) * (H + 1) ≤ B - A := by { omega }
+    have h_mul : S.card * (H + 1) = (S.card - 1) * (H + 1) + (H + 1) := by {
+      calc S.card * (H + 1) = ((S.card - 1) + 1) * (H + 1) := by {
+            rw [Nat.sub_add_cancel h_card_pos]
+          }
+        _ = (S.card - 1) * (H + 1) + (H + 1) := Nat.succ_mul (S.card - 1) (H + 1)
+    }
+    exact ⟨h_first, by { omega }⟩
+  · have h_empty : S = ∅ := Finset.not_nonempty_iff_eq_empty.mp hne
+    rw [h_empty, Finset.card_empty]
+    simp
+}
+
+/--
+Finite-Palette Anchor Cooldown Bound: for any finite set `J` of zeros `z ≥ 2` driven by a
+generator palette `1 ≤ a(z - 2) ≤ W` with `A_0 ≤ z - 2 - a(z - 1)`, `z ≤ B`, and `H < a(z - 1)`,
+both `J.card * (H + 1) ≤ ∑_{z ∈ J} a(z - 1)` and `∑_{z ∈ J} a(z - 1) ≤ W * ((B - 2) - A_0)`.
+-/
+lemma finite_palette_anchor_cooldown_bound (J : Finset ℕ) (W H A_0 B : ℕ)
+    (hJ : ∀ z ∈ J, z ≥ 2 ∧ vanEckNthTerm z = 0 ∧ 1 ≤ vanEckNthTerm (z - 2) ∧
+      vanEckNthTerm (z - 2) ≤ W ∧ A_0 ≤ z - 2 - vanEckNthTerm (z - 1) ∧
+      z ≤ B ∧ H < vanEckNthTerm (z - 1)) :
+    J.card * (H + 1) ≤ (∑ z ∈ J, vanEckNthTerm (z - 1)) ∧
+      (∑ z ∈ J, vanEckNthTerm (z - 1)) ≤ W * ((B - 2) - A_0) := by {
+  have h_low : J.card * (H + 1) ≤ ∑ z ∈ J, vanEckNthTerm (z - 1) := by {
+    have h_le : (∑ _z ∈ J, (H + 1)) ≤ ∑ z ∈ J, vanEckNthTerm (z - 1) :=
+      Finset.sum_le_sum (fun z hz => (hJ z hz).2.2.2.2.2.2)
+    rw [Finset.sum_const, smul_eq_mul] at h_le
+    exact h_le
+  }
+  have h_maps : ∀ z ∈ J, vanEckNthTerm (z - 2) ∈ Finset.Icc 1 W :=
+    fun z hz => Finset.mem_Icc.mpr ⟨(hJ z hz).2.2.1, (hJ z hz).2.2.2.1⟩
+  have h_fib := Finset.sum_fiberwise_of_maps_to (s := J) (t := Finset.Icc 1 W)
+    (g := fun z => vanEckNthTerm (z - 2)) h_maps (fun z => vanEckNthTerm (z - 1))
+  have h_up : (∑ v ∈ Finset.Icc 1 W,
+      ∑ z ∈ J.filter (fun z => vanEckNthTerm (z - 2) = v), vanEckNthTerm (z - 1)) ≤
+      ∑ _v ∈ Finset.Icc 1 W, ((B - 2) - A_0) := by {
+    apply Finset.sum_le_sum
+    intro v _hv
+    apply single_generator_anchor_dormancy_sum_le _ v A_0 B
+    intro z hz
+    rcases Finset.mem_filter.mp hz with ⟨hzJ, hzv⟩
+    have hp := hJ z hzJ
+    exact ⟨hp.1, hp.2.1, hzv, hp.2.2.2.2.1, hp.2.2.2.2.2.1⟩
+  }
+  rw [h_fib, Finset.sum_const, Nat.card_Icc, smul_eq_mul] at h_up
+  have hW : W + 1 - 1 = W := Nat.add_sub_cancel W 1
+  rw [hW] at h_up
+  exact ⟨h_low, h_up⟩
+}
+
+/--
+Finite-Palette Window Cooldown Bound: for any finite set `J` of zeros `z ∈ [A, B]` (`z ≥ 2`)
+driven by a generator palette `1 ≤ a(z - 2) ≤ W` with `H < a(z - 1)`,
+`J.card * (H + 1) ≤ W * ((B - A) + (H + 1))`.
+-/
+lemma finite_palette_window_cooldown_bound (J : Finset ℕ) (W H A B : ℕ)
+    (hJ : ∀ z ∈ J, z ≥ 2 ∧ A ≤ z ∧ z ≤ B ∧ vanEckNthTerm z = 0 ∧
+      1 ≤ vanEckNthTerm (z - 2) ∧ vanEckNthTerm (z - 2) ≤ W ∧ H < vanEckNthTerm (z - 1)) :
+    J.card * (H + 1) ≤ W * ((B - A) + (H + 1)) := by {
+  have h_maps : ∀ z ∈ J, vanEckNthTerm (z - 2) ∈ Finset.Icc 1 W :=
+    fun z hz => Finset.mem_Icc.mpr ⟨(hJ z hz).2.2.2.2.1, (hJ z hz).2.2.2.2.2.1⟩
+  have h_fib := Finset.sum_fiberwise_of_maps_to (s := J) (t := Finset.Icc 1 W)
+    (g := fun z => vanEckNthTerm (z - 2)) h_maps (fun _ => H + 1)
+  rw [Finset.sum_const, smul_eq_mul] at h_fib
+  have h_up : (∑ v ∈ Finset.Icc 1 W,
+      ∑ _z ∈ J.filter (fun z => vanEckNthTerm (z - 2) = v), (H + 1)) ≤
+      ∑ _v ∈ Finset.Icc 1 W, ((B - A) + (H + 1)) := by {
+    apply Finset.sum_le_sum
+    intro v _hv
+    rw [Finset.sum_const, smul_eq_mul]
+    apply (single_generator_window_cooldown_bound _ v H A B _).2
+    intro z hz
+    rcases Finset.mem_filter.mp hz with ⟨hzJ, hzv⟩
+    have hp := hJ z hzJ
+    exact ⟨hp.1, hp.2.1, hp.2.2.1, hp.2.2.2.1, hzv, hp.2.2.2.2.2.2⟩
+  }
+  rw [h_fib, Finset.sum_const, Nat.card_Icc, smul_eq_mul] at h_up
+  have hW : W + 1 - 1 = W := Nat.add_sub_cancel W 1
+  rw [hW] at h_up
+  exact h_up
+}
+
+/--
+`2`-Free Finite-Palette Jump Cooldown Bound: in a `2`-free tail past a zero `z_0 > N_0` with
+`H ≤ vanEckPrefixMax z_0`, any finite set `J` of prefix-maximum jump zeros `z ∈ [A, B]`
+(`z_0 < z`, `a(z - 2) ≤ W`) satisfies `J.card * (H + 1) ≤ W * ((B - A) + (H + 1))`.
+-/
+lemma no_twos_finite_palette_jump_window_bound (N_0 z_0 W H A B : ℕ) (J : Finset ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hz0_gt : N_0 < z_0) (hz0 : vanEckNthTerm z_0 = 0)
+    (hH : H ≤ vanEckPrefixMax z_0)
+    (hJ : ∀ z ∈ J, z_0 < z ∧ A ≤ z ∧ z ≤ B ∧ vanEckNthTerm z = 0 ∧
+      vanEckNthTerm (z - 2) ≤ W ∧ vanEckPrefixMax (lastZero (z - 1)) < vanEckPrefixMax z) :
+    J.card * (H + 1) ≤ W * ((B - A) + (H + 1)) := by {
+  apply finite_palette_window_cooldown_bound J W H A B
+  intro z hz
+  have hp := hJ z hz
+  let z_prev := lastZero (z - 1)
+  have hzp_le : z_prev ≤ z - 1 := lastZero_le (z - 1)
+  have hzp_zero : vanEckNthTerm z_prev = 0 := vanEck_lastZero_is_zero (z - 1)
+  have hz0_le_zp : z_0 ≤ z_prev := by {
+    by_contra hc
+    exact no_zero_after_lastZero (z - 1) z_0 (by { omega }) (by { omega }) hz0
+  }
+  have h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0 :=
+    fun k hk1 hk2 => no_zero_after_lastZero (z - 1) k hk1 (by { omega })
+  have h_dorm := no_twos_prefixMax_jump_requires_dormant_generator N_0 z z_prev
+    h_no_twos (by { omega }) hp.2.2.2.1 (by { omega }) hzp_zero (by { omega }) h_gap hp.2.2.2.2.2
+  have h_mono := vanEckPrefixMax_mono z_0 z_prev hz0_le_zp
+  have h_H_lt : H < vanEckNthTerm (z - 1) :=
+    Nat.lt_of_le_of_lt (Nat.le_trans hH h_mono) (hp.2.2.2.2.2.trans_eq h_dorm.1)
+  exact ⟨by { omega }, hp.2.1, hp.2.2.1, hp.2.2.2.1, h_dorm.2.1, hp.2.2.2.2.1, h_H_lt⟩
+}
+
+/--
+Every positive generator `a(z - 2) > 0` before a zero `z ≥ 2` has a unique birth zero `z_b`
+(`3 ≤ z_b`, `z_b + 3 ≤ z`, `a(z_b) = 0`, `a(z_b - 1) = a(z - 2)`).
+-/
+lemma pos_generator_has_unique_birth_zero (z : ℕ)
+    (hz_ge : z ≥ 2) (hz : vanEckNthTerm z = 0) (hgen_pos : 0 < vanEckNthTerm (z - 2)) :
+    ∃ z_b, 3 ≤ z_b ∧ z_b + 3 ≤ z ∧ vanEckNthTerm z_b = 0 ∧
+      vanEckNthTerm (z_b - 1) = vanEckNthTerm (z - 2) ∧
+      (∀ i < z_b - 1, vanEckNthTerm i ≠ vanEckNthTerm (z - 2)) ∧
+      ∀ z_b', 1 ≤ z_b' → vanEckNthTerm z_b' = 0 →
+        vanEckNthTerm (z_b' - 1) = vanEckNthTerm (z - 2) → z_b' = z_b := by {
+  have h_ex : ∃ i, vanEckNthTerm i = vanEckNthTerm (z - 2) := ⟨z - 2, rfl⟩
+  let b := Nat.find h_ex
+  have hb_eq : vanEckNthTerm b = vanEckNthTerm (z - 2) := Nat.find_spec h_ex
+  have hb_min : ∀ i < b, vanEckNthTerm i ≠ vanEckNthTerm b :=
+    fun i hi hc => Nat.find_min h_ex hi (hc.trans hb_eq)
+  have hb_le : b ≤ z - 2 := Nat.find_min' h_ex rfl
+  have hb_ge2 : 2 ≤ b := by {
+    have hb0 : b ≠ 0 := by {
+      intro hc
+      rw [hc] at hb_eq
+      have h0 : vanEckNthTerm 0 = 0 := rfl
+      rw [h0] at hb_eq
+      omega
+    }
+    have hb1 : b ≠ 1 := by {
+      intro hc
+      rw [hc] at hb_eq
+      have h1 : vanEckNthTerm 1 = 0 := rfl
+      rw [h1] at hb_eq
+      omega
+    }
+    omega
+  }
+  have hzb_zero : vanEckNthTerm (b + 1) = 0 := new_value_next_is_zero b hb_min
+  have h_sz := pre_zero_new_value_prior_occurrence_spec z hz hz_ge
+  have hb_ne_z2 : b ≠ z - 2 := by {
+    intro hc
+    have h_eq0 := hzb_zero
+    have h_idx : b + 1 = z - 1 := by { omega }
+    rw [h_idx] at h_eq0
+    have hz1_pos := h_sz.1
+    omega
+  }
+  have h_dist := birth_as_later_generator_min_dist (b + 1) z (by { omega }) (by { omega })
+    hzb_zero hz hb_eq.symm
+  refine ⟨b + 1, by { omega }, h_dist.1, hzb_zero, hb_eq, ?_, ?_⟩
+  · intro i hi
+    have h_sub : b + 1 - 1 = b := rfl
+    rw [h_sub] at hi
+    rw [← hb_eq]
+    exact hb_min i hi
+  · intro z_b' hzb'_ge hzb'_zero hzb'_eq
+    by_contra hne
+    have h_inj := zero_predecessors_inj (i := z_b' - 1) (j := b)
+      (by { have h : z_b' - 1 + 1 = z_b' := by { omega }; rw [h]; exact hzb'_zero })
+      hzb_zero (by { omega })
+    exact h_inj (hzb'_eq.trans hb_eq.symm)
+}
+
+/--
+Any index `m` with `0 < vanEckNthTerm m` satisfies `m ≥ 2` and `vanEckNthTerm m ≤ m - 1`.
+-/
+lemma pos_vanEckNthTerm_ge_two (m : ℕ) (h_pos : 0 < vanEckNthTerm m) :
+    m ≥ 2 ∧ vanEckNthTerm m ≤ m - 1 := by {
+  have hm_ge2 : m ≥ 2 := by {
+    by_contra hc
+    interval_cases m
+    · have h0 : vanEckNthTerm 0 = 0 := rfl
+      omega
+    · have h1 : vanEckNthTerm 1 = 0 := rfl
+      omega
+  }
+  exact ⟨hm_ge2, a_le_idx_minus_one hm_ge2 h_pos⟩
+}
+
+/--
+All-Index Dormancy Disjointness: for any `1 ≤ m_1 < m_2` sharing the same predecessor symbol
+`a(m_1 - 1) = a(m_2 - 1)` with `0 < a(m_2)`, `m_1 - 1 ≤ m_2 - 1 - a(m_2)`, `a(m_2) ≤ m_2 - m_1`,
+and the dormancy intervals `[m_1 - 1 - a(m_1), m_1 - 1)` and `[m_2 - 1 - a(m_2), m_2 - 1)` are
+disjoint.
+-/
+lemma all_index_dormancy_intervals_disjoint (m_1 m_2 : ℕ)
+    (hm1_ge : m_1 ≥ 1) (h_lt : m_1 < m_2) (hm2_pos : 0 < vanEckNthTerm m_2)
+    (h_same : vanEckNthTerm (m_1 - 1) = vanEckNthTerm (m_2 - 1)) :
+    m_1 - 1 ≤ m_2 - 1 - vanEckNthTerm m_2 ∧
+      vanEckNthTerm m_2 ≤ m_2 - m_1 ∧
+      Disjoint (Finset.Ico (m_1 - 1 - vanEckNthTerm m_1) (m_1 - 1))
+        (Finset.Ico (m_2 - 1 - vanEckNthTerm m_2) (m_2 - 1)) := by {
+  have hm2_b := pos_vanEckNthTerm_ge_two m_2 hm2_pos
+  have h_occ := pos_value_most_recent_occurrence m_2 (vanEckNthTerm m_2) hm2_b.1 rfl hm2_pos
+  have hp_ge : m_1 - 1 ≤ m_2 - 1 - vanEckNthTerm m_2 := by {
+    by_contra hp_lt
+    exact h_occ.2.2 (m_1 - 1) (by { omega }) (by { omega }) h_same
+  }
+  refine ⟨hp_ge, by { omega }, Finset.disjoint_left.mpr ?_⟩
+  intro x hx1 hx2
+  have hx1' := Finset.mem_Ico.mp hx1
+  have hx2' := Finset.mem_Ico.mp hx2
+  omega
+}
+
+/--
+All-Index Single-Symbol Packing: for any finite set `S` of indices `m ≤ B` with `0 < a(m)`,
+`a(m - 1) = v`, and `A_0 ≤ m - 1 - a(m)`, the sum `∑_{m ∈ S} a(m)` is at most `(B - 1) - A_0`.
+-/
+lemma single_symbol_all_index_dormancy_sum_le (S : Finset ℕ) (v A_0 B : ℕ)
+    (hS : ∀ m ∈ S, 0 < vanEckNthTerm m ∧ vanEckNthTerm (m - 1) = v ∧
+      A_0 ≤ m - 1 - vanEckNthTerm m ∧ m ≤ B) :
+    (∑ m ∈ S, vanEckNthTerm m) ≤ (B - 1) - A_0 := by {
+  let f : ℕ → Finset ℕ := fun m => Finset.Ico (m - 1 - vanEckNthTerm m) (m - 1)
+  have h_pw : (S : Set ℕ).PairwiseDisjoint f := by {
+    intro m hm m' hm' hne
+    have hm_ge := (pos_vanEckNthTerm_ge_two m (hS m hm).1).1
+    have hm'_ge := (pos_vanEckNthTerm_ge_two m' (hS m' hm').1).1
+    rcases lt_trichotomy m m' with hlt | heq | hgt
+    · exact (all_index_dormancy_intervals_disjoint m m' (by { omega }) hlt (hS m' hm').1
+        ((hS m hm).2.1.trans (hS m' hm').2.1.symm)).2.2
+    · exact False.elim (hne heq)
+    · exact (all_index_dormancy_intervals_disjoint m' m (by { omega }) hgt (hS m hm).1
+        ((hS m' hm').2.1.trans (hS m hm).2.1.symm)).2.2.symm
+  }
+  have h_sub : S.biUnion f ⊆ Finset.Ico A_0 (B - 1) := by {
+    intro x hx
+    rcases Finset.mem_biUnion.mp hx with ⟨m, hm, hxf⟩
+    have hxf' := Finset.mem_Ico.mp hxf
+    have hm_p := hS m hm
+    exact Finset.mem_Ico.mpr ⟨by { omega }, by { omega }⟩
+  }
+  have h_card_le := Finset.card_le_card h_sub
+  rw [Finset.card_biUnion h_pw, Nat.card_Ico] at h_card_le
+  have h_sum_eq : (∑ m ∈ S, (f m).card) = ∑ m ∈ S, vanEckNthTerm m := by {
+    apply Finset.sum_congr rfl
+    intro m hm
+    have hm_b := pos_vanEckNthTerm_ge_two m (hS m hm).1
+    rw [Nat.card_Ico]
+    omega
+  }
+  rw [h_sum_eq] at h_card_le
+  exact h_card_le
+}
+
+/--
+All-Index Single-Symbol Window Cooldown Bound: if every `m ∈ S` lies in `[A, B]`, shares
+predecessor `a(m - 1) = v`, and emits `H < a(m)`, then `(S.card - 1) * (H + 1) ≤ B - A` and
+`S.card * (H + 1) ≤ (B - A) + (H + 1)`.
+-/
+lemma single_symbol_all_index_window_cooldown_bound (S : Finset ℕ) (v H A B : ℕ)
+    (hS : ∀ m ∈ S, A ≤ m ∧ m ≤ B ∧ vanEckNthTerm (m - 1) = v ∧ H < vanEckNthTerm m) :
+    (S.card - 1) * (H + 1) ≤ B - A ∧ S.card * (H + 1) ≤ (B - A) + (H + 1) := by {
+  by_cases hne : S.Nonempty
+  · let m_0 := S.min' hne
+    have hm0_mem : m_0 ∈ S := Finset.min'_mem S hne
+    have hm0_p := hS m_0 hm0_mem
+    have hm0_b := pos_vanEckNthTerm_ge_two m_0 (by { omega })
+    have h_er : ∀ m ∈ S.erase m_0, 0 < vanEckNthTerm m ∧ vanEckNthTerm (m - 1) = v ∧
+        m_0 - 1 ≤ m - 1 - vanEckNthTerm m ∧ m ≤ B := by {
+      intro m hm
+      have hm_mem := Finset.mem_of_mem_erase hm
+      have hm_p := hS m hm_mem
+      have hm_lt : m_0 < m :=
+        lt_of_le_of_ne (Finset.min'_le S m hm_mem) (Finset.ne_of_mem_erase hm).symm
+      have h_disj := all_index_dormancy_intervals_disjoint m_0 m (by { omega }) hm_lt
+        (by { omega }) (hm0_p.2.2.1.trans hm_p.2.2.1.symm)
+      exact ⟨by { omega }, hm_p.2.2.1, h_disj.1, hm_p.2.1⟩
+    }
+    have h_sum_le := single_symbol_all_index_dormancy_sum_le (S.erase m_0) v (m_0 - 1) B h_er
+    have h_low : (S.erase m_0).card * (H + 1) ≤ ∑ m ∈ S.erase m_0, vanEckNthTerm m := by {
+      have h_le : (∑ _m ∈ S.erase m_0, (H + 1)) ≤ ∑ m ∈ S.erase m_0, vanEckNthTerm m :=
+        Finset.sum_le_sum (fun m hm => (hS m (Finset.mem_of_mem_erase hm)).2.2.2)
+      rw [Finset.sum_const, smul_eq_mul] at h_le
+      exact h_le
+    }
+    have h_card_er : (S.erase m_0).card = S.card - 1 := Finset.card_erase_of_mem hm0_mem
+    have h_card_pos : 1 ≤ S.card := Finset.card_pos.mpr hne
+    rw [h_card_er] at h_low
+    have h_first : (S.card - 1) * (H + 1) ≤ B - A := by { omega }
+    have h_mul : S.card * (H + 1) = (S.card - 1) * (H + 1) + (H + 1) := by {
+      calc S.card * (H + 1) = ((S.card - 1) + 1) * (H + 1) := by {
+            rw [Nat.sub_add_cancel h_card_pos]
+          }
+        _ = (S.card - 1) * (H + 1) + (H + 1) := Nat.succ_mul (S.card - 1) (H + 1)
+    }
+    exact ⟨h_first, by { omega }⟩
+  · have h_empty : S = ∅ := Finset.not_nonempty_iff_eq_empty.mp hne
+    rw [h_empty, Finset.card_empty]
+    simp
+}
+
+/--
+Arbitrary Finite-Palette All-Index Cooldown Bound: for any finite palette `P` and finite set `M`
+of indices `m ∈ [A, B]` whose predecessor `a(m - 1)` lies in `P` and emits `H < a(m)`,
+`M.card * (H + 1) ≤ P.card * ((B - A) + (H + 1))`.
+-/
+lemma palette_set_all_index_window_cooldown_bound (M P : Finset ℕ) (H A B : ℕ)
+    (hM : ∀ m ∈ M, A ≤ m ∧ m ≤ B ∧ vanEckNthTerm (m - 1) ∈ P ∧ H < vanEckNthTerm m) :
+    M.card * (H + 1) ≤ P.card * ((B - A) + (H + 1)) := by {
+  have h_maps : ∀ m ∈ M, vanEckNthTerm (m - 1) ∈ P := fun m hm => (hM m hm).2.2.1
+  have h_fib := Finset.sum_fiberwise_of_maps_to (s := M) (t := P)
+    (g := fun m => vanEckNthTerm (m - 1)) h_maps (fun _ => H + 1)
+  rw [Finset.sum_const, smul_eq_mul] at h_fib
+  have h_up : (∑ v ∈ P, ∑ _m ∈ M.filter (fun m => vanEckNthTerm (m - 1) = v), (H + 1)) ≤
+      ∑ _v ∈ P, ((B - A) + (H + 1)) := by {
+    apply Finset.sum_le_sum
+    intro v _hv
+    rw [Finset.sum_const, smul_eq_mul]
+    apply (single_symbol_all_index_window_cooldown_bound _ v H A B _).2
+    intro m hm
+    rcases Finset.mem_filter.mp hm with ⟨hmM, hmv⟩
+    have hp := hM m hmM
+    exact ⟨hp.1, hp.2.1, hmv, hp.2.2.2⟩
+  }
+  rw [h_fib, Finset.sum_const, smul_eq_mul] at h_up
+  exact h_up
+}
+
+/--
+First-Entry Bounded-Palette Gate: for any `z_prev < z` with `a(z_prev) = 0` and `H < a(z - 1)`,
+there is an earliest index `m ∈ (z_prev, z - 1]` with `a(m - 1) ≤ H` and `H < a(m)`.
+-/
+lemma zero_block_first_entry_above_threshold (z_prev z H : ℕ)
+    (h_lt : z_prev < z) (hz_prev : vanEckNthTerm z_prev = 0)
+    (h_large : H < vanEckNthTerm (z - 1)) :
+    ∃ m, z_prev < m ∧ m ≤ z - 1 ∧ vanEckNthTerm (m - 1) ≤ H ∧ H < vanEckNthTerm m ∧
+      ∀ k, z_prev ≤ k → k < m → vanEckNthTerm k ≤ H := by {
+  have hzp_lt_z1 : z_prev < z - 1 := by {
+    by_contra hc
+    have heq : z - 1 = z_prev := by { omega }
+    rw [heq, hz_prev] at h_large
+    omega
+  }
+  have h_ex : ∃ m, z_prev < m ∧ m ≤ z - 1 ∧ H < vanEckNthTerm m :=
+    ⟨z - 1, hzp_lt_z1, le_rfl, h_large⟩
+  let m := Nat.find h_ex
+  have hm_spec : z_prev < m ∧ m ≤ z - 1 ∧ H < vanEckNthTerm m := Nat.find_spec h_ex
+  have hm_below : ∀ k, z_prev ≤ k → k < m → vanEckNthTerm k ≤ H := by {
+    intro k hk_lo hk_hi
+    by_cases hk_eq : k = z_prev
+    · rw [hk_eq, hz_prev]
+      omega
+    · by_contra hk_gt
+      exact Nat.find_min h_ex hk_hi ⟨by { omega }, by { omega }, by { omega }⟩
+  }
+  exact ⟨m, hm_spec.1, hm_spec.2.1, hm_below (m - 1) (by { omega }) (by { omega }),
+    hm_spec.2.2, hm_below⟩
+}
+
+/--
+Canonical gate index inside `(lastZero (z - 1), z - 1]` for any zero `z > z_0` (`a(z_0) = 0`)
+emitting `H < a(z - 1)`.
+-/
+lemma zero_gate_idx_spec (z_0 z H : ℕ) (hz0 : vanEckNthTerm z_0 = 0)
+    (hz_gt : z_0 < z) (h_large : H < vanEckNthTerm (z - 1)) :
+    ∃ m, z_0 < m ∧ lastZero (z - 1) < m ∧ m ≤ z - 1 ∧
+      vanEckNthTerm (m - 1) ≤ H ∧ H < vanEckNthTerm m := by {
+  let z_prev := lastZero (z - 1)
+  have hzp_le : z_prev ≤ z - 1 := lastZero_le (z - 1)
+  have hzp_zero : vanEckNthTerm z_prev = 0 := vanEck_lastZero_is_zero (z - 1)
+  have hz0_le_zp : z_0 ≤ z_prev := by {
+    by_contra hc
+    exact no_zero_after_lastZero (z - 1) z_0 (by { omega }) (by { omega }) hz0
+  }
+  rcases zero_block_first_entry_above_threshold z_prev z H (by { omega }) hzp_zero h_large with
+    ⟨m, hm_gt, hm_le, hm_prev_le, hm_gt_H, _⟩
+  exact ⟨m, by { omega }, hm_gt, hm_le, hm_prev_le, hm_gt_H⟩
+}
+
+/--
+Bounded-Palette Gate Supply Theorem: every zero `z ∈ Z` (`z_0 < z ≤ B`, `a(z) = 0`, `a(z_0) = 0`)
+emitting `H < a(z - 1)` crosses `H` inside `(lastZero (z - 1), z - 1]` from a predecessor in `P`
+whenever `P` contains all values `≤ H` occurring in `[z_0, B)`, yielding
+`Z.card * (H + 1) ≤ P.card * ((B - (z_0 + 1)) + (H + 1))`.
+-/
+theorem large_pre_zero_palette_gate_supply (Z P : Finset ℕ) (z_0 H B : ℕ)
+    (hz0 : vanEckNthTerm z_0 = 0)
+    (hP : ∀ k, z_0 ≤ k → k < B → vanEckNthTerm k ≤ H → vanEckNthTerm k ∈ P)
+    (hZ : ∀ z ∈ Z, z_0 < z ∧ z ≤ B ∧ vanEckNthTerm z = 0 ∧ H < vanEckNthTerm (z - 1)) :
+    Z.card * (H + 1) ≤ P.card * ((B - (z_0 + 1)) + (H + 1)) := by {
+  classical
+  let gate : ℕ → ℕ := fun z =>
+    if h : z_0 < z ∧ H < vanEckNthTerm (z - 1) then
+      Classical.choose (zero_gate_idx_spec z_0 z H hz0 h.1 h.2)
+    else 0
+  have hgate : ∀ z ∈ Z, z_0 < gate z ∧ lastZero (z - 1) < gate z ∧ gate z ≤ z - 1 ∧
+      vanEckNthTerm (gate z - 1) ≤ H ∧ H < vanEckNthTerm (gate z) := by {
+    intro z hz
+    have hp := hZ z hz
+    have hcond : z_0 < z ∧ H < vanEckNthTerm (z - 1) := ⟨hp.1, hp.2.2.2⟩
+    have hch := Classical.choose_spec (zero_gate_idx_spec z_0 z H hz0 hcond.1 hcond.2)
+    have hdef : gate z = Classical.choose (zero_gate_idx_spec z_0 z H hz0 hcond.1 hcond.2) :=
+      dif_pos hcond
+    rw [hdef]
+    exact hch
+  }
+  have h_inj : Set.InjOn gate (Z : Set ℕ) := by {
+    intro z hz z' hz' heq
+    have hg := hgate z hz
+    have hg' := hgate z' hz'
+    rcases lt_trichotomy z z' with hlt | h_eq | hgt
+    · exfalso
+      have hz_le_zp' : z ≤ lastZero (z' - 1) := by {
+        by_contra hc
+        exact no_zero_after_lastZero (z' - 1) z (by { omega }) (by { omega }) (hZ z hz).2.2.1
+      }
+      omega
+    · exact h_eq
+    · exfalso
+      have hz'_le_zp : z' ≤ lastZero (z - 1) := by {
+        by_contra hc
+        exact no_zero_after_lastZero (z - 1) z' (by { omega }) (by { omega }) (hZ z' hz').2.2.1
+      }
+      omega
+  }
+  have h_img : ∀ m ∈ Z.image gate, z_0 + 1 ≤ m ∧ m ≤ B ∧
+      vanEckNthTerm (m - 1) ∈ P ∧ H < vanEckNthTerm m := by {
+    intro m hm
+    rcases Finset.mem_image.mp hm with ⟨z, hz, rfl⟩
+    have hg := hgate z hz
+    have hp := hZ z hz
+    have hmemP := hP (gate z - 1) (by { omega }) (by { omega }) hg.2.2.2.1
+    exact ⟨by { omega }, by { omega }, hmemP, hg.2.2.2.2⟩
+  }
+  have h_bnd := palette_set_all_index_window_cooldown_bound (Z.image gate) P H (z_0 + 1) B h_img
+  rw [Finset.card_image_of_injOn h_inj] at h_bnd
+  exact h_bnd
+}
+
+/--
+Computable most-recent occurrence of symbol `v` strictly before index `m` in the Van Eck sequence.
+-/
+def lastOccBefore : ℕ → ℕ → Option ℕ
+  | 0, _ => none
+  | m + 1, v => if vanEckNthTerm m = v then some m else lastOccBefore m v
+
+/--
+`lastOccBefore m v = none` iff `v` never appears in `[0, m)`.
+-/
+lemma lastOccBefore_eq_none_iff (m v : ℕ) :
+    lastOccBefore m v = none ↔ ∀ i < m, vanEckNthTerm i ≠ v := by {
+  induction m with
+  | zero =>
+    simp [lastOccBefore]
+  | succ k ih =>
+    simp only [lastOccBefore]
+    split_ifs with hk
+    · constructor
+      · intro h
+        nomatch h
+      · intro h_all
+        exact False.elim (h_all k (Nat.lt_succ_self k) hk)
+    · rw [ih]
+      constructor
+      · intro h_prev i hi
+        rcases lt_or_eq_of_le (Nat.le_of_lt_succ hi) with hlt | rfl
+        · exact h_prev i hlt
+        · exact hk
+      · exact fun h_all i hi => h_all i (Nat.lt_succ_of_lt hi)
+}
+
+/--
+If `lastOccBefore m v = some p`, then `p < m` is the strictly most recent occurrence of `v`
+before `m`.
+-/
+lemma lastOccBefore_eq_some_spec (m v p : ℕ) (h : lastOccBefore m v = some p) :
+    p < m ∧ vanEckNthTerm p = v ∧ ∀ j, p < j → j < m → vanEckNthTerm j ≠ v := by {
+  induction m with
+  | zero =>
+    simp [lastOccBefore] at h
+  | succ k ih =>
+    simp only [lastOccBefore] at h
+    split_ifs at h with hk
+    · injection h with hp_eq
+      subst hp_eq
+      exact ⟨Nat.lt_succ_self k, hk, fun _ hj1 hj2 => by { omega }⟩
+    · have h_prev := ih h
+      refine ⟨Nat.lt_succ_of_lt h_prev.1, h_prev.2.1, ?_⟩
+      intro j hj1 hj2
+      rcases lt_or_eq_of_le (Nat.le_of_lt_succ hj2) with hlt | rfl
+      · exact h_prev.2.2 j hj1 hlt
+      · exact hk
+}
+
+/--
+Exact Recurrence Preservation of `lastOccBefore`: `vanEckNthTerm (m + 1)` is `0` when
+`lastOccBefore m (vanEckNthTerm m) = none` and `m - p` when it is `some p`.
+-/
+lemma vanEck_next_eq_of_lastOccBefore (m : ℕ) :
+    vanEckNthTerm (m + 1) =
+      match lastOccBefore m (vanEckNthTerm m) with
+      | none => 0
+      | some p => m - p := by {
+  cases h_occ : lastOccBefore m (vanEckNthTerm m) with
+  | none =>
+    have h_new := (lastOccBefore_eq_none_iff m (vanEckNthTerm m)).mp h_occ
+    cases m with
+    | zero => rfl
+    | succ k => exact (vanEck_mth_term_eq_zero_iff_prev_term_new k).mpr h_new
+  | some p =>
+    have hp := lastOccBefore_eq_some_spec m (vanEckNthTerm m) p h_occ
+    have h_nz : vanEckNthTerm (m + 1) ≠ 0 := by {
+      intro hz
+      have h_ne := pre_zero_ne_prior_val (m + 1) p hz (by { omega }) (by { omega })
+      have h_sub : m + 1 - 1 = m := rfl
+      rw [h_sub] at h_ne
+      exact h_ne hp.2.1.symm
+    }
+    have h_pos : 0 < vanEckNthTerm (m + 1) := Nat.pos_of_ne_zero h_nz
+    have h_rec := pos_value_most_recent_occurrence (m + 1) (vanEckNthTerm (m + 1))
+      (by { omega }) rfl h_pos
+    have h_sub : m + 1 - 1 = m := rfl
+    rw [h_sub] at h_rec
+    rcases lt_trichotomy (m - vanEckNthTerm (m + 1)) p with hlt | heq | hgt
+    · exact False.elim (h_rec.2.2 p hlt hp.1 hp.2.1)
+    · have h_le : vanEckNthTerm (m + 1) ≤ m := (pos_vanEckNthTerm_ge_two (m + 1) h_pos).2
+      dsimp only
+      rw [← heq]
+      exact (Nat.sub_sub_self h_le).symm
+    · exact False.elim (hp.2.2 (m - vanEckNthTerm (m + 1)) hgt h_rec.1 h_rec.2.1)
+}
+
+/--
+Age (`m - p ≥ 1`) of a live symbol `v` at index `m`, or `none` if `v` has not appeared in `[0, m)`.
+-/
+def symbolAge (m v : ℕ) : Option ℕ :=
+  (lastOccBefore m v).map (fun p => m - p)
+
+/--
+Exact Transition Law for `symbolAge`: `a(m + 1) = (symbolAge m (a m)).getD 0`, the selected
+symbol's age resets to `some 1`, and every other live symbol's age increments by `1`.
+-/
+lemma symbolAge_transitions (m : ℕ) :
+    vanEckNthTerm (m + 1) = (symbolAge m (vanEckNthTerm m)).getD 0 ∧
+      symbolAge (m + 1) (vanEckNthTerm m) = some 1 ∧
+      ∀ w, w ≠ vanEckNthTerm m → symbolAge (m + 1) w = (symbolAge m w).map (· + 1) := by {
+  refine ⟨?_, ?_, ?_⟩
+  · rw [vanEck_next_eq_of_lastOccBefore m]
+    unfold symbolAge
+    cases lastOccBefore m (vanEckNthTerm m) with
+    | none => rfl
+    | some _ => rfl
+  · unfold symbolAge lastOccBefore
+    simp
+  · intro w hw
+    unfold symbolAge
+    have h_step : lastOccBefore (m + 1) w = lastOccBefore m w := by {
+      simp only [lastOccBefore]
+      exact if_neg (Ne.symm hw)
+    }
+    rw [h_step]
+    cases h_occ : lastOccBefore m w with
+    | none => rfl
+    | some p =>
+      have hp_lt := (lastOccBefore_eq_some_spec m w p h_occ).1
+      simp only [Option.map]
+      congr 1
+      omega
+}
+
+/--
+Clamped age in `{0, ..., H}`: returns `d ∈ [1, H]` when `symbolAge m v = some d` with `d ≤ H`,
+and `0` when `v` is unseen or dormant beyond `H`.
+-/
+def clampedAgeNat (H m v : ℕ) : ℕ :=
+  match symbolAge m v with
+  | none => 0
+  | some d => if d ≤ H then d else 0
+
+/--
+Pure deterministic transition rule for `clampedAgeNat H`.
+-/
+def stepClampedAge (H cur : ℕ) (st : ℕ → ℕ) (w : ℕ) : ℕ :=
+  if w = cur then
+    if 1 ≤ H then 1 else 0
+  else if st w = 0 ∨ H ≤ st w then
+    0
+  else
+    st w + 1
+
+/--
+Bounds and output readout for `clampedAgeNat H`: values lie in `[0, H]`, and
+`clampedAgeNat H m (vanEckNthTerm m) = d ↔ vanEckNthTerm (m + 1) = d` for all `1 ≤ d ≤ H`.
+-/
+lemma clampedAgeNat_le_and_output (H m : ℕ) :
+    (∀ w, clampedAgeNat H m w ≤ H) ∧
+      (∀ d, 1 ≤ d → d ≤ H →
+        (clampedAgeNat H m (vanEckNthTerm m) = d ↔ vanEckNthTerm (m + 1) = d)) := by {
+  have h_tr := symbolAge_transitions m
+  refine ⟨?_, ?_⟩
+  · intro w
+    unfold clampedAgeNat
+    cases symbolAge m w with
+    | none => exact Nat.zero_le H
+    | some d =>
+      dsimp only
+      split_ifs with hd
+      · exact hd
+      · exact Nat.zero_le H
+  · intro d hd1 hdH
+    rw [h_tr.1]
+    unfold clampedAgeNat
+    cases symbolAge m (vanEckNthTerm m) with
+    | none =>
+      dsimp only [Option.getD]
+      omega
+    | some d' =>
+      dsimp only [Option.getD]
+      split_ifs with hd'
+      · omega
+      · omega
+}
+
+/--
+`clampedAgeNat H` evolves deterministically via `stepClampedAge` at every step `m`.
+-/
+lemma clampedAgeNat_step (H m w : ℕ) :
+    clampedAgeNat H (m + 1) w =
+      stepClampedAge H (vanEckNthTerm m) (clampedAgeNat H m) w := by {
+  have h_tr := symbolAge_transitions m
+  by_cases hw : w = vanEckNthTerm m
+  · rw [hw, stepClampedAge, if_pos rfl]
+    unfold clampedAgeNat
+    rw [h_tr.2.1]
+  · rw [stepClampedAge, if_neg hw]
+    unfold clampedAgeNat
+    rw [h_tr.2.2 w hw]
+    cases h_occ : lastOccBefore m w with
+    | none =>
+      have h_sa : symbolAge m w = none := by { simp [symbolAge, h_occ] }
+      rw [h_sa]
+      simp
+    | some p =>
+      have hp_lt := (lastOccBefore_eq_some_spec m w p h_occ).1
+      have h_sa : symbolAge m w = some (m - p) := by { simp [symbolAge, h_occ] }
+      rw [h_sa]
+      simp only [Option.map]
+      by_cases hd_le : m - p ≤ H
+      · rw [if_pos hd_le]
+        by_cases hd_lt : m - p < H
+        · have h_not : ¬ (m - p = 0 ∨ H ≤ m - p) := by { omega }
+          rw [if_neg h_not, if_pos (by { omega })]
+        · have h_or : m - p = 0 ∨ H ≤ m - p := Or.inr (by { omega })
+          rw [if_pos h_or, if_neg (by { omega })]
+      · rw [if_neg hd_le, if_pos (Or.inl rfl), if_neg (by { omega })]
+}
+
+/--
+If the clamped palette state `(a(k), clampedAgeNat H k ↾ P)` repeats across `k_1 < k_2` at the
+ends of a run `k ∈ [k_1, k_2]` staying inside `P ⊆ [1, H]`, then `vanEckNthTerm` is periodic of
+period `k_2 - k_1` and nonzero from `k_1` onward.
+-/
+lemma palette_clamped_state_periodic_from_collision (P : Finset ℕ) (H k_1 k_2 : ℕ)
+    (hP : ∀ v ∈ P, 1 ≤ v ∧ v ≤ H) (h_lt : k_1 < k_2)
+    (h_run : ∀ k, k_1 ≤ k → k ≤ k_2 → vanEckNthTerm k ∈ P)
+    (h_cur : vanEckNthTerm k_1 = vanEckNthTerm k_2)
+    (h_st : ∀ w ∈ P, clampedAgeNat H k_1 w = clampedAgeNat H k_2 w) :
+    ∀ t, vanEckNthTerm (k_1 + t) ∈ P ∧
+      vanEckNthTerm (k_2 + t) = vanEckNthTerm (k_1 + t) ∧
+      ∀ w ∈ P, clampedAgeNat H (k_2 + t) w = clampedAgeNat H (k_1 + t) w := by {
+  intro t
+  refine Nat.strong_induction_on t (fun t ih => ?_)
+  cases t with
+  | zero =>
+    exact ⟨h_run k_1 le_rfl (Nat.le_of_lt h_lt), h_cur.symm, fun w hw => (h_st w hw).symm⟩
+  | succ s =>
+    have ih_s := ih s (Nat.lt_succ_self s)
+    have h_next_mem : vanEckNthTerm (k_1 + (s + 1)) ∈ P := by {
+      by_cases h_le_Q : s + 1 ≤ k_2 - k_1
+      · exact h_run (k_1 + (s + 1)) (by { omega }) (by { omega })
+      · let u := (s + 1) - (k_2 - k_1)
+        have hu_lt : u < s + 1 := by { omega }
+        have ih_u := ih u hu_lt
+        have h_idx : k_1 + (s + 1) = k_2 + u := by { omega }
+        rw [h_idx, ih_u.2.1]
+        exact ih_u.1
+    }
+    have h_b := hP (vanEckNthTerm (k_1 + (s + 1))) h_next_mem
+    have h_out1 := clampedAgeNat_le_and_output H (k_1 + s)
+    have h_out2 := clampedAgeNat_le_and_output H (k_2 + s)
+    have h_c1 : clampedAgeNat H (k_1 + s) (vanEckNthTerm (k_1 + s)) =
+        vanEckNthTerm (k_1 + (s + 1)) := by {
+      have h_assoc : k_1 + s + 1 = k_1 + (s + 1) := by { omega }
+      exact (h_out1.2 _ h_b.1 h_b.2).mpr (by { rw [h_assoc] })
+    }
+    have h_c2 : clampedAgeNat H (k_2 + s) (vanEckNthTerm (k_2 + s)) =
+        vanEckNthTerm (k_1 + (s + 1)) := by {
+      rw [ih_s.2.1, ih_s.2.2 _ ih_s.1]
+      exact h_c1
+    }
+    have h_val2 : vanEckNthTerm (k_2 + (s + 1)) = vanEckNthTerm (k_1 + (s + 1)) := by {
+      have h_assoc : k_2 + s + 1 = k_2 + (s + 1) := by { omega }
+      rw [← h_assoc]
+      exact (h_out2.2 _ h_b.1 h_b.2).mp h_c2
+    }
+    refine ⟨h_next_mem, h_val2, ?_⟩
+    intro w hw
+    have ha1 : k_1 + (s + 1) = k_1 + s + 1 := by { omega }
+    have ha2 : k_2 + (s + 1) = k_2 + s + 1 := by { omega }
+    rw [ha1, ha2, clampedAgeNat_step H (k_2 + s) w, clampedAgeNat_step H (k_1 + s) w, ih_s.2.1]
+    unfold stepClampedAge
+    rw [ih_s.2.2 w hw]
+}
+
+/--
+Finite-Palette Clamped-State Collision Obstruction: in any run `k ∈ [k_1, k_2]` (`k_1 < k_2`)
+staying inside a finite palette `P ⊆ [1, H]`, `(a(k_1), clampedAgeNat H k_1 ↾ P)` and
+`(a(k_2), clampedAgeNat H k_2 ↾ P)` cannot coincide.
+-/
+lemma palette_clamped_state_repeat_impossible (P : Finset ℕ) (H k_1 k_2 : ℕ)
+    (hP : ∀ v ∈ P, 1 ≤ v ∧ v ≤ H) (h_lt : k_1 < k_2)
+    (h_run : ∀ k, k_1 ≤ k → k ≤ k_2 → vanEckNthTerm k ∈ P)
+    (h_cur : vanEckNthTerm k_1 = vanEckNthTerm k_2)
+    (h_st : ∀ w ∈ P, clampedAgeNat H k_1 w = clampedAgeNat H k_2 w) :
+    False := by {
+  have h_per := palette_clamped_state_periodic_from_collision P H k_1 k_2
+    hP h_lt h_run h_cur h_st
+  apply no_periodic_nonzero_tail k_1 (k_2 - k_1) (by { omega })
+  · intro m hm
+    have h_m : m = k_1 + (m - k_1) := by { omega }
+    have h_mQ : m + (k_2 - k_1) = k_2 + (m - k_1) := by { omega }
+    rw [h_mQ, (h_per (m - k_1)).2.1, ← h_m]
+  · intro m hm
+    have h_m : m = k_1 + (m - k_1) := by { omega }
+    have h_in := (h_per (m - k_1)).1
+    rw [← h_m] at h_in
+    have h_pos := (hP (vanEckNthTerm m) h_in).1
+    omega
+}
+
+/--
+Unconditional Bounded-Palette Zero-Free Run Bound: no run `A, A + 1, ..., A + L` of length
+`L + 1 > P.card * (H + 1) ^ P.card` can remain entirely inside a positive palette `P ⊆ [1, H]`.
+-/
+theorem finite_palette_run_length_bound (P : Finset ℕ) (H A L : ℕ)
+    (hP : ∀ v ∈ P, 1 ≤ v ∧ v ≤ H)
+    (h_run : ∀ t ≤ L, vanEckNthTerm (A + t) ∈ P) :
+    L + 1 ≤ P.card * (H + 1) ^ P.card := by {
+  classical
+  let State := { v // v ∈ P } × ({ w // w ∈ P } → Fin (H + 1))
+  let encode : Fin (L + 1) → State := fun t =>
+    (⟨vanEckNthTerm (A + t.val), h_run t.val (Nat.lt_succ_iff.mp t.isLt)⟩,
+      fun w => ⟨clampedAgeNat H (A + t.val) w.val,
+        Nat.lt_succ_of_le ((clampedAgeNat_le_and_output H (A + t.val)).1 w.val)⟩)
+  have h_inj : Function.Injective encode := by {
+    intro t_1 t_2 heq
+    have h_cur : vanEckNthTerm (A + t_1.val) = vanEckNthTerm (A + t_2.val) :=
+      congrArg (fun s => s.1.val) heq
+    have h_st : ∀ w ∈ P, clampedAgeNat H (A + t_1.val) w = clampedAgeNat H (A + t_2.val) w := by {
+      intro w hw
+      exact congrArg Fin.val (congrFun (congrArg Prod.snd heq) ⟨w, hw⟩)
+    }
+    rcases lt_trichotomy t_1.val t_2.val with hlt | hval_eq | hgt
+    · exfalso
+      exact palette_clamped_state_repeat_impossible P H (A + t_1.val) (A + t_2.val) hP
+        (by { omega }) (fun k hk1 hk2 => by {
+          have hk_eq : k = A + (k - A) := by { omega }
+          rw [hk_eq]
+          exact h_run (k - A) (by { omega })
+        }) h_cur h_st
+    · exact Fin.ext hval_eq
+    · exfalso
+      exact palette_clamped_state_repeat_impossible P H (A + t_2.val) (A + t_1.val) hP
+        (by { omega }) (fun k hk1 hk2 => by {
+          have hk_eq : k = A + (k - A) := by { omega }
+          rw [hk_eq]
+          exact h_run (k - A) (by { omega })
+        }) h_cur.symm (fun w hw => (h_st w hw).symm)
+  }
+  have h_card := Fintype.card_le_of_injective encode h_inj
+  dsimp only [State] at h_card
+  simp only [Fintype.card_fin, Fintype.card_prod, Fintype.card_coe, Fintype.card_fun] at h_card
+  exact h_card
+}
+
+/--
+Unconditional No-Stutter of `1`: the Van Eck sequence never emits two consecutive `1`s (`[1, 1]`),
+as doing so collides the `{1}` clamped-age state of height `H = 1`.
+-/
+theorem vanEck_no_stutter_one (m : ℕ) :
+    ¬ (vanEckNthTerm m = 1 ∧ vanEckNthTerm (m + 1) = 1) := by {
+  rintro ⟨hm, hm1⟩
+  have h_c0 : clampedAgeNat 1 m 1 = 1 := by {
+    have h_out := (clampedAgeNat_le_and_output 1 m).2 1 le_rfl le_rfl
+    rw [hm] at h_out
+    exact h_out.mpr hm1
+  }
+  have h_c1 : clampedAgeNat 1 (m + 1) 1 = 1 := by {
+    rw [clampedAgeNat_step 1 m 1, hm]
+    rfl
+  }
+  exact palette_clamped_state_repeat_impossible ({1} : Finset ℕ) 1 m (m + 1)
+    (fun v hv => by {
+      rw [Finset.mem_singleton] at hv
+      exact ⟨by { omega }, by { omega }⟩
+    })
+    (Nat.lt_succ_self m)
+    (fun k hk1 hk2 => by {
+      rw [Finset.mem_singleton]
+      rcases eq_or_lt_of_le hk1 with rfl | hgt
+      · exact hm
+      · have hk_eq : k = m + 1 := by { omega }
+        rw [hk_eq]
+        exact hm1
+    })
+    (hm.trans hm1.symm)
+    (fun w hw => by {
+      rw [Finset.mem_singleton] at hw
+      rw [hw, h_c0, h_c1]
+    })
+}
+
+/--
+Any stutter `a(k) = a(k + 1)` immediately emits `a(k + 2) = 1`.
+-/
+lemma vanEck_stutter_emits_one (k : ℕ) (h : vanEckNthTerm k = vanEckNthTerm (k + 1)) :
+    vanEckNthTerm (k + 2) = 1 := by {
+  have h_next := vanEck_next_eq_of_lastOccBefore (k + 1)
+  have h_occ : lastOccBefore (k + 1) (vanEckNthTerm (k + 1)) = some k := by {
+    simp only [lastOccBefore, if_pos h]
+  }
+  rw [h_occ] at h_next
+  change vanEckNthTerm (k + 2) = k + 1 - k at h_next
+  rw [h_next]
+  omega
+}
+
+/--
+Any alternating pair `a(k) = a(k + 2)` with `a(k + 1) ≠ a(k)` immediately emits `a(k + 3) = 2`.
+-/
+lemma vanEck_alt_pair_emits_two (k : ℕ)
+    (h_eq : vanEckNthTerm k = vanEckNthTerm (k + 2))
+    (h_ne : vanEckNthTerm (k + 1) ≠ vanEckNthTerm k) :
+    vanEckNthTerm (k + 3) = 2 := by {
+  have h_next := vanEck_next_eq_of_lastOccBefore (k + 2)
+  have h_ne2 : vanEckNthTerm (k + 1) ≠ vanEckNthTerm (k + 2) := h_eq ▸ h_ne
+  have h_occ : lastOccBefore (k + 2) (vanEckNthTerm (k + 2)) = some k := by {
+    simp only [lastOccBefore, if_neg h_ne2, if_pos h_eq]
+  }
+  rw [h_occ] at h_next
+  change vanEckNthTerm (k + 3) = k + 2 - k at h_next
+  rw [h_next]
+  omega
+}
+
+/--
+Any distance-3 repeat `a(k) = a(k + 3)` with `a(k + 1) ≠ a(k)` and `a(k + 2) ≠ a(k)` emits `3`.
+-/
+lemma vanEck_gap_three_emits_three (k : ℕ)
+    (h_eq : vanEckNthTerm k = vanEckNthTerm (k + 3))
+    (h_ne1 : vanEckNthTerm (k + 1) ≠ vanEckNthTerm k)
+    (h_ne2 : vanEckNthTerm (k + 2) ≠ vanEckNthTerm k) :
+    vanEckNthTerm (k + 4) = 3 := by {
+  have h_next := vanEck_next_eq_of_lastOccBefore (k + 3)
+  have h_n2 : vanEckNthTerm (k + 2) ≠ vanEckNthTerm (k + 3) := h_eq ▸ h_ne2
+  have h_n1 : vanEckNthTerm (k + 1) ≠ vanEckNthTerm (k + 3) := h_eq ▸ h_ne1
+  have h_occ : lastOccBefore (k + 3) (vanEckNthTerm (k + 3)) = some k := by {
+    simp only [lastOccBefore, if_neg h_n2, if_neg h_n1, if_pos h_eq]
+  }
+  rw [h_occ] at h_next
+  change vanEckNthTerm (k + 4) = k + 3 - k at h_next
+  rw [h_next]
+  omega
+}
+
+
+
+

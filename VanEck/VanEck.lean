@@ -954,14 +954,137 @@ lemma M_occurrence_bounds {n M : ℕ} (h_bound : ∀ k ≥ n, vanEckNthTerm k �
   have h_gap := gap_determines_value k hk_n M hn_pos hX hd_pos
   exact h_gap
 
--- Inner Density Exclusion Axiom (Replaces full 1000-line Finset Sum Collapse!)
-axiom maximum_bounds_collision_collapse (n M P : ℕ)
-    (h_per : ∀ k ≥ n, vanEckNthTerm k = vanEckNthTerm (k + P))
-    (h_bound : ∀ k ≥ n, vanEckNthTerm k ≤ M)
+-- If `p < m` is the strictly most recent prior occurrence of `a(m)`, then `a(m + 1) = m - p`.
+lemma strict_prior_match_gives_gap (p m : ℕ) (h_lt : p < m)
+    (h_match : vanEckNthTerm m = vanEckNthTerm p)
+    (h_no_int : ∀ j, p < j → j < m → vanEckNthTerm j ≠ vanEckNthTerm m) :
+    vanEckNthTerm (m + 1) = m - p := by {
+  have ht := vanEck_term_is_matchSearch (m + 1) (Nat.succ_pos m)
+  have hm_sub : m + 1 - 1 = m := rfl
+  rw [hm_sub] at ht
+  have hL_len : (vanEck m).length - 1 = m := by {
+    rw [vanEckLength m]
+    rfl
+  }
+  have h_last : listNth (vanEck m) ((vanEck m).length - 1) = listNth (vanEck m) p := by {
+    rw [hL_len, VanEck_deterministic m m (Nat.le_refl m),
+      VanEck_deterministic m p (Nat.le_of_lt h_lt)]
+    exact h_match
+  }
+  have h_fail : ∀ k, 1 ≤ k → k ≤ m - p - 1 →
+      listNth (vanEck m) ((vanEck m).length - 1) ≠ listNth (vanEck m) (p + k) := by {
+    intro k hk1 hk2
+    rw [hL_len, VanEck_deterministic m m (Nat.le_refl m),
+      VanEck_deterministic m (p + k) (by { omega })]
+    exact Ne.symm (h_no_int (p + k) (by { omega }) (by { omega }))
+  }
+  have h_ms := matchSearch_eq_dist (vanEck m) p (m - p - 1) h_last h_fail
+  have h_idx : p + (m - p - 1) + 1 = m := by { omega }
+  rw [h_idx, hL_len] at h_ms
+  rw [ht, h_ms]
+}
+
+-- Jan Ritsema van Eck's backward periodicity step: periodicity from `r ≥ 1` extends to `r - 1`.
+lemma periodic_step_backward (r Q : ℕ) (hr : r ≥ 1) (hQ : Q ≥ 1)
+    (h_per : ∀ k ≥ r, vanEckNthTerm k = vanEckNthTerm (k + Q)) :
+    vanEckNthTerm (r - 1) = vanEckNthTerm (r - 1 + Q) := by {
+  have hz_next : vanEckNthTerm (r - 1 + Q + Q) = vanEckNthTerm (r - 1 + Q) :=
+    (h_per (r - 1 + Q) (by { omega })).symm
+  have h_ex : ∃ m, m ≥ r + Q ∧ vanEckNthTerm m = vanEckNthTerm (r - 1 + Q) :=
+    ⟨r - 1 + Q + Q, by { omega }, hz_next⟩
+  let m := Nat.find h_ex
+  have hm_spec : m ≥ r + Q ∧ vanEckNthTerm m = vanEckNthTerm (r - 1 + Q) :=
+    Nat.find_spec h_ex
+  have hm_min : ∀ j, r - 1 + Q < j → j < m → vanEckNthTerm j ≠ vanEckNthTerm m := by {
+    intro j hj1 hj2 hc
+    rw [hm_spec.2] at hc
+    exact Nat.find_min h_ex hj2 ⟨by { omega }, hc⟩
+  }
+  have h_gap_m := strict_prior_match_gives_gap (r - 1 + Q) m (by { omega }) hm_spec.2 hm_min
+  have hk_ge : m - Q ≥ r := by { omega }
+  have hk1_val : vanEckNthTerm (m - Q + 1) = m - (r - 1 + Q) := by {
+    have h_p := h_per (m - Q + 1) (by { omega })
+    have h_add : m - Q + 1 + Q = m + 1 := by { omega }
+    rw [h_add] at h_p
+    rw [h_p]
+    exact h_gap_m
+  }
+  have h_gdv := gap_determines_value (m - Q) hk_ge (m - (r - 1 + Q)) hr hk1_val (by { omega })
+  have h_sub : m - Q - (m - (r - 1 + Q)) = r - 1 := by { omega }
+  have hk_val : vanEckNthTerm (m - Q) = vanEckNthTerm (r - 1 + Q) := by {
+    have h_p := h_per (m - Q) hk_ge
+    have h_add : m - Q + Q = m := by { omega }
+    rw [h_add] at h_p
+    rw [h_p]
+    exact hm_spec.2
+  }
+  rw [h_sub] at h_gdv
+  exact h_gdv.symm.trans hk_val
+}
+
+-- Any periodic tail of `vanEckNthTerm` with period `Q ≥ 1` extends all the way down to `0`.
+lemma periodic_tail_extends_to_zero (r Q : ℕ) (hQ : Q ≥ 1)
+    (h_per : ∀ k ≥ r, vanEckNthTerm k = vanEckNthTerm (k + Q)) :
+    ∀ k, vanEckNthTerm k = vanEckNthTerm (k + Q) := by {
+  induction r with
+  | zero => exact fun k => h_per k (Nat.zero_le k)
+  | succ r ih =>
+    have hr0 : vanEckNthTerm r = vanEckNthTerm (r + Q) :=
+      periodic_step_backward (r + 1) Q (Nat.succ_pos r) hQ h_per
+    apply ih
+    intro k hk
+    by_cases hk_eq : k = r
+    · rw [hk_eq]
+      exact hr0
+    · exact h_per k (by { omega })
+}
+
+-- No periodic tail of `vanEckNthTerm` (`Q ≥ 1`) can be zero-free, since `a(0) = 0` repeats.
+lemma no_periodic_nonzero_tail (r Q : ℕ) (hQ : Q ≥ 1)
+    (h_per : ∀ k ≥ r, vanEckNthTerm k = vanEckNthTerm (k + Q))
+    (h_no_zeros : ∀ k ≥ r, vanEckNthTerm k ≠ 0) : False := by {
+  have h_all := periodic_tail_extends_to_zero r Q hQ h_per
+  have h_mul : ∀ t, vanEckNthTerm (t * Q) = 0 := by {
+    intro t
+    induction t with
+    | zero =>
+      rw [Nat.zero_mul]
+      rfl
+    | succ t ih =>
+      have h_step : (t + 1) * Q = t * Q + Q := Nat.succ_mul t Q
+      rw [h_step, ← h_all (t * Q)]
+      exact ih
+  }
+  exact h_no_zeros (r * Q) (Nat.le_mul_of_pos_right r hQ) (h_mul r)
+}
+
+-- Inner Density Exclusion Lemma (proved without custom axioms via backward periodicity)
+lemma maximum_bounds_collision_collapse (n M P : ℕ)
+    (_h_per : ∀ k ≥ n, vanEckNthTerm k = vanEckNthTerm (k + P))
+    (_h_bound : ∀ k ≥ n, vanEckNthTerm k ≤ M)
     (h_no_zeros : ∀ k ≥ n, vanEckNthTerm k ≠ 0)
-    (hn_pos : n ≥ 1)
-    (hM_exists : ∃ k ≥ n + M + 1, vanEckNthTerm k = M)
-    (hM2 : M ≥ 2) : False
+    (_hn_pos : n ≥ 1)
+    (_hM_exists : ∃ k ≥ n + M + 1, vanEckNthTerm k = M)
+    (_hM2 : M ≥ 2) : False := by {
+  have h_gt : ∀ k > n, vanEckNthTerm k ≠ 0 := fun k hk => h_no_zeros k (Nat.le_of_lt hk)
+  rcases bounded_if_tail_eq_nonzero n h_gt with ⟨B, hB⟩
+  have hB_pos : B > 0 := hB 0
+  rcases pigeonhole_state_collision B hB with ⟨n_1, n_2, hn1, hn_lt, h_seq⟩
+  let N_1 := n_1 + n
+  let N_2 := n_2 + n
+  have h_shift := (forward_periodicity n_1 n_2 B hB h_seq hn1 (by { omega }) hB_pos n).1
+  have h_fp := forward_periodicity N_1 N_2 B hB h_shift (by { omega }) (by { omega }) hB_pos
+  have h_per_Q : ∀ k ≥ N_1, vanEckNthTerm k = vanEckNthTerm (k + (N_2 - N_1)) := by {
+    intro k hk
+    have hp := (h_fp (k - N_1)).2
+    have h1 : N_1 + (k - N_1) = k := by { omega }
+    have h2 : N_2 + (k - N_1) = k + (N_2 - N_1) := by { omega }
+    rw [h1, h2] at hp
+    exact hp
+  }
+  have h_nz_Q : ∀ k ≥ N_1, vanEckNthTerm k ≠ 0 := fun k hk => h_no_zeros k (by { omega })
+  exact no_periodic_nonzero_tail N_1 (N_2 - N_1) (by { omega }) h_per_Q h_nz_Q
+}
 
 -- The $M \le 1$ Homogeneity Collapse Native Closure!
 lemma sequence_homogeneity_collapse_native (n M P : ℕ)
