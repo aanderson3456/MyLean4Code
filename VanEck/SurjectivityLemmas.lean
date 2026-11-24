@@ -2860,6 +2860,317 @@ lemma vanEck_gap_three_emits_three (k : ℕ)
   omega
 }
 
+/--
+Since `vanEckNthTerm 1 = 0`, `1 ≤ lastZero m` holds for every `m ≥ 1`.
+-/
+lemma lastZero_pos_of_ge_one (m : ℕ) (hm : 1 ≤ m) : 1 ≤ lastZero m := by {
+  by_contra hc
+  have h1 : vanEckNthTerm 1 = 0 := rfl
+  exact no_zero_after_lastZero m 1 (by { omega }) hm h1
+}
+
+/--
+Every positive term `vanEckNthTerm m > 0` has a unique birth zero `z_b` (`3 ≤ z_b ≤ m + 1`,
+`a(z_b) = 0`, `a(z_b - 1) = a(m)`).
+-/
+lemma pos_term_has_unique_birth_zero (m : ℕ) (h_pos : 0 < vanEckNthTerm m) :
+    ∃ z_b, 3 ≤ z_b ∧ z_b ≤ m + 1 ∧ vanEckNthTerm z_b = 0 ∧
+      vanEckNthTerm (z_b - 1) = vanEckNthTerm m ∧
+      (∀ i < z_b - 1, vanEckNthTerm i ≠ vanEckNthTerm m) ∧
+      ∀ z_b', 1 ≤ z_b' → vanEckNthTerm z_b' = 0 →
+        vanEckNthTerm (z_b' - 1) = vanEckNthTerm m → z_b' = z_b := by {
+  have h_ex : ∃ i, vanEckNthTerm i = vanEckNthTerm m := ⟨m, rfl⟩
+  let b := Nat.find h_ex
+  have hb_eq : vanEckNthTerm b = vanEckNthTerm m := Nat.find_spec h_ex
+  have hb_min : ∀ i < b, vanEckNthTerm i ≠ vanEckNthTerm b :=
+    fun i hi hc => Nat.find_min h_ex hi (hc.trans hb_eq)
+  have hb_le : b ≤ m := Nat.find_min' h_ex rfl
+  have hb_ge2 : 2 ≤ b := (pos_vanEckNthTerm_ge_two b (hb_eq.symm ▸ h_pos)).1
+  have hzb_zero : vanEckNthTerm (b + 1) = 0 := new_value_next_is_zero b hb_min
+  refine ⟨b + 1, by { omega }, by { omega }, hzb_zero, hb_eq, ?_, ?_⟩
+  · intro i hi
+    have h_sub : b + 1 - 1 = b := rfl
+    rw [h_sub] at hi
+    rw [← hb_eq]
+    exact hb_min i hi
+  · intro z_b' hzb'_ge hzb'_zero hzb'_eq
+    by_contra hne
+    have h_zbp : vanEckNthTerm (z_b' - 1 + 1) = 0 := by {
+      have hidx : z_b' - 1 + 1 = z_b' := by { omega }
+      rw [hidx]
+      exact hzb'_zero
+    }
+    exact zero_predecessors_inj h_zbp hzb_zero (by { omega }) (hzb'_eq.trans hb_eq.symm)
+}
+
+/--
+Post-Zero Gap-Return Specification (`2`-Free Tail):
+For consecutive zeros `0 < z_prev < z` with `N_0 < z`, the zero gap `z - z_prev = a(z + 1)` has a
+strictly most recent earlier occurrence `q = z + 1 - a(z + 2) ≤ z - 2` (`3 ≤ a(z + 2)`).
+-/
+lemma no_twos_post_zero_gap_return_spec (N_0 z z_prev : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hz_prev_pos : 0 < z_prev) (hz : vanEckNthTerm z = 0)
+    (hz_gt : N_0 < z) (hz_prev : vanEckNthTerm z_prev = 0)
+    (h_prev_lt : z_prev < z)
+    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0) :
+    3 ≤ vanEckNthTerm (z + 2) ∧
+      z + 1 - vanEckNthTerm (z + 2) ≤ z - 2 ∧
+      vanEckNthTerm (z + 1 - vanEckNthTerm (z + 2)) = z - z_prev ∧
+      ∀ j, z + 1 - vanEckNthTerm (z + 2) < j → j < z + 1 →
+        vanEckNthTerm j ≠ z - z_prev := by {
+  have h_dist := gap_between_zeros z z_prev hz (by { omega }) hz_prev h_prev_lt h_gap
+  have h_ge3 := (no_twos_zero_gap_and_predecessor_bounds N_0 z z_prev h_no_twos
+    hz_prev_pos hz hz_gt hz_prev h_prev_lt h_gap).1
+  rcases finite_twos_implies_old_gaps N_0 h_no_twos z hz_gt hz with ⟨i, hi_lt, hi_eq⟩
+  cases h_occ : lastOccBefore (z + 1) (vanEckNthTerm (z + 1)) with
+  | none =>
+    exact False.elim (((lastOccBefore_eq_none_iff _ _).mp h_occ) i hi_lt hi_eq)
+  | some q =>
+    have hq_sp := lastOccBefore_eq_some_spec (z + 1) (vanEckNthTerm (z + 1)) q h_occ
+    have h_next := vanEck_next_eq_of_lastOccBefore (z + 1)
+    rw [h_occ] at h_next
+    change vanEckNthTerm (z + 2) = z + 1 - q at h_next
+    have hq_ne_z : q ≠ z := by {
+      intro heq
+      rw [heq, hz, h_dist] at hq_sp
+      omega
+    }
+    have hq_ne_z1 : q ≠ z - 1 := by {
+      intro heq
+      have h_eq2 : vanEckNthTerm (z - 1) = vanEckNthTerm (z - 1 + 2) := by {
+        have hidx : z - 1 + 2 = z + 1 := by { omega }
+        rw [hidx, ← heq]
+        exact hq_sp.2.1
+      }
+      have h_ne0 : vanEckNthTerm (z - 1 + 1) ≠ vanEckNthTerm (z - 1) := by {
+        have hidx : z - 1 + 1 = z := by { omega }
+        rw [hidx, hz, ← heq, hq_sp.2.1, h_dist]
+        omega
+      }
+      have h2 := vanEck_alt_pair_emits_two (z - 1) h_eq2 h_ne0
+      have hidx2 : z - 1 + 3 = z + 2 := by { omega }
+      rw [hidx2] at h2
+      exact h_no_twos (z + 2) (by { omega }) h2
+    }
+    have hq_le : q ≤ z - 2 := by { omega }
+    have hq_eq : z + 1 - vanEckNthTerm (z + 2) = q := by { omega }
+    refine ⟨by { omega }, by { omega }, ?_, ?_⟩
+    · rw [hq_eq, hq_sp.2.1, h_dist]
+    · rw [hq_eq, ← h_dist]
+      exact hq_sp.2.2
+}
+
+/--
+Universal Lookback-Anchor Injectivity: for any distinct indices `i ≠ j` with `0 < a(i)` and
+`0 < a(j)`, their lookback anchors `i - 1 - a(i)` and `j - 1 - a(j)` are distinct.
+-/
+lemma pos_lookback_anchor_unique (i j : ℕ)
+    (hi_pos : 0 < vanEckNthTerm i) (hj_pos : 0 < vanEckNthTerm j) (hne : i ≠ j) :
+    i - 1 - vanEckNthTerm i ≠ j - 1 - vanEckNthTerm j := by {
+  have hi_ge := (pos_vanEckNthTerm_ge_two i hi_pos).1
+  have hi_le := (pos_vanEckNthTerm_ge_two i hi_pos).2
+  have hj_ge := (pos_vanEckNthTerm_ge_two j hj_pos).1
+  have hj_le := (pos_vanEckNthTerm_ge_two j hj_pos).2
+  rcases lt_trichotomy i j with hlt | rfl | hgt
+  · have hu := vanEck_idx_sub_val_unique i j hi_pos hlt
+    omega
+  · exact False.elim (hne rfl)
+  · have hu := vanEck_idx_sub_val_unique j i hj_pos hgt
+    omega
+}
+
+/--
+Post-Zero Gap-Anchor Uniqueness & Pre-Zero Disjointness (`2`-Free Tail):
+Post-zero gap-return anchors `q(z) = z + 1 - a(z + 2)` are pairwise distinct across zeros
+`N_0 < z < z'`, and disjoint from pre-zero generator anchors `p(z'')` whenever `z'' ≠ z + 3`.
+-/
+lemma no_twos_post_zero_gap_anchor_unique_and_disjoint (N_0 z : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hz_ge : 3 ≤ z) (hz_gt : N_0 < z) (hz : vanEckNthTerm z = 0) :
+    (∀ z', z < z' → vanEckNthTerm z' = 0 →
+      z + 1 - vanEckNthTerm (z + 2) ≠ z' + 1 - vanEckNthTerm (z' + 2)) ∧
+    (∀ z'', 2 ≤ z'' → z'' ≠ z + 3 → vanEckNthTerm z'' = 0 →
+      z + 1 - vanEckNthTerm (z + 2) ≠ z'' - 2 - vanEckNthTerm (z'' - 1)) := by {
+  have hzp_pos : 0 < lastZero (z - 1) := lastZero_pos_of_ge_one (z - 1) (by { omega })
+  have hzp_le : lastZero (z - 1) ≤ z - 1 := lastZero_le (z - 1)
+  have hz2_ge3 := (no_twos_post_zero_gap_return_spec N_0 z (lastZero (z - 1)) h_no_twos hzp_pos
+    hz hz_gt (vanEck_lastZero_is_zero (z - 1)) (by { omega })
+    (fun k hk1 hk2 => no_zero_after_lastZero (z - 1) k hk1 (by { omega }))).1
+  refine ⟨?_, ?_⟩
+  · intro z' hlt hz'
+    have hzp'_pos : 0 < lastZero (z' - 1) := lastZero_pos_of_ge_one (z' - 1) (by { omega })
+    have hzp'_le : lastZero (z' - 1) ≤ z' - 1 := lastZero_le (z' - 1)
+    have hz'2_ge3 := (no_twos_post_zero_gap_return_spec N_0 z' (lastZero (z' - 1)) h_no_twos
+      hzp'_pos hz' (by { omega }) (vanEck_lastZero_is_zero (z' - 1)) (by { omega })
+      (fun k hk1 hk2 => no_zero_after_lastZero (z' - 1) k hk1 (by { omega }))).1
+    have hu := pos_lookback_anchor_unique (z + 2) (z' + 2)
+      (by { omega }) (by { omega }) (by { omega })
+    exact hu
+  · intro z'' hz''_ge hne3 hz''
+    have h_sz'' := pre_zero_new_value_prior_occurrence_spec z'' hz'' hz''_ge
+    have hu := pos_lookback_anchor_unique (z + 2) (z'' - 1)
+      (by { omega }) h_sz''.1 (by { omega })
+    have hsub1 : z + 2 - 1 = z + 1 := rfl
+    have hsub2 : z'' - 1 - 1 = z'' - 2 := by { omega }
+    rw [hsub1, hsub2] at hu
+    exact hu
+}
+
+/--
+Zero-Gap Birth-Zero Strict Descent (`2`-Free Tail):
+For consecutive zeros `0 < z_prev < z` with `N_0 < z`, the zero gap `z - z_prev` was born as the
+pre-zero value `a(z_b - 1) = z - z_prev` of a unique strictly earlier zero `3 ≤ z_b ≤ z_prev < z`.
+-/
+lemma no_twos_zero_gap_birth_zero_strict_descent (N_0 z z_prev : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hz_prev_pos : 0 < z_prev) (hz : vanEckNthTerm z = 0)
+    (hz_gt : N_0 < z) (hz_prev : vanEckNthTerm z_prev = 0)
+    (h_prev_lt : z_prev < z)
+    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0) :
+    ∃ z_b, 3 ≤ z_b ∧ z_b ≤ z_prev ∧ vanEckNthTerm z_b = 0 ∧
+      vanEckNthTerm (z_b - 1) = z - z_prev ∧
+      ∀ i < z_b - 1, vanEckNthTerm i ≠ z - z_prev := by {
+  have h_dist := gap_between_zeros z z_prev hz (by { omega }) hz_prev h_prev_lt h_gap
+  have h_ret := no_twos_post_zero_gap_return_spec N_0 z z_prev h_no_twos
+    hz_prev_pos hz hz_gt hz_prev h_prev_lt h_gap
+  have hz1_pos : 0 < vanEckNthTerm (z + 1) := by { omega }
+  rcases pos_term_has_unique_birth_zero (z + 1) hz1_pos with
+    ⟨z_b, hzb_ge3, _, hzb_zero, hzb_eq, hzb_min, _⟩
+  rw [h_dist] at hzb_eq hzb_min
+  have hzb_le_q : z_b - 1 ≤ z + 1 - vanEckNthTerm (z + 2) := by {
+    by_contra hgt
+    exact hzb_min (z + 1 - vanEckNthTerm (z + 2)) (by { omega }) h_ret.2.2.1
+  }
+  have hzb_lt_z : z_b < z := by { omega }
+  have hzb_le_prev : z_b ≤ z_prev := by {
+    by_contra hgt
+    exact h_gap z_b (by { omega }) hzb_lt_z hzb_zero
+  }
+  exact ⟨z_b, hzb_ge3, hzb_le_prev, hzb_zero, hzb_eq, hzb_min⟩
+}
+
+/--
+Chain of zeros linked by zero-gap birth: each step `z_b → z` satisfies `z_b ≤ lastZero (z - 1) < z`
+and `vanEckNthTerm (z_b - 1) = z - lastZero (z - 1)`.
+-/
+inductive IsZeroGapBirthChain : ℕ → ℕ → Prop
+  | refl (z : ℕ) (hz : vanEckNthTerm z = 0) : IsZeroGapBirthChain z z
+  | step (z_base z_b z : ℕ) (h_prev : IsZeroGapBirthChain z_base z_b)
+      (hz : vanEckNthTerm z = 0) (hzb_le : z_b ≤ lastZero (z - 1))
+      (hz_lt : z_b < z)
+      (h_birth : vanEckNthTerm (z_b - 1) = z - lastZero (z - 1)) :
+      IsZeroGapBirthChain z_base z
+
+/--
+Zero-Gap Chain Termination Theorem (`2`-Free Tail):
+Under `∀ m > N_0, vanEckNthTerm m ≠ 2`, every zero `z ≥ 3` traces back via strictly decreasing
+zero-gap birth steps `IsZeroGapBirthChain` to a root zero `3 ≤ z_base ≤ max N_0 3`.
+-/
+theorem no_twos_zero_gap_chain_reaches_prefix (N_0 z : ℕ)
+    (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2)
+    (hz_ge : 3 ≤ z) (hz : vanEckNthTerm z = 0) :
+    ∃ z_base, 3 ≤ z_base ∧ z_base ≤ max N_0 3 ∧
+      vanEckNthTerm z_base = 0 ∧ IsZeroGapBirthChain z_base z := by {
+  revert hz_ge hz
+  refine Nat.strong_induction_on z (fun z ih hz_ge hz => ?_)
+  by_cases h_le : z ≤ max N_0 3
+  · exact ⟨z, hz_ge, h_le, hz, IsZeroGapBirthChain.refl z hz⟩
+  · have hz_gt : N_0 < z := by { omega }
+    let z_prev := lastZero (z - 1)
+    have hzp_pos : 0 < z_prev := lastZero_pos_of_ge_one (z - 1) (by { omega })
+    have hzp_le : z_prev ≤ z - 1 := lastZero_le (z - 1)
+    rcases no_twos_zero_gap_birth_zero_strict_descent N_0 z z_prev h_no_twos hzp_pos hz hz_gt
+        (vanEck_lastZero_is_zero (z - 1)) (by { omega })
+        (fun k hk1 hk2 => no_zero_after_lastZero (z - 1) k hk1 (by { omega })) with
+      ⟨z_b, hzb_ge3, hzb_le_zp, hzb_zero, hzb_eq, _⟩
+    have hzb_lt : z_b < z := by { omega }
+    rcases ih z_b hzb_lt hzb_ge3 hzb_zero with ⟨z_base, hb_ge3, hb_le, hb_zero, h_chain⟩
+    exact ⟨z_base, hb_ge3, hb_le, hb_zero,
+      IsZeroGapBirthChain.step z_base z_b z h_chain hz hzb_le_zp hzb_lt hzb_eq⟩
+}
+
+/--
+Cardinalities of `[1, H] \ {2}` (`H - 1`) and `[0, H] \ {2}` (`H`) for `2 ≤ H`.
+-/
+lemma twoFreePalette_card (H : ℕ) (hH : 2 ≤ H) :
+    ((Finset.Icc 1 H).erase 2).card = H - 1 ∧
+      ((Finset.Icc 0 H).erase 2).card = H := by {
+  have hm1 : 2 ∈ Finset.Icc 1 H := Finset.mem_Icc.mpr ⟨by { omega }, hH⟩
+  have hm0 : 2 ∈ Finset.Icc 0 H := Finset.mem_Icc.mpr ⟨by { omega }, hH⟩
+  have hc1 := Finset.card_erase_of_mem hm1
+  have hc0 := Finset.card_erase_of_mem hm0
+  rw [Nat.card_Icc] at hc1 hc0
+  exact ⟨by { omega }, by { omega }⟩
+}
+
+/--
+Sharp `H = 2` Run Obstruction (`2`-Free Tail):
+For every `m > N_0`, `(a(m), a(m + 1))` cannot stay inside `[1, 2]` — at least one of the two
+adjacent terms is `0` or `≥ 3`.
+-/
+lemma no_twos_pair_exits_below_three (N_0 m : ℕ)
+    (h_no_twos : ∀ k > N_0, vanEckNthTerm k ≠ 2) (hm : N_0 < m) :
+    vanEckNthTerm m = 0 ∨ 3 ≤ vanEckNthTerm m ∨
+      vanEckNthTerm (m + 1) = 0 ∨ 3 ≤ vanEckNthTerm (m + 1) := by {
+  by_contra hc
+  have hm_ne2 := h_no_twos m hm
+  have hm1_ne2 := h_no_twos (m + 1) (by { omega })
+  have hm_eq1 : vanEckNthTerm m = 1 := by { omega }
+  have hm1_eq1 : vanEckNthTerm (m + 1) = 1 := by { omega }
+  exact vanEck_no_stutter_one m ⟨hm_eq1, hm1_eq1⟩
+}
+
+/--
+`2`-Free Bounded-Palette Zero-Free Obstruction (Allowing `4, 6, ...`):
+Under `∀ k > N_0, vanEckNthTerm k ≠ 2`, for any `2 ≤ H` and `A > N_0`, any window `[A, A + L]` of
+length `L + 1 > (H - 1) * (H + 1) ^ (H - 1)` must hit `0` or exceed `H`.
+-/
+theorem no_twos_bounded_palette_run_obstruction (N_0 H A L : ℕ)
+    (h_no_twos : ∀ k > N_0, vanEckNthTerm k ≠ 2) (hH : 2 ≤ H) (hA : N_0 < A)
+    (hL : (H - 1) * (H + 1) ^ (H - 1) < L + 1) :
+    ∃ t ≤ L, vanEckNthTerm (A + t) = 0 ∨ H < vanEckNthTerm (A + t) := by {
+  by_contra hc
+  let P := (Finset.Icc 1 H).erase 2
+  have hP : ∀ v ∈ P, 1 ≤ v ∧ v ≤ H := by {
+    intro v hv
+    exact Finset.mem_Icc.mp (Finset.mem_of_mem_erase hv)
+  }
+  have h_run : ∀ t ≤ L, vanEckNthTerm (A + t) ∈ P := by {
+    intro t ht
+    have hnz : vanEckNthTerm (A + t) ≠ 0 := fun hz => hc ⟨t, ht, Or.inl hz⟩
+    have hle : vanEckNthTerm (A + t) ≤ H :=
+      Nat.le_of_not_lt (fun hgt => hc ⟨t, ht, Or.inr hgt⟩)
+    have hne2 : vanEckNthTerm (A + t) ≠ 2 := h_no_twos (A + t) (by { omega })
+    exact Finset.mem_erase.mpr ⟨hne2, Finset.mem_Icc.mpr ⟨by { omega }, hle⟩⟩
+  }
+  have h_len := finite_palette_run_length_bound P H A L hP h_run
+  rw [(twoFreePalette_card H hH).1] at h_len
+  omega
+}
+
+/--
+Sub-Unit `2`-Free Gate Supply Bound (Allowing `4, 6, ...`):
+Under `∀ k > N_0, vanEckNthTerm k ≠ 2`, for `2 ≤ H` and a zero `z_0 > N_0`, excluding the single
+value `2` shrinks `{0, ..., H} \ {2}` to size `H`, so any set `Z` of zeros in `(z_0, B]` with
+`H < a(z - 1)` satisfies `Z.card * (H + 1) ≤ H * ((B - (z_0 + 1)) + (H + 1))`.
+-/
+theorem no_twos_sub_unit_palette_gate_supply (Z : Finset ℕ) (N_0 z_0 H B : ℕ)
+    (h_no_twos : ∀ k > N_0, vanEckNthTerm k ≠ 2) (hH : 2 ≤ H)
+    (hz0_gt : N_0 < z_0) (hz0 : vanEckNthTerm z_0 = 0)
+    (hZ : ∀ z ∈ Z, z_0 < z ∧ z ≤ B ∧ vanEckNthTerm z = 0 ∧ H < vanEckNthTerm (z - 1)) :
+    Z.card * (H + 1) ≤ H * ((B - (z_0 + 1)) + (H + 1)) := by {
+  let P := (Finset.Icc 0 H).erase 2
+  have hP : ∀ k, z_0 ≤ k → k < B → vanEckNthTerm k ≤ H → vanEckNthTerm k ∈ P := by {
+    intro k hk1 _hk2 hle
+    exact Finset.mem_erase.mpr
+      ⟨h_no_twos k (by { omega }), Finset.mem_Icc.mpr ⟨Nat.zero_le _, hle⟩⟩
+  }
+  have h_bnd := large_pre_zero_palette_gate_supply Z P z_0 H B hz0 hP hZ
+  rw [(twoFreePalette_card H hH).2] at h_bnd
+  exact h_bnd
+}
+
 
 
 

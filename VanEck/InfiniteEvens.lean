@@ -2282,6 +2282,987 @@ theorem z0_twelve_universal_prefix_obstruction (f : ℕ → ℕ)
   exact refuteZ0Fast_sound f 12 45 (by { omega }) hf0 hf1 hf12 h_rec refuteZ0Fast_twelve_cert
 }
 
+/--
+Earliest Return of a Pre-Zero Birth Value (`2`-Free Tail):
+If `z_1` (`N_0 + 1 < z_1`, `a(z_1) = 0`) has `a(z_1 - 1)` reappearing after `z_1 - 1`, its earliest
+return `r` satisfies `z_1 + 2 ≤ r` and `a(r + 1) = r - (z_1 - 1)` (allowing `4, 6, ...`).
+-/
+lemma no_twos_birth_earliest_return_spec (N_0 z_1 m : ℕ)
+    (h_no_twos : ∀ k > N_0, vanEckNthTerm k ≠ 2)
+    (hz1_gt : N_0 + 1 < z_1) (hz1 : vanEckNthTerm z_1 = 0)
+    (hm_gt : z_1 - 1 < m) (hm_eq : vanEckNthTerm m = vanEckNthTerm (z_1 - 1)) :
+    ∃ r, z_1 + 2 ≤ r ∧ r ≤ m ∧ vanEckNthTerm r = vanEckNthTerm (z_1 - 1) ∧
+      (∀ i, z_1 - 1 < i → i < r → vanEckNthTerm i ≠ vanEckNthTerm (z_1 - 1)) ∧
+      vanEckNthTerm (r + 1) = r - (z_1 - 1) := by {
+  have h_ex : ∃ i, z_1 - 1 < i ∧ vanEckNthTerm i = vanEckNthTerm (z_1 - 1) := ⟨m, hm_gt, hm_eq⟩
+  let r := Nat.find h_ex
+  have hr_gt : z_1 - 1 < r := (Nat.find_spec h_ex).1
+  have hr_eq : vanEckNthTerm r = vanEckNthTerm (z_1 - 1) := (Nat.find_spec h_ex).2
+  have hr_le : r ≤ m := Nat.find_min' h_ex ⟨hm_gt, hm_eq⟩
+  have hr_min : ∀ i, z_1 - 1 < i → i < r → vanEckNthTerm i ≠ vanEckNthTerm (z_1 - 1) :=
+    fun i hi1 hi2 hc => Nat.find_min h_ex hi2 ⟨hi1, hc⟩
+  have hz1_pos := (pre_zero_new_value_prior_occurrence_spec z_1 hz1 (by { omega })).1
+  have hr_ne0 : r ≠ z_1 := by {
+    intro heq
+    have h0 := hr_eq
+    rw [heq, hz1] at h0
+    omega
+  }
+  have hr_ne1 : r ≠ z_1 + 1 := by {
+    intro heq
+    have h_eq2 : vanEckNthTerm (z_1 - 1) = vanEckNthTerm (z_1 - 1 + 2) := by {
+      have hidx : z_1 - 1 + 2 = r := by { omega }
+      rw [hidx, hr_eq]
+    }
+    have h_ne0 : vanEckNthTerm (z_1 - 1 + 1) ≠ vanEckNthTerm (z_1 - 1) := by {
+      have hidx : z_1 - 1 + 1 = z_1 := by { omega }
+      rw [hidx, hz1]
+      omega
+    }
+    have h2 := vanEck_alt_pair_emits_two (z_1 - 1) h_eq2 h_ne0
+    have hidx2 : z_1 - 1 + 3 = z_1 + 2 := by { omega }
+    rw [hidx2] at h2
+    exact h_no_twos (z_1 + 2) (by { omega }) h2
+  }
+  cases h_occ : lastOccBefore r (vanEckNthTerm r) with
+  | none =>
+    exact False.elim (((lastOccBefore_eq_none_iff _ _).mp h_occ) (z_1 - 1) hr_gt hr_eq.symm)
+  | some q =>
+    have hq_sp := lastOccBefore_eq_some_spec r (vanEckNthTerm r) q h_occ
+    have h_next := vanEck_next_eq_of_lastOccBefore r
+    rw [h_occ] at h_next
+    change vanEckNthTerm (r + 1) = r - q at h_next
+    have hq_ge : z_1 - 1 ≤ q := by {
+      by_contra hlt
+      exact hq_sp.2.2 (z_1 - 1) (by { omega }) hr_gt hr_eq.symm
+    }
+    have hq_le : q ≤ z_1 - 1 := by {
+      by_contra hgt
+      exact hr_min q (by { omega }) hq_sp.1 (hq_sp.2.1.trans hr_eq)
+    }
+    have hq_eq : q = z_1 - 1 := by { omega }
+    rw [hq_eq] at h_next
+    exact ⟨r, by { omega }, hr_le, hr_eq, hr_min, h_next⟩
+}
+
+/--
+`2`-Free Birth-as-Generator Dichotomy (Allowing `4, 6, ...`):
+When `a(z_1 - 1)` (`N_0 + 1 < z_1`, `a(z_1) = 0`) generates a later zero `z > z_1`, either `z` is
+its first return (`p(z) = z_1 - 1`) or an earlier return `r ≥ z_1 + 2` precedes `p(z)`.
+-/
+lemma no_twos_birth_as_generator_cases (N_0 z_1 z : ℕ)
+    (h_no_twos : ∀ k > N_0, vanEckNthTerm k ≠ 2)
+    (hz1_gt : N_0 + 1 < z_1) (h_lt : z_1 < z)
+    (hz1 : vanEckNthTerm z_1 = 0) (hz : vanEckNthTerm z = 0)
+    (h_gen : vanEckNthTerm (z - 2) = vanEckNthTerm (z_1 - 1)) :
+    z_1 + 3 ≤ z ∧
+      ((z - 2 - vanEckNthTerm (z - 1) = z_1 - 1 ∧
+          vanEckNthTerm (z - 1) = z - z_1 - 1 ∧
+          ∀ i, z_1 - 1 < i → i < z - 2 → vanEckNthTerm i ≠ vanEckNthTerm (z_1 - 1)) ∨
+        ∃ r, z_1 + 2 ≤ r ∧ r ≤ z - 2 - vanEckNthTerm (z - 1) ∧
+          vanEckNthTerm r = vanEckNthTerm (z_1 - 1) ∧
+          (∀ i, z_1 - 1 < i → i < r → vanEckNthTerm i ≠ vanEckNthTerm (z_1 - 1)) ∧
+          vanEckNthTerm (r + 1) = r - (z_1 - 1) ∧
+          vanEckNthTerm (z - 1) ≤ (z - 2) - r) := by {
+  have h_dist := birth_as_later_generator_min_dist z_1 z (by { omega }) h_lt hz1 hz h_gen
+  have h_sz := pre_zero_new_value_prior_occurrence_spec z hz (by { omega })
+  rcases no_twos_birth_earliest_return_spec N_0 z_1 (z - 2) h_no_twos hz1_gt hz1
+      (by { omega }) h_gen with ⟨r, hr_ge, hr_le, hr_eq, hr_min, hr_gap⟩
+  refine ⟨h_dist.1, ?_⟩
+  rcases eq_or_lt_of_le hr_le with hr_z2 | hr_lt_z2
+  · left
+    have hp_val : vanEckNthTerm (z - 2 - vanEckNthTerm (z - 1)) = vanEckNthTerm (z_1 - 1) :=
+      h_sz.2.2.2.2.1.trans h_gen
+    have hp_le : z - 2 - vanEckNthTerm (z - 1) ≤ z_1 - 1 := by {
+      by_contra hp_gt
+      have hp_lt_r : z - 2 - vanEckNthTerm (z - 1) < r := hr_z2.symm ▸ h_sz.2.2.1
+      exact hr_min (z - 2 - vanEckNthTerm (z - 1)) (by { omega }) hp_lt_r hp_val
+    }
+    have hp_eq : z - 2 - vanEckNthTerm (z - 1) = z_1 - 1 := by { omega }
+    have hz1_val := h_sz.2.2.2.1
+    exact ⟨hp_eq, by { omega }, fun i hi1 hi2 => hr_min i hi1 (hr_z2.symm ▸ hi2)⟩
+  · right
+    have hp_ge_r : r ≤ z - 2 - vanEckNthTerm (z - 1) := by {
+      by_contra hp_lt_r
+      exact h_sz.2.2.2.2.2 r (by { omega }) hr_lt_z2 (hr_eq.trans h_gen.symm)
+    }
+    have hz1_val := h_sz.2.2.2.1
+    exact ⟨r, hr_ge, hp_ge_r, hr_eq, hr_min, hr_gap, by { omega }⟩
+}
+
+/--
+`2`-Free Jump Birth-Return Tripartition (Allowing `4, 6, ...`):
+Every prefix-maximum jump `(z_prev, z)` past `N_0` (`∀ k > N_0, a(k) ≠ 2`) partitions into:
+(1) pre-`N_0` bounded palette (`a(z - 2) ≤ vanEckPrefixMax N_0`),
+(2) post-`N_0` first return (`p(z) = z_b - 1`), or
+(3) post-`N_0` later return (`z_b + 2 ≤ r ≤ p(z)`).
+-/
+theorem no_twos_jump_birth_tripartition (N_0 z_prev z : ℕ)
+    (h_no_twos : ∀ k > N_0, vanEckNthTerm k ≠ 2)
+    (hN_lt : N_0 < z_prev) (h_prev_lt : z_prev < z)
+    (hz_prev : vanEckNthTerm z_prev = 0) (hz : vanEckNthTerm z = 0)
+    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0)
+    (h_jump : vanEckPrefixMax z_prev < vanEckPrefixMax z) :
+    ∃ z_b, 3 ≤ z_b ∧ z_b + 3 ≤ z ∧ vanEckNthTerm z_b = 0 ∧
+      vanEckNthTerm (z_b - 1) = vanEckNthTerm (z - 2) ∧
+      ((z_b ≤ N_0 + 1 ∧ 1 ≤ vanEckNthTerm (z - 2) ∧
+          vanEckNthTerm (z - 2) ≤ vanEckPrefixMax N_0) ∨
+        (N_0 + 1 < z_b ∧ z - 2 - vanEckNthTerm (z - 1) = z_b - 1 ∧
+          vanEckPrefixMax z = z - z_b - 1 ∧
+          ∀ i, z_b - 1 < i → i < z - 2 → vanEckNthTerm i ≠ vanEckNthTerm (z_b - 1)) ∨
+        (N_0 + 1 < z_b ∧ ∃ r, z_b + 2 ≤ r ∧ r ≤ z - 2 - vanEckNthTerm (z - 1) ∧
+          vanEckNthTerm r = vanEckNthTerm (z_b - 1) ∧
+          vanEckNthTerm (r + 1) = r - (z_b - 1) ∧
+          vanEckPrefixMax z_prev < vanEckNthTerm (z - 1) ∧
+          vanEckNthTerm (z - 1) ≤ (z - 2) - r)) := by {
+  have h_dorm := no_twos_prefixMax_jump_requires_dormant_generator N_0 z z_prev h_no_twos
+    (by { omega }) hz (by { omega }) hz_prev h_prev_lt h_gap h_jump
+  rcases pos_generator_has_unique_birth_zero z (by { omega }) hz h_dorm.2.1 with
+    ⟨z_b, hzb_ge, hzb_dist, hzb_zero, hzb_eq, _, _⟩
+  refine ⟨z_b, hzb_ge, hzb_dist, hzb_zero, hzb_eq, ?_⟩
+  by_cases hzb_le : z_b ≤ N_0 + 1
+  · left
+    have h_le_max := vanEckNthTerm_le_prefixMax N_0 (z_b - 1) (by { omega })
+    rw [hzb_eq] at h_le_max
+    exact ⟨hzb_le, h_dorm.2.1, h_le_max⟩
+  · have hzb_gt : N_0 + 1 < z_b := by { omega }
+    have h_cases := no_twos_birth_as_generator_cases N_0 z_b z h_no_twos hzb_gt
+      (by { omega }) hzb_zero hz hzb_eq.symm
+    rcases h_cases.2 with h_first | ⟨r, hr_ge, hr_le_p, hr_eq, _, hr_gap, hr_ub⟩
+    · right
+      left
+      exact ⟨hzb_gt, h_first.1, h_dorm.1.trans h_first.2.1, h_first.2.2⟩
+    · right
+      right
+      exact ⟨hzb_gt, r, hr_ge, hr_le_p, hr_eq, hr_gap, h_jump.trans_eq h_dorm.1, hr_ub⟩
+}
+
+lemma no_twos_later_return_jump_spec (N_0 z_0 H B z : ℕ)
+    (h_no_twos : ∀ k > N_0, vanEckNthTerm k ≠ 2) (hz0_gt : N_0 < z_0)
+    (hz0 : vanEckNthTerm z_0 = 0) (hH : H ≤ vanEckPrefixMax z_0)
+    (hz_gt : z_0 < z) (hz_le : z ≤ B) (hz : vanEckNthTerm z = 0)
+    (h_jump : vanEckPrefixMax (lastZero (z - 1)) < vanEckPrefixMax z)
+    (h_not_first : ¬ (N_0 < z - 2 - vanEckNthTerm (z - 1) ∧
+      vanEckNthTerm (z - 2 - vanEckNthTerm (z - 1) + 1) = 0))
+    (h_not_old : vanEckPrefixMax N_0 < vanEckNthTerm (z - 2)) :
+    vanEckNthTerm (z - 2) ∈
+        (((Finset.Icc (N_0 + 2) B).filter (fun z_b => vanEckNthTerm z_b = 0)).image
+          (fun z_b => vanEckNthTerm (z_b - 1))) ∧
+      N_0 + 4 ≤ z - 2 - vanEckNthTerm (z - 1) ∧
+      H < vanEckNthTerm (z - 1) := by {
+  let z_prev := lastZero (z - 1)
+  have hzp_le : z_prev ≤ z - 1 := lastZero_le (z - 1)
+  have hzp_zero : vanEckNthTerm z_prev = 0 := vanEck_lastZero_is_zero (z - 1)
+  have hz0_le_zp : z_0 ≤ z_prev := by {
+    by_contra hc
+    exact no_zero_after_lastZero (z - 1) z_0 (by { omega }) (by { omega }) hz0
+  }
+  have h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0 :=
+    fun k hk1 hk2 => no_zero_after_lastZero (z - 1) k hk1 (by { omega })
+  rcases no_twos_jump_birth_tripartition N_0 z_prev z h_no_twos (by { omega }) (by { omega })
+      hzp_zero hz h_gap h_jump with ⟨z_b, _, hzb_dist, hzb_zero, hzb_eq, h_tri⟩
+  rcases h_tri with h_old | h_first | ⟨hzb_gt, r, hr_ge, hr_le_p, _, _, h_jlt, _⟩
+  · omega
+  · exfalso
+    have hp_gt : N_0 < z - 2 - vanEckNthTerm (z - 1) := by { omega }
+    have hp_z : z - 2 - vanEckNthTerm (z - 1) + 1 = z_b := by { omega }
+    rw [← hp_z] at hzb_zero
+    exact h_not_first ⟨hp_gt, hzb_zero⟩
+  · have hzb_mem : z_b ∈ (Finset.Icc (N_0 + 2) B).filter (fun z_b => vanEckNthTerm z_b = 0) :=
+      Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨by { omega }, by { omega }⟩, hzb_zero⟩
+    have h_img : vanEckNthTerm (z - 2) ∈
+        ((Finset.Icc (N_0 + 2) B).filter (fun z_b => vanEckNthTerm z_b = 0)).image
+          (fun z_b => vanEckNthTerm (z_b - 1)) :=
+      Finset.mem_image.mpr ⟨z_b, hzb_mem, hzb_eq⟩
+    have hH_lt := Nat.lt_of_le_of_lt (Nat.le_trans hH (vanEckPrefixMax_mono z_0 z_prev hz0_le_zp))
+      h_jlt
+    exact ⟨h_img, by { omega }, hH_lt⟩
+}
+
+/--
+Unified `2`-Free Window Record-Jump Supply Theorem (Allowing `4, 6, ...`):
+Under `∀ k > N_0, vanEckNthTerm k ≠ 2`, any finite set `J` of prefix-maximum jump zeros in
+`[A, B]` (`N_0 < z_0 < z`, `2 ≤ H ≤ vanEckPrefixMax z_0`) splits into `J_old`, `J_first`, and
+`J_later` with explicit cooldown/birth bounds AND obeys the sub-unit `H / (H + 1)` gate bound.
+-/
+theorem no_twos_window_jump_total_supply (N_0 z_0 H A B : ℕ) (J : Finset ℕ)
+    (h_no_twos : ∀ k > N_0, vanEckNthTerm k ≠ 2) (hz0_gt : N_0 < z_0)
+    (hz0 : vanEckNthTerm z_0 = 0) (hH2 : 2 ≤ H) (hH : H ≤ vanEckPrefixMax z_0)
+    (hJ : ∀ z ∈ J, z_0 < z ∧ A ≤ z ∧ z ≤ B ∧ vanEckNthTerm z = 0 ∧
+      vanEckPrefixMax (lastZero (z - 1)) < vanEckPrefixMax z) :
+    let isFirst : ℕ → Prop := fun z => N_0 < z - 2 - vanEckNthTerm (z - 1) ∧
+      vanEckNthTerm (z - 2 - vanEckNthTerm (z - 1) + 1) = 0
+    let J_first := J.filter isFirst
+    let J_old := J.filter (fun z => ¬ isFirst z ∧ vanEckNthTerm (z - 2) ≤ vanEckPrefixMax N_0)
+    let J_later := J.filter (fun z => ¬ isFirst z ∧ vanEckPrefixMax N_0 < vanEckNthTerm (z - 2))
+    let Z_births := (Finset.Icc (N_0 + 2) B).filter (fun z_b => vanEckNthTerm z_b = 0)
+    J.card = J_old.card + J_first.card + J_later.card ∧
+      J_old.card * (H + 1) ≤ vanEckPrefixMax N_0 * ((B - A) + (H + 1)) ∧
+      J_first.card ≤ Z_births.card ∧
+      J_later.card * (H + 1) ≤ Z_births.card * ((B - 2) - (N_0 + 4)) ∧
+      J.card * (H + 1) ≤ H * ((B - (z_0 + 1)) + (H + 1)) := by {
+  intro isFirst J_first J_old J_later Z_births
+  have h_p1 := Finset.card_filter_add_card_filter_not (s := J) isFirst
+  let Jn := J.filter (fun z => ¬ isFirst z)
+  have h_p2 := Finset.card_filter_add_card_filter_not
+    (s := Jn) (fun z => vanEckNthTerm (z - 2) ≤ vanEckPrefixMax N_0)
+  have h_old_eq : Jn.filter (fun z => vanEckNthTerm (z - 2) ≤ vanEckPrefixMax N_0) = J_old := by {
+    rw [Finset.filter_filter]
+  }
+  have h_lat_eq : Jn.filter (fun z => ¬ vanEckNthTerm (z - 2) ≤ vanEckPrefixMax N_0) =
+      J_later := by {
+    rw [Finset.filter_filter]
+    exact Finset.filter_congr (fun _ _ => and_congr_right (fun _ => not_le))
+  }
+  rw [h_old_eq, h_lat_eq] at h_p2
+  change J_first.card + Jn.card = J.card at h_p1
+  have h_old_bnd := no_twos_finite_palette_jump_window_bound N_0 z_0 (vanEckPrefixMax N_0) H A B
+    J_old h_no_twos hz0_gt hz0 hH (fun z hz => by {
+      rcases Finset.mem_filter.mp hz with ⟨hzJ, _, hle⟩
+      have hp := hJ z hzJ
+      exact ⟨hp.1, hp.2.1, hp.2.2.1, hp.2.2.2.1, hle, hp.2.2.2.2⟩
+    })
+  have h_first_bnd := first_return_jumps_le_birth_zeros J_first (N_0 + 2) B (fun z hz => by {
+    rcases Finset.mem_filter.mp hz with ⟨hzJ, hp_gt, hp_z⟩
+    have hp := hJ z hzJ
+    exact ⟨by { omega }, hp.2.2.2.1, by { omega }, by { omega }, hp_z⟩
+  })
+  let P_b := Z_births.image (fun z_b => vanEckNthTerm (z_b - 1))
+  have h_lat_p := generator_set_anchor_cooldown_bound J_later P_b H (N_0 + 4) B (fun z hz => by {
+    rcases Finset.mem_filter.mp hz with ⟨hzJ, hnf, hno⟩
+    have hp := hJ z hzJ
+    have hsp := no_twos_later_return_jump_spec N_0 z_0 H B z h_no_twos hz0_gt hz0 hH
+      hp.1 hp.2.2.1 hp.2.2.2.1 hp.2.2.2.2 hnf hno
+    exact ⟨by { omega }, hp.2.2.2.1, hsp.1, hsp.2.1, hp.2.2.1, hsp.2.2⟩
+  })
+  have h_lat_bnd : J_later.card * (H + 1) ≤ Z_births.card * ((B - 2) - (N_0 + 4)) :=
+    le_trans h_lat_p (Nat.mul_le_mul_right _ Finset.card_image_le)
+  have h_gate_bnd := no_twos_sub_unit_palette_gate_supply J N_0 z_0 H B h_no_twos hH2 hz0_gt hz0
+    (fun z hz => by {
+      have hp := hJ z hz
+      have hzp_le : lastZero (z - 1) ≤ z - 1 := lastZero_le (z - 1)
+      have hz0_le_zp : z_0 ≤ lastZero (z - 1) := by {
+        by_contra hc
+        exact no_zero_after_lastZero (z - 1) z_0 (by { omega }) (by { omega }) hz0
+      }
+      have h_dorm := no_twos_prefixMax_jump_requires_dormant_generator N_0 z (lastZero (z - 1))
+        h_no_twos (by { omega }) hp.2.2.2.1 (by { omega }) (vanEck_lastZero_is_zero (z - 1))
+        (by { omega }) (fun k hk1 hk2 => no_zero_after_lastZero (z - 1) k hk1 (by { omega }))
+        hp.2.2.2.2
+      have h_mono := vanEckPrefixMax_mono z_0 (lastZero (z - 1)) hz0_le_zp
+      have hH_lt := Nat.lt_of_le_of_lt (Nat.le_trans hH h_mono) (hp.2.2.2.2.trans_eq h_dorm.1)
+      exact ⟨hp.1, hp.2.2.1, hp.2.2.2.1, hH_lt⟩
+    })
+  exact ⟨by { omega }, h_old_bnd, h_first_bnd, h_lat_bnd, h_gate_bnd⟩
+}
+
+/--
+Checks predicate `g` on all candidate prefix anchors `p ∈ free` with `m - p ≠ 2`.
+-/
+def allFreeNeTwo : (ℕ → Bool) → ℕ → List ℕ → Bool
+  | _, _, [] => true
+  | g, m, p :: ps =>
+    (if Nat.beq (m - p) 2 then true else g p) && allFreeNeTwo g m ps
+
+/--
+Computable `2`-free lazy-prefix DFS refutation checker (allowing `4, 6, 8, ...`): verifies that
+from `(m, cur, tailMap, free)`, every branch obeying `IsVanEckFrom` must emit `2` within `fuel`
+steps.
+-/
+def refuteNoTwosFast : ℕ → ℕ → ℕ → List (ℕ × ℕ) → List ℕ → Bool
+  | 0, _, _, _, _ => false
+  | fuel + 1, m, cur, tailMap, free =>
+    match lookupHead cur tailMap with
+    | some q =>
+      let nxt := m - q
+      if Nat.beq nxt 2 then true
+      else refuteNoTwosFast fuel (m + 1) nxt ((cur, m) :: tailMap) free
+    | none =>
+      let tailMap' := (cur, m) :: tailMap
+      refuteNoTwosFast fuel (m + 1) 0 tailMap' free &&
+        allFreeNeTwo (fun p =>
+          refuteNoTwosFast fuel (m + 1) (m - p) tailMap' (removeFirst p free)) m free
+
+/--
+Universal `2`-free prefix certificate checker at zero `z0`: verifies `refuteNoTwosFast` across all
+initial zero-gaps `z0 - zPrev ≠ 2` (`1 ≤ zPrev < z0`).
+-/
+def refuteNoTwosZ0Fast (z0 fuel : ℕ) : Bool :=
+  (List.range z0).all (fun zPrev =>
+    if Nat.ble 1 zPrev && !Nat.beq (z0 - zPrev) 2 then
+      let free := (List.range z0).filter (fun p => Nat.ble 2 p && !Nat.beq p zPrev)
+      refuteNoTwosFast fuel (z0 + 1) (z0 - zPrev) [(0, z0)] free
+    else true)
+
+lemma allFreeNeTwo_spec (g : ℕ → Bool) (m : ℕ) (free : List ℕ)
+    (h : allFreeNeTwo g m free = true) (p : ℕ) (hp : p ∈ free) (hne2 : m - p ≠ 2) :
+    g p = true := by {
+  induction free with
+  | nil => simp at hp
+  | cons q qs ih =>
+    simp only [allFreeNeTwo, Bool.and_eq_true] at h
+    rcases List.mem_cons.mp hp with rfl | h_tail
+    · cases hbeq : Nat.beq (m - p) 2 with
+      | true => exact False.elim (hne2 (Nat.beq_eq.mp hbeq))
+      | false =>
+        rw [hbeq, if_neg (by { decide })] at h
+        exact h.1
+    · exact ih h.2 h_tail
+}
+
+lemma refuteNoTwosFast_none_branch (f : ℕ → ℕ) (z_0 fuel m cur : ℕ)
+    (tailMap : List (ℕ × ℕ)) (free : List ℕ) (h_rec : IsVanEckFrom f z_0)
+    (ih : ∀ m' cur' tailMap' free', refuteNoTwosFast fuel m' cur' tailMap' free' = true →
+      ValidDFSState f z_0 m' cur' tailMap' free' → ∃ k, m' < k ∧ k ≤ m' + fuel ∧ f k = 2)
+    (hs : ValidDFSState f z_0 m cur tailMap free) (hlk : lookupHead cur tailMap = none)
+    (h_zero_br : refuteNoTwosFast fuel (m + 1) 0 ((cur, m) :: tailMap) free = true)
+    (h_free_br : allFreeNeTwo
+      (fun p => refuteNoTwosFast fuel (m + 1) (m - p) ((cur, m) :: tailMap) (removeFirst p free))
+      m free = true) :
+    ∃ k, m < k ∧ k ≤ m + (fuel + 1) ∧ f k = 2 := by {
+  have hcur_nz : cur ≠ 0 := by {
+    intro hc0
+    rcases hs.hzero with ⟨qz, hqz⟩
+    rw [← hc0, hlk] at hqz
+    nomatch hqz
+  }
+  have h_occ_eq := lastOccBeforeFn_no_hit_tail f z_0 m cur (Nat.le_of_lt hs.hm)
+    (hs.htail_none cur hlk)
+  have h_step_rec := h_rec m (Nat.le_of_lt hs.hm)
+  rw [hs.hcur, h_occ_eq] at h_step_rec
+  cases h_z0_occ : lastOccBeforeFn f z_0 cur with
+  | none =>
+    rw [h_z0_occ] at h_step_rec
+    have hs' := validDFSState_step_tail f z_0 m cur 0 tailMap free free hs h_step_rec
+      (fun v p hv hlk' hp => by {
+        rw [lookupHead_cons] at hlk'
+        split_ifs at hlk'
+        exact hs.hfree v p hv hlk' hp
+      })
+    rcases ih (m + 1) 0 ((cur, m) :: tailMap) free h_zero_br hs' with ⟨k, hk1, hk2, hk2_eq⟩
+    exact ⟨k, by { omega }, by { omega }, hk2_eq⟩
+  | some p =>
+    rw [h_z0_occ] at h_step_rec
+    change f (m + 1) = m - p at h_step_rec
+    have hp_sp := lastOccBeforeFn_eq_some_spec f z_0 cur p h_z0_occ
+    by_cases heq2 : m - p = 2
+    · exact ⟨m + 1, Nat.lt_succ_self m, by { omega }, h_step_rec.trans heq2⟩
+    · have href' := allFreeNeTwo_spec _ m free h_free_br p
+        (hs.hfree cur p hcur_nz hlk h_z0_occ) heq2
+      have hs' := validDFSState_step_tail f z_0 m cur (m - p) tailMap free (removeFirst p free)
+        hs h_step_rec (fun v p' hv hlk' hp' => by {
+          rw [lookupHead_cons] at hlk'
+          split_ifs at hlk' with hvc
+          have hp'_sp := lastOccBeforeFn_eq_some_spec f z_0 v p' hp'
+          have hne_p : p' ≠ p := fun heq => hvc (hp'_sp.2.1.symm.trans (heq ▸ hp_sp.2.1))
+          exact mem_removeFirst_of_ne p p' free (hs.hfree v p' hv hlk' hp') hne_p
+        })
+      rcases ih (m + 1) (m - p) ((cur, m) :: tailMap) (removeFirst p free) href' hs' with
+        ⟨k, hk1, hk2, hk2_eq⟩
+      exact ⟨k, by { omega }, by { omega }, hk2_eq⟩
+}
+
+/--
+Soundness of `refuteNoTwosFast`: whenever `refuteNoTwosFast fuel m cur tailMap free = true` on a
+valid DFS state of `f`, `f` must emit `2` at some `m < k ≤ m + fuel`.
+-/
+lemma refuteNoTwosFast_sound (f : ℕ → ℕ) (z_0 : ℕ) (h_rec : IsVanEckFrom f z_0) :
+    ∀ (fuel m cur : ℕ) (tailMap : List (ℕ × ℕ)) (free : List ℕ),
+      refuteNoTwosFast fuel m cur tailMap free = true →
+      ValidDFSState f z_0 m cur tailMap free →
+      ∃ k, m < k ∧ k ≤ m + fuel ∧ f k = 2 := by {
+  intro fuel
+  induction fuel with
+  | zero =>
+    intro m cur tailMap free h_ref
+    simp [refuteNoTwosFast] at h_ref
+  | succ fuel ih =>
+    intro m cur tailMap free h_ref hs
+    simp only [refuteNoTwosFast] at h_ref
+    cases hlk : lookupHead cur tailMap with
+    | some q =>
+      rw [hlk] at h_ref
+      dsimp only at h_ref
+      have hq := hs.htail_some cur q hlk
+      have h_step_rec := h_rec m (Nat.le_of_lt hs.hm)
+      rw [hs.hcur, hq.2.2] at h_step_rec
+      change f (m + 1) = m - q at h_step_rec
+      cases hbeq : Nat.beq (m - q) 2 with
+      | true =>
+        exact ⟨m + 1, Nat.lt_succ_self m, by { omega }, h_step_rec.trans (Nat.beq_eq.mp hbeq)⟩
+      | false =>
+        rw [hbeq, if_neg (by { decide })] at h_ref
+        have hs' := validDFSState_step_tail f z_0 m cur (m - q) tailMap free free hs h_step_rec
+          (fun v p hv hlk' hp => by {
+            rw [lookupHead_cons] at hlk'
+            split_ifs at hlk'
+            exact hs.hfree v p hv hlk' hp
+          })
+        rcases ih (m + 1) (m - q) ((cur, m) :: tailMap) free h_ref hs' with
+          ⟨k, hk1, hk2, hk2_eq⟩
+        exact ⟨k, by { omega }, by { omega }, hk2_eq⟩
+    | none =>
+      rw [hlk] at h_ref
+      simp only [Bool.and_eq_true] at h_ref
+      exact refuteNoTwosFast_none_branch f z_0 fuel m cur tailMap free h_rec ih hs hlk
+        h_ref.1 h_ref.2
+}
+
+/--
+Soundness of `refuteNoTwosZ0Fast`: if `refuteNoTwosZ0Fast z_0 fuel = true`, then EVERY sequence
+`f : ℕ → ℕ` with `f 0 = 0`, `f 1 = 0`, `f z_0 = 0` obeying `IsVanEckFrom f z_0` — even allowing
+`4, 6, 8, ...` and arbitrary unbounded values on `[2, z_0 - 1]` — emits `f k = 2` at some
+`z_0 < k ≤ z_0 + 1 + fuel`.
+-/
+theorem refuteNoTwosZ0Fast_sound (f : ℕ → ℕ) (z_0 fuel : ℕ)
+    (hz0_ge : 2 ≤ z_0) (hf0 : f 0 = 0) (hf1 : f 1 = 0) (hfz0 : f z_0 = 0)
+    (h_rec : IsVanEckFrom f z_0) (h_cert : refuteNoTwosZ0Fast z_0 fuel = true) :
+    ∃ k, z_0 < k ∧ k ≤ z_0 + 1 + fuel ∧ f k = 2 := by {
+  cases h_occ0 : lastOccBeforeFn f z_0 0 with
+  | none =>
+    exact False.elim (((lastOccBeforeFn_eq_none_iff f z_0 0).mp h_occ0) 1 (by { omega }) hf1)
+  | some z_prev =>
+    have hzp := lastOccBeforeFn_eq_some_spec f z_0 0 z_prev h_occ0
+    have hzp_ge1 : 1 ≤ z_prev := by {
+      by_contra hc
+      exact hzp.2.2 1 (by { omega }) (by { omega }) hf1
+    }
+    have h_f1 := h_rec z_0 le_rfl
+    rw [hfz0, h_occ0] at h_f1
+    change f (z_0 + 1) = z_0 - z_prev at h_f1
+    by_cases heq2 : z_0 - z_prev = 2
+    · exact ⟨z_0 + 1, Nat.lt_succ_self z_0, by { omega }, h_f1.trans heq2⟩
+    · have hall := (List.all_eq_true.mp h_cert) z_prev (List.mem_range.mpr hzp.1)
+      have hb2 : Nat.beq (z_0 - z_prev) 2 = false := by {
+        cases hb : Nat.beq (z_0 - z_prev) 2 with
+        | false => rfl
+        | true => exact False.elim (heq2 (Nat.beq_eq.mp hb))
+      }
+      have hcond : (Nat.ble 1 z_prev && !Nat.beq (z_0 - z_prev) 2) = true := by {
+        rw [Bool.and_eq_true, Nat.ble_eq, hb2]
+        exact ⟨hzp_ge1, rfl⟩
+      }
+      rw [hcond, if_pos rfl] at hall
+      have hs0 := validDFSState_init_z0 f z_0 z_prev hf0 hf1 hfz0 h_f1 hzp.2.1
+      rcases refuteNoTwosFast_sound f z_0 h_rec fuel (z_0 + 1) (z_0 - z_prev) [(0, z_0)] _
+        hall hs0 with ⟨k, hk1, hk2, hk2_eq⟩
+      exact ⟨k, by { omega }, by { omega }, hk2_eq⟩
+}
+
+/--
+Kernel-Checked `2`-Free Boolean Certificate at `z_0 = 5` (`431` DFS states, sharp depth `148`).
+-/
+lemma refuteNoTwosZ0Fast_five_cert : refuteNoTwosZ0Fast 5 148 = true := by {
+  decide +kernel
+}
+
+/--
+Sharp Kernel-Checked `z_0 = 5` Universal `2`-Free Obstruction (Allowing `4, 6, 8, ...`):
+Every sequence `f : ℕ → ℕ` with `f 0 = 0`, `f 1 = 0`, `f 5 = 0` obeying `IsVanEckFrom f 5` —
+regardless of what arbitrary unbounded values occupy `[2, 4]` — must emit `f k = 2` at some
+`5 < k ≤ 154` (attained sharply at `k = 154` by `[0, 0, 5, 4, 3, 0, ...]`).
+-/
+theorem z0_five_universal_no_twos_obstruction (f : ℕ → ℕ)
+    (hf0 : f 0 = 0) (hf1 : f 1 = 0) (hf5 : f 5 = 0)
+    (h_rec : IsVanEckFrom f 5) :
+    ∃ k, 5 < k ∧ k ≤ 154 ∧ f k = 2 := by {
+  exact refuteNoTwosZ0Fast_sound f 5 148 (by { omega }) hf0 hf1 hf5 h_rec
+    refuteNoTwosZ0Fast_five_cert
+}
+
+/--
+Kernel-Checked `2`-Free Boolean Certificates at `z_0 = 3` (`2` states) and `z_0 = 4` (`21` states).
+-/
+lemma refuteNoTwosZ0Fast_three_cert : refuteNoTwosZ0Fast 3 2 = true := by {
+  decide +kernel
+}
+
+lemma refuteNoTwosZ0Fast_four_cert : refuteNoTwosZ0Fast 4 10 = true := by {
+  decide +kernel
+}
+
+/--
+Uniform Kernel-Checked Base Cases (`3 ≤ z_0 ≤ 5`) for `no_twos_zero_cut_refuted`.
+-/
+theorem no_twos_zero_cut_refuted_le_five (z_0 : ℕ) (hge : 3 ≤ z_0) (hle : z_0 ≤ 5) :
+    ∃ fuel, refuteNoTwosZ0Fast z_0 fuel = true := by {
+  interval_cases z_0
+  · exact ⟨2, refuteNoTwosZ0Fast_three_cert⟩
+  · exact ⟨10, refuteNoTwosZ0Fast_four_cert⟩
+  · exact ⟨148, refuteNoTwosZ0Fast_five_cert⟩
+}
+
+lemma allFreeNeTwo_mono (g1 g2 : ℕ → Bool) (m : ℕ) (free : List ℕ)
+    (h_imp : ∀ p ∈ free, m - p ≠ 2 → g1 p = true → g2 p = true)
+    (h1 : allFreeNeTwo g1 m free = true) :
+    allFreeNeTwo g2 m free = true := by {
+  induction free with
+  | nil => rfl
+  | cons q qs ih =>
+    simp only [allFreeNeTwo, Bool.and_eq_true] at h1 ⊢
+    refine ⟨?_, ih (fun p hp => h_imp p (List.mem_cons.mpr (Or.inr hp))) h1.2⟩
+    cases hbeq : Nat.beq (m - q) 2 with
+    | true => simp
+    | false =>
+      have h1_l := h1.1
+      rw [hbeq] at h1_l
+      simp only [Bool.false_eq_true, ↓reduceIte] at h1_l ⊢
+      have hne2 : m - q ≠ 2 :=
+        fun heq => Bool.noConfusion (hbeq.symm.trans (Nat.beq_eq.mpr heq))
+      exact h_imp q (List.mem_cons.mpr (Or.inl rfl)) hne2 h1_l
+}
+
+/--
+Monotonicity of `refuteNoTwosFast` with respect to search depth `fuel`.
+-/
+lemma refuteNoTwosFast_mono :
+    ∀ (fuel1 fuel2 m cur : ℕ) (tailMap : List (ℕ × ℕ)) (free : List ℕ),
+      fuel1 ≤ fuel2 →
+      refuteNoTwosFast fuel1 m cur tailMap free = true →
+      refuteNoTwosFast fuel2 m cur tailMap free = true := by {
+  intro fuel1
+  induction fuel1 with
+  | zero =>
+    intro fuel2 m cur tailMap free _hle h1
+    simp [refuteNoTwosFast] at h1
+  | succ f1 ih =>
+    intro fuel2 m cur tailMap free hle h1
+    cases fuel2 with
+    | zero => omega
+    | succ f2 =>
+      have hf : f1 ≤ f2 := by { omega }
+      simp only [refuteNoTwosFast] at h1 ⊢
+      cases hlk : lookupHead cur tailMap with
+      | some q =>
+        rw [hlk] at h1
+        dsimp only at h1 ⊢
+        cases hbeq : Nat.beq (m - q) 2 with
+        | true => simp
+        | false =>
+          rw [hbeq] at h1
+          simp only [Bool.false_eq_true, ↓reduceIte] at h1 ⊢
+          exact ih f2 (m + 1) (m - q) ((cur, m) :: tailMap) free hf h1
+      | none =>
+        rw [hlk] at h1
+        simp only [Bool.and_eq_true] at h1 ⊢
+        refine ⟨ih f2 (m + 1) 0 ((cur, m) :: tailMap) free hf h1.1, ?_⟩
+        exact allFreeNeTwo_mono _ _ m free
+          (fun p _hp _hne hr => ih f2 (m + 1) (m - p) ((cur, m) :: tailMap)
+            (removeFirst p free) hf hr) h1.2
+}
+
+lemma exists_allFreeNeTwo_fuel (g : ℕ → ℕ → Bool) (m : ℕ) (ps : List ℕ)
+    (h_mono : ∀ f1 f2 p, f1 ≤ f2 → g f1 p = true → g f2 p = true)
+    (h_ex : ∀ p ∈ ps, m - p ≠ 2 → ∃ fuel, g fuel p = true) :
+    ∃ fuel, allFreeNeTwo (g fuel) m ps = true := by {
+  induction ps with
+  | nil => exact ⟨0, rfl⟩
+  | cons q qs ih =>
+    rcases ih (fun p hp => h_ex p (List.mem_cons.mpr (Or.inr hp))) with ⟨f_tl, h_tl⟩
+    by_cases heq2 : m - q = 2
+    · refine ⟨f_tl, ?_⟩
+      have hb2 : Nat.beq (m - q) 2 = true := Nat.beq_eq.mpr heq2
+      simp only [allFreeNeTwo, hb2, ↓reduceIte, Bool.true_and]
+      exact h_tl
+    · rcases h_ex q (List.mem_cons.mpr (Or.inl rfl)) heq2 with ⟨f_hd, h_hd⟩
+      refine ⟨max f_hd f_tl, ?_⟩
+      have hb2 : Nat.beq (m - q) 2 = false := by {
+        cases hb : Nat.beq (m - q) 2 with
+        | false => rfl
+        | true => exact False.elim (heq2 (Nat.beq_eq.mp hb))
+      }
+      simp only [allFreeNeTwo, hb2, Bool.false_eq_true, ↓reduceIte, Bool.and_eq_true]
+      exact ⟨h_mono f_hd (max f_hd f_tl) q (Nat.le_max_left _ _) h_hd,
+        allFreeNeTwo_mono _ _ m qs
+          (fun p _ _ hr => h_mono f_tl (max f_hd f_tl) p (Nat.le_max_right _ _) hr) h_tl⟩
+}
+
+/--
+One-step `2`-free DFS transition relation corresponding to surviving branches of `refuteNoTwosFast`.
+-/
+def StepNoTwosDFS (m cur : ℕ) (tm : List (ℕ × ℕ)) (free : List ℕ)
+    (cur' : ℕ) (tm' : List (ℕ × ℕ)) (free' : List ℕ) : Prop :=
+  (∃ q, lookupHead cur tm = some q ∧ m - q ≠ 2 ∧
+      cur' = m - q ∧ tm' = (cur, m) :: tm ∧ free' = free) ∨
+    (lookupHead cur tm = none ∧
+      cur' = 0 ∧ tm' = (cur, m) :: tm ∧ free' = free) ∨
+    (∃ p ∈ free, lookupHead cur tm = none ∧ m - p ≠ 2 ∧
+      cur' = m - p ∧ tm' = (cur, m) :: tm ∧ free' = removeFirst p free)
+
+/--
+Finite-Branching Step Contrapositive: any unrefuted DFS state `(m, cur, tm, free)` admits at least
+one surviving `2`-free child `(cur', tm', free')` that is also unrefuted for all `fuel`.
+-/
+lemma exists_unrefuted_child_of_not_refuted (m cur : ℕ) (tm : List (ℕ × ℕ)) (free : List ℕ)
+    (h_not : ¬ ∃ fuel, refuteNoTwosFast fuel m cur tm free = true) :
+    ∃ cur' tm' free', StepNoTwosDFS m cur tm free cur' tm' free' ∧
+      ¬ ∃ fuel, refuteNoTwosFast fuel (m + 1) cur' tm' free' = true := by {
+  by_contra h_all
+  have h_child : ∀ cur' tm' free', StepNoTwosDFS m cur tm free cur' tm' free' →
+      ∃ fuel, refuteNoTwosFast fuel (m + 1) cur' tm' free' = true := by {
+    intro cur' tm' free' hst
+    by_contra hnc
+    exact h_all ⟨cur', tm', free', hst, hnc⟩
+  }
+  apply h_not
+  cases hlk : lookupHead cur tm with
+  | some q =>
+    by_cases heq2 : m - q = 2
+    · refine ⟨1, ?_⟩
+      have hb2 : Nat.beq (m - q) 2 = true := Nat.beq_eq.mpr heq2
+      simp only [refuteNoTwosFast, hlk, hb2, ↓reduceIte]
+    · rcases h_child (m - q) ((cur, m) :: tm) free
+          (Or.inl ⟨q, hlk, heq2, rfl, rfl, rfl⟩) with ⟨f1, hf1⟩
+      refine ⟨f1 + 1, ?_⟩
+      have hb2 : Nat.beq (m - q) 2 = false := by {
+        cases hb : Nat.beq (m - q) 2 with
+        | false => rfl
+        | true => exact False.elim (heq2 (Nat.beq_eq.mp hb))
+      }
+      simp only [refuteNoTwosFast, hlk, hb2, Bool.false_eq_true, ↓reduceIte]
+      exact hf1
+  | none =>
+    rcases h_child 0 ((cur, m) :: tm) free (Or.inr (Or.inl ⟨hlk, rfl, rfl, rfl⟩)) with ⟨f0, hf0⟩
+    rcases exists_allFreeNeTwo_fuel
+        (fun f p => refuteNoTwosFast f (m + 1) (m - p) ((cur, m) :: tm) (removeFirst p free))
+        m free
+        (fun f1 f2 p hle hr => refuteNoTwosFast_mono f1 f2 _ _ _ _ hle hr)
+        (fun p hp hne2 => h_child _ _ _ (Or.inr (Or.inr ⟨p, hp, hlk, hne2, rfl, rfl, rfl⟩))) with
+      ⟨ff, hff⟩
+    refine ⟨max f0 ff + 1, ?_⟩
+    simp only [refuteNoTwosFast, hlk, Bool.and_eq_true]
+    exact ⟨refuteNoTwosFast_mono f0 (max f0 ff) _ _ _ _ (Nat.le_max_left _ _) hf0,
+      allFreeNeTwo_mono _ _ m free
+        (fun p _ _ hr => refuteNoTwosFast_mono ff (max f0 ff) _ _ _ _ (Nat.le_max_right _ _) hr)
+        hff⟩
+}
+
+lemma exists_all_zprev_fuel (z_0 : ℕ) (xs : List ℕ)
+    (h_each : ∀ x ∈ xs, ∃ fuel,
+      (if Nat.ble 1 x && !Nat.beq (z_0 - x) 2 then
+        refuteNoTwosFast fuel (z_0 + 1) (z_0 - x) [(0, z_0)]
+          ((List.range z_0).filter (fun p => Nat.ble 2 p && !Nat.beq p x))
+      else true) = true) :
+    ∃ fuel, xs.all (fun x =>
+      if Nat.ble 1 x && !Nat.beq (z_0 - x) 2 then
+        refuteNoTwosFast fuel (z_0 + 1) (z_0 - x) [(0, z_0)]
+          ((List.range z_0).filter (fun p => Nat.ble 2 p && !Nat.beq p x))
+      else true) = true := by {
+  induction xs with
+  | nil => exact ⟨0, rfl⟩
+  | cons x xs ih =>
+    rcases h_each x (List.mem_cons.mpr (Or.inl rfl)) with ⟨fx, hfx⟩
+    rcases ih (fun y hy => h_each y (List.mem_cons.mpr (Or.inr hy))) with ⟨fxs, hfxs⟩
+    refine ⟨max fx fxs, ?_⟩
+    rw [List.all_cons, Bool.and_eq_true]
+    refine ⟨?_, ?_⟩
+    · by_cases hcx : (Nat.ble 1 x && !Nat.beq (z_0 - x) 2) = true
+      · rw [if_pos hcx] at hfx ⊢
+        exact refuteNoTwosFast_mono fx (max fx fxs) _ _ _ _ (Nat.le_max_left _ _) hfx
+      · exact if_neg hcx
+    · rw [List.all_eq_true] at hfxs ⊢
+      intro y hy
+      have hy_ok := hfxs y hy
+      by_cases hcy : (Nat.ble 1 y && !Nat.beq (z_0 - y) 2) = true
+      · rw [if_pos hcy] at hy_ok ⊢
+        exact refuteNoTwosFast_mono fxs (max fx fxs) _ _ _ _ (Nat.le_max_right _ _) hy_ok
+      · exact if_neg hcy
+}
+
+lemma exists_unrefuted_zprev_of_not_refuted (z_0 : ℕ)
+    (h_not : ¬ ∃ fuel, refuteNoTwosZ0Fast z_0 fuel = true) :
+    ∃ z_prev, 1 ≤ z_prev ∧ z_prev < z_0 ∧ z_0 - z_prev ≠ 2 ∧
+      ¬ ∃ fuel, refuteNoTwosFast fuel (z_0 + 1) (z_0 - z_prev) [(0, z_0)]
+        ((List.range z_0).filter (fun p => Nat.ble 2 p && !Nat.beq p z_prev)) = true := by {
+  by_contra h_all
+  have h_each : ∀ z_prev ∈ List.range z_0,
+      ∃ fuel, (if Nat.ble 1 z_prev && !Nat.beq (z_0 - z_prev) 2 then
+        refuteNoTwosFast fuel (z_0 + 1) (z_0 - z_prev) [(0, z_0)]
+          ((List.range z_0).filter (fun p => Nat.ble 2 p && !Nat.beq p z_prev))
+      else true) = true := by {
+    intro z_prev hmem
+    by_cases hcond : (Nat.ble 1 z_prev && !Nat.beq (z_0 - z_prev) 2) = true
+    · simp only [hcond, ↓reduceIte]
+      have hc := Eq.mp (Bool.and_eq_true _ _) hcond
+      have hge1 : 1 ≤ z_prev := Nat.ble_eq.mp hc.1
+      have hne2 : z_0 - z_prev ≠ 2 := fun heq => by {
+        have hb := Nat.beq_eq.mpr heq
+        rw [hb] at hc
+        nomatch hc.2
+      }
+      by_contra hnf
+      exact h_all ⟨z_prev, hge1, List.mem_range.mp hmem, hne2, hnf⟩
+    · exact ⟨0, if_neg hcond⟩
+  }
+  rcases exists_all_zprev_fuel z_0 (List.range z_0) h_each with ⟨fuel, hfuel⟩
+  exact h_not ⟨fuel, hfuel⟩
+}
+
+/--
+An infinite `2`-free DFS ray starting from a zero cut `z_0`.
+-/
+structure InfiniteNoTwosDFSRay (z_0 : ℕ) where
+  z_prev : ℕ
+  hzp_ge1 : 1 ≤ z_prev
+  hzp_lt : z_prev < z_0
+  hgap_ne2 : z_0 - z_prev ≠ 2
+  curSeq : ℕ → ℕ
+  tmSeq : ℕ → List (ℕ × ℕ)
+  freeSeq : ℕ → List ℕ
+  h_init_cur : curSeq 0 = z_0 - z_prev
+  h_init_tm : tmSeq 0 = [(0, z_0)]
+  h_init_free : freeSeq 0 =
+    (List.range z_0).filter (fun p => Nat.ble 2 p && !Nat.beq p z_prev)
+  h_step : ∀ t, StepNoTwosDFS (z_0 + 1 + t) (curSeq t) (tmSeq t) (freeSeq t)
+    (curSeq (t + 1)) (tmSeq (t + 1)) (freeSeq (t + 1))
+  h_unrefuted : ∀ t fuel,
+    refuteNoTwosFast fuel (z_0 + 1 + t) (curSeq t) (tmSeq t) (freeSeq t) = false
+
+/--
+Kőnig's Lemma for `refuteNoTwosZ0Fast`: if no finite `fuel` refutes the `z_0` cut, there exists an
+infinite `2`-free DFS ray `InfiniteNoTwosDFSRay z_0`.
+-/
+theorem nonempty_infinite_dfs_ray_of_not_refuted (z_0 : ℕ)
+    (h_not : ¬ ∃ fuel, refuteNoTwosZ0Fast z_0 fuel = true) :
+    Nonempty (InfiniteNoTwosDFSRay z_0) := by {
+  rcases exists_unrefuted_zprev_of_not_refuted z_0 h_not with
+    ⟨z_prev, hge1, hlt, hne2, h_not0⟩
+  let Node (t : ℕ) := { s : ℕ × List (ℕ × ℕ) × List ℕ //
+    ¬ ∃ fuel, refuteNoTwosFast fuel (z_0 + 1 + t) s.1 s.2.1 s.2.2 = true }
+  let stepNode : ∀ t, Node t → Node (t + 1) := fun t ⟨⟨c, tm, fr⟩, hn⟩ =>
+    let hex := exists_unrefuted_child_of_not_refuted (z_0 + 1 + t) c tm fr hn
+    let c' := Classical.choose hex
+    let hex2 := Classical.choose_spec hex
+    let tm' := Classical.choose hex2
+    let hex3 := Classical.choose_spec hex2
+    let fr' := Classical.choose hex3
+    have hspec := Classical.choose_spec hex3
+    have hidx : z_0 + 1 + t + 1 = z_0 + 1 + (t + 1) := by { omega }
+    ⟨(c', tm', fr'), hidx ▸ hspec.2⟩
+  let seq : ∀ t, Node t := Nat.rec
+    ⟨(z_0 - z_prev, [(0, z_0)],
+      (List.range z_0).filter (fun p => Nat.ble 2 p && !Nat.beq p z_prev)), h_not0⟩
+    stepNode
+  refine ⟨⟨z_prev, hge1, hlt, hne2,
+    fun t => (seq t).1.1, fun t => (seq t).1.2.1, fun t => (seq t).1.2.2,
+    rfl, rfl, rfl, ?_, ?_⟩⟩
+  · intro t
+    have hspec := Classical.choose_spec (Classical.choose_spec (Classical.choose_spec
+      (exists_unrefuted_child_of_not_refuted (z_0 + 1 + t)
+        (seq t).1.1 (seq t).1.2.1 (seq t).1.2.2 (seq t).2)))
+    exact hspec.1
+  · intro t fuel
+    cases hb : refuteNoTwosFast fuel (z_0 + 1 + t) (seq t).1.1 (seq t).1.2.1 (seq t).1.2.2 with
+    | false => rfl
+    | true => exact False.elim ((seq t).2 ⟨fuel, hb⟩)
+}
+
+lemma removeFirst_length_lt_of_mem (p : ℕ) (xs : List ℕ) (hp : p ∈ xs) :
+    (removeFirst p xs).length < xs.length := by {
+  induction xs with
+  | nil => simp at hp
+  | cons y ys ih =>
+    simp only [removeFirst]
+    cases hbeq : Nat.beq p y with
+    | true => simp
+    | false =>
+      simp only [Bool.false_eq_true, ↓reduceIte, List.length_cons]
+      rcases List.mem_cons.mp hp with rfl | h_tl
+      · have hb : Nat.beq p p = true := Nat.beq_eq.mpr rfl
+        exact Bool.noConfusion (hbeq.symm.trans hb)
+      · have hlt := ih h_tl
+        omega
+}
+
+/--
+Prefix-Slot Exhaustion along an Infinite DFS Ray: `freeSeq` has non-increasing length and
+stabilizes permanently after a finite horizon `T_stab`.
+-/
+lemma dfs_ray_free_stabilizes {z_0 : ℕ} (R : InfiniteNoTwosDFSRay z_0) :
+    (∀ t, (R.freeSeq (t + 1)).length ≤ (R.freeSeq t).length) ∧
+      ∃ T_stab, ∀ t ≥ T_stab, R.freeSeq (t + 1) = R.freeSeq t := by {
+  classical
+  have h_mono : ∀ t, (R.freeSeq (t + 1)).length ≤ (R.freeSeq t).length := by {
+    intro t
+    rcases R.h_step t with ⟨_, _, _, _, _, hfr⟩ | ⟨_, _, _, hfr⟩ | ⟨p, hp, _, _, _, _, hfr⟩
+    · rw [hfr]
+    · rw [hfr]
+    · rw [hfr]
+      exact Nat.le_of_lt (removeFirst_length_lt_of_mem p (R.freeSeq t) hp)
+  }
+  refine ⟨h_mono, ?_⟩
+  have h_ex_min : ∃ k, ∃ t, (R.freeSeq t).length = k := ⟨(R.freeSeq 0).length, 0, rfl⟩
+  rcases Nat.find_spec h_ex_min with ⟨T_stab, _hT_eq⟩
+  refine ⟨T_stab, ?_⟩
+  have h_le_T : ∀ t ≥ T_stab, (R.freeSeq t).length ≤ (R.freeSeq T_stab).length := by {
+    intro t ht
+    induction t with
+    | zero =>
+      have hT0 : T_stab = 0 := by { omega }
+      rw [hT0]
+    | succ s ih =>
+      rcases eq_or_lt_of_le ht with h_eq | hlt
+      · rw [← h_eq]
+      · exact le_trans (h_mono s) (ih (by { omega }))
+  }
+  intro t ht
+  rcases R.h_step t with ⟨_, _, _, _, _, hfr⟩ | ⟨_, _, _, hfr⟩ | ⟨p, hp, _, _, _, _, hfr⟩
+  · exact hfr
+  · exact hfr
+  · exfalso
+    have hlt := removeFirst_length_lt_of_mem p (R.freeSeq t) hp
+    have hle := h_le_T t ht
+    have hmin := Nat.find_min' h_ex_min ⟨t + 1, rfl⟩
+    rw [hfr] at hmin
+    omega
+}
+
+/--
+Shifted realization of an `InfiniteNoTwosDFSRay` (`raySeq R 0 = 0`, `raySeq R (t + 1) = curSeq t`).
+-/
+def raySeq {z_0 : ℕ} (R : InfiniteNoTwosDFSRay z_0) : ℕ → ℕ
+  | 0 => 0
+  | t + 1 => R.curSeq t
+
+lemma dfs_ray_lookup_eq_lastOcc {z_0 : ℕ} (R : InfiniteNoTwosDFSRay z_0) (t v : ℕ) :
+    lookupHead v (R.tmSeq t) = (lastOccBeforeFn (raySeq R) (t + 1) v).map (· + z_0) := by {
+  induction t with
+  | zero =>
+    rw [R.h_init_tm, lookupHead_cons]
+    simp only [lastOccBeforeFn, raySeq]
+    by_cases hv0 : v = 0
+    · subst hv0
+      simp
+    · have h0v : ¬ (0 = v) := Ne.symm hv0
+      simp [hv0, h0v, lookupHead]
+  | succ s ih =>
+    have htm : R.tmSeq (s + 1) = (R.curSeq s, z_0 + 1 + s) :: R.tmSeq s := by {
+      rcases R.h_step s with ⟨_, _, _, _, htm, _⟩ | ⟨_, _, htm, _⟩ | ⟨_, _, _, _, _, htm, _⟩
+      · exact htm
+      · exact htm
+      · exact htm
+    }
+    have hstep_occ : lastOccBeforeFn (raySeq R) (s + 2) v =
+        if R.curSeq s = v then some (s + 1) else lastOccBeforeFn (raySeq R) (s + 1) v := rfl
+    rw [htm, lookupHead_cons, hstep_occ]
+    by_cases hvc : v = R.curSeq s
+    · subst hvc
+      simp only [↓reduceIte, Option.map]
+      congr 1
+      omega
+    · have hcv : ¬ (R.curSeq s = v) := Ne.symm hvc
+      rw [if_neg hvc, if_neg hcv, ih]
+}
+
+lemma dfs_ray_shifted_ne_two {z_0 : ℕ} (R : InfiniteNoTwosDFSRay z_0) :
+    ∀ j ≥ 1, raySeq R j ≠ 2 := by {
+  intro j hj
+  cases j with
+  | zero => omega
+  | succ t =>
+    cases t with
+    | zero => exact R.hgap_ne2 ∘ R.h_init_cur.symm.trans
+    | succ s =>
+      change R.curSeq (s + 1) ≠ 2
+      rcases R.h_step s with ⟨_, _, hne2, hc, _, _⟩ | ⟨_, hc, _, _⟩ | ⟨_, _, _, hne2, hc, _, _⟩
+      · rw [hc]
+        exact hne2
+      · rw [hc]
+        decide
+      · rw [hc]
+        exact hne2
+}
+
+/--
+Exact `IsVanEckFrom` Realization of an Infinite DFS Ray:
+Once `freeSeq` stabilizes at `T_stab`, `raySeq R` obeys the exact Van Eck recurrence
+`IsVanEckFrom (raySeq R) (T_stab + 1)` with `raySeq R 0 = 0` and `∀ j ≥ 1, raySeq R j ≠ 2`.
+-/
+theorem dfs_ray_shifted_seq_spec {z_0 : ℕ} (R : InfiniteNoTwosDFSRay z_0) :
+    raySeq R 0 = 0 ∧
+      raySeq R 1 = z_0 - R.z_prev ∧
+      (∀ j ≥ 1, raySeq R j ≠ 2) ∧
+      ∃ T_stab, IsVanEckFrom (raySeq R) (T_stab + 1) := by {
+  refine ⟨rfl, R.h_init_cur, dfs_ray_shifted_ne_two R, ?_⟩
+  rcases (dfs_ray_free_stabilizes R).2 with ⟨T_stab, hT⟩
+  refine ⟨T_stab, ?_⟩
+  intro m hm
+  cases m with
+  | zero => omega
+  | succ t =>
+    have ht : T_stab ≤ t := by { omega }
+    have hfr_eq := hT t ht
+    have hlk_eq := dfs_ray_lookup_eq_lastOcc R t (R.curSeq t)
+    change R.curSeq (t + 1) =
+      match lastOccBeforeFn (raySeq R) (t + 1) (R.curSeq t) with
+      | none => 0
+      | some p => t + 1 - p
+    rcases R.h_step t with ⟨q, hlk, _, hc, _, _⟩ | ⟨hlk, hc, _, _⟩ | ⟨p, hp, _, _, _, _, hfr⟩
+    · rw [hlk] at hlk_eq
+      cases h_occ : lastOccBeforeFn (raySeq R) (t + 1) (R.curSeq t) with
+      | none =>
+        rw [h_occ] at hlk_eq
+        nomatch hlk_eq
+      | some r =>
+        rw [h_occ] at hlk_eq
+        simp only [Option.map, Option.some.injEq] at hlk_eq
+        have hr_lt := (lastOccBeforeFn_eq_some_spec (raySeq R) (t + 1) _ r h_occ).1
+        rw [hc]
+        change z_0 + 1 + t - q = t + 1 - r
+        omega
+    · rw [hlk] at hlk_eq
+      cases h_occ : lastOccBeforeFn (raySeq R) (t + 1) (R.curSeq t) with
+      | none => exact hc
+      | some r =>
+        rw [h_occ] at hlk_eq
+        nomatch hlk_eq
+    · exfalso
+      have hlt := removeFirst_length_lt_of_mem p (R.freeSeq t) hp
+      rw [← hfr, hfr_eq] at hlt
+      omega
+}
+
+/--
+Universal Lookback-Anchor Injectivity for `IsVanEckFrom f M_0`:
+Any two positive terms at `M_0 < i < j` have distinct anchors `i - 1 - f i ≠ j - 1 - f j`.
+-/
+lemma isVanEckFrom_lookback_anchor_unique (f : ℕ → ℕ) (M_0 i j : ℕ)
+    (h_rec : IsVanEckFrom f M_0) (hi : M_0 < i) (hlt : i < j)
+    (hi_pos : 0 < f i) (hj_pos : 0 < f j) :
+    i - 1 - f i ≠ j - 1 - f j := by {
+  intro heq
+  have hri := h_rec (i - 1) (by { omega })
+  have hrj := h_rec (j - 1) (by { omega })
+  have hi_idx : i - 1 + 1 = i := by { omega }
+  have hj_idx : j - 1 + 1 = j := by { omega }
+  rw [hi_idx] at hri
+  rw [hj_idx] at hrj
+  cases h_occi : lastOccBeforeFn f (i - 1) (f (i - 1)) with
+  | none =>
+    rw [h_occi] at hri
+    change f i = 0 at hri
+    omega
+  | some pi =>
+    rw [h_occi] at hri
+    change f i = i - 1 - pi at hri
+    have hpi_sp := lastOccBeforeFn_eq_some_spec f (i - 1) (f (i - 1)) pi h_occi
+    cases h_occj : lastOccBeforeFn f (j - 1) (f (j - 1)) with
+    | none =>
+      rw [h_occj] at hrj
+      change f j = 0 at hrj
+      omega
+    | some pj =>
+      rw [h_occj] at hrj
+      change f j = j - 1 - pj at hrj
+      have hpj_sp := lastOccBeforeFn_eq_some_spec f (j - 1) (f (j - 1)) pj h_occj
+      have hpi_lt := hpi_sp.1
+      have hpj_lt := hpj_sp.1
+      have hp_eq : pi = pj := by { omega }
+      have hval_eq : f (i - 1) = f (j - 1) :=
+        hpi_sp.2.1.symm.trans (hp_eq ▸ hpj_sp.2.1)
+      exact hpj_sp.2.2 (i - 1) (by { omega }) (by { omega }) hval_eq
+}
+
 
 lemma odds_and_zeros_chain_contradiction (N : ℕ) (h_odds : OnlyOddsAndZerosAfter N) : False := by {
   sorry
