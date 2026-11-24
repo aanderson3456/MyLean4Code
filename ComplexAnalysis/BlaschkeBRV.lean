@@ -2,6 +2,7 @@ import Sarason.Definitions
 import Sarason.Chapter1
 import Sarason.Chapter2
 import Sarason.Chapter3
+import ConformalDiskGeometry
 
 /-!
 # Resolution of Problem 4.3 of Anderson–Jovovic–Smith: The $a_k = 1 - 1/k^2$ Blaschke Product has Uniformly Bounded Radial Variation
@@ -48,7 +49,7 @@ and on the disk algebra $A(\mathbb{D})$, while $T_B$ is non-compact on $H^\infty
      independently of $s$ (and generalizes to $a_k = 1 - 1/k^p$ for all $p > 1$).
 -/
 
-open Complex Real Set Filter BigOperators Sarason Sarason.Ch1 Sarason.Ch2 Sarason.Ch3
+open Complex Real Set Filter BigOperators Sarason Sarason.Ch1 Sarason.Ch2 Sarason.Ch3 ConformalDiskGeometry
 
 namespace BlaschkeBRV
 
@@ -503,7 +504,7 @@ theorem pole_free_bound_one_sub_sq_le_one_sub
 
 /--
   **Exact Polar Cosine-Rule Identity for $|1 - a_k t e^{i\theta}|^2$:**
-  For any real $a, t, \theta \in \mathbb{R}$, using `polarPoint t θ` from `Sarason/Chapter3.lean`,
+  For any real $a, t, \theta \in \mathbb{R}$, using `polarPoint t θ` from `ConformalDiskGeometry.lean`,
   $$|1 - a \cdot \mathrm{polarPoint}(t, \theta)|^2 = (1 - a t)^2 + 4 a t \sin^2(\theta / 2).$$
 -/
 theorem one_sub_real_mul_polarPoint_norm_sq (a t θ : ℝ) :

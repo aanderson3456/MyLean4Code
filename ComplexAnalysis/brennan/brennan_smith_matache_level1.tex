@@ -48,7 +48,7 @@
 \maketitle
 
 \begin{abstract}
-Let $G \subsetneq \C$ be a simply connected domain and let $\varphi : G \to D$ be a Riemann map onto the open unit disk $D$. In 1978, Brennan \cite{Bre78} conjectured that $\varphi' \in L^s(G, dA)$ for all $4/3 < s < 4$. In the operator-theoretic framework developed by Smith \cite{Smi06} and Matache and Smith \cite{MS12}, Brennan's conjecture is equivalent to the assertion that constant symbols induce compact composition operators on the weighted Bergman domain spaces $L^2_a(G, \mu_p)$ for $-1/3 < p < 1$, and reduces via conformal pullback to the sharp inverse-square circular integral-means bound $M_{-2}[f'](r) \lesssim_\varepsilon (1-r)^{-1-\varepsilon}$ for univalent functions $f \in \S$. We present a self-contained, operator-theoretically motivated exposition and complete Lean~4 formalization of the proof of Brennan's conjecture based on the recent dyadic transfer and critical-point transport method of \cite{OAI26}. By viewing the half-plane rescaling operators $A_z \Phi(F) = |Q_F(z)|^2 \Phi(T_z F)$ through Smith's derivative-ratio cocycle $Q_F(z) = 1/F'(z)$, we show that the core proof is a concise five-step contradiction argument: if the spectral radius $\rho$ of the dyadic transfer operator exceeded $2$, the resulting affine-covariant eigenmeasure $P$ on the compact half-plane univalent class $\K$ would simultaneously force the normalized Jacobian $J_F(z) = \det DG_F(z)/|F'(z)|^2$ of the critical map $G_F(z) = F(z) - \frac{iy}{k}F'(z)$ ($k = \frac{\log_2 \rho + 3}{4}$) to have strictly positive expectation $\E_P[J_F(i)] = \frac{k-1}{k} > 0$ by pre-Schwarzian moment cancellation, and nonpositive expectation $\E_P[J_F(i)] \le 0$ by Poincar\'e--Hopf superlevel domination of saddles by local maxima.
+Let $G \subsetneq \C$ be a simply connected domain and let $\varphi : G \to D$ be a Riemann map onto the open unit disk $D$. In 1978, Brennan \cite{Bre78} conjectured that $\varphi' \in L^s(G, dA)$ for all $4/3 < s < 4$. In the operator-theoretic framework introduced by Smith \cite{Smi06} and developed by Matache and Smith \cite{MS12}, Brennan's conjecture is equivalent to the assertion that for $-1/3 < p < 1$, the weighted composition operators $A_{\psi, p}$ on $A^2(D)$---and equivalently unweighted composition operators on the conformally weighted domain spaces $L^2_a(G, \mu_p)$---admit a compact member (which holds if and only if $1 \in L^2_a(G, \mu_p)$, so constant symbols induce compact rank-one operators), and reduces via conformal pullback to the sharp inverse-square circular integral-means bound $M_{-2}[f'](r) \lesssim_\varepsilon (1-r)^{-1-\varepsilon}$ for univalent functions $f \in \S$. We present a self-contained, operator-theoretically motivated exposition and complete Lean~4 formalization of the proof of Brennan's conjecture based on the recent dyadic transfer and critical-point transport method of \cite{OAI26}. By viewing the half-plane rescaling operators $A_z \Phi(F) = |Q_F(z)|^2 \Phi(T_z F)$ through Smith's derivative-ratio cocycle $Q_F(z) = 1/F'(z)$, we show that the core proof is a concise five-step contradiction argument: if the spectral radius $\rho$ of the dyadic transfer operator exceeded $2$, the resulting affine-covariant eigenmeasure $P$ on the compact half-plane univalent class $\K$ would simultaneously force the normalized Jacobian $J_F(z) = \det DG_F(z)/|F'(z)|^2$ of the critical map $G_F(z) = F(z) - \frac{iy}{k}F'(z)$ ($k = \frac{\log_2 \rho + 3}{4}$) to have strictly positive expectation $\E_P[J_F(i)] = \frac{k-1}{k} > 0$ by pre-Schwarzian moment cancellation, and nonpositive expectation $\E_P[J_F(i)] \le 0$ by Poincar\'e--Hopf superlevel domination of saddles by local maxima.
 \end{abstract}
 
 \noindent\textbf{Keywords:} Brennan's conjecture, composition operators, weighted composition operators, weighted Bergman spaces, univalent functions, integral means spectrum, pre-Schwarzian derivative.\\
@@ -85,17 +85,19 @@ the works of Pommerenke \cite{Pom85}, Carleson and Makarov \cite{CM94}, Bertilss
 
 \subsection{The Operator-Theoretic Framework of Smith and Matache--Smith}
 
-A natural operator-theoretic setting for Brennan's conjecture was introduced by Wayne Smith \cite{Smi06} and subsequently developed by Matache and Smith \cite{MS12}. Given an analytic self-map $\psi : D \to D$, the composition operator $C_\psi f = f \circ \psi$ is bounded on the standard weighted Bergman spaces $A^2_\alpha(D) = H(D) \cap L^2((1-|z|^2)^\alpha dA)$ ($\alpha > -1$) by Littlewood's subordination principle \cite{CM95, Sha93, Zhu07}. When one replaces $D$ by a simply connected domain $G \subsetneq \C$, however, the boundary geometry of $G$ enters directly. In \cite{MS12}, Matache and Smith studied composition operators on the conformally weighted Bergman spaces
+A natural operator-theoretic setting for Brennan's conjecture was introduced by Wayne Smith \cite{Smi06} (building on earlier work of Shapiro and Smith \cite{SS03}) and subsequently developed for unweighted composition operators by Matache and Smith \cite{MS12} (see also \cite{Mat08}). Given an analytic self-map $\psi : D \to D$, the composition operator $C_\psi f = f \circ \psi$ is bounded on the standard weighted Bergman spaces $A^2_\alpha(D) = H(D) \cap L^2((1-|z|^2)^\alpha dA)$ ($\alpha > -1$) by Littlewood's subordination principle \cite{CM95, Sha93, Zhu07}. When one replaces $D$ by a simply connected domain $G \subsetneq \C$ with inverse Riemann map $\tau = \varphi^{-1} : D \to G$, however, the boundary geometry of $G$ enters directly. In \cite{SS03}, Shapiro and Smith pulled unweighted composition operators on $H^2(G)$ and $L^2_a(G, dA)$ back to weighted composition operators on $H^2(D)$ and $A^2(D) = L^2_a(D, dA)$. Motivated by this pullback, Smith \cite{Smi06} studied on $A^2(D)$ for arbitrary $p \in \R$ the family of weighted composition operators $(A_{\psi, p} g)(z) = (Q_\psi(z))^p g(\psi(z))$ governed by the derivative-ratio weight
+\begin{equation}\label{eq:smith-cocycle-intro}
+  Q_\psi(z) := \frac{\tau'(\psi(z))}{\tau'(z)}, \qquad Q_{\psi_1 \circ \psi_2}(z) = Q_{\psi_1}(\psi_2(z))\, Q_{\psi_2}(z),
+\end{equation}
+and proved \cite[Theorem~1.1]{Smi06} that $(\tau')^{-p} \in A^2(D)$ if and only if \emph{there exists an analytic self-map $\psi : D \to D$} such that $A_{\psi, p}$ is compact on $A^2(D)$. While the forward implication is immediate from constant symbols $\psi \equiv z_0 \in D$ (which induce rank-one operators once $(\tau')^{-p} \in A^2(D)$), Smith established the deeper converse via the Denjoy--Wolff theorem and reproducing-kernel estimates, showing that any $\psi$ making $A_{\psi, p}$ compact must have an interior fixed point $b \in D$, whose adjoint eigenvector $A_{\psi, p}^* K_b = K_b$ forces an eigenfunction $f \in A^2(D)$ satisfying $(\tau')^p f \equiv c \ne 0$.
+
+Subsequently, in \cite{MS12}, Matache and Smith reformulated Brennan's conjecture for \emph{unweighted} composition operators by introducing on $G$ the conformally weighted Bergman spaces
 \begin{equation}\label{eq:MS-space}
   L^2_a(G, \mu_p) := \left\{h \in H(G) : \|h\|_{p}^2 = \int_G |h(w)|^2 |\varphi'(w)|^{2p+2} \, dA(w) < \infty\right\},
 \end{equation}
-where $d\mu_p(w) = |\varphi'(w)|^{2p+2} dA(w)$ for $p \in \R$. Since any constant function $h \equiv c \ne 0$ belongs to $L^2_a(G, \mu_p)$ if and only if $\int_G |\varphi'|^{2p+2} dA < \infty$, setting $s = 2p+2$ immediately translates Brennan's conjecture into the statement that $L^2_a(G, \mu_p)$ contains the constant functions---or equivalently, that constant symbols $\psi \equiv w_0 \in G$ induce bounded and compact rank-one composition operators on $L^2_a(G, \mu_p)$---for every simply connected $G \subsetneq \C$ if and only if $-1/3 < p < 1$ \cite[Section~2]{MS12}.
+where $d\mu_p(w) = |\varphi'(w)|^{2p+2} dA(w)$ for $p \in \R$ (normalized by $1/\pi$ in \cite{MS12}). Pulling $L^2_a(G, \mu_p)$ back to $A^2(D)$ via the unitary map $(U_p h)(z) = (\tau'(z))^{-p} h(\tau(z))$ conjugates any composition operator $C_\Psi$ ($\Psi : G \to G$) into $A_{\psi, p}$ with $\psi = \varphi \circ \Psi \circ \tau$. Combining this unitary equivalence with \cite[Theorem~1.1]{Smi06}, Matache and Smith showed \cite[Propositions~1 and~7]{MS12} that Brennan's conjecture ($s = 2p+2 \in (4/3, 4)$) is equivalent to the assertion that $L^2_a(G, \mu_p)$ supports a compact composition operator---equivalently, contains the constant functions so every constant symbol $\Psi \equiv w_0 \in G$ induces a compact rank-one composition operator---for every simply connected $G \subsetneq \C$ and all $-1/3 < p < 1$.
 
-Earlier, in \cite{Smi06}, Smith analyzed composition operators on $L^2_a(G, dA)$ ($p = -1$) by pulling back functions $h \in L^2_a(G, dA)$ to the classical Bergman space $A^2(D) = L^2_a(D, dA)$ via the unitary isomorphism $U h(z) = h(\tau(z))\tau'(z)$, where $\tau = \varphi^{-1} : D \to G$. Under this pullback, a self-map $\Psi : G \to G$ with disk conjugate $\psi = \tau^{-1} \circ \Psi \circ \tau : D \to D$ induces on $A^2(D)$ a weighted composition operator whose weight is governed by the derivative ratio
-\begin{equation}\label{eq:smith-cocycle-intro}
-  Q_\psi(z) := \frac{\tau'(\psi(z))}{\tau'(z)}, \qquad Q_{\psi_1 \circ \psi_2}(z) = Q_{\psi_1}(\psi_2(z))\, Q_{\psi_2}(z).
-\end{equation}
-In particular, when $\tau$ is transferred from the disk $D$ to the upper half-plane $\H = \{x+iy \in \C : y > 0\}$ and $\psi(w) = z \cdot w = x + yw$ is an affine self-map of $\H$, Smith's derivative-ratio weight \eqref{eq:smith-cocycle-intro} becomes the multiplicative cocycle relating the inverse derivative $Q_F(z) = 1/F'(z)$ of a normalized univalent function $F \in \K$ to that of its affine rescaling $T_z F(w) = \frac{F(z\cdot w) - F(z)}{y F'(z)}$:
+Crucially for the present paper, when $\tau$ is transferred from the disk $D$ to the upper half-plane $\H = \{x+iy \in \C : y > 0\}$ and $\psi(w) = z \cdot w = x + yw$ is an affine self-map of $\H$, Smith's derivative-ratio weight \eqref{eq:smith-cocycle-intro} becomes the multiplicative cocycle relating the inverse derivative $Q_F(z) = 1/F'(z)$ of a normalized univalent function $F \in \K$ to that of its affine rescaling $T_z F(w) = \frac{F(z\cdot w) - F(z)}{y F'(z)}$:
 \begin{equation}\label{eq:halfplane-cocycle-intro}
   Q_{T_z F}(w) = \frac{Q_F(z \cdot w)}{Q_F(z)}.
 \end{equation}
@@ -127,27 +129,27 @@ Consequently, if $G \subsetneq \C$ is a simply connected domain and $\varphi : G
 \begin{equation}\label{eq:main-brennan-bound}
   \int_G |\varphi'(w)|^s \, dA(w) < \infty \qquad \text{for all } \frac{4}{3} < s < 4,
 \end{equation}
-and the constant functions belong to the Matache--Smith domain space $L^2_a(G, \mu_p)$ (so every constant symbol induces a compact composition operator on $L^2_a(G, \mu_p)$) for all $-1/3 < p < 1$.
+and for all $-1/3 < p < 1$, the constant functions belong to the Matache--Smith space $L^2_a(G, \mu_p)$, so $L^2_a(G, \mu_p)$ supports compact composition operators (and equivalently Smith's weighted composition operators $A_{\psi, p}$ on $A^2(D)$ admit compact members \cite{Smi06, MS12}).
 \end{thm}
 
 \section{Preliminaries and the Smith--Matache Operator Dictionary}
 
 Throughout this paper, we use the standard asymptotic notation of operator theory on spaces of analytic functions (see, e.g., \cite{Smi06, MS12, CKS25}). Given two nonnegative quantities $A$ and $B$ depending on parameters in a specified class, the notation $A \lesssim B$ (or $B \gtrsim A$) means that there exists a finite positive constant $C > 0$, independent of the relevant parameters, such that $A \le C B$. We write $A \approx B$ if both $A \lesssim B$ and $B \lesssim A$ hold. When the implied constant depends on an auxiliary parameter such as $\varepsilon > 0$, we write $A \lesssim_\varepsilon B$.
 
-Let $G \subsetneq \C$ be a simply connected domain, let $\varphi : G \to D$ be a Riemann map, and let $\tau = \varphi^{-1} : D \to G$ be its inverse. Following Matache and Smith \cite{MS12}, for each $p \in \R$ we consider the conformally weighted measure $d\mu_p(w) = |\varphi'(w)|^{2p+2} dA(w)$ on $G$ and the associated Hilbert space $L^2_a(G, \mu_p)$ defined in \eqref{eq:MS-space}. Each analytic self-map $\Psi : G \to G$ induces the linear composition operator $C_\Psi h = h \circ \Psi$ for $h \in H(G)$. To study $C_\Psi$ by transferring to the unit disk $D$, Smith \cite{Smi06} introduced the weighted pullback transform $U_p : H(G) \to H(D)$ defined by
+Let $G \subsetneq \C$ be a simply connected domain, let $\varphi : G \to D$ be a Riemann map, and let $\tau = \varphi^{-1} : D \to G$ be its inverse. Following Matache and Smith \cite[Section~2]{MS12}, for each $p \in \R$ we consider the conformally weighted measure $d\mu_p(w) = |\varphi'(w)|^{2p+2} dA(w)$ on $G$ and the associated Hilbert space $L^2_a(G, \mu_p)$ defined in \eqref{eq:MS-space}. Each analytic self-map $\Psi : G \to G$ induces the linear composition operator $C_\Psi h = h \circ \Psi$ for $h \in H(G)$. To relate $C_\Psi$ to Smith's weighted composition operators on the unit disk $D$ \cite{Smi06}, Matache and Smith \cite[Section~2]{MS12} introduced the weighted pullback transform $U_p : H(G) \to H(D)$ defined by
 \begin{equation}\label{eq:Up-def}
   (U_p h)(z) := h(\tau(z))\, (\tau'(z))^{-p} \qquad (z \in D),
 \end{equation}
-where $(\tau')^{-p} = \exp(-p \log \tau')$ is defined using the single-valued analytic branch of $\log \tau'$ on the simply connected disk $D$ (which exists because $\tau$ is univalent and hence $\tau'$ is nonvanishing on $D$). By the conformal change of variables $w = \tau(z)$ with $dA(w) = |\tau'(z)|^2 dA(z)$ and $|\varphi'(\tau(z))| = |\tau'(z)|^{-1}$, we have
+where $(\tau')^{-p} = \exp(-p \log \tau')$ is defined using a single-valued analytic branch of $\log \tau'$ on the simply connected disk $D$ (which exists because $\tau$ is univalent and hence $\tau'$ is nonvanishing on $D$). By the conformal change of variables $w = \tau(z)$ with $dA(w) = |\tau'(z)|^2 dA(z)$ and $|\varphi'(\tau(z))| = |\tau'(z)|^{-1}$, we have
 \[
   \int_G |h(w)|^2 |\varphi'(w)|^{2p+2} \, dA(w) = \int_D |h(\tau(z))|^2 |\tau'(z)|^{-2p} \, dA(z) = \int_D |(U_p h)(z)|^2 \, dA(z),
 \]
 so $U_p$ is a unitary isomorphism of $L^2_a(G, \mu_p)$ onto the unweighted Bergman space $A^2(D) = L^2_a(D, dA)$.
 
-\begin{lemma}[Smith's Weighted Composition Pullback \cite{Smi06, MS12}]\label{lem:smith-pullback}
-Let $\Psi : G \to G$ be an analytic self-map and let $\psi = \varphi \circ \Psi \circ \tau : D \to D$ be its disk conjugate. Under the unitary isomorphism $U_p : L^2_a(G, \mu_p) \to A^2(D)$, the composition operator $C_\Psi$ is unitarily equivalent to the weighted composition operator $A_{\psi, -p} := U_p C_\Psi U_p^{-1}$ on $A^2(D)$ given by
+\begin{lemma}[Smith--Matache Weighted Composition Pullback \cite{Smi06, MS12}]\label{lem:smith-pullback}
+Let $\Psi : G \to G$ be an analytic self-map and let $\psi = \varphi \circ \Psi \circ \tau : D \to D$ be its disk conjugate. Under the unitary isomorphism $U_p : L^2_a(G, \mu_p) \to A^2(D)$, the composition operator $C_\Psi$ is unitarily equivalent to Smith's weighted composition operator $A_{\psi, p} := U_p C_\Psi U_p^{-1}$ on $A^2(D)$ given by
 \begin{equation}\label{eq:smith-wco}
-  (A_{\psi, -p} g)(z) = (Q_\psi(z))^{-p} \, g(\psi(z)), \qquad Q_\psi(z) := \frac{\tau'(\psi(z))}{\tau'(z)}.
+  (A_{\psi, p} g)(z) = (Q_\psi(z))^{p} \, g(\psi(z)), \qquad Q_\psi(z) := \frac{\tau'(\psi(z))}{\tau'(z)}.
 \end{equation}
 Moreover, for any pair of analytic self-maps $\psi_1, \psi_2 : D \to D$, the derivative-ratio weight $Q_\psi$ satisfies the multiplicative cocycle identity
 \begin{equation}\label{eq:smith-cocycle-lemma}
@@ -161,7 +163,7 @@ For any $g \in A^2(D)$, we have $(U_p^{-1} g)(w) = g(\varphi(w)) (\tau'(\varphi(
 \[
   (U_p C_\Psi U_p^{-1} g)(z) = g(\psi(z)) \, (\tau'(\psi(z)))^p (\tau'(z))^{-p} = \left(\frac{\tau'(\psi(z))}{\tau'(z)}\right)^p g(\psi(z)) = (Q_\psi(z))^p g(\psi(z)),
 \]
-which is \eqref{eq:smith-wco} after replacing $p$ by $-p$. For any $\psi_1, \psi_2 : D \to D$ and $z \in D$, since $\tau'$ is nonvanishing on $D$,
+which establishes \eqref{eq:smith-wco} (cf.~\cite[Proposition~1]{MS12}). For any $\psi_1, \psi_2 : D \to D$ and $z \in D$, since $\tau'$ is nonvanishing on $D$,
 \[
   Q_{\psi_1 \circ \psi_2}(z) = \frac{\tau'(\psi_1(\psi_2(z)))}{\tau'(z)} = \frac{\tau'(\psi_1(\psi_2(z)))}{\tau'(\psi_2(z))} \cdot \frac{\tau'(\psi_2(z))}{\tau'(z)} = Q_{\psi_1}(\psi_2(z)) \, Q_{\psi_2}(z).
 \]
@@ -529,10 +531,10 @@ D.~Bertilsson, \emph{On Brennan's conjecture in conformal mapping}, Doctoral The
 J.~E. Brennan, \emph{The integrability of the derivative in conformal mapping}, J. London Math. Soc. (2) \textbf{18} (1978), no.~2, 261--272.
 
 \bibitem{CM94}
-L.~Carleson and N.~G. Makarov, \emph{Some results connected with Brennan's conjecture}, Israel J. Math. \textbf{87} (1994), 349--364.
+L.~Carleson and N.~G. Makarov, \emph{Some results connected with Brennan's conjecture}, Ark. Mat. \textbf{32} (1994), no.~1, 33--62.
 
 \bibitem{CKS25}
-B.~R. Choe, H.~Koo, and W.~Smith, \emph{Compact difference of Fej\'er--Riesz composition operators}, Potential Anal. (2025).
+B.~R. Choe, H.~Koo, and W.~Smith, \emph{Compact difference of Fej\'er--Riesz composition operators}, Potential Anal. \textbf{63} (2025), no.~4, 2001--2018.
 
 \bibitem{CM95}
 C.~C. Cowen and B.~D. MacCluer, \emph{Composition Operators on Spaces of Analytic Functions}, Studies in Advanced Mathematics, CRC Press, Boca Raton, FL, 1995.
@@ -543,8 +545,11 @@ P.~L. Duren, \emph{Univalent Functions}, Grundlehren der mathematischen Wissensc
 \bibitem{HS05}
 H.~Hedenmalm and S.~Shimorin, \emph{Weighted Bergman spaces and the integral means spectrum of conformal mappings}, Duke Math. J. \textbf{127} (2005), no.~2, 341--393.
 
+\bibitem{Mat08}
+V.~Matache, \emph{Weighted composition operators on $H^2$ and applications}, Complex Anal. Oper. Theory \textbf{2} (2008), no.~1, 169--197.
+
 \bibitem{MS12}
-V.~Matache and W.~Smith, \emph{Composition operators on Bergman spaces of simply connected domains}, Complex Var. Elliptic Equ. \textbf{57} (2012), no.~11, 1225--1238.
+V.~Matache and W.~Smith, \emph{Composition operators on a class of analytic function spaces related to Brennan's conjecture}, Complex Anal. Oper. Theory \textbf{6} (2012), no.~1, 139--162.
 
 \bibitem{OAI26}
 OpenAI, \emph{Brennan's conjecture and sharp inverse-square integral means}, Preprint (2026).
@@ -558,8 +563,11 @@ Ch.~Pommerenke, \emph{Boundary Behaviour of Conformal Maps}, Grundlehren der mat
 \bibitem{Sha93}
 J.~H. Shapiro, \emph{Composition Operators and Classical Function Theory}, Universitext: Tracts in Mathematics, Springer-Verlag, New York, 1993.
 
+\bibitem{SS03}
+J.~H. Shapiro and W.~Smith, \emph{Hardy spaces that support no compact composition operators}, J. Funct. Anal. \textbf{205} (2003), no.~1, 62--89.
+
 \bibitem{Smi06}
-W.~Smith, \emph{Composition operators on Bergman spaces of domains in the complex plane}, Complex Var. Elliptic Equ. \textbf{51} (2006), no.~8--11, 1081--1092.
+W.~Smith, \emph{Brennan's conjecture for weighted composition operators}, in \emph{Recent Advances in Operator-Related Function Theory} (A.~L. Matheson, M.~I. Stessin, and R.~M. Timoney, eds.), Contemp. Math., vol.~393, Amer. Math. Soc., Providence, RI, 2006, pp.~209--214.
 
 \bibitem{Zhu07}
 K.~Zhu, \emph{Operator Theory in Function Spaces}, 2nd ed., Mathematical Surveys and Monographs, vol.~138, American Mathematical Society, Providence, RI, 2007.

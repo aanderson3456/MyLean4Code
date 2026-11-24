@@ -1,6 +1,6 @@
 \documentclass[11pt,reqno]{amsart}
 
-\usepackage{amssymb, mathrsfs, color, amsthm, tikz, graphicx}
+\usepackage{amssymb, mathrsfs, xcolor, amsthm, tikz, graphicx}
 \usepackage[margin=1.1in]{geometry}
 \usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 
@@ -29,13 +29,12 @@
 
 \title[Bounded Radial Variation for the $1 - 1/k^2$ Blaschke Product]
 {Uniformly Bounded Radial Variation for the $a_k = 1 - 1/k^2$ Blaschke Product and Resolution of a Problem on $T_g$ Acting on $H^\infty$}
-\date{November 5, 2026}
+\date{November 12, 2026}
 
 \author[A. Anderson]{Austin Anderson}
 
-\thanks{Interactive 3-Level Formalization Edition (Level 1: Main Research Paper). Accompanied by machine-checked proofs in Lean 4 (\texttt{BlaschkeBRV/BlaschkeBRV.lean}). Dedicated to the memory of Wayne Smith.}
-\subjclass[2020]{Primary: 30J10, 47B38; Secondary: 30H05, 68V15}
-\keywords{Blaschke products, bounded radial variation, Volterra-type integral operators, $H^\infty$, Frostman condition, interpolating sequences, Lean 4 formal verification}
+\subjclass[2020]{Primary: 30J10, 47B38; Secondary: 30H05}
+\keywords{Blaschke products, bounded radial variation, Volterra-type integral operators, $H^\infty$, Frostman condition, interpolating sequences}
 
 \begin{abstract}
 Let $T_g f(z) = \int_0^z f(w) g'(w)\,dw$ and $S_g f(z) = \int_0^z f'(w) g(w)\,dw$ denote the generalized Volterra operator and its companion acting on $H^\infty(\D)$. In \cite[Problem~4.3]{AJS14}, Anderson, Jovovic, and Smith asked for a zero-sequence characterization of Blaschke products belonging to the class $\BRV = \{g \in H(\D) : \sup_{\theta} \int_0^1 |g'(te^{i\theta})|\,dt < \infty\} \subseteq T[H^\infty] = S[H^\infty]$, singling out the Blaschke product $B(z)$ with zeros $a_k = 1 - 1/k^2$ as a critical borderline test case whose individual radii have rectifiable images, but for which a uniform arc-length bound was unknown. This sequence lies outside both previously known regimes: it is neither uniformly Frostman (Cargo's sufficient condition fails at $\theta = 0$) nor interpolating (Theorem~2.10 of \cite{AJS14} does not apply since $\rho(a_k, a_{k+1}) \sim 1/k \to 0$).
@@ -269,9 +268,106 @@ For $p = 2$, $1 + \frac{2^{2-1}}{2-1} = 3$, so $S(t e^{i\theta}) \le \frac{32}{3
 \end{itemize}
 \end{proof}
 
+\begin{rem}[Continuous Integral Comparison and Euler's Beta Function] \label{rem_beta_integral}
+\normalfont
+The exponent $-(1 + 1/p)$ and the threshold $p > 1$ in Proposition~\ref{prop_kernel_power} also arise transparently from comparing $\Sigma_p(\delta)$ to the continuous integral $\int_1^\infty \frac{u^{-p}}{(u^{-p} + \delta)^2}\,du$. Factoring $u^{-p} + \delta = u^{-p}(1 + \delta u^p)$ gives $(u^{-p} + \delta)^2 = u^{-2p}(1 + \delta u^p)^2$, so $\frac{u^{-p}}{(u^{-p} + \delta)^2} = \frac{u^p}{(1 + \delta u^p)^2}$. Setting $w = \delta u^p$ ($u = \delta^{-1/p} w^{1/p}$, $du = \frac{1}{p}\delta^{-1/p} w^{1/p - 1}\,dw$, $u = 1 \mapsto w = \delta$) then yields
+\[
+  \int_1^\infty \frac{u^{-p}}{(u^{-p} + \delta)^2}\,du
+  = \int_1^\infty \frac{u^p}{(1 + \delta u^p)^2}\,du
+  = \int_\delta^\infty \frac{w/\delta}{(1 + w)^2} \cdot \frac{1}{p}\delta^{-1/p} w^{1/p - 1}\,dw
+  = \frac{1}{p}\delta^{-(1 + 1/p)} \int_\delta^\infty \frac{w^{1/p}}{(1 + w)^2}\,dw.
+\]
+Using the rational-integral representation $\mathrm{B}(a, b) = \int_0^1 \tau^{a-1}(1 - \tau)^{b-1}\,d\tau = \int_0^\infty \frac{w^{a-1}}{(1 + w)^{a + b}}\,dw$ (via $\tau = \frac{w}{1 + w}$) with $a = 1 + 1/p > 0$ and $b = 1 - 1/p$ (note $b > 0 \iff p > 1$), Euler's reflection formula yields
+\[
+  \lim_{\delta \to 0^+} \delta^{1 + 1/p} \Sigma_p(\delta)
+  = \frac{1}{p}\,\mathrm{B}\!\left(1 + \frac{1}{p},\, 1 - \frac{1}{p}\right)
+  = \frac{\Gamma(1 + 1/p)\Gamma(1 - 1/p)}{p\,\Gamma(2)}
+  = \frac{\pi}{p^2 \sin(\pi / p)} < \infty
+\]
+(in particular, $\frac{1}{2}\mathrm{B}(\frac{3}{2}, \frac{1}{2}) = \frac{\pi}{4}$ when $p = 2$).
+\end{rem}
+
 \section{Exact Elementary Antiderivatives and Proof of Theorem~\ref{thm_main}} \label{sec_two_zone}
 
-We now combine Theorem~\ref{thm_pole_free} and Proposition~\ref{prop_kernel_power} to bound $V(B, \theta) = \int_0^1 |B'(t e^{i\theta})|\,dt$ uniformly in $\theta \in [-\pi, \pi]$.
+We now combine Theorem~\ref{thm_pole_free} and Proposition~\ref{prop_kernel_power} to bound $V(B, \theta) = \int_0^1 |B'(t e^{i\theta})|\,dt$ uniformly in $\theta \in [-\pi, \pi]$ (see Figure~\ref{fig_two_zone_brv}).
+
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[>=stealth, font=\small]
+  \begin{scope}
+    \node[font=\bfseries\small, anchor=south] at (3.25, 5.65) {(a) Radial Zones in $\D$ Near $z = 1$};
+    \fill[gray!6] (-3.6, 1.0) ++(-2:3.7) arc (-2:20:3.7) -- ++(20:1.3) arc (20:-2:5.0) -- cycle;
+    \fill[teal!8] (-3.6, 1.0) ++(-2:5.0) arc (-2:20:5.0) -- ++(20:2.75) arc (20:-2:7.75) -- cycle;
+    \fill[blue!10] (-3.6, 1.0) ++(-2:7.75) arc (-2:20:7.75) -- ++(20:2.05) arc (20:-2:9.8) -- cycle;
+    \draw[dashed, gray!75!black, thick] (-3.6, 1.0) ++(-4:5.0) arc (-4:22:5.0);
+    \node[gray!65!black, font=\scriptsize, anchor=north] at (1.39, 0.62) {$|z| = 1 - x_0$};
+    \draw[dashed, blue!70!black, thick] (-3.6, 1.0) ++(-4:7.75) arc (-4:22:7.75);
+    \node[blue!70!black, font=\scriptsize, anchor=north] at (4.13, 0.44) {$|z| = 1 - s$};
+    \draw[thick, black] (-3.6, 1.0) ++(-4.5:9.8) arc (-4.5:22.5:9.8);
+    \node[black, font=\small, anchor=west] at (5.52, 4.78) {$\partial\D$};
+    \draw[->, gray!80!black] (0.1, 1.0) -- (6.55, 1.0);
+    \node[font=\scriptsize, gray!70!black, anchor=north] at (0.45, 0.95) {$\leftarrow 0$};
+    \foreach \xpos/\lbl in {2.15/$a_2$, 3.65/$a_3$, 4.68/$a_4$, 5.28/$a_5$, 5.64/{}, 5.86/{}, 6.00/{}, 6.09/{}} {
+      \fill[red!75!black] (\xpos, 1.0) circle (1.9pt);
+      \ifx\lbl\empty\else
+        \node[red!75!black, font=\scriptsize, anchor=north] at (\xpos, 0.94) {\lbl};
+      \fi
+    }
+    \node[red!75!black, font=\scriptsize, anchor=south] at (5.05, 1.14) {$a_k = 1 - k^{-p}$};
+    \fill[black] (6.2, 1.0) circle (2.2pt);
+    \node[black, font=\small, anchor=north west] at (6.23, 0.96) {$1$};
+    \draw[very thick, gray!70!black] (-3.6, 1.0) ++(13:3.7) -- ++(13:1.3);
+    \draw[line width=2.3pt, teal!75!black] (-3.6, 1.0) ++(13:5.0) -- ++(13:2.75);
+    \draw[line width=2.5pt, blue!80!black] (-3.6, 1.0) ++(13:7.75) -- ++(13:2.05);
+    \fill[blue!80!black] (5.949, 3.205) circle (2.2pt);
+    \node[blue!80!black, font=\small, anchor=south west] at (5.98, 3.22) {$e^{i\theta}$};
+    \fill[blue!75!black] (3.951, 2.743) circle (2.0pt);
+    \fill[teal!75!black] (1.272, 2.125) circle (2.0pt);
+    \draw[<->, densely dashed, purple!80!black, thick] (6.30, 1.06) -- (6.06, 3.16)
+      node[midway, right=3pt, font=\scriptsize, purple!80!black, align=left] {$s = |1 - e^{i\theta}|$\\[-1pt]$= 2|\sin(\theta/2)|$};
+    \node[teal!70!black, font=\scriptsize, rotate=13, align=center] at (2.52, 2.98) {\textbf{Zone II}\\[-2pt]$(s \le x \le x_0)$};
+    \node[teal!70!black, font=\scriptsize, rotate=13] at (2.66, 2.08) {$\delta \asymp x$};
+    \node[blue!80!black, font=\scriptsize, rotate=13, align=center] at (4.84, 3.52) {\textbf{Zone I}\\[-2pt]$(x \le s)$};
+    \node[blue!80!black, font=\scriptsize, rotate=13] at (5.00, 2.64) {$\delta \asymp s$};
+    \node[gray!65!black, font=\scriptsize, rotate=13] at (0.58, 2.30) {Core};
+  \end{scope}
+  \begin{scope}[xshift=8.75cm]
+    \node[font=\bfseries\small, anchor=south] at (3.35, 5.65) {(b) Damped Integrand vs.\ Depth $x = 1 - t$};
+    \fill[blue!14] (0.4, 1.0)
+      -- plot[domain=0:1.85, samples=45] ({0.4 + \x}, {1.0 + 3.65 * ((1 + 0.32*\x)^(-0.95)) * exp(-0.95*\x * ((1 + 0.25*\x)^(-0.45)))})
+      -- (2.25, 1.0) -- cycle;
+    \fill[teal!14] (2.25, 1.0)
+      -- plot[domain=1.85:5.55, samples=65] ({0.4 + \x}, {1.0 + 3.65 * ((1 + 0.32*\x)^(-0.95)) * exp(-0.95*\x * ((1 + 0.25*\x)^(-0.45)))})
+      -- (5.95, 1.0) -- cycle;
+    \draw[->, thick] (0.4, 1.0) -- (6.35, 1.0) node[right, font=\scriptsize] {$x = 1 - t$};
+    \draw[->, thick] (0.4, 1.0) -- (0.4, 5.10) node[above right, font=\scriptsize] {$|B'((1-x)e^{i\theta})|$};
+    \draw[dashed, red!70!black, thick]
+      plot[domain=0:5.55, samples=70] ({0.4 + \x}, {1.0 + 3.65 * ((1 + 0.32*\x)^(-0.95))});
+    \node[red!70!black, font=\scriptsize, anchor=west, align=left] at (2.85, 4.05)
+      {Naive Frostman bound $S(z) \asymp (x+s)^{-\alpha}$\\[-1pt](diverges as $\int_0^s \sim s^{-1/p}$ as $\theta \to 0$)};
+    \draw[->, red!70!black, thin] (2.82, 3.92) -- (2.05, 3.38);
+    \draw[line width=1.8pt, blue!80!black]
+      plot[domain=0:1.85, samples=45] ({0.4 + \x}, {1.0 + 3.65 * ((1 + 0.32*\x)^(-0.95)) * exp(-0.95*\x * ((1 + 0.25*\x)^(-0.45)))});
+    \draw[line width=1.8pt, teal!75!black]
+      plot[domain=1.85:5.55, samples=65] ({0.4 + \x}, {1.0 + 3.65 * ((1 + 0.32*\x)^(-0.95)) * exp(-0.95*\x * ((1 + 0.25*\x)^(-0.45)))});
+    \draw[densely dashed, blue!75!black, thick] (2.25, 1.0) -- (2.25, 4.70);
+    \node[below, font=\scriptsize, blue!80!black] at (2.25, 0.94) {$x = s$};
+    \node[below, font=\scriptsize] at (0.4, 0.94) {$0$};
+    \node[below, font=\scriptsize] at (5.95, 0.94) {$x_0$};
+    \draw[thick] (5.95, 0.93) -- (5.95, 1.07);
+    \node[left, font=\scriptsize, blue!80!black] at (0.36, 4.62) {$\sim s^{-\alpha}$};
+    \node[blue!80!black, font=\scriptsize, align=center] at (1.60, 3.02) {\textbf{Zone I}\\[-1pt]$\le \frac{e^{1/2}C_2}{c'}$};
+    \draw[->, blue!80!black, thin] (1.38, 2.66) -- (0.98, 1.88);
+    \node[teal!75!black, font=\scriptsize, anchor=west, align=left] at (2.80, 1.82)
+      {\textbf{Zone II:} $\lesssim x^{-(1+1/p)} e^{-c' x^{-1/p}}$\\[-1pt]exact antideriv.\ $\frac{p e^{1/2} C_2}{c'} e^{-c' x^{-1/p}}$};
+    \draw[->, teal!75!black, thin] (2.78, 1.66) -- (2.42, 1.32);
+  \end{scope}
+\end{tikzpicture}%
+}
+\caption{Geometric and analytic mechanism of $B \in \BRV$ for $a_k = 1 - k^{-p}$ ($p > 1$, $\alpha = 1 + 1/p$). \textbf{(a)} Along a ray $z = (1 - x)e^{i\theta}$ near $z = 1$, the combined scale $\delta = x + s$ splits at $x = s = 2|\sin(\theta/2)|$ into an angularly dominated layer \textbf{Zone~I} ($0 < x \le s$) and a radially dominated bulk \textbf{Zone~II} ($s \le x \le x_0$). \textbf{(b)} Retaining the subproduct damping $\exp(-\frac{1}{2}x S(z))$ crushes the Frostman peak $\sim s^{-\alpha}$ across scale $x \sim s^\alpha \ll s$ in Zone~I and matches the exact derivative of $\exp(-c' x^{-1/p})$ in Zone~II, bounding the total area uniformly in $\theta$.}
+\label{fig_two_zone_brv}
+\end{figure}
 
 \begin{proof}[Proof of Theorem~\ref{thm_main}]
 Fix $p > 1$, let $\alpha := 1 + 1/p \in (1, 2)$, and let $x_0 := \frac{1}{2} 2^{-p} \in (0, 1/4]$ (so for $p = 2$, $\alpha = 3/2$ and $x_0 = 1/8$). For any $\theta \in [-\pi, \pi]$, set $s = 2|\sin(\theta/2)| \ge 0$ and change variables to $x = 1 - t \in (0, 1]$.

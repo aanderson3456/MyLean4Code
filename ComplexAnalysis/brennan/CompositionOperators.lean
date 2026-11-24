@@ -182,12 +182,14 @@ theorem smith_2006_brennan_resolved {τ : ℂ → ℂ} (hτ : UnivalentOn τ dis
 /-!
   ## 4. Valentin Matache & Wayne Smith (2012): Spaces `L²_a(G, μ_p)` and Pullback Equivalence
 
-  In Valentin Matache & Wayne Smith, *"Composition Operators on a Class of Analytic Function Spaces
-  Related to Brennan's Conjecture"* (Complex Anal. Oper. Theory 6, 2012, 139–173), for a conformal
-  map `g : G → 𝔻` (with inverse `τ = g⁻¹ : 𝔻 → G`), the measure `dμ_p(w) = |g'(w)|^(2 - 2p) dA(w)`
-  defines the space `L²_a(G, μ_p)`. A constant composition operator `C_{w₀} f = f(w₀)` is bounded
-  and compact on `L²_a(G, μ_p)` if and only if the constant function `1` belongs to `L²_a(G, μ_p)`,
-  i.e., `∫_G |g'(w)|^(2 - 2p) dA(w) < ∞` for all `-1/3 < p < 1` (so `4/3 < 2 - 2p < 4` with `p ↦ -p`).
+  In Valentin Matache & Wayne Smith, *"Composition operators on a class of analytic function spaces
+  related to Brennan's conjecture"* (Complex Anal. Oper. Theory 6, 2012, no. 1, 139–162), for a
+  conformal map `g : G → 𝔻` (with inverse `τ = g⁻¹ : 𝔻 → G`), the normalized area measure
+  `dμ_p(w) = |g'(w)|^(2p + 2) dA(w)` defines the Hilbert space `L²_a(G, μ_p)`. By Proposition 1 of
+  [MS12] (via Smith's [Smi06, Theorem 1.1]), `L²_a(G, μ_p)` supports a compact composition operator
+  if and only if the constant function `1` belongs to `L²_a(G, μ_p)` (equivalently, constant symbols
+  induce compact rank-1 composition operators), i.e., `∫_G |g'(w)|^(2p + 2) dA(w) < ∞` for all
+  `-1/3 < p < 1` (so `4/3 < 2p + 2 < 4`).
 -/
 
 /--

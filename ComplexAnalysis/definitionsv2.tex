@@ -604,6 +604,31 @@ noncomputable def crossRatioFin (z$_1$ z$_2$ z$_3$ z$_4$ : $\mathbb{C}$) : $\mat
 \end{lstlisting}
     \[ (z_1, z_2, z_3, z_4) = \frac{(z_4 - z_2)(z_3 - z_1)}{(z_4 - z_1)(z_3 - z_2)} \]
 
+    \item \textbf{\texttt{$\mathbb{C}$\_set}} \& \textbf{\texttt{$\mathbb{R}$\_set}} ($\subseteq \mathbb{C}$): The ambient complex plane $\mathbb{C}$ and the real axis $\mathbb{R} \subset \mathbb{C}$ viewed as subsets of $\mathbb{C}$ (`Set $\mathbb{C}$`).
+\begin{lstlisting}[language=Caml, mathescape=true]
+abbrev $\mathbb{C}$_set : Set $\mathbb{C}$ := Set.univ
+
+def $\mathbb{R}$_set : Set $\mathbb{C}$ := {z : $\mathbb{C}$ | z.im = 0}
+\end{lstlisting}
+    \[ \mathbb{C}_{\text{set}} = \mathbb{C}, \qquad \mathbb{R}_{\text{set}} = \{z \in \mathbb{C} : \operatorname{Im} z = 0\} \]
+
+    \item \textbf{\texttt{isLine}}, \textbf{\texttt{isCircle}}, \& \textbf{\texttt{isClircle}} ($S \subseteq \mathbb{C}$): Set-theoretic predicates inside $\mathbb{C}$ characterizing subsets parameterized by a line, a circle, or Sarason's clircle (line or circle).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def isLine (S : Set $\mathbb{C}$) : Prop :=
+  $\exists$ a $\in$ $\mathbb{C}$_set, $\exists$ b $\in$ $\mathbb{C}$_set, $\forall$ c $\in$ S, $\exists$ t $\in$ $\mathbb{R}$_set, c = a + b * t
+
+def isCircle (S : Set $\mathbb{C}$) : Prop :=
+  $\exists$ a $\in$ $\mathbb{C}$_set, $\exists$ b $\in$ $\mathbb{C}$_set, $\forall$ c $\in$ S, $\exists$ t $\in$ $\mathbb{R}$_set, c = a + b * Complex.exp (Complex.I * t)
+
+def isClircle (S : Set $\mathbb{C}$) : Prop :=
+  isLine S $\vee$ isCircle S
+\end{lstlisting}
+    \[ \operatorname{isLine}(S) \iff \exists a, b \in \mathbb{C},\; \forall c \in S,\; \exists t \in \mathbb{R},\; c = a + bt, \qquad \operatorname{isClircle}(S) \iff \operatorname{isLine}(S) \vee \operatorname{isCircle}(S) \]
+\end{itemize}
+
+\section{\texttt{ConformalDiskGeometry.lean}}
+
+\begin{itemize}
     \item \textbf{\texttt{clineLocus}} ($\alpha, \gamma \in \mathbb{R}$, $\beta \in \mathbb{C}$): The general locus of a circle or line (cline) in $\mathbb{C} \cup \{\infty\}$.
 \begin{lstlisting}[language=Caml, mathescape=true]
 def clineLocus ($\alpha$ : $\mathbb{R}$) ($\beta$ : $\mathbb{C}$) ($\gamma$ : $\mathbb{R}$) : Set (OnePoint $\mathbb{C}$) :=

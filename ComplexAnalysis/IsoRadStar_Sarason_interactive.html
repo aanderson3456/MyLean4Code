@@ -501,7 +501,7 @@
       <strong>3-Level Interactive Architecture:</strong><br/>
       <strong>Level 1:</strong> Main research paper built on <code>IsoRadStarQuestion.tex</code>.<br/>
       <strong>Level 2 (<code>+L2</code>):</strong> Mathematical motivation &amp; how Sarason's <code>_eps</code> complex analysis translates into discrete isoradial graphs.<br/>
-      <strong>Level 3 (<code>+L3 Lean</code>):</strong> Machine-checked Lean 4 theorems &amp; tactic proofs from <code>Sarason/Chapter3.lean</code> &amp; <code>SlitHarmonicMeasure.lean</code>.
+      <strong>Level 3 (<code>+L3 Lean</code>):</strong> Machine-checked Lean 4 theorems &amp; tactic proofs from <code>ConformalDiskGeometry.lean</code> &amp; <code>SlitHarmonicMeasure.lean</code>.
     </div>
   </aside>
 
@@ -530,7 +530,7 @@
       <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/IsoRadStar_Sarason_level1.pdf">Level 1 Paper PDF</a> &nbsp;|&nbsp;
       <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/IsoRadStar_Sarason_level1_2.pdf">Levels 1 &amp; 2 Paper PDF</a> &nbsp;|&nbsp;
       <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/SlitHarmonicMeasure.lean"><code>SlitHarmonicMeasure.lean</code></a> &nbsp;|&nbsp;
-      <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/Sarason/Chapter3.lean"><code>Sarason/Chapter3.lean</code></a>
+      <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/ConformalDiskGeometry.lean"><code>ConformalDiskGeometry.lean</code></a>
     </div>
 
     <!-- ================================================================= -->
@@ -746,7 +746,7 @@
       <!-- STEP 1.2: Starlike & Herglotz-Pommerenke -->
       <div class="step-block" id="step-1-2">
         <div class="level1-row" onclick="toggleL2('step-1-2', event)">
-          <span style="font-size:0.9rem; color:var(--muted);"><em>Click to inspect Level 2 (How Sarason's <code>_eps</code> Cauchy–Riemann &amp; Herglotz theorems prove Theorem 1.2) and Level 3 (Lean 4 proofs in <code>Sarason/Chapter3.lean</code>).</em></span>
+          <span style="font-size:0.9rem; color:var(--muted);"><em>Click to inspect Level 2 (How Sarason's <code>_eps</code> Cauchy–Riemann &amp; Herglotz theorems prove Theorem 1.2) and Level 3 (Lean 4 proofs in <code>ConformalDiskGeometry.lean</code>).</em></span>
           <span class="step-controls">
             <button class="pill-toggle" onclick="toggleL2('step-1-2', event)">+L2</button>
             <button class="pill-toggle l3-pill" onclick="toggleL3('step-1-2', event)">+L3 Lean</button>
@@ -758,12 +758,12 @@
             <button class="pill-toggle l3-pill" onclick="toggleL3('step-1-2', event)">Toggle Level 3 Lean Code</button>
           </div>
           <p>
-            In <code>Sarason/Definitions.lean</code> and <code>Sarason/Chapter2.lean</code>, complex differentiability is built in Weierstrass $\varepsilon$-$\delta$ form (<code>HasDerivAt_eps</code>, <code>HolomorphicOn_eps</code>), from which <code>hasDerivAt_eps_imp_cauchy_riemann</code> derives $u_x = v_y, u_y = -v_x$ and <code>exercise_II_6_3</code> derives the polar Cauchy–Riemann equations \eqref{eq:polar-cr}. In <code>Sarason/Chapter3.lean</code> (§III.13), <code>argPolarDeriv_theta_eq_re_logDeriv</code> proves \eqref{eq:arg-deriv}, and <code>III_11_herglotz_properties</code> proves that the Herglotz kernel <code>herglotzKernel ζ z = (ζ + z)/(ζ - z)</code> has positive real part on $\mathbb{D}$ and zero real part on $\partial\mathbb{D}$.
+            In <code>Sarason/Definitions.lean</code> and <code>Sarason/Chapter2.lean</code>, complex differentiability is built in Weierstrass $\varepsilon$-$\delta$ form (<code>HasDerivAt_eps</code>, <code>HolomorphicOn_eps</code>), from which <code>hasDerivAt_eps_imp_cauchy_riemann</code> derives $u_x = v_y, u_y = -v_x$ and <code>exercise_II_6_3</code> derives the polar Cauchy–Riemann equations \eqref{eq:polar-cr}. In <code>ConformalDiskGeometry.lean</code> (§3–§4), <code>argPolarDeriv_theta_eq_re_logDeriv</code> proves \eqref{eq:arg-deriv}, and <code>III_11_herglotz_properties</code> proves that the Herglotz kernel <code>herglotzKernel ζ z = (ζ + z)/(ζ - z)</code> has positive real part on $\mathbb{D}$ and zero real part on $\partial\mathbb{D}$.
           </p>
           <div class="level3-drawer">
             <div class="l3-bar">
-              <span>Lean 4 — <code>Sarason/Chapter3.lean</code> (Lines 2675–2922 &amp; 3125–3142)</span>
-              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/Sarason/Chapter3.lean#L2675-L2922">Open in Editor</a>
+              <span>Lean 4 — <code>ConformalDiskGeometry.lean</code> (Lines 1054–1308 &amp; 1503–1528)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/ConformalDiskGeometry.lean#L1054-L1308">Open in Editor</a>
             </div>
             <pre class="lean-code"><span class="kw">theorem</span> <span class="fn">argPolarDeriv_theta_eq_re_logDeriv</span> (u v ux uy vx vy : <span class="tp">ℝ</span> × <span class="tp">ℝ</span> → <span class="tp">ℝ</span>) (p : <span class="tp">ℝ</span> × <span class="tp">ℝ</span>)
     (h_CR1 : ux (p.1 * Real.cos p.2, p.1 * Real.sin p.2) = vy (p.1 * Real.cos p.2, p.1 * Real.sin p.2))
@@ -845,8 +845,8 @@
           </p>
           <div class="level3-drawer">
             <div class="l3-bar">
-              <span>Lean 4 — <code>Sarason/Chapter3.lean</code> (Lines 3175–3344)</span>
-              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/Sarason/Chapter3.lean#L3175-L3344">Open in Editor</a>
+              <span>Lean 4 — <code>ConformalDiskGeometry.lean</code> (Lines 1553–1730)</span>
+              <a href="file:///Users/austinanderson/GitHub/MyLean4Code/ComplexAnalysis/ConformalDiskGeometry.lean#L1553-L1730">Open in Editor</a>
             </div>
             <pre class="lean-code"><span class="kw">theorem</span> <span class="fn">one_sub_polarPoint_eq_pos_halfAngle</span> (α : <span class="tp">ℝ</span>) :
     <span class="ac">1</span> - polarPoint <span class="ac">1</span> α = polarPoint (<span class="ac">2</span> * Real.sin (α / <span class="ac">2</span>)) ((α - Real.pi) / <span class="ac">2</span>)

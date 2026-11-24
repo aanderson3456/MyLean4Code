@@ -2,6 +2,7 @@ import Sarason.Definitions
 import Sarason.Chapter1
 import Sarason.Chapter2
 import Sarason.Chapter3
+import ConformalDiskGeometry
 
 /-!
 # Formalization of Discrete Harmonic Measure Monotonicity on Isoradial Slit Domains
@@ -551,7 +552,7 @@ structure PolarIsoradialGraph where
 
 /-! ## 8. Analytic Starlike Slit Maps in Polar Angle `θ`, `_eps` Harmonic Measure, and the Monotone Channel & Slit Statements
 
-Importing `Sarason.Definitions`, `Sarason.Chapter1`, `Sarason.Chapter2`, and `Sarason.Chapter3`,
+Importing `Sarason.Definitions`, `Sarason.Chapter1`, `Sarason.Chapter2`, `Sarason.Chapter3`, and `ConformalDiskGeometry`,
 this section formalizes the continuum analytic framework of Section 1 and Section 2 of
 *Discretization of a Harmonic Measure Problem and Spandrel* using Sarason's Weierstrass `_eps`
 definitions (`HolomorphicOn_eps`, `DifferentiableAt_eps`, `deriv_eps`, `HasDerivAt_R_to_C_eps`,
@@ -560,11 +561,11 @@ definitions (`HolomorphicOn_eps`, `DifferentiableAt_eps`, `deriv_eps`, `HasDeriv
 `IsStarlikeDomain_theta`, `IsStarlikeOnDisk_theta_eps`, `pommerenkeLogDeriv`, `herglotzKernel`).
 -/
 
-open Complex Sarason Sarason.Ch1 Sarason.Ch2 Sarason.Ch3 ComplexAnalysis.R2
+open Complex Sarason Sarason.Ch1 Sarason.Ch2 Sarason.Ch3 ConformalDiskGeometry ComplexAnalysis.R2
 
 /--
   A radial slit `R_k = {r e^{i θ_k} : r ≥ ρ_k}` at constant polar angle `θ` starting at
-  modulus `ρ`, parameterized via `polarPoint r θ = r cos θ + i r sin θ` from `Sarason/Chapter3.lean`.
+  modulus `ρ`, parameterized via `polarPoint r θ = r cos θ + i r sin θ` from `ConformalDiskGeometry.lean`.
 -/
 def radialSlit_theta (ρ θ : ℝ) : Set ℂ :=
   {w : ℂ | ∃ r : ℝ, ρ ≤ r ∧ w = polarPoint r θ}
@@ -673,7 +674,7 @@ theorem harmonic_C_eps_iff_parts (f : ℂ → ℂ) (G : Set ℂ) :
 /--
   The Poisson kernel on `unitDiskSet` with boundary pole at polar angle `φ ∈ ℝ`
   (`ζ = polarPoint 1 φ ∈ unitCircleSet`), defined as the real part of `herglotzKernel`
-  from `Sarason/Chapter3.lean` §III.11.
+  from `ConformalDiskGeometry.lean` §3.
 -/
 noncomputable def poissonKernel_theta (φ : ℝ) (z : ℂ) : ℝ :=
   (herglotzKernel (polarPoint 1 φ) z).re
@@ -838,7 +839,7 @@ theorem analyticChannelOpeningAngle_monotone_iff_sigma_monotone {m : ℕ}
 }
 
 /--
-  **Derived Channel Opening Angle Formula from `pommerenkeSlitAngle` (`Sarason/Chapter3.lean` §III.13):**
+  **Derived Channel Opening Angle Formula from `pommerenkeSlitAngle` (`ConformalDiskGeometry.lean` §4):**
   When the slit angles `C.thetaSlit k` are defined as the Pommerenke boundary arc angles
   `pommerenkeSlitAngle m k C.phi C.sigma`, the identity `Δθ_k = θ_{k+1} - θ_k = σ_k π` and the
   monotonicity equivalence `Δθ_k ≤ Δθ_{k+1} ↔ σ_k ≤ σ_{k+1}` follow directly from the half-angle
@@ -1460,7 +1461,7 @@ noncomputable def analyticSlitTipCotangentSum {m : ℕ}
 
 /--
   **Slit-Tip Critical Vanishing Characterization on `∂𝔻`:**
-  Using `pommerenkeLogDeriv_unitCircle_eq` from `Sarason/Chapter3.lean`, at any boundary angle
+  Using `pommerenkeLogDeriv_unitCircle_eq` from `ConformalDiskGeometry.lean`, at any boundary angle
   `t ∈ ℝ`, the Herglotz–Pommerenke logarithmic derivative vanishes if and only if the boundary
   cotangent sum `analyticSlitTipCotangentSum C t` equals `0`.
 -/
