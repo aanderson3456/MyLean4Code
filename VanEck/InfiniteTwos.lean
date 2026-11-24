@@ -5299,20 +5299,25 @@ theorem no_twos_return_forest_sum_squeeze (N_0 N : ℕ)
   exact le_trans (Nat.add_le_add_left h_mul _) (le_trans h_sum_low h_up)
 }
 
+/-- Conditional form: infinitely many step-2 repeats `a(i) = a(i + 2)` give infinitely many `2`s
+(the converse also holds; see `infiniteTwos_iff_infinite_step_two_repeats` in
+`CollisionLemma.lean`). -/
+theorem infinite_twos_vanEck_of_step_two_repeats
+    (h : ∀ N, ∃ i > N, vanEckNthTerm i = vanEckNthTerm (i + 2)) (N : ℕ) :
+    ∃ m > N, vanEckNthTerm m = 2 :=
+  infinite_alternating_pairs_implies_infinite_twos h N
+
 /--
-Infinite Twos Lemma
-
-
-To prove: The number 2 appears infinitely many times in the Van Eck sequence.
+**Open conjecture** (OEIS A181391): `2` appears infinitely often in the Van Eck sequence.
+No proof is known; this is the single remaining open statement of the project and is left as an
+explicit `sorry`. Verified reductions:
+* `infinite_twos_vanEck_of_step_two_repeats` and, in `CollisionLemma.lean`,
+  `infiniteTwos_iff_resonances_or_new_zero_gaps`: equivalent to infinitely many resonances
+  (or infinitely many new zero gaps, which numerically stop after index `10`).
+* `no_twos_implies_bounded_iff_infinite_twos`: the old boundedness route is equivalent to this.
+* `infinite_twos_of_no_post_cut_two_free_tail`: it suffices to refute one unbounded `2`-free
+  `IsVanEckFrom` tail; `ReturnForestFrom.lean` supplies forest identities for such tails.
 -/
 theorem infinite_twos_vanEck (N : ℕ) : ∃ m > N, vanEckNthTerm m = 2 := by {
-  by_contra h_no_twos
-  push Not at h_no_twos
-  have h_bound := no_twos_implies_bounded N h_no_twos
-  rcases h_bound with ⟨M, hM_pos, hM_bound⟩
-  have h_dense := sequence_bounded_implies_dense M hM_bound
-  have h_twos := dense_collisions_force_twos M hM_pos h_dense
-  have h_contra := h_twos N
-  rcases h_contra with ⟨m, hm_gt, hm_eq⟩
-  exact h_no_twos m hm_gt hm_eq
+  sorry
 }

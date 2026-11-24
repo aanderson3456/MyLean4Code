@@ -3269,106 +3269,32 @@ lemma odds_and_zeros_chain_contradiction (N : ℕ) (h_odds : OnlyOddsAndZerosAft
 }
 
 /--
-The Excluded Even Terms Theorem:
-It is impossible for the Van Eck sequence to eventually contain no positive even numbers.
-If it did, every lookback distance would eventually be odd, forcing a strict alternation
-of index parities that collides with the zero-gap parity structure.
-
-NOTE: Proving a contradiction for an arbitrary N_0 from the inequality z ≤ 2 z_prev - 1 alone
-is as difficult as the InfiniteTwos conjecture. For the actual Van Eck sequence, this inequality
-holds for all consecutive zeros after index 10 (e.g. z_5 = 15 ≤ 2 z_4 - 1 = 19). Therefore,
-no contradiction can be derived from the growth inequality alone for large N_0 without proving
-that a number like 2 (or other even numbers) must actually appear.
+`vanEck_unbounded` makes every global boundedness conclusion false.
 -/
-lemma no_twos_implies_bounded (N_0 : ℕ) (h_no_twos : ∀ m > N_0, vanEckNthTerm m ≠ 2) :
-    ∃ M > 0, ∀ m, vanEckNthTerm m ≤ M := by {
-  have h_ex_zero : ∃ z > N_0 + 2, vanEckNthTerm z = 0 := by {
-    have h_zeros := infinite_zeros_vanEck (N_0 + 2)
-    rcases h_zeros with ⟨z, hz_gt, hz_zero⟩
-    use z, hz_gt, hz_zero
-  }
-  rcases h_ex_zero with ⟨z_0, hz0_gt, hz0_zero⟩
-  let M := vanEckPrefixMax z_0
-  have hM_pos : M > 0 := by {
-    have h_z0 : 2 ≤ z_0 := by omega
-    have h_le : vanEckNthTerm 2 ≤ M := vanEckNthTerm_le_prefixMax z_0 2 h_z0
-    have h2 : vanEckNthTerm 2 = 1 := rfl
-    rw [h2] at h_le
-    exact h_le
-  }
-  use M
+theorem not_eventually_bounded : ¬ ∃ M, ∀ m, vanEckNthTerm m ≤ M := by {
+  rintro ⟨M, hM⟩
+  rcases vanEck_unbounded M with ⟨m, hm⟩
+  have h_le := hM m
+  omega
+}
+
+/--
+Honest status of the retired `no_twos_implies_bounded` route. Because the sequence is unbounded,
+"no `2` after `N_0` ⇒ bounded" is *equivalent* to `InfiniteTwos` itself, so its `k = z - 1`
+branch could never be closed by a local bound (cf. `prefixMax_jump_in_two_free_window`).
+-/
+theorem no_twos_implies_bounded_iff_infinite_twos :
+    (∀ N_0, (∀ m > N_0, vanEckNthTerm m ≠ 2) → ∃ M > 0, ∀ m, vanEckNthTerm m ≤ M) ↔
+      ∀ N, ∃ m > N, vanEckNthTerm m = 2 := by {
   constructor
-  · exact hM_pos
-  · have h_bound_zeros : ∀ z ≥ z_0, vanEckNthTerm z = 0 → vanEckPrefixMax z ≤ M := by {
-      intro z
-      induction z using Nat.strong_induction_on with
-      | h z ih =>
-        intro hz_ge hz_zero
-        by_cases hz0 : z = z_0
-        · rw [hz0]
-        · have hz_gt : z > z_0 := Nat.lt_of_le_of_ne hz_ge (Ne.symm hz0)
-          let z_prev := lastZero (z - 1)
-          have hz_prev_lt : z_prev < z := by {
-            have h_le := lastZero_le (z - 1)
-            omega
-          }
-          have hz_prev_zero : vanEckNthTerm z_prev = 0 := vanEck_lastZero_is_zero (z - 1)
-          have hz_prev_ge : z_prev ≥ z_0 := by {
-            by_contra hc
-            have hz_zero_le : z_0 ≤ z - 1 := by omega
-            have h_contra := no_zero_after_lastZero (z - 1) z_0 (by omega) hz_zero_le
-            exact h_contra hz0_zero
-          }
-          have h_ih := ih z_prev hz_prev_lt hz_prev_ge hz_prev_zero
-          have h_all : ∀ k ≤ z, vanEckNthTerm k ≤ M := by {
-            intro k hk
-            by_cases hk_z : k = z
-            · rw [hk_z, hz_zero]
-              omega
-            · have hk_lt : k < z := Nat.lt_of_le_of_ne hk hk_z
-              by_cases hk_z1 : k = z - 1
-              · rw [hk_z1]
-                sorry
-              · have hk_lt_z1 : k < z - 1 := by omega
-                by_cases hk_le_prev : k ≤ z_prev
-                · have h1 : vanEckNthTerm k ≤ vanEckPrefixMax z_prev :=
-                    vanEckNthTerm_le_prefixMax z_prev k hk_le_prev
-                  exact Nat.le_trans h1 h_ih
-                · have hk_gt_prev : k > z_prev := Nat.lt_of_not_ge hk_le_prev
-                  have h_nonzero : ∀ j, z_prev < j → j < z_prev + (z - z_prev) → vanEckNthTerm j ≠ 0 := by {
-                    intro j hj1 hj2
-                    have h_G : z_prev + (z - z_prev) = z := Nat.add_sub_of_le (Nat.le_of_lt hz_prev_lt)
-                    rw [h_G] at hj2
-                    exact no_zero_after_lastZero (z - 1) j hj1 (by omega)
-                  }
-                  have h_gap := gap_contains_all_terms z_prev (z - z_prev) h_nonzero
-                  have h_arg : z_prev + (z - z_prev) - 1 = z - 1 := by {
-                    have h_G : z_prev + (z - z_prev) = z := Nat.add_sub_of_le (Nat.le_of_lt hz_prev_lt)
-                    rw [h_G]
-                  }
-                  rw [h_arg] at h_gap
-                  have h2 := h_gap k hk_lt_z1
-                  exact Nat.le_trans h2 h_ih
-          }
-          unfold vanEckPrefixMax
-          apply listMax_le
-          intro x hx
-          rcases mem_listNth hx with ⟨k, hk_lt, rfl⟩
-          have h_len := vanEckLength z
-          rw [h_len] at hk_lt
-          have hk_le : k ≤ z := Nat.le_of_lt_succ hk_lt
-          have h_det := VanEck_deterministic z k hk_le
-          rw [h_det]
-          exact h_all k hk_le
-    }
-    intro m
-    have h_zeros := infinite_zeros_vanEck (max z_0 m)
-    rcases h_zeros with ⟨z, hz_gt, hz_zero⟩
-    have hz_ge : z ≥ z_0 := by omega
-    have hm_le : m ≤ z := by omega
-    have h_bound_z := h_bound_zeros z hz_ge hz_zero
-    have h_le_z : vanEckNthTerm m ≤ vanEckPrefixMax z := vanEckNthTerm_le_prefixMax z m hm_le
-    exact Nat.le_trans h_le_z h_bound_z
+  · intro h N
+    by_contra h_none
+    push Not at h_none
+    rcases h N h_none with ⟨M, _, hM⟩
+    exact not_eventually_bounded ⟨M, hM⟩
+  · intro h N_0 h_no
+    rcases h N_0 with ⟨m, hm, h2⟩
+    exact absurd h2 (h_no m hm)
 }
 
 
