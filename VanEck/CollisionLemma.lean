@@ -195,3 +195,213 @@ theorem track_pigeonhole_no_go :
     dsimp only
     omega
 }
+
+/-- Binary trie storing `Option ℕ` at fixed bit-depth leaves for fast kernel evaluation. -/
+inductive VanEckTrie where
+  | empty : VanEckTrie
+  | leaf : Option ℕ → VanEckTrie
+  | branch : VanEckTrie → VanEckTrie → VanEckTrie
+
+/-- Left child of a `VanEckTrie` node (defaulting to `.empty`). -/
+def trieLeft : VanEckTrie → VanEckTrie
+  | .branch l _ => l
+  | _ => .empty
+
+/-- Right child of a `VanEckTrie` node (defaulting to `.empty`). -/
+def trieRight : VanEckTrie → VanEckTrie
+  | .branch _ r => r
+  | _ => .empty
+
+/-- Lookup key `k < 2 ^ d` in a `VanEckTrie` of depth `d`. -/
+def trieGet : ℕ → VanEckTrie → ℕ → Option ℕ
+  | 0, .leaf v, _ => v
+  | 0, _, _ => none
+  | _ + 1, .empty, _ => none
+  | d + 1, t, k =>
+    if k % 2 = 0 then trieGet d (trieLeft t) (k / 2)
+    else trieGet d (trieRight t) (k / 2)
+
+/-- Insert `(k, val)` for `k < 2 ^ d` into a `VanEckTrie` of depth `d`. -/
+def trieSet : ℕ → VanEckTrie → ℕ → ℕ → VanEckTrie
+  | 0, _, _, val => .leaf (some val)
+  | d + 1, t, k, val =>
+    if k % 2 = 0 then .branch (trieSet d (trieLeft t) (k / 2) val) (trieRight t)
+    else .branch (trieLeft t) (trieSet d (trieRight t) (k / 2) val)
+
+lemma trieGet_empty (d q : ℕ) : trieGet d .empty q = none := by {
+  cases d with
+  | zero => rfl
+  | succ _ => rfl
+}
+
+lemma trieGet_succ (d : ℕ) (t : VanEckTrie) (k : ℕ) :
+    trieGet (d + 1) t k =
+      if k % 2 = 0 then trieGet d (trieLeft t) (k / 2)
+      else trieGet d (trieRight t) (k / 2) := by {
+  cases t with
+  | empty =>
+    change none = _
+    split_ifs with h
+    · exact (trieGet_empty d (k / 2)).symm
+    · exact (trieGet_empty d (k / 2)).symm
+  | leaf _ => rfl
+  | branch _ _ => rfl
+}
+
+lemma trieGet_trieSet (d : ℕ) :
+    ∀ (t : VanEckTrie) (k val q : ℕ), k < 2 ^ d → q < 2 ^ d →
+      trieGet d (trieSet d t k val) q = if q = k then some val else trieGet d t q := by {
+  induction d with
+  | zero =>
+    intro t k val q hk hq
+    have hqk : q = k := by { omega }
+    rw [if_pos hqk]
+    rfl
+  | succ d ih =>
+    intro t k val q hk hq
+    have hp : 2 ^ (d + 1) = 2 ^ d * 2 := pow_succ 2 d
+    rw [trieSet]
+    by_cases hk2 : k % 2 = 0
+    · rw [if_pos hk2, trieGet_succ]
+      by_cases hq2 : q % 2 = 0
+      · rw [if_pos hq2]
+        change trieGet d (trieSet d (trieLeft t) (k / 2) val) (q / 2) = _
+        rw [ih (trieLeft t) (k / 2) val (q / 2) (by { omega }) (by { omega })]
+        by_cases hqk : q = k
+        · rw [if_pos hqk, if_pos (by { omega })]
+        · rw [if_neg hqk, if_neg (by { omega }), trieGet_succ, if_pos hq2]
+      · rw [if_neg hq2]
+        have hqk : q ≠ k := by { omega }
+        rw [if_neg hqk, trieGet_succ, if_neg hq2]
+        rfl
+    · rw [if_neg hk2, trieGet_succ]
+      by_cases hq2 : q % 2 = 0
+      · rw [if_pos hq2]
+        have hqk : q ≠ k := by { omega }
+        rw [if_neg hqk, trieGet_succ, if_pos hq2]
+        rfl
+      · rw [if_neg hq2]
+        change trieGet d (trieSet d (trieRight t) (k / 2) val) (q / 2) = _
+        rw [ih (trieRight t) (k / 2) val (q / 2) (by { omega }) (by { omega })]
+        by_cases hqk : q = k
+        · rw [if_pos hqk, if_pos (by { omega })]
+        · rw [if_neg hqk, if_neg (by { omega }), trieGet_succ, if_neg hq2]
+}
+
+/-- Invariant for the trie-backed Van Eck counter state `(m, cur, t, acc)` at depth `d`. -/
+def ValidTwosState (d : ℕ) (st : ℕ × ℕ × VanEckTrie × ℕ) : Prop :=
+  st.2.1 = vanEckNthTerm st.1 ∧
+    (∀ v < 2 ^ d, trieGet d st.2.2.1 v = lastOccBefore st.1 v) ∧
+    st.2.2.2 = ((Finset.range st.1).filter (fun n => vanEckNthTerm n = 2)).card
+
+/-- Single step of the trie-backed Van Eck counter `(m, cur, t, acc)`. -/
+def fastTwosStep (d : ℕ) (st : ℕ × ℕ × VanEckTrie × ℕ) : ℕ × ℕ × VanEckTrie × ℕ :=
+  let (m, cur, t, acc) := st
+  let acc' := if cur = 2 then acc + 1 else acc
+  let nxt := match trieGet d t cur with
+    | none => 0
+    | some p => m - p
+  (m + 1, nxt, trieSet d t cur m, acc')
+
+/-- Run `steps` iterations of `fastTwosStep d`. -/
+def fastTwosRun (d : ℕ) : ℕ → (ℕ × ℕ × VanEckTrie × ℕ) → ℕ × ℕ × VanEckTrie × ℕ
+  | 0, st => st
+  | steps + 1, st => fastTwosRun d steps (fastTwosStep d st)
+
+/-- Run `blocks` chunks of `chunk` steps each so kernel recursion depth stays `≤ chunk`. -/
+def fastTwosBlocks (d : ℕ) : ℕ → ℕ → (ℕ × ℕ × VanEckTrie × ℕ) → ℕ × ℕ × VanEckTrie × ℕ
+  | 0, _, st => st
+  | blocks + 1, chunk, st => fastTwosBlocks d blocks chunk (fastTwosRun d chunk st)
+
+lemma fastTwosRun_add (d a b : ℕ) (st : ℕ × ℕ × VanEckTrie × ℕ) :
+    fastTwosRun d (a + b) st = fastTwosRun d b (fastTwosRun d a st) := by {
+  induction a generalizing st with
+  | zero =>
+    rw [Nat.zero_add]
+    rfl
+  | succ a ih =>
+    rw [Nat.succ_add]
+    exact ih (fastTwosStep d st)
+}
+
+lemma fastTwosBlocks_eq_run (d blocks chunk : ℕ) (st : ℕ × ℕ × VanEckTrie × ℕ) :
+    fastTwosBlocks d blocks chunk st = fastTwosRun d (blocks * chunk) st := by {
+  induction blocks generalizing st with
+  | zero =>
+    rw [Nat.zero_mul]
+    rfl
+  | succ b ih =>
+    rw [fastTwosBlocks, ih (fastTwosRun d chunk st), ← fastTwosRun_add]
+    have hmul : (b + 1) * chunk = chunk + b * chunk := by { ring }
+    rw [hmul]
+}
+
+lemma card_twos_range_succ (m : ℕ) :
+    ((Finset.range (m + 1)).filter (fun n => vanEckNthTerm n = 2)).card =
+      if vanEckNthTerm m = 2 then
+        ((Finset.range m).filter (fun n => vanEckNthTerm n = 2)).card + 1
+      else
+        ((Finset.range m).filter (fun n => vanEckNthTerm n = 2)).card := by {
+  rw [Finset.range_add_one, Finset.filter_insert]
+  split_ifs with hm
+  · refine Finset.card_insert_of_notMem (fun hmem => ?_)
+    have hlt : m < m := Finset.mem_range.mp (Finset.mem_filter.mp hmem).1
+    omega
+  · rfl
+}
+
+lemma fastTwosStep_valid (d : ℕ) (st : ℕ × ℕ × VanEckTrie × ℕ)
+    (h_lt : st.1 < 2 ^ d) (hv : ValidTwosState d st) :
+    (fastTwosStep d st).1 = st.1 + 1 ∧ ValidTwosState d (fastTwosStep d st) := by {
+  rcases st with ⟨m, cur, t, acc⟩
+  rcases hv with ⟨hcur, ht, hacc⟩
+  dsimp only [fastTwosStep, ValidTwosState] at h_lt hcur ht hacc ⊢
+  have hcur_le : vanEckNthTerm m ≤ m := vanEckNthTerm_le_n m
+  have hcur_lt : cur < 2 ^ d := by { omega }
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · rw [ht cur hcur_lt, hcur]
+    exact (vanEck_next_eq_of_lastOccBefore m).symm
+  · intro v hv_lt
+    rw [trieGet_trieSet d t cur m v hcur_lt hv_lt, ht v hv_lt, hcur]
+    simp only [lastOccBefore]
+    by_cases hmv : vanEckNthTerm m = v
+    · rw [if_pos hmv.symm, if_pos hmv]
+    · have hvm : v ≠ vanEckNthTerm m := Ne.symm hmv
+      rw [if_neg hvm, if_neg hmv]
+  · rw [card_twos_range_succ m, hcur, hacc]
+}
+
+lemma fastTwosRun_valid (d steps : ℕ) (st : ℕ × ℕ × VanEckTrie × ℕ)
+    (h_le : st.1 + steps ≤ 2 ^ d) (hv : ValidTwosState d st) :
+    (fastTwosRun d steps st).1 = st.1 + steps ∧
+      ValidTwosState d (fastTwosRun d steps st) := by {
+  induction steps generalizing st with
+  | zero =>
+    rw [Nat.add_zero]
+    exact ⟨rfl, hv⟩
+  | succ s ih =>
+    have hst := fastTwosStep_valid d st (by { omega }) hv
+    have h_next := ih (fastTwosStep d st) (by { omega }) hst.2
+    rw [fastTwosRun, h_next.1, hst.1]
+    exact ⟨by { omega }, h_next.2⟩
+}
+
+set_option maxRecDepth 100000 in
+lemma fastTwosBlocks_1000_eval :
+    (fastTwosBlocks 10 10 100 (0, 0, .empty, 0)).2.2.2 = 18 := by {
+  rfl
+}
+
+/-- Kernel-checked (`rfl`) exact count: among `n < 1000`, `vanEckNthTerm n = 2` holds `18` times. -/
+theorem vanEck_twos_count_lt_1000 :
+    ((Finset.range 1000).filter (fun n => vanEckNthTerm n = 2)).card = 18 := by {
+  have hv0 : ValidTwosState 10 (0, 0, .empty, 0) :=
+    ⟨rfl, fun v _ => trieGet_empty 10 v, rfl⟩
+  have hrun := fastTwosRun_valid 10 (10 * 100) (0, 0, .empty, 0) (by { decide }) hv0
+  rw [← fastTwosBlocks_eq_run] at hrun
+  have h1000 : 0 + 10 * 100 = 1000 := rfl
+  rw [h1000] at hrun
+  have hacc := hrun.2.2.2
+  rw [hrun.1] at hacc
+  exact hacc.symm.trans fastTwosBlocks_1000_eval
+}
