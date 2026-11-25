@@ -93,11 +93,20 @@ lemma finite_occurrences_implies_last_index (x : ℕ) (h_seen : ∃ m, vanEckNth
 }
 
 /--
-If an element `x` never appears after index `Z`, then no element after `Z+1` can have its previous occurrence exactly `x` steps ago.
+If `x > 0` never appears after index `Z`, then no index `m > Z` (`x ≤ m`) can have its strictly
+most recent prior occurrence of `vanEckNthTerm m` at `m - x`.
+(Counterexample to the old `x = 0` statement: `k - 1 - 0 = k - 1`, so equality always holds.)
 -/
-lemma never_appears_again_implies_no_gap_x (x Z : ℕ) (hx : ∀ k > Z, vanEckNthTerm k ≠ x) :
-    ∀ k > Z + 1, listNth (vanEck (k - 1)) (k - 1) ≠ listNth (vanEck (k - 1)) (k - 1 - x) := by {
-  sorry
+lemma never_appears_again_implies_no_gap_x (x Z : ℕ) (hx_pos : x > 0)
+    (hx : ∀ k > Z, vanEckNthTerm k ≠ x) :
+    ∀ m > Z, x ≤ m →
+      ¬ (vanEckNthTerm (m - x) = vanEckNthTerm m ∧
+        ∀ j, m - x < j → j < m → vanEckNthTerm j ≠ vanEckNthTerm m) := by {
+  intro m hm_gt hx_le h_pair
+  have h_gap := strict_prior_match_gives_gap (m - x) m (by { omega }) h_pair.1.symm h_pair.2
+  have h_sub : m - (m - x) = x := by { omega }
+  rw [h_sub] at h_gap
+  exact hx (m + 1) (by { omega }) h_gap
 }
 
 /--
