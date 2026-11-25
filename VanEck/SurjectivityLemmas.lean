@@ -65,12 +65,31 @@ full surjectivity of the Van Eck sequence (that it contains every natural number
 
 
 /--
-If an element `x` only appears finitely many times in the Van Eck sequence,
-there must exist some maximum index `Z` such that for all `k > Z`, `vanEckNthTerm k ≠ x`.
+If an element `x` appears in the Van Eck sequence and only appears finitely many times,
+there exists a last index `Z` with `vanEckNthTerm Z = x` and `∀ k > Z, vanEckNthTerm k ≠ x`.
+(Counterexample to the statement without `h_seen`: if `x` never appears, `h_finite` holds
+vacuously at `Z = 0` while `∃ Z, vanEckNthTerm Z = x` is false.)
 -/
-lemma finite_occurrences_implies_last_index (x : ℕ) (h_finite : ∃ Z, ∀ k > Z, vanEckNthTerm k ≠ x) :
+lemma finite_occurrences_implies_last_index (x : ℕ) (h_seen : ∃ m, vanEckNthTerm m = x)
+    (h_finite : ∃ Z, ∀ k > Z, vanEckNthTerm k ≠ x) :
     ∃ Z, vanEckNthTerm Z = x ∧ ∀ k > Z, vanEckNthTerm k ≠ x := by {
-  sorry
+  rcases h_finite with ⟨B, hB⟩
+  rcases h_seen with ⟨m, hm⟩
+  let S := (Finset.range (B + 1)).filter (fun k => vanEckNthTerm k = x)
+  have hm_le : m ≤ B := by {
+    by_contra hgt
+    exact hB m (by { omega }) hm
+  }
+  have hne : S.Nonempty :=
+    ⟨m, Finset.mem_filter.mpr ⟨Finset.mem_range.mpr (by { omega }), hm⟩⟩
+  refine ⟨S.max' hne, (Finset.mem_filter.mp (Finset.max'_mem S hne)).2, ?_⟩
+  intro k hk hx_eq
+  by_cases hkB : k ≤ B
+  · have hk_mem : k ∈ S :=
+      Finset.mem_filter.mpr ⟨Finset.mem_range.mpr (by { omega }), hx_eq⟩
+    have h_le := Finset.le_max' S k hk_mem
+    omega
+  · exact hB k (by { omega }) hx_eq
 }
 
 /--
