@@ -21,6 +21,7 @@ Summary of what is proved here (no `sorry`, no new axioms):
   collision; any proof must use the Van Eck dynamics.
 -/
 import InfiniteTwos
+import VanEck.TwosCount
 
 /-- Exact collision criterion: `a(i + 3) = 2` iff `a(i) = a(i + 2)`. -/
 theorem vanEck_add_three_eq_two_iff (i : ℕ) :
