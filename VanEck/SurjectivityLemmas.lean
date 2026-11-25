@@ -158,20 +158,6 @@ lemma vanEck_consecutive_gaps_imply_one (Z1 Z2 d : ℕ)
 }
 
 /--
-The gaps between consecutive zeros in the Van Eck sequence must be unbounded.
-If the gaps were bounded, some gap size `d` would appear infinitely often.
-The distance between occurrences of `d` would form the elements immediately preceding the zeros.
-Since the gaps are bounded, these distances would be bounded, and therefore repeat.
-However, the element immediately preceding a zero MUST be a new, never-before-seen number.
-This contradiction proves the zero-gaps are unbounded.
--/
-lemma vanEck_zero_gaps_unbounded (B : ℕ) :
-    ∃ Z1 Z2, vanEckNthTerm Z1 = 0 ∧ vanEckNthTerm Z2 = 0 ∧ Z1 < Z2 ∧
-    (∀ k, Z1 < k → k < Z2 → vanEckNthTerm k ≠ 0) ∧ Z2 - Z1 > B := by {
-  sorry
-}
-
-/--
 A "strict" gap of exactly n exists if two identical terms are separated by exactly n indices,
 and the value does not appear anywhere inside the gap.
 -/
@@ -3169,6 +3155,317 @@ theorem no_twos_sub_unit_palette_gate_supply (Z : Finset ℕ) (N_0 z_0 H B : ℕ
   have h_bnd := large_pre_zero_palette_gate_supply Z P z_0 H B hz0 hP hZ
   rw [(twoFreePalette_card H hH).2] at h_bnd
   exact h_bnd
+}
+
+/-- Exponentially growing threshold tower for bounding short zero-gap step climbs. -/
+def zeroGapTower (D : ℕ) : ℕ → ℕ
+  | 0 => 0
+  | i + 1 => 2 * D * D * (zeroGapTower D i + 1)
+
+lemma zeroGapTower_mono (D : ℕ) (hD : 1 ≤ D) {i j : ℕ} (hij : i ≤ j) :
+    zeroGapTower D i ≤ zeroGapTower D j := by {
+  induction j with
+  | zero =>
+    have hi0 : i = 0 := by { omega }
+    rw [hi0]
+  | succ k ih =>
+    rcases eq_or_lt_of_le hij with rfl | hlt
+    · exact le_rfl
+    · have hstep : zeroGapTower D k ≤ zeroGapTower D (k + 1) := by {
+        rw [zeroGapTower]
+        have h1 : 1 * (zeroGapTower D k + 1) ≤ 2 * D * D * (zeroGapTower D k + 1) :=
+          Nat.mul_le_mul_right _ (by { nlinarith })
+        omega
+      }
+      exact le_trans (ih (by { omega })) hstep
+}
+
+lemma next_zero_le_of_bounded_gaps (B z : ℕ) (hz : vanEckNthTerm z = 0)
+    (h_bdd : ∀ Z1 Z2, vanEckNthTerm Z1 = 0 → vanEckNthTerm Z2 = 0 → Z1 < Z2 →
+      (∀ k, Z1 < k → k < Z2 → vanEckNthTerm k ≠ 0) → Z2 - Z1 ≤ B) :
+    ∃ z', z < z' ∧ z' ≤ z + (B + 1) ∧ vanEckNthTerm z' = 0 := by {
+  have h_ex : ∃ m, z < m ∧ vanEckNthTerm m = 0 := infinite_zeros_vanEck z
+  let z' := Nat.find h_ex
+  have hz'_spec : z < z' ∧ vanEckNthTerm z' = 0 := Nat.find_spec h_ex
+  have h_bet : ∀ k, z < k → k < z' → vanEckNthTerm k ≠ 0 :=
+    fun k hk1 hk2 hc => Nat.find_min h_ex hk2 ⟨hk1, hc⟩
+  have h_le : z' - z ≤ B := h_bdd z z' hz hz'_spec.2 hz'_spec.1 h_bet
+  exact ⟨z', hz'_spec.1, by { omega }, hz'_spec.2⟩
+}
+
+lemma zeros_card_ge_of_bounded_gaps (B q : ℕ)
+    (h_bdd : ∀ Z1 Z2, vanEckNthTerm Z1 = 0 → vanEckNthTerm Z2 = 0 → Z1 < Z2 →
+      (∀ k, Z1 < k → k < Z2 → vanEckNthTerm k ≠ 0) → Z2 - Z1 ≤ B) :
+    q ≤ ((Finset.Icc 2 (1 + q * (B + 1))).filter (fun z => vanEckNthTerm z = 0)).card := by {
+  induction q with
+  | zero => exact Nat.zero_le _
+  | succ q ih =>
+    let N_q := 1 + q * (B + 1)
+    let S_q := (Finset.Icc 2 N_q).filter (fun z => vanEckNthTerm z = 0)
+    let z_last := lastZero N_q
+    have hzl_le : z_last ≤ N_q := lastZero_le N_q
+    have hzl_ge1 : 1 ≤ z_last := lastZero_pos_of_ge_one N_q (by { omega })
+    rcases next_zero_le_of_bounded_gaps B z_last (vanEck_lastZero_is_zero N_q) h_bdd with
+      ⟨z', hz'_gt, hz'_le, hz'_zero⟩
+    have hz'_gt_prev : N_q < z' := by {
+      by_contra hle
+      exact no_zero_after_lastZero N_q z' hz'_gt (by { omega }) hz'_zero
+    }
+    let S_next := (Finset.Icc 2 (1 + (q + 1) * (B + 1))).filter (fun z => vanEckNthTerm z = 0)
+    have hmul : (q + 1) * (B + 1) = q * (B + 1) + (B + 1) := Nat.succ_mul q (B + 1)
+    have h_sub : insert z' S_q ⊆ S_next := by {
+      intro x hx
+      rcases Finset.mem_insert.mp hx with rfl | hx_q
+      · exact Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨by { omega }, by { omega }⟩, hz'_zero⟩
+      · rcases Finset.mem_filter.mp hx_q with ⟨hx_icc, hx_z⟩
+        have hx_b := Finset.mem_Icc.mp hx_icc
+        exact Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨hx_b.1, by { omega }⟩, hx_z⟩
+    }
+    have h_not_mem : z' ∉ S_q := fun hm =>
+      absurd (Finset.mem_Icc.mp (Finset.mem_filter.mp hm).1).2 (by { omega })
+    have h_card := Finset.card_le_card h_sub
+    rw [Finset.card_insert_of_notMem h_not_mem] at h_card
+    change q ≤ S_q.card at ih
+    change q + 1 ≤ S_next.card
+    omega
+}
+
+lemma short_block_tower_crossing (B z : ℕ) (hz_ge : 2 ≤ z) (hz : vanEckNthTerm z = 0)
+    (h_short : z - lastZero (z - 1) ≤ B)
+    (h_large : zeroGapTower (B + 1) (B + 1) < vanEckNthTerm (z - 1)) :
+    ∃ m, lastZero (z - 1) < m ∧ m ≤ z - 1 ∧
+      ∃ i < B + 1, vanEckNthTerm (m - 1) ≤ zeroGapTower (B + 1) i ∧
+        zeroGapTower (B + 1) (i + 1) < vanEckNthTerm m := by {
+  let zp := lastZero (z - 1)
+  have hzp_le : zp ≤ z - 1 := lastZero_le (z - 1)
+  have hzp_zero : vanEckNthTerm zp = 0 := vanEck_lastZero_is_zero (z - 1)
+  let r := z - 1 - zp
+  have hr_lt : r < B + 1 := by { omega }
+  have hr_tower : zeroGapTower (B + 1) r < vanEckNthTerm (zp + r) := by {
+    have h_idx : zp + r = z - 1 := by { omega }
+    have h_mono := zeroGapTower_mono (B + 1) (by { omega }) (Nat.le_of_lt hr_lt)
+    rw [h_idx]
+    omega
+  }
+  have h_ex : ∃ k, k ≤ r ∧ zeroGapTower (B + 1) k < vanEckNthTerm (zp + k) := ⟨r, le_rfl, hr_tower⟩
+  let k := Nat.find h_ex
+  have hk_spec : k ≤ r ∧ zeroGapTower (B + 1) k < vanEckNthTerm (zp + k) := Nat.find_spec h_ex
+  have hk_pos : 1 ≤ k := by {
+    by_contra hk0
+    have heq : k = 0 := by { omega }
+    have h_bad := hk_spec.2
+    rw [heq, Nat.add_zero zp, hzp_zero, zeroGapTower] at h_bad
+    omega
+  }
+  have hk_prev : vanEckNthTerm (zp + (k - 1)) ≤ zeroGapTower (B + 1) (k - 1) := by {
+    by_contra hgt
+    exact Nat.find_min h_ex (m := k - 1) (by { omega }) ⟨by { omega }, by { omega }⟩
+  }
+  refine ⟨zp + k, by { omega }, by { omega }, k - 1, by { omega }, ?_, ?_⟩
+  · have h_m1 : zp + k - 1 = zp + (k - 1) := by { omega }
+    rw [h_m1]
+    exact hk_prev
+  · have h_k : k - 1 + 1 = k := by { omega }
+    rw [h_k]
+    exact hk_spec.2
+}
+
+lemma tower_exit_single_card_bound (D N i : ℕ) (hD : 1 ≤ D) (hN : 1 ≤ N) (hi : i < D) :
+    2 * D * D * (((Finset.Icc 1 N).filter (fun m =>
+      vanEckNthTerm (m - 1) ≤ zeroGapTower D i ∧
+        zeroGapTower D (i + 1) < vanEckNthTerm m)).card) ≤
+      N + zeroGapTower D D := by {
+  let M_i := (Finset.Icc 1 N).filter (fun m =>
+    vanEckNthTerm (m - 1) ≤ zeroGapTower D i ∧ zeroGapTower D (i + 1) < vanEckNthTerm m)
+  let P := Finset.Icc 0 (zeroGapTower D i)
+  have h_cool := palette_set_all_index_window_cooldown_bound M_i P
+    (zeroGapTower D (i + 1)) 1 N (fun m hm => by {
+      rcases Finset.mem_filter.mp hm with ⟨hm_icc, hm_lo, hm_hi⟩
+      have hm_b := Finset.mem_Icc.mp hm_icc
+      exact ⟨hm_b.1, hm_b.2, Finset.mem_Icc.mpr ⟨Nat.zero_le _, hm_lo⟩, hm_hi⟩
+    })
+  have hP_card : P.card = zeroGapTower D i + 1 := by {
+    dsimp [P]
+    rw [Nat.card_Icc]
+    omega
+  }
+  rw [hP_card] at h_cool
+  have h_step : zeroGapTower D (i + 1) = 2 * D * D * (zeroGapTower D i + 1) := rfl
+  have h_top : zeroGapTower D (i + 1) ≤ zeroGapTower D D :=
+    zeroGapTower_mono D hD (by { omega })
+  have h_lhs : (zeroGapTower D i + 1) * (2 * D * D * M_i.card) ≤
+      M_i.card * (zeroGapTower D (i + 1) + 1) := by {
+    rw [h_step]
+    nlinarith
+  }
+  have h_rhs : (zeroGapTower D i + 1) * ((N - 1) + (zeroGapTower D (i + 1) + 1)) ≤
+      (zeroGapTower D i + 1) * (N + zeroGapTower D D) :=
+    Nat.mul_le_mul_left _ (by { omega })
+  exact Nat.le_of_mul_le_mul_left (le_trans h_lhs (le_trans h_cool h_rhs)) (Nat.succ_pos _)
+}
+
+lemma tower_exit_union_card_bound (D N : ℕ) (hD : 1 ≤ D) (hN : 1 ≤ N) :
+    2 * D * (((Finset.range D).biUnion (fun i =>
+      (Finset.Icc 1 N).filter (fun m =>
+        vanEckNthTerm (m - 1) ≤ zeroGapTower D i ∧
+          zeroGapTower D (i + 1) < vanEckNthTerm m))).card) ≤
+      N + zeroGapTower D D := by {
+  let M : ℕ → Finset ℕ := fun i =>
+    (Finset.Icc 1 N).filter (fun m =>
+      vanEckNthTerm (m - 1) ≤ zeroGapTower D i ∧
+        zeroGapTower D (i + 1) < vanEckNthTerm m)
+  have h_sum := Finset.sum_le_sum (s := Finset.range D) (fun i hi =>
+    tower_exit_single_card_bound D N i hD hN (Finset.mem_range.mp hi))
+  rw [← Finset.mul_sum, Finset.sum_const, Finset.card_range, smul_eq_mul] at h_sum
+  have h_bi := Finset.card_biUnion_le (s := Finset.range D) (t := M)
+  have h_chain : D * (2 * D * ((Finset.range D).biUnion M).card) ≤
+      D * (N + zeroGapTower D D) := by {
+    have h1 : D * (2 * D * ((Finset.range D).biUnion M).card) =
+        2 * D * D * ((Finset.range D).biUnion M).card := by { ring }
+    rw [h1]
+    exact le_trans (Nat.mul_le_mul_left (2 * D * D) h_bi) h_sum
+  }
+  exact Nat.le_of_mul_le_mul_left h_chain hD
+}
+
+lemma zero_interval_gate_injOn (S : Finset ℕ) (gate : ℕ → ℕ)
+    (hz : ∀ z ∈ S, vanEckNthTerm z = 0)
+    (hg : ∀ z ∈ S, lastZero (z - 1) < gate z ∧ gate z ≤ z - 1) :
+    Set.InjOn gate (S : Set ℕ) := by {
+  intro z hzs z' hzs' heq
+  have hgz := hg z hzs
+  have hgz' := hg z' hzs'
+  rcases lt_trichotomy z z' with hlt | h_eq | hgt
+  · exfalso
+    have hle : z ≤ lastZero (z' - 1) := by {
+      by_contra hc
+      exact no_zero_after_lastZero (z' - 1) z (by { omega }) (by { omega }) (hz z hzs)
+    }
+    omega
+  · exact h_eq
+  · exfalso
+    have hle : z' ≤ lastZero (z - 1) := by {
+      by_contra hc
+      exact no_zero_after_lastZero (z - 1) z' (by { omega }) (by { omega }) (hz z' hzs')
+    }
+    omega
+}
+
+lemma large_short_zeros_card_bound (B N : ℕ) (hN : 1 ≤ N) (Z_large : Finset ℕ)
+    (hZ : ∀ z ∈ Z_large, 2 ≤ z ∧ z ≤ N ∧ vanEckNthTerm z = 0 ∧
+      z - lastZero (z - 1) ≤ B ∧ zeroGapTower (B + 1) (B + 1) < vanEckNthTerm (z - 1)) :
+    2 * (B + 1) * Z_large.card ≤ N + zeroGapTower (B + 1) (B + 1) := by {
+  classical
+  let U := (Finset.range (B + 1)).biUnion (fun i =>
+    (Finset.Icc 1 N).filter (fun m =>
+      vanEckNthTerm (m - 1) ≤ zeroGapTower (B + 1) i ∧
+        zeroGapTower (B + 1) (i + 1) < vanEckNthTerm m))
+  have h_ex : ∀ z ∈ Z_large, ∃ m ∈ U, lastZero (z - 1) < m ∧ m ≤ z - 1 := by {
+    intro z hz
+    have hp := hZ z hz
+    rcases short_block_tower_crossing B z hp.1 hp.2.2.1 hp.2.2.2.1 hp.2.2.2.2 with
+      ⟨m, hm_lo, hm_hi, i, hi_lt, hm_prev, hm_cur⟩
+    refine ⟨m, Finset.mem_biUnion.mpr ⟨i, Finset.mem_range.mpr hi_lt, ?_⟩, hm_lo, hm_hi⟩
+    exact Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨by { omega }, by { omega }⟩, hm_prev, hm_cur⟩
+  }
+  let gate : ℕ → ℕ := fun z => if h : z ∈ Z_large then Classical.choose (h_ex z h) else 0
+  have hg_spec : ∀ z (hz : z ∈ Z_large),
+      gate z ∈ U ∧ lastZero (z - 1) < gate z ∧ gate z ≤ z - 1 := by {
+    intro z hz
+    rw [show gate z = Classical.choose (h_ex z hz) from dif_pos hz]
+    exact Classical.choose_spec (h_ex z hz)
+  }
+  have h_inj := zero_interval_gate_injOn Z_large gate
+    (fun z hz => (hZ z hz).2.2.1) (fun z hz => (hg_spec z hz).2)
+  have h_sub : Z_large.image gate ⊆ U := by {
+    intro m hm
+    rcases Finset.mem_image.mp hm with ⟨z, hz, rfl⟩
+    exact (hg_spec z hz).1
+  }
+  have h_le : Z_large.card ≤ U.card := by {
+    rw [← Finset.card_image_of_injOn h_inj]
+    exact Finset.card_le_card h_sub
+  }
+  exact le_trans (Nat.mul_le_mul_left (2 * (B + 1)) h_le)
+    (tower_exit_union_card_bound (B + 1) N (by { omega }) hN)
+}
+
+lemma small_zeros_card_le_succ (H : ℕ) (Z_small : Finset ℕ)
+    (hZ : ∀ z ∈ Z_small, 2 ≤ z ∧ vanEckNthTerm z = 0 ∧ vanEckNthTerm (z - 1) ≤ H) :
+    Z_small.card ≤ H + 1 := by {
+  have h_inj : Set.InjOn (fun z => vanEckNthTerm (z - 1)) (Z_small : Set ℕ) := by {
+    intro z hz z' hz' heq
+    have hp := hZ z hz
+    have hp' := hZ z' hz'
+    by_contra hne
+    have h1 : vanEckNthTerm (z - 1 + 1) = 0 := by {
+      have hidx : z - 1 + 1 = z := by { omega }
+      rw [hidx]
+      exact hp.2.1
+    }
+    have h2 : vanEckNthTerm (z' - 1 + 1) = 0 := by {
+      have hidx : z' - 1 + 1 = z' := by { omega }
+      rw [hidx]
+      exact hp'.2.1
+    }
+    exact zero_predecessors_inj h1 h2 (by { omega }) heq
+  }
+  have h_bnd : ∀ v ∈ Z_small.image (fun z => vanEckNthTerm (z - 1)), v ≤ H := by {
+    intro v hv
+    rcases Finset.mem_image.mp hv with ⟨z, hz, rfl⟩
+    exact (hZ z hz).2.2
+  }
+  rw [← Finset.card_image_of_injOn h_inj]
+  exact subset_range_card _ H h_bnd
+}
+
+/-- The gaps between consecutive zeros in the Van Eck sequence are unbounded. -/
+lemma vanEck_zero_gaps_unbounded (B : ℕ) :
+    ∃ Z1 Z2, vanEckNthTerm Z1 = 0 ∧ vanEckNthTerm Z2 = 0 ∧ Z1 < Z2 ∧
+    (∀ k, Z1 < k → k < Z2 → vanEckNthTerm k ≠ 0) ∧ Z2 - Z1 > B := by {
+  by_contra h_not
+  have h_bdd : ∀ Z1 Z2, vanEckNthTerm Z1 = 0 → vanEckNthTerm Z2 = 0 → Z1 < Z2 →
+      (∀ k, Z1 < k → k < Z2 → vanEckNthTerm k ≠ 0) → Z2 - Z1 ≤ B := fun Z1 Z2 h1 h2 hlt hbet =>
+    by_contra (fun hgt => h_not ⟨Z1, Z2, h1, h2, hlt, hbet, by { omega }⟩)
+  let D := B + 1
+  let H := zeroGapTower D D
+  let q := 2 * (H + 1) + H + 2
+  let N := 1 + q * D
+  let Z_all := (Finset.Icc 2 N).filter (fun z => vanEckNthTerm z = 0)
+  have hq_le : q ≤ Z_all.card := zeros_card_ge_of_bounded_gaps B q h_bdd
+  let Z_small := Z_all.filter (fun z => vanEckNthTerm (z - 1) ≤ H)
+  let Z_large := Z_all.filter (fun z => H < vanEckNthTerm (z - 1))
+  have h_part : Z_small.card + Z_large.card = Z_all.card := by {
+    have hp := Finset.card_filter_add_card_filter_not (s := Z_all)
+      (fun z => vanEckNthTerm (z - 1) ≤ H)
+    rw [Finset.filter_congr (fun _ _ => not_le)] at hp
+    exact hp
+  }
+  have h_sm : Z_small.card ≤ H + 1 := small_zeros_card_le_succ H Z_small (fun z hz => by {
+    rcases Finset.mem_filter.mp hz with ⟨hzA, hle⟩
+    exact ⟨(Finset.mem_Icc.mp (Finset.mem_filter.mp hzA).1).1, (Finset.mem_filter.mp hzA).2, hle⟩
+  })
+  have h_lg : 2 * D * Z_large.card ≤ N + H :=
+    large_short_zeros_card_bound B N (by { omega }) Z_large (fun z hz => by {
+      rcases Finset.mem_filter.mp hz with ⟨hzA, hgt⟩
+      rcases Finset.mem_filter.mp hzA with ⟨hz_icc, hz0⟩
+      have hb := Finset.mem_Icc.mp hz_icc
+      have hzp_le : lastZero (z - 1) ≤ z - 1 := lastZero_le (z - 1)
+      have hshort := h_bdd (lastZero (z - 1)) z (vanEck_lastZero_is_zero (z - 1)) hz0
+        (by { omega }) (fun k hk1 hk2 => no_zero_after_lastZero (z - 1) k hk1 (by { omega }))
+      exact ⟨hb.1, hb.2, hz0, hshort, hgt⟩
+    })
+  have h_mul_q : 2 * D * q ≤ 2 * D * Z_small.card + 2 * D * Z_large.card := by {
+    calc 2 * D * q ≤ 2 * D * Z_all.card := Nat.mul_le_mul_left (2 * D) hq_le
+      _ = 2 * D * (Z_small.card + Z_large.card) := by { rw [← h_part] }
+      _ = 2 * D * Z_small.card + 2 * D * Z_large.card := Nat.mul_add _ _ _
+  }
+  have h_mul_sm : 2 * D * Z_small.card ≤ 2 * D * (H + 1) := Nat.mul_le_mul_left (2 * D) h_sm
+  have hN_eq : N = 1 + D * (2 * (H + 1) + H + 2) :=
+    congrArg (1 + ·) (Nat.mul_comm q D)
+  have hq_eq : 2 * D * q = 2 * D * (2 * (H + 1) + H + 2) := rfl
+  have hD_pos : 1 ≤ D := by { omega }
+  nlinarith
 }
 
 
