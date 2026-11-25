@@ -68,17 +68,49 @@ full surjectivity of the Van Eck sequence (that it contains every natural number
 If an element `x` only appears finitely many times in the Van Eck sequence,
 there must exist some maximum index `Z` such that for all `k > Z`, `vanEckNthTerm k ≠ x`.
 -/
-lemma finite_occurrences_implies_last_index (x : ℕ) (h_finite : ∃ Z, ∀ k > Z, vanEckNthTerm k ≠ x) :
+/-
+Note: the original statement (without `h_seen`) fails for any `x` that never appears: then
+`h_finite` holds trivially (`Z = 0`) while the conclusion is unsatisfiable. Hence `h_seen`.
+-/
+lemma finite_occurrences_implies_last_index (x : ℕ) (h_finite : ∃ Z, ∀ k > Z, vanEckNthTerm k ≠ x)
+    (h_seen : ∃ m, vanEckNthTerm m = x) :
     ∃ Z, vanEckNthTerm Z = x ∧ ∀ k > Z, vanEckNthTerm k ≠ x := by {
-  sorry
+  classical
+  refine ⟨Nat.find h_finite, ?_, Nat.find_spec h_finite⟩
+  rcases h_seen with ⟨m, hm⟩
+  rcases Nat.eq_zero_or_eq_succ_pred (Nat.find h_finite) with h0 | hs
+  · have hm0 : m = 0 := by {
+      by_contra hne
+      exact Nat.find_spec h_finite m (by omega) hm
+    }
+    rw [h0, ← hm0]
+    exact hm
+  · have h_min := Nat.find_min h_finite (show (Nat.find h_finite).pred < Nat.find h_finite by omega)
+    push Not at h_min
+    rcases h_min with ⟨k, hk_gt, hk_eq⟩
+    have hk_le : k ≤ Nat.find h_finite := by {
+      by_contra hlt
+      exact Nat.find_spec h_finite k (by omega) hk_eq
+    }
+    have hk : k = Nat.find h_finite := by omega
+    rw [← hk]
+    exact hk_eq
 }
 
-/--
-If an element `x` never appears after index `Z`, then no element after `Z+1` can have its previous occurrence exactly `x` steps ago.
+/-
+Note: the original statement (`∀ k > Z + 1, listNth .. (k - 1) ≠ listNth .. (k - 1 - x)`) is
+false for `x = 0` (both sides coincide). The corrected version below speaks about *strict*
+gaps of length `x > 0`: a strict gap of length `x` ending at `m` would force `a(m + 1) = x`.
 -/
-lemma never_appears_again_implies_no_gap_x (x Z : ℕ) (hx : ∀ k > Z, vanEckNthTerm k ≠ x) :
-    ∀ k > Z + 1, listNth (vanEck (k - 1)) (k - 1) ≠ listNth (vanEck (k - 1)) (k - 1 - x) := by {
-  sorry
+lemma never_appears_again_implies_no_gap_x (x Z : ℕ) (hx_pos : x > 0)
+    (hx : ∀ k > Z, vanEckNthTerm k ≠ x) :
+    ∀ m > Z, x ≤ m → ¬ (vanEckNthTerm (m - x) = vanEckNthTerm m ∧
+      ∀ j, m - x < j → j < m → vanEckNthTerm j ≠ vanEckNthTerm m) := by {
+  intro m hm hxm ⟨h_eq, h_no⟩
+  have h_gap := strict_prior_match_gives_gap (m - x) m (by omega) h_eq.symm h_no
+  have h_sub : m - (m - x) = x := by omega
+  rw [h_sub] at h_gap
+  exact hx (m + 1) (by omega) h_gap
 }
 
 /--
