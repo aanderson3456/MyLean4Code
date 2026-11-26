@@ -3431,33 +3431,1046 @@ lemma gap_gt_prefix_max_is_new (z z_prev : ℕ) (hz_zero : vanEckNthTerm z = 0) 
     omega
 }
 
-lemma powers_of_two_gap_contradiction (N_0 : ℕ) (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet)
-    (z z_prev : ℕ) (hz : vanEckNthTerm z = 0) (hz_gt : z > N_0)
-    (hz_prev : vanEckNthTerm z_prev = 0) (h_prev_lt : z_prev < z)
-    (h_gap : ∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0)
-    (h_new : ∀ i < z + 1, vanEckNthTerm i ≠ vanEckNthTerm (z + 1))
-    (h_gt_8 : z - z_prev ≥ 8) :
-    ∃ d ∈ PowersOfTwoSet, d = 5 ∧ d ≤ z - z_prev := by {
-  sorry
+/-!
+Note: The old scaffold `powers_of_two_gap_contradiction` claiming `∃ d ∈ PowersOfTwoSet, d = 5`
+from a single large zero-gap was false as stated (`5 ∉ PowersOfTwoSet`, and locally `[0, 8, 0, 2]`
+stays inside `PowersOfTwoSet` after a new zero-gap of `8`). Below we prove
+`growth_contradiction_pow_two` and `vanEck_not_eventually_powers_of_two` unconditionally via
+modulo-`4` and modulo-`8` residue locking and logarithmic alphabet counting.
+-/
+
+lemma mem_powersOfTwoSet_mod_four {x : ℕ} (hx : x ∈ PowersOfTwoSet) :
+    x = 0 ∨ x = 1 ∨ x = 2 ∨ x % 4 = 0 := by {
+  rcases hx with rfl | ⟨k, rfl⟩
+  · exact Or.inl rfl
+  · match k with
+    | 0 => exact Or.inr (Or.inl rfl)
+    | 1 => exact Or.inr (Or.inr (Or.inl rfl))
+    | k' + 2 =>
+      have hmul : 2 ^ (k' + 2) = 4 * 2 ^ k' := by { ring }
+      exact Or.inr (Or.inr (Or.inr (by { omega })))
 }
 
-lemma powers_of_two_lookback_contradiction (d : ℕ) (hd_pow : d ∈ PowersOfTwoSet) (hd_eq : d = 5) : False := by {
+lemma mem_powersOfTwoSet_mod_eight {x : ℕ} (hx : x ∈ PowersOfTwoSet) :
+    x = 0 ∨ x = 1 ∨ x = 2 ∨ x = 4 ∨ x % 8 = 0 := by {
+  rcases hx with rfl | ⟨k, rfl⟩
+  · exact Or.inl rfl
+  · match k with
+    | 0 => exact Or.inr (Or.inl rfl)
+    | 1 => exact Or.inr (Or.inr (Or.inl rfl))
+    | 2 => exact Or.inr (Or.inr (Or.inr (Or.inl rfl)))
+    | k' + 3 =>
+      have hmul : 2 ^ (k' + 3) = 8 * 2 ^ k' := by { ring }
+      exact Or.inr (Or.inr (Or.inr (Or.inr (by { omega }))))
+}
+
+lemma one_occ_dist_ge_three {p q : ℕ} (hpq : p < q)
+    (hp : vanEckNthTerm p = 1) (hq : vanEckNthTerm q = 1) :
+    3 ≤ q - p := by {
+  by_contra hlt
+  rcases (by { omega } : q = p + 1 ∨ q = p + 2) with rfl | rfl
+  · exact vanEck_no_consecutive_ones p ⟨hp, hq⟩
+  · have hg := pos_value_implies_gap (p + 2) 1 (by { omega }) hq (by { omega })
+    have hs1 : p + 2 - 1 - 1 = p := by { omega }
+    have hs2 : p + 2 - 1 = p + 1 := by { omega }
+    rw [hs1, hs2, hp] at hg
+    exact vanEck_no_consecutive_ones p ⟨hp, hg.2.symm⟩
+}
+
+def IsConsecValOcc (v p q : ℕ) : Prop :=
+  p < q ∧ vanEckNthTerm p = v ∧ vanEckNthTerm q = v ∧
+    ∀ j, p < j → j < q → vanEckNthTerm j ≠ v
+
+lemma consecValOcc_next_eq {v p q : ℕ} (h : IsConsecValOcc v p q) :
+    vanEckNthTerm (q + 1) = q - p := by {
+  refine strict_occurrence_gap_eq p q (h.2.2.1.trans h.2.1.symm) h.1 ?_
+  intro i hi1 hi2
+  rw [h.2.2.1]
+  exact h.2.2.2 i hi1 hi2
+}
+
+lemma consecValOcc_add_next_eq {v p s : ℕ} (h : IsConsecValOcc v p (p + s)) :
+    vanEckNthTerm (p + (s + 1)) = s := by {
+  have h1 := consecValOcc_next_eq h
+  have h2 : p + s + 1 = p + (s + 1) := by { omega }
+  have h3 : p + s - p = s := by { omega }
+  rwa [h2, h3] at h1
+}
+
+lemma consecValOcc_disjoint_order {v p₁ q₁ p₂ q₂ : ℕ}
+    (h1 : IsConsecValOcc v p₁ q₁) (h2 : IsConsecValOcc v p₂ q₂) (hlt : p₁ < p₂) :
+    q₁ ≤ p₂ := by {
+  by_contra hgt
+  exact h1.2.2.2 p₂ hlt (by { omega }) h2.2.1
+}
+
+lemma prev_consecValOcc_of_gt {v p₀ q : ℕ} (hlt : p₀ < q)
+    (hp₀ : vanEckNthTerm p₀ = v) (hq : vanEckNthTerm q = v) :
+    ∃ p, p₀ ≤ p ∧ IsConsecValOcc v p q := by {
+  cases h_occ : lastOccBefore q v with
+  | none =>
+    exact False.elim (((lastOccBefore_eq_none_iff q v).mp h_occ) p₀ hlt hp₀)
+  | some p =>
+    have hsp := lastOccBefore_eq_some_spec q v p h_occ
+    have hp_ge : p₀ ≤ p := by {
+      by_contra hlt_p
+      exact hsp.2.2 p₀ (by { omega }) hlt hp₀
+    }
+    exact ⟨p, hp_ge, hsp.1, hsp.2.1, hq, hsp.2.2⟩
+}
+
+lemma eventually_mod_eq_of_consec_dvd (M T v : ℕ) (hM : 0 < M)
+    (hdvd : ∀ p q, T < p → IsConsecValOcc v p q → (q - p) % M = 0) :
+    ∃ T' ≥ T, ∃ r < M, ∀ m > T', vanEckNthTerm m = v → m % M = r := by {
+  by_cases hex : ∃ m > T, vanEckNthTerm m = v
+  · rcases hex with ⟨m₀, hm₀_gt, hm₀_eq⟩
+    refine ⟨m₀, by { omega }, m₀ % M, Nat.mod_lt m₀ hM, ?_⟩
+    intro m
+    refine Nat.strong_induction_on m (fun m ih hm_gt hm_eq => ?_)
+    rcases prev_consecValOcc_of_gt hm_gt hm₀_eq hm_eq with ⟨p, hp_ge, hcon⟩
+    have hlt_pm : p < m := hcon.1
+    have hrem : (m - p) % M = 0 := hdvd p m (by { omega }) hcon
+    have hmp : m = p + (m - p) := by { omega }
+    have hmod_eq : m % M = p % M := by {
+      conv_lhs => rw [hmp]
+      rw [Nat.add_mod, hrem, add_zero, Nat.mod_mod]
+    }
+    rcases eq_or_lt_of_le hp_ge with rfl | hp_gt
+    · exact hmod_eq
+    · exact hmod_eq.trans (ih p hlt_pm hp_gt hcon.2.1)
+  · refine ⟨T, le_rfl, 0, hM, ?_⟩
+    intro m hm hv
+    exact False.elim (hex ⟨m, hm, hv⟩)
+}
+
+lemma eventually_no_bad_consec_of_at_most_one (T v : ℕ) (P : ℕ → ℕ → Prop)
+    (h_one : ∀ p₁ q₁ p₂ q₂, T < p₁ → IsConsecValOcc v p₁ q₁ → P p₁ q₁ →
+      q₁ ≤ p₂ → IsConsecValOcc v p₂ q₂ → ¬ P p₂ q₂) :
+    ∃ T' ≥ T, ∀ p q, T' < p → IsConsecValOcc v p q → ¬ P p q := by {
+  by_cases hex : ∃ p₁ q₁, T < p₁ ∧ IsConsecValOcc v p₁ q₁ ∧ P p₁ q₁
+  · rcases hex with ⟨p₁, q₁, hp₁, hc₁, hP₁⟩
+    have hlt1 : p₁ < q₁ := hc₁.1
+    refine ⟨q₁, by { omega }, ?_⟩
+    intro p q hp hc
+    exact h_one p₁ q₁ p q hp₁ hc₁ hP₁ (by { omega }) hc
+  · refine ⟨T, le_rfl, ?_⟩
+    intro p q hp hc hP
+    exact hex ⟨p, q, hp, hc, hP⟩
+}
+
+lemma pow2_one_locked_mod_four (N_0 : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) :
+    ∃ T_0 ≥ N_0, ∃ r_0 < 4, ∀ m > T_0, vanEckNthTerm m = 1 → m % 4 = r_0 := by {
+  refine eventually_mod_eq_of_consec_dvd 4 N_0 1 (by { decide }) ?_
+  intro p q hp hc
+  have hge3 : 3 ≤ q - p := one_occ_dist_ge_three hc.1 hc.2.1 hc.2.2.1
+  have hlt_pq : p < q := hc.1
+  have hmem := h_pow (q + 1) (by { omega })
+  rw [consecValOcc_next_eq hc] at hmem
+  rcases mem_powersOfTwoSet_mod_four hmem with h0 | h1 | h2 | h4
+  · omega
+  · omega
+  · omega
+  · exact h4
+}
+
+lemma pow2_two_trap_step (N_0 T_0 r_0 p q : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet)
+    (hT0 : N_0 ≤ T_0) (hr0 : ∀ m > T_0, vanEckNthTerm m = 1 → m % 4 = r_0)
+    (hp : T_0 < p) (hc : IsConsecValOcc 2 p q) :
+    ((q - p) % 4 = 0 ∨ (∃ m, q ≤ m ∧ vanEckNthTerm m = 2 ∧ m % 4 = (r_0 + 3) % 4)) ∧
+      (p % 4 = (r_0 + 3) % 4 → (q - p) % 4 = 0) := by {
+  have hlt : p < q := hc.1
+  have hnxt := consecValOcc_next_eq hc
+  have hmem := h_pow (q + 1) (by { omega })
+  rw [hnxt] at hmem
+  refine ⟨?_, ?_⟩
+  · rcases mem_powersOfTwoSet_mod_four hmem with h0 | h1 | h2 | h4
+    · omega
+    · right
+      have hq1 : vanEckNthTerm (q + 1) = 1 := hnxt.trans h1
+      have hm1 := hr0 (q + 1) (by { omega }) hq1
+      exact ⟨q, le_rfl, hc.2.2.1, by { omega }⟩
+    · right
+      have hq1 : vanEckNthTerm (q + 1) = 2 := hnxt.trans h2
+      have hq2 : vanEckNthTerm (q + 2) = 1 :=
+        vanEck_consecutive_eq_implies_next_one q (hc.2.2.1.trans hq1.symm)
+      have hm2 := hr0 (q + 2) (by { omega }) hq2
+      exact ⟨q + 1, by { omega }, hq1, by { omega }⟩
+    · exact Or.inl h4
+  · intro hp_trap
+    rcases mem_powersOfTwoSet_mod_four hmem with h0 | h1 | h2 | h4
+    · omega
+    · have hm1 := hr0 (q + 1) (by { omega }) (hnxt.trans h1)
+      omega
+    · have hq1 : vanEckNthTerm (q + 1) = 2 := hnxt.trans h2
+      have hq2 := vanEck_consecutive_eq_implies_next_one q (hc.2.2.1.trans hq1.symm)
+      have hm2 := hr0 (q + 2) (by { omega }) hq2
+      omega
+    · exact h4
+}
+
+lemma pow2_two_locked_mod_four (N_0 T_0 r_0 : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet)
+    (hT0 : N_0 ≤ T_0) (hr0 : ∀ m > T_0, vanEckNthTerm m = 1 → m % 4 = r_0) :
+    ∃ T_1 ≥ T_0, ∃ r_1 < 4, ∀ m > T_1, vanEckNthTerm m = 2 → m % 4 = r_1 := by {
+  by_cases hex : ∃ m₀ > T_0, vanEckNthTerm m₀ = 2 ∧ m₀ % 4 = (r_0 + 3) % 4
+  · rcases hex with ⟨m₀, hm₀_gt, hm₀_2, hm₀_mod⟩
+    have hall : ∀ m ≥ m₀, vanEckNthTerm m = 2 → m % 4 = (r_0 + 3) % 4 := by {
+      intro m
+      refine Nat.strong_induction_on m (fun m ih hm_ge hm_2 => ?_)
+      rcases eq_or_lt_of_le hm_ge with rfl | hgt
+      · exact hm₀_mod
+      · rcases prev_consecValOcc_of_gt hgt hm₀_2 hm_2 with ⟨p, hp_ge, hc⟩
+        have hlt_pm : p < m := hc.1
+        have hp_mod := ih p hlt_pm hp_ge hc.2.1
+        have hdiv := (pow2_two_trap_step N_0 T_0 r_0 p m h_pow hT0 hr0
+          (by { omega }) hc).2 hp_mod
+        omega
+    }
+    exact ⟨m₀, by { omega }, (r_0 + 3) % 4, by { omega },
+      fun m hm h2 => hall m (by { omega }) h2⟩
+  · refine eventually_mod_eq_of_consec_dvd 4 T_0 2 (by { decide }) ?_
+    intro p q hp hc
+    have hlt_pq : p < q := hc.1
+    rcases (pow2_two_trap_step N_0 T_0 r_0 p q h_pow hT0 hr0 hp hc).1 with h4 | ⟨m, hm_ge, h2, hm⟩
+    · exact h4
+    · exact False.elim (hex ⟨m, by { omega }, h2, hm⟩)
+}
+
+def HasValStep (v a b s : ℕ) : Prop :=
+  ∃ p, a ≤ p ∧ p + s ≤ b ∧ IsConsecValOcc v p (p + s)
+
+open scoped Classical in
+noncomputable def stepBit (P : Prop) : ℕ := if P then 1 else 0
+
+lemma stepBit_spec (P : Prop) :
+    stepBit P ≤ 1 ∧ (stepBit P = 1 ↔ P) ∧ (stepBit P = 0 ↔ ¬ P) := by {
+  unfold stepBit
+  by_cases h : P
+  · rw [if_pos h]
+    exact ⟨le_rfl, ⟨fun _ => h, fun _ => rfl⟩, ⟨by { omega }, fun hn => False.elim (hn h)⟩⟩
+  · rw [if_neg h]
+    exact ⟨by { omega }, ⟨by { omega }, fun hp => False.elim (h hp)⟩, ⟨fun _ => h, fun _ => rfl⟩⟩
+}
+
+lemma hasValStep_split_last {v a p b s : ℕ} (hap : a ≤ p) (hlast : IsConsecValOcc v p b) :
+    HasValStep v a b s ↔ HasValStep v a p s ∨ b = p + s := by {
+  constructor
+  · rintro ⟨q, haq, hqsb, hcq⟩
+    have hlt_qs : q < q + s := hcq.1
+    rcases lt_trichotomy q p with hlt | h_eq | hgt
+    · exact Or.inl ⟨q, haq, consecValOcc_disjoint_order hcq hlast hlt, hcq⟩
+    · subst h_eq
+      have hle_bp : b ≤ q + s := by {
+        by_contra hlt_ps
+        exact hlast.2.2.2 (q + s) hlt_qs (by { omega }) hcq.2.2.1
+      }
+      exact Or.inr (by { omega })
+    · exact False.elim (hlast.2.2.2 q hgt (by { omega }) hcq.2.1)
+  · rintro (⟨q, haq, hqsp, hcq⟩ | rfl)
+    · have hpb : p < b := hlast.1
+      exact ⟨q, haq, by { omega }, hcq⟩
+    · exact ⟨p, hap, le_rfl, hlast⟩
+}
+
+def NoTwoValSteps (v a b s : ℕ) : Prop :=
+  ∀ p₁ p₂, a ≤ p₁ → p₁ + s ≤ p₂ → p₂ + s ≤ b →
+    IsConsecValOcc v p₁ (p₁ + s) → ¬ IsConsecValOcc v p₂ (p₂ + s)
+
+lemma noTwoValSteps_extend {v a p b s : ℕ} (hap : a ≤ p) (hlast : IsConsecValOcc v p b)
+    (h_ap : NoTwoValSteps v a p s) (h_not : b = p + s → ¬ HasValStep v a p s) :
+    NoTwoValSteps v a b s := by {
+  intro p₁ p₂ ha1 h12 h2b hc1 hc2
+  have hlt1 : p₁ < p₁ + s := hc1.1
+  have hlt2 : p₂ < p₂ + s := hc2.1
+  have hp1_lt : p₁ < p := by {
+    by_contra hge
+    exact hlast.2.2.2 p₂ (by { omega }) (by { omega }) hc2.2.1
+  }
+  have h1p : p₁ + s ≤ p := consecValOcc_disjoint_order hc1 hlast hp1_lt
+  rcases lt_trichotomy p₂ p with hlt | h_eq | hgt
+  · exact h_ap p₁ p₂ ha1 h12 (consecValOcc_disjoint_order hc2 hlast hlt) hc1 hc2
+  · subst h_eq
+    have hbs : b = p₂ + s := by {
+      by_contra hne
+      exact hlast.2.2.2 (p₂ + s) hlt2 (by { omega }) hc2.2.2.1
+    }
+    exact h_not hbs ⟨p₁, ha1, h1p, hc1⟩
+  · exact hlast.2.2.2 p₂ hgt (by { omega }) hc2.2.1
+}
+
+lemma pow2_mod4_span_step_one {v a p b r_0 : ℕ} (hlast : IsConsecValOcc v p b)
+    (hb1 : b - p = 1) (hm_b : (b + 1) % 4 = r_0) (h_ap1 : NoTwoValSteps v a p 1)
+    (h_mid : ∀ p₀, a ≤ p₀ → p₀ + 1 ≤ p → IsConsecValOcc v p₀ (p₀ + 1) →
+      (p₀ + 2) % 4 = r_0 ∧
+      (p - (p₀ + 1)) % 4 = (stepBit (HasValStep v (p₀ + 1) p 1) +
+        2 * stepBit (HasValStep v (p₀ + 1) p 2)) % 4) :
+    ¬ HasValStep v a p 1 := by {
+  rintro ⟨p₀, hp₀a, hp₀p, hc₀⟩
+  rcases h_mid p₀ hp₀a hp₀p hc₀ with ⟨hm0, hsp_mid⟩
+  have hmid_n1 : ¬ HasValStep v (p₀ + 1) p 1 :=
+    fun ⟨p₁, h1, h2, hc₁⟩ => h_ap1 p₀ p₁ hp₀a h1 h2 hc₀ hc₁
+  rw [(stepBit_spec _).2.2.mpr hmid_n1] at hsp_mid
+  have hb2 := (stepBit_spec (HasValStep v (p₀ + 1) p 2)).1
+  have hlt := hlast.1
+  omega
+}
+
+lemma pow2_mod4_span_step_two {v a p b r_1 : ℕ} (hlast : IsConsecValOcc v p b)
+    (hb2 : b - p = 2) (hm_b : (b + 1) % 4 = r_1) (h_ap2 : NoTwoValSteps v a p 2)
+    (h_mid : ∀ p₀, a ≤ p₀ → p₀ + 2 ≤ p → IsConsecValOcc v p₀ (p₀ + 2) →
+      (p₀ + 3) % 4 = r_1 ∧
+      (p - (p₀ + 2)) % 4 = (stepBit (HasValStep v (p₀ + 2) p 1) +
+        2 * stepBit (HasValStep v (p₀ + 2) p 2)) % 4) :
+    ¬ HasValStep v a p 2 := by {
+  rintro ⟨p₀, hp₀a, hp₀p, hc₀⟩
+  rcases h_mid p₀ hp₀a hp₀p hc₀ with ⟨hm0, hsp_mid⟩
+  have hmid_n2 : ¬ HasValStep v (p₀ + 2) p 2 :=
+    fun ⟨p₁, h1, h2, hc₁⟩ => h_ap2 p₀ p₁ hp₀a h1 h2 hc₀ hc₁
+  rw [(stepBit_spec _).2.2.mpr hmid_n2] at hsp_mid
+  have hb1 := (stepBit_spec (HasValStep v (p₀ + 2) p 1)).1
+  have hlt := hlast.1
+  omega
+}
+
+lemma pow2_mod4_span_decomp (N_0 T_1 r_0 r_1 v : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) (hT1 : N_0 ≤ T_1)
+    (hr0 : ∀ m > T_1, vanEckNthTerm m = 1 → m % 4 = r_0)
+    (hr1 : ∀ m > T_1, vanEckNthTerm m = 2 → m % 4 = r_1) :
+    ∀ d a b, b - a = d → T_1 < a → a ≤ b → vanEckNthTerm a = v → vanEckNthTerm b = v →
+      NoTwoValSteps v a b 1 ∧ NoTwoValSteps v a b 2 ∧
+        (b - a) % 4 = (stepBit (HasValStep v a b 1) + 2 * stepBit (HasValStep v a b 2)) % 4 := by {
+  intro d
+  refine Nat.strong_induction_on d (fun d ih a b hd hTa hab ha hb => ?_)
+  rcases eq_or_lt_of_le hab with rfl | hlt
+  · have hn : ∀ s > 0, ¬ HasValStep v a a s := fun s hs ⟨p, hp1, hp2, _⟩ => by { omega }
+    rw [(stepBit_spec _).2.2.mpr (hn 1 (by { decide })),
+      (stepBit_spec _).2.2.mpr (hn 2 (by { decide }))]
+    exact ⟨fun _ _ h1 h2 h3 _ _ => by { omega },
+      fun _ _ h1 h2 h3 _ _ => by { omega }, by { omega }⟩
+  · rcases prev_consecValOcc_of_gt hlt ha hb with ⟨p, hap, hlast⟩
+    have hpb : p < b := hlast.1
+    have ih_ap := ih (p - a) (by { omega }) a p rfl hTa hap ha hlast.2.1
+    have hsp1 := hasValStep_split_last hap hlast (s := 1)
+    have hsp2 := hasValStep_split_last hap hlast (s := 2)
+    have hmem := h_pow (b + 1) (by { omega })
+    rw [consecValOcc_next_eq hlast] at hmem
+    rcases mem_powersOfTwoSet_mod_four hmem with h0 | h1 | h2 | h4
+    · omega
+    · have hnot1 := pow2_mod4_span_step_one hlast h1
+        (hr0 (b + 1) (by { omega }) ((consecValOcc_next_eq hlast).trans h1)) ih_ap.1
+        (fun p₀ hp₀a hp₀p hc₀ => ⟨hr0 (p₀ + 2) (by { omega }) (consecValOcc_add_next_eq hc₀),
+          (ih (p - (p₀ + 1)) (by { omega }) (p₀ + 1) p rfl (by { omega })
+            hp₀p hc₀.2.2.1 hlast.2.1).2.2⟩)
+      rw [propext hsp1, (stepBit_spec _).2.1.mpr (Or.inr (by { omega })),
+        propext (hsp2.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩)]
+      rw [(stepBit_spec _).2.2.mpr hnot1] at ih_ap
+      exact ⟨noTwoValSteps_extend hap hlast ih_ap.1 (fun _ => hnot1),
+        noTwoValSteps_extend hap hlast ih_ap.2.1 (by { omega }), by { omega }⟩
+    · have hnot2 := pow2_mod4_span_step_two hlast h2
+        (hr1 (b + 1) (by { omega }) ((consecValOcc_next_eq hlast).trans h2)) ih_ap.2.1
+        (fun p₀ hp₀a hp₀p hc₀ => ⟨hr1 (p₀ + 3) (by { omega }) (consecValOcc_add_next_eq hc₀),
+          (ih (p - (p₀ + 2)) (by { omega }) (p₀ + 2) p rfl (by { omega })
+            hp₀p hc₀.2.2.1 hlast.2.1).2.2⟩)
+      rw [propext hsp2, (stepBit_spec _).2.1.mpr (Or.inr (by { omega })),
+        propext (hsp1.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩)]
+      rw [(stepBit_spec _).2.2.mpr hnot2] at ih_ap
+      exact ⟨noTwoValSteps_extend hap hlast ih_ap.1 (by { omega }),
+        noTwoValSteps_extend hap hlast ih_ap.2.1 (fun _ => hnot2), by { omega }⟩
+    · rw [propext (hsp1.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩),
+        propext (hsp2.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩)]
+      exact ⟨noTwoValSteps_extend hap hlast ih_ap.1 (by { omega }),
+        noTwoValSteps_extend hap hlast ih_ap.2.1 (by { omega }), by { omega }⟩
+}
+
+lemma pow2_val_eventually_div_four (N_0 T_1 r_0 r_1 v : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) (hT1 : N_0 ≤ T_1)
+    (hr0 : ∀ m > T_1, vanEckNthTerm m = 1 → m % 4 = r_0)
+    (hr1 : ∀ m > T_1, vanEckNthTerm m = 2 → m % 4 = r_1) :
+    ∃ T' ≥ T_1, ∀ p q, T' < p → IsConsecValOcc v p q → (q - p) % 4 = 0 := by {
+  rcases eventually_no_bad_consec_of_at_most_one T_1 v (fun p q => q - p = 1)
+      (fun p₁ q₁ p₂ q₂ hp₁ hc₁ h1 hle hc₂ h2 => by {
+        have hlt1 := hc₁.1
+        have hlt2 := hc₂.1
+        have hq₁ : q₁ = p₁ + 1 := by { omega }
+        have hq₂ : q₂ = p₂ + 1 := by { omega }
+        subst hq₁ hq₂
+        exact (pow2_mod4_span_decomp N_0 T_1 r_0 r_1 v h_pow hT1 hr0 hr1
+          _ p₁ (p₂ + 1) rfl hp₁ (by { omega }) hc₁.2.1 hc₂.2.2.1).1
+          p₁ p₂ le_rfl hle le_rfl hc₁ hc₂
+      }) with ⟨Ta, hTa, hno1⟩
+  rcases eventually_no_bad_consec_of_at_most_one Ta v (fun p q => q - p = 2)
+      (fun p₁ q₁ p₂ q₂ hp₁ hc₁ h1 hle hc₂ h2 => by {
+        have hlt1 := hc₁.1
+        have hlt2 := hc₂.1
+        have hq₁ : q₁ = p₁ + 2 := by { omega }
+        have hq₂ : q₂ = p₂ + 2 := by { omega }
+        subst hq₁ hq₂
+        exact (pow2_mod4_span_decomp N_0 T_1 r_0 r_1 v h_pow hT1 hr0 hr1
+          _ p₁ (p₂ + 2) rfl (by { omega }) (by { omega }) hc₁.2.1 hc₂.2.2.1).2.1
+          p₁ p₂ le_rfl hle le_rfl hc₁ hc₂
+      }) with ⟨Tb, hTb, hno2⟩
+  refine ⟨Tb, by { omega }, ?_⟩
+  intro p q hp hc
+  have hlt : p < q := hc.1
+  have hn1 := hno1 p q (by { omega }) hc
+  have hn2 := hno2 p q hp hc
+  have hmem := h_pow (q + 1) (by { omega })
+  rw [consecValOcc_next_eq hc] at hmem
+  rcases mem_powersOfTwoSet_mod_four hmem with h0 | h1 | h2 | h4
+  · omega
+  · omega
+  · omega
+  · exact h4
+}
+
+lemma pow2_four_locked_mod_eight (N_0 T_1 r_0 r_1 : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) (hT1 : N_0 ≤ T_1)
+    (hr0 : ∀ m > T_1, vanEckNthTerm m = 1 → m % 4 = r_0)
+    (hr1 : ∀ m > T_1, vanEckNthTerm m = 2 → m % 4 = r_1) :
+    ∃ T_2 ≥ T_1, ∃ r_2 < 8, ∀ m > T_2, vanEckNthTerm m = 4 → m % 8 = r_2 := by {
+  rcases pow2_val_eventually_div_four N_0 T_1 r_0 r_1 4 h_pow hT1 hr0 hr1 with ⟨Ta, hTa, hdiv4⟩
+  rcases eventually_mod_eq_of_consec_dvd 8 Ta 4 (by { decide }) (fun p q hp hc => by {
+    have hlt : p < q := hc.1
+    have hd4 := hdiv4 p q hp hc
+    have hmem := h_pow (q + 1) (by { omega })
+    rw [consecValOcc_next_eq hc] at hmem
+    rcases mem_powersOfTwoSet_mod_eight hmem with h0 | h1 | h2 | h4 | h8
+    · omega
+    · omega
+    · omega
+    · exfalso
+      have hq1_4 : vanEckNthTerm (q + 1) = 4 := (consecValOcc_next_eq hc).trans h4
+      have hc_stut : IsConsecValOcc 4 q (q + 1) :=
+        ⟨Nat.lt_succ_self q, hc.2.2.1, hq1_4, fun _ hj1 hj2 => by { omega }⟩
+      have hd_stut := hdiv4 q (q + 1) (by { omega }) hc_stut
+      omega
+    · exact h8
+  }) with ⟨T_2, hT2, r_2, hr2_lt, hr2⟩
+  exact ⟨T_2, le_trans hTa hT2, r_2, hr2_lt, hr2⟩
+}
+
+lemma pow2_div4_mod8_span (N_0 T_base r_4 v : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) (hTb : N_0 ≤ T_base)
+    (hr4 : ∀ m > T_base, vanEckNthTerm m = 4 → m % 8 = r_4)
+    (hdiv4 : ∀ p q, T_base < p → IsConsecValOcc v p q → (q - p) % 4 = 0) :
+    ∀ d a b, b - a = d → T_base < a → a ≤ b → vanEckNthTerm a = v → vanEckNthTerm b = v →
+      NoTwoValSteps v a b 4 ∧ (b - a) % 8 = (4 * stepBit (HasValStep v a b 4)) % 8 := by {
+  intro d
+  refine Nat.strong_induction_on d (fun d ih a b hd hTa hab ha hb => ?_)
+  rcases eq_or_lt_of_le hab with rfl | hlt
+  · have hn4 : ¬ HasValStep v a a 4 := fun ⟨p, hp1, hp2, _⟩ => by { omega }
+    rw [(stepBit_spec _).2.2.mpr hn4]
+    exact ⟨fun _ _ h1 h2 h3 _ _ => by { omega }, by { omega }⟩
+  · rcases prev_consecValOcc_of_gt hlt ha hb with ⟨p, hap, hlast⟩
+    have hpb : p < b := hlast.1
+    have ih_ap := ih (p - a) (by { omega }) a p rfl hTa hap ha hlast.2.1
+    have hsp4 := hasValStep_split_last hap hlast (s := 4)
+    have hd4 := hdiv4 p b (by { omega }) hlast
+    have hmem := h_pow (b + 1) (by { omega })
+    rw [consecValOcc_next_eq hlast] at hmem
+    rcases mem_powersOfTwoSet_mod_eight hmem with h0 | h1 | h2 | h4 | h8
+    · omega
+    · omega
+    · omega
+    · have hnot4 : ¬ HasValStep v a p 4 := by {
+        rintro ⟨p₀, hp₀a, hp₀p, hc₀⟩
+        have ih_mid := ih (p - (p₀ + 4)) (by { omega }) (p₀ + 4) p rfl
+          (by { omega }) hp₀p hc₀.2.2.1 hlast.2.1
+        have hmid_n4 : ¬ HasValStep v (p₀ + 4) p 4 :=
+          fun ⟨p₁, h1, h2, hc₁⟩ => ih_ap.1 p₀ p₁ hp₀a h1 h2 hc₀ hc₁
+        rw [(stepBit_spec _).2.2.mpr hmid_n4] at ih_mid
+        have hm0 := hr4 (p₀ + 5) (by { omega }) (consecValOcc_add_next_eq hc₀)
+        have hm1 := hr4 (b + 1) (by { omega }) ((consecValOcc_next_eq hlast).trans h4)
+        omega
+      }
+      rw [propext hsp4, (stepBit_spec _).2.1.mpr (Or.inr (by { omega }))]
+      rw [(stepBit_spec _).2.2.mpr hnot4] at ih_ap
+      exact ⟨noTwoValSteps_extend hap hlast ih_ap.1 (fun _ => hnot4), by { omega }⟩
+    · rw [propext (hsp4.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩)]
+      exact ⟨noTwoValSteps_extend hap hlast ih_ap.1 (by { omega }), by { omega }⟩
+}
+
+lemma pow2_upgrade_div4_to_mod8 (N_0 T_base r_4 v : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) (hTb : N_0 ≤ T_base)
+    (hr4 : ∀ m > T_base, vanEckNthTerm m = 4 → m % 8 = r_4)
+    (hdiv4 : ∀ p q, T_base < p → IsConsecValOcc v p q → (q - p) % 4 = 0) :
+    ∃ T' ≥ T_base, ∃ r < 8, ∀ m > T', vanEckNthTerm m = v → m % 8 = r := by {
+  rcases eventually_no_bad_consec_of_at_most_one T_base v (fun p q => q - p = 4)
+      (fun p₁ q₁ p₂ q₂ hp₁ hc₁ h4_1 hle hc₂ h4_2 => by {
+        have hlt1 := hc₁.1
+        have hlt2 := hc₂.1
+        have hq₁ : q₁ = p₁ + 4 := by { omega }
+        have hq₂ : q₂ = p₂ + 4 := by { omega }
+        subst hq₁ hq₂
+        exact (pow2_div4_mod8_span N_0 T_base r_4 v h_pow hTb hr4 hdiv4
+          _ p₁ (p₂ + 4) rfl hp₁ (by { omega }) hc₁.2.1 hc₂.2.2.1).1
+          p₁ p₂ le_rfl hle le_rfl hc₁ hc₂
+      }) with ⟨Tc, hTc, hno4⟩
+  rcases eventually_mod_eq_of_consec_dvd 8 Tc v (by { decide }) (fun p q hp hc => by {
+    have hlt := hc.1
+    have hd4 := hdiv4 p q (by { omega }) hc
+    have hn4 := hno4 p q hp hc
+    have hmem := h_pow (q + 1) (by { omega })
+    rw [consecValOcc_next_eq hc] at hmem
+    rcases mem_powersOfTwoSet_mod_eight hmem with h0 | h1 | h2 | h4 | h8
+    · omega
+    · omega
+    · omega
+    · omega
+    · exact h8
+  }) with ⟨T', hT', r, hr, hmod⟩
+  exact ⟨T', by { omega }, r, hr, hmod⟩
+}
+
+lemma pow2_mod8_span_step_one {v a p b r_0 : ℕ} (hlast : IsConsecValOcc v p b)
+    (hb1 : b - p = 1) (hm_b : (b + 1) % 8 = r_0) (h_ap1 : NoTwoValSteps v a p 1)
+    (h_mid : ∀ p₀, a ≤ p₀ → p₀ + 1 ≤ p → IsConsecValOcc v p₀ (p₀ + 1) →
+      (p₀ + 2) % 8 = r_0 ∧
+      (p - (p₀ + 1)) % 8 = (stepBit (HasValStep v (p₀ + 1) p 1) +
+        2 * stepBit (HasValStep v (p₀ + 1) p 2) + 4 * stepBit (HasValStep v (p₀ + 1) p 4)) % 8) :
+    ¬ HasValStep v a p 1 := by {
+  rintro ⟨p₀, hp₀a, hp₀p, hc₀⟩
+  rcases h_mid p₀ hp₀a hp₀p hc₀ with ⟨hm0, hsp_mid⟩
+  have hmid_n1 : ¬ HasValStep v (p₀ + 1) p 1 :=
+    fun ⟨p₁, h1, h2, hc₁⟩ => h_ap1 p₀ p₁ hp₀a h1 h2 hc₀ hc₁
+  rw [(stepBit_spec _).2.2.mpr hmid_n1] at hsp_mid
+  have hb2 := (stepBit_spec (HasValStep v (p₀ + 1) p 2)).1
+  have hb4 := (stepBit_spec (HasValStep v (p₀ + 1) p 4)).1
+  have hlt := hlast.1
+  omega
+}
+
+lemma pow2_mod8_span_step_two {v a p b r_1 : ℕ} (hlast : IsConsecValOcc v p b)
+    (hb2 : b - p = 2) (hm_b : (b + 1) % 8 = r_1) (h_ap2 : NoTwoValSteps v a p 2)
+    (h_mid : ∀ p₀, a ≤ p₀ → p₀ + 2 ≤ p → IsConsecValOcc v p₀ (p₀ + 2) →
+      (p₀ + 3) % 8 = r_1 ∧
+      (p - (p₀ + 2)) % 8 = (stepBit (HasValStep v (p₀ + 2) p 1) +
+        2 * stepBit (HasValStep v (p₀ + 2) p 2) + 4 * stepBit (HasValStep v (p₀ + 2) p 4)) % 8) :
+    ¬ HasValStep v a p 2 := by {
+  rintro ⟨p₀, hp₀a, hp₀p, hc₀⟩
+  rcases h_mid p₀ hp₀a hp₀p hc₀ with ⟨hm0, hsp_mid⟩
+  have hmid_n2 : ¬ HasValStep v (p₀ + 2) p 2 :=
+    fun ⟨p₁, h1, h2, hc₁⟩ => h_ap2 p₀ p₁ hp₀a h1 h2 hc₀ hc₁
+  rw [(stepBit_spec _).2.2.mpr hmid_n2] at hsp_mid
+  have hb1 := (stepBit_spec (HasValStep v (p₀ + 2) p 1)).1
+  have hb4 := (stepBit_spec (HasValStep v (p₀ + 2) p 4)).1
+  have hlt := hlast.1
+  omega
+}
+
+lemma pow2_mod8_span_step_four {v a p b r_2 : ℕ} (hlast : IsConsecValOcc v p b)
+    (hb4 : b - p = 4) (hm_b : (b + 1) % 8 = r_2) (h_ap4 : NoTwoValSteps v a p 4)
+    (h_mid : ∀ p₀, a ≤ p₀ → p₀ + 4 ≤ p → IsConsecValOcc v p₀ (p₀ + 4) →
+      (p₀ + 5) % 8 = r_2 ∧
+      (p - (p₀ + 4)) % 8 = (stepBit (HasValStep v (p₀ + 4) p 1) +
+        2 * stepBit (HasValStep v (p₀ + 4) p 2) + 4 * stepBit (HasValStep v (p₀ + 4) p 4)) % 8) :
+    ¬ HasValStep v a p 4 := by {
+  rintro ⟨p₀, hp₀a, hp₀p, hc₀⟩
+  rcases h_mid p₀ hp₀a hp₀p hc₀ with ⟨hm0, hsp_mid⟩
+  have hmid_n4 : ¬ HasValStep v (p₀ + 4) p 4 :=
+    fun ⟨p₁, h1, h2, hc₁⟩ => h_ap4 p₀ p₁ hp₀a h1 h2 hc₀ hc₁
+  rw [(stepBit_spec _).2.2.mpr hmid_n4] at hsp_mid
+  have hb1 := (stepBit_spec (HasValStep v (p₀ + 4) p 1)).1
+  have hb2 := (stepBit_spec (HasValStep v (p₀ + 4) p 2)).1
+  have hlt := hlast.1
+  omega
+}
+
+lemma pow2_mod8_ind_one_two {T_4 r_0 r_1 v a p b : ℕ}
+    (hr0 : ∀ m > T_4, vanEckNthTerm m = 1 → m % 8 = r_0)
+    (hr1 : ∀ m > T_4, vanEckNthTerm m = 2 → m % 8 = r_1)
+    (hTa : T_4 < a) (hap : a ≤ p) (hlast : IsConsecValOcc v p b) (h12 : b - p = 1 ∨ b - p = 2)
+    (ih_ap : NoTwoValSteps v a p 1 ∧ NoTwoValSteps v a p 2 ∧ NoTwoValSteps v a p 4 ∧
+      (p - a) % 8 = (stepBit (HasValStep v a p 1) + 2 * stepBit (HasValStep v a p 2) +
+        4 * stepBit (HasValStep v a p 4)) % 8)
+    (ih_sub : ∀ x, a < x → x ≤ p → vanEckNthTerm x = v →
+      (p - x) % 8 = (stepBit (HasValStep v x p 1) + 2 * stepBit (HasValStep v x p 2) +
+        4 * stepBit (HasValStep v x p 4)) % 8) :
+    NoTwoValSteps v a b 1 ∧ NoTwoValSteps v a b 2 ∧ NoTwoValSteps v a b 4 ∧
+      (b - a) % 8 = (stepBit (HasValStep v a b 1) + 2 * stepBit (HasValStep v a b 2) +
+        4 * stepBit (HasValStep v a b 4)) % 8 := by {
+  have hpb : p < b := hlast.1
+  have hsp1 := hasValStep_split_last hap hlast (s := 1)
+  have hsp2 := hasValStep_split_last hap hlast (s := 2)
+  have hsp4 := hasValStep_split_last hap hlast (s := 4)
+  rcases h12 with h1 | h2
+  · have hnot1 := pow2_mod8_span_step_one hlast h1
+      (hr0 (b + 1) (by { omega }) ((consecValOcc_next_eq hlast).trans h1)) ih_ap.1
+      (fun p₀ hp₀a hp₀p hc₀ => ⟨hr0 (p₀ + 2) (by { omega }) (consecValOcc_add_next_eq hc₀),
+        ih_sub (p₀ + 1) (by { omega }) hp₀p hc₀.2.2.1⟩)
+    rw [propext hsp1, (stepBit_spec _).2.1.mpr (Or.inr (by { omega })),
+      propext (hsp2.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩),
+      propext (hsp4.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩)]
+    rw [(stepBit_spec _).2.2.mpr hnot1] at ih_ap
+    exact ⟨noTwoValSteps_extend hap hlast ih_ap.1 (fun _ => hnot1),
+      noTwoValSteps_extend hap hlast ih_ap.2.1 (by { omega }),
+      noTwoValSteps_extend hap hlast ih_ap.2.2.1 (by { omega }), by { omega }⟩
+  · have hnot2 := pow2_mod8_span_step_two hlast h2
+      (hr1 (b + 1) (by { omega }) ((consecValOcc_next_eq hlast).trans h2)) ih_ap.2.1
+      (fun p₀ hp₀a hp₀p hc₀ => ⟨hr1 (p₀ + 3) (by { omega }) (consecValOcc_add_next_eq hc₀),
+        ih_sub (p₀ + 2) (by { omega }) hp₀p hc₀.2.2.1⟩)
+    rw [propext hsp2, (stepBit_spec _).2.1.mpr (Or.inr (by { omega })),
+      propext (hsp1.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩),
+      propext (hsp4.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩)]
+    rw [(stepBit_spec _).2.2.mpr hnot2] at ih_ap
+    exact ⟨noTwoValSteps_extend hap hlast ih_ap.1 (by { omega }),
+      noTwoValSteps_extend hap hlast ih_ap.2.1 (fun _ => hnot2),
+      noTwoValSteps_extend hap hlast ih_ap.2.2.1 (by { omega }), by { omega }⟩
+}
+
+lemma pow2_mod8_ind_four_eight {T_4 r_2 v a p b : ℕ}
+    (hr2 : ∀ m > T_4, vanEckNthTerm m = 4 → m % 8 = r_2)
+    (hTa : T_4 < a) (hap : a ≤ p) (hlast : IsConsecValOcc v p b)
+    (h48 : b - p = 4 ∨ (b - p) % 8 = 0)
+    (ih_ap : NoTwoValSteps v a p 1 ∧ NoTwoValSteps v a p 2 ∧ NoTwoValSteps v a p 4 ∧
+      (p - a) % 8 = (stepBit (HasValStep v a p 1) + 2 * stepBit (HasValStep v a p 2) +
+        4 * stepBit (HasValStep v a p 4)) % 8)
+    (ih_sub : ∀ x, a < x → x ≤ p → vanEckNthTerm x = v →
+      (p - x) % 8 = (stepBit (HasValStep v x p 1) + 2 * stepBit (HasValStep v x p 2) +
+        4 * stepBit (HasValStep v x p 4)) % 8) :
+    NoTwoValSteps v a b 1 ∧ NoTwoValSteps v a b 2 ∧ NoTwoValSteps v a b 4 ∧
+      (b - a) % 8 = (stepBit (HasValStep v a b 1) + 2 * stepBit (HasValStep v a b 2) +
+        4 * stepBit (HasValStep v a b 4)) % 8 := by {
+  have hpb : p < b := hlast.1
+  have hsp1 := hasValStep_split_last hap hlast (s := 1)
+  have hsp2 := hasValStep_split_last hap hlast (s := 2)
+  have hsp4 := hasValStep_split_last hap hlast (s := 4)
+  rcases h48 with h4 | h8
+  · have hnot4 := pow2_mod8_span_step_four hlast h4
+      (hr2 (b + 1) (by { omega }) ((consecValOcc_next_eq hlast).trans h4)) ih_ap.2.2.1
+      (fun p₀ hp₀a hp₀p hc₀ => ⟨hr2 (p₀ + 5) (by { omega }) (consecValOcc_add_next_eq hc₀),
+        ih_sub (p₀ + 4) (by { omega }) hp₀p hc₀.2.2.1⟩)
+    rw [propext hsp4, (stepBit_spec _).2.1.mpr (Or.inr (by { omega })),
+      propext (hsp1.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩),
+      propext (hsp2.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩)]
+    rw [(stepBit_spec _).2.2.mpr hnot4] at ih_ap
+    exact ⟨noTwoValSteps_extend hap hlast ih_ap.1 (by { omega }),
+      noTwoValSteps_extend hap hlast ih_ap.2.1 (by { omega }),
+      noTwoValSteps_extend hap hlast ih_ap.2.2.1 (fun _ => hnot4), by { omega }⟩
+  · rw [propext (hsp1.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩),
+      propext (hsp2.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩),
+      propext (hsp4.trans ⟨fun h => h.resolve_right (by { omega }), Or.inl⟩)]
+    exact ⟨noTwoValSteps_extend hap hlast ih_ap.1 (by { omega }),
+      noTwoValSteps_extend hap hlast ih_ap.2.1 (by { omega }),
+      noTwoValSteps_extend hap hlast ih_ap.2.2.1 (by { omega }), by { omega }⟩
+}
+
+lemma pow2_mod8_span_decomp (N_0 T_4 r_0 r_1 r_2 v : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) (hT4 : N_0 ≤ T_4)
+    (hr0 : ∀ m > T_4, vanEckNthTerm m = 1 → m % 8 = r_0)
+    (hr1 : ∀ m > T_4, vanEckNthTerm m = 2 → m % 8 = r_1)
+    (hr2 : ∀ m > T_4, vanEckNthTerm m = 4 → m % 8 = r_2) :
+    ∀ d a b, b - a = d → T_4 < a → a ≤ b → vanEckNthTerm a = v → vanEckNthTerm b = v →
+      NoTwoValSteps v a b 1 ∧ NoTwoValSteps v a b 2 ∧ NoTwoValSteps v a b 4 ∧
+        (b - a) % 8 = (stepBit (HasValStep v a b 1) + 2 * stepBit (HasValStep v a b 2) +
+          4 * stepBit (HasValStep v a b 4)) % 8 := by {
+  intro d
+  refine Nat.strong_induction_on d (fun d ih a b hd hTa hab ha hb => ?_)
+  rcases eq_or_lt_of_le hab with rfl | hlt
+  · have hn : ∀ s > 0, ¬ HasValStep v a a s := fun s hs ⟨p, hp1, hp2, _⟩ => by { omega }
+    rw [(stepBit_spec _).2.2.mpr (hn 1 (by { decide })),
+      (stepBit_spec _).2.2.mpr (hn 2 (by { decide })),
+      (stepBit_spec _).2.2.mpr (hn 4 (by { decide }))]
+    exact ⟨fun _ _ h1 h2 h3 _ _ => by { omega }, fun _ _ h1 h2 h3 _ _ => by { omega },
+      fun _ _ h1 h2 h3 _ _ => by { omega }, by { omega }⟩
+  · rcases prev_consecValOcc_of_gt hlt ha hb with ⟨p, hap, hlast⟩
+    have hpb : p < b := hlast.1
+    have ih_ap := ih (p - a) (by { omega }) a p rfl hTa hap ha hlast.2.1
+    have ih_sub : ∀ x, a < x → x ≤ p → vanEckNthTerm x = v →
+        (p - x) % 8 = (stepBit (HasValStep v x p 1) + 2 * stepBit (HasValStep v x p 2) +
+          4 * stepBit (HasValStep v x p 4)) % 8 :=
+      fun x hax hxp hx => (ih (p - x) (by { omega }) x p rfl (by { omega })
+        hxp hx hlast.2.1).2.2.2
+    have hmem := h_pow (b + 1) (by { omega })
+    rw [consecValOcc_next_eq hlast] at hmem
+    rcases mem_powersOfTwoSet_mod_eight hmem with h0 | h1 | h2 | h4 | h8
+    · omega
+    · exact pow2_mod8_ind_one_two hr0 hr1 hTa hap hlast (Or.inl h1) ih_ap ih_sub
+    · exact pow2_mod8_ind_one_two hr0 hr1 hTa hap hlast (Or.inr h2) ih_ap ih_sub
+    · exact pow2_mod8_ind_four_eight hr2 hTa hap hlast (Or.inl h4) ih_ap ih_sub
+    · exact pow2_mod8_ind_four_eight hr2 hTa hap hlast (Or.inr h8) ih_ap ih_sub
+}
+
+lemma pow2_all_locked_mod_eight (N_0 : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) :
+    ∃ M_1 ≥ N_0, ∃ r_0 r_1 r_2 z_star, r_0 < 8 ∧ r_1 < 8 ∧ r_2 < 8 ∧ z_star < 8 ∧
+      (∀ m > M_1, vanEckNthTerm m = 1 → m % 8 = r_0) ∧
+      (∀ m > M_1, vanEckNthTerm m = 2 → m % 8 = r_1) ∧
+      (∀ m > M_1, vanEckNthTerm m = 4 → m % 8 = r_2) ∧
+      (∀ m > M_1, vanEckNthTerm m = 0 → m % 8 = z_star) := by {
+  rcases pow2_one_locked_mod_four N_0 h_pow with ⟨T_0, hT0, q_0, _, hq0⟩
+  rcases pow2_two_locked_mod_four N_0 T_0 q_0 h_pow hT0 hq0 with ⟨T_1, hT1, q_1, _, hq1⟩
+  have hq0' : ∀ m > T_1, vanEckNthTerm m = 1 → m % 4 = q_0 :=
+    fun m hm h1 => hq0 m (by { omega }) h1
+  rcases pow2_four_locked_mod_eight N_0 T_1 q_0 q_1 h_pow (by { omega }) hq0' hq1 with
+    ⟨T_2, hT2, r_2, hr2_lt, hr2⟩
+  rcases pow2_val_eventually_div_four N_0 T_1 q_0 q_1 2 h_pow (by { omega }) hq0' hq1 with
+    ⟨Ta2, hTa2, hdiv2⟩
+  rcases pow2_upgrade_div4_to_mod8 N_0 (max T_2 Ta2) r_2 2 h_pow (by { omega })
+      (fun m hm => hr2 m (by { omega })) (fun p q hp => hdiv2 p q (by { omega })) with
+    ⟨T_3, hT3, r_1, hr1_lt, hr1⟩
+  rcases pow2_val_eventually_div_four N_0 T_1 q_0 q_1 1 h_pow (by { omega }) hq0' hq1 with
+    ⟨Ta1, hTa1, hdiv1⟩
+  rcases pow2_upgrade_div4_to_mod8 N_0 (max T_3 Ta1) r_2 1 h_pow (by { omega })
+      (fun m hm => hr2 m (by { omega })) (fun p q hp => hdiv1 p q (by { omega })) with
+    ⟨T_4, hT4, r_0, hr0_lt, hr0⟩
+  rcases pow2_val_eventually_div_four N_0 T_1 q_0 q_1 0 h_pow (by { omega }) hq0' hq1 with
+    ⟨Ta0, hTa0, hdiv0⟩
+  rcases pow2_upgrade_div4_to_mod8 N_0 (max T_4 Ta0) r_2 0 h_pow (by { omega })
+      (fun m hm => hr2 m (by { omega })) (fun p q hp => hdiv0 p q (by { omega })) with
+    ⟨M_1, hM1, z_star, hz_lt, hz⟩
+  exact ⟨M_1, by { omega }, r_0, r_1, r_2, z_star, hr0_lt, hr1_lt, hr2_lt, hz_lt,
+    fun m hm => hr0 m (by { omega }), fun m hm => hr1 m (by { omega }),
+    fun m hm => hr2 m (by { omega }), hz⟩
+}
+
+def pow2Finset (K : ℕ) : Finset ℕ :=
+  insert 0 ((Finset.range (K + 1)).image (fun k => 2 ^ k))
+
+lemma mem_pow2Finset_and_card (K x : ℕ) (hx : x ∈ PowersOfTwoSet) (hle : x ≤ 2 ^ K) :
+    x ∈ pow2Finset K ∧ (pow2Finset K).card ≤ K + 2 := by {
+  refine ⟨?_, ?_⟩
+  · rcases hx with rfl | ⟨k, rfl⟩
+    · exact Finset.mem_insert_self 0 _
+    · have hkK : k ≤ K := (Nat.pow_le_pow_iff_right (by { decide } : 1 < 2)).mp hle
+      exact Finset.mem_insert_of_mem
+        (Finset.mem_image.mpr ⟨k, Finset.mem_range.mpr (by { omega }), rfl⟩)
+  · calc (pow2Finset K).card
+      _ ≤ ((Finset.range (K + 1)).image (fun k => 2 ^ k)).card + 1 :=
+        Finset.card_insert_le _ _
+      _ ≤ (Finset.range (K + 1)).card + 1 :=
+        Nat.add_le_add_right Finset.card_image_le 1
+      _ = K + 2 := by { rw [Finset.card_range] }
+}
+
+lemma no_two_steps_pred_inj_lt {M_1 s m₁ m₂ : ℕ} (hs_pos : 0 < s)
+    (h_no_two : ∀ v a b, M_1 < a → a ≤ b → vanEckNthTerm a = v → vanEckNthTerm b = v →
+      NoTwoValSteps v a b s)
+    (hm₁_ge : M_1 + s + 2 ≤ m₁) (hlt : m₁ < m₂)
+    (hs₁ : vanEckNthTerm m₁ = s) (hs₂ : vanEckNthTerm m₂ = s) :
+    vanEckNthTerm (m₁ - 1) ≠ vanEckNthTerm (m₂ - 1) := by {
+  intro heq
+  have ho₁ := pos_value_most_recent_occurrence m₁ s (by { omega }) hs₁ hs_pos
+  have ho₂ := pos_value_most_recent_occurrence m₂ s (by { omega }) hs₂ hs_pos
+  have hc₁ : IsConsecValOcc (vanEckNthTerm (m₁ - 1)) (m₁ - 1 - s) (m₁ - 1) :=
+    ⟨ho₁.1, ho₁.2.1, rfl, ho₁.2.2⟩
+  have hc₂ : IsConsecValOcc (vanEckNthTerm (m₁ - 1)) (m₂ - 1 - s) (m₂ - 1) :=
+    ⟨ho₂.1, ho₂.2.1.trans heq.symm, heq.symm,
+      fun j hj1 hj2 hjv => ho₂.2.2 j hj1 hj2 (hjv.trans heq)⟩
+  have hdisj := consecValOcc_disjoint_order hc₁ hc₂ (by { omega })
+  have hs_add1 : m₁ - 1 - s + s = m₁ - 1 := by { omega }
+  have hs_add2 : m₂ - 1 - s + s = m₂ - 1 := by { omega }
+  have hc₁_s : IsConsecValOcc (vanEckNthTerm (m₁ - 1)) (m₁ - 1 - s) (m₁ - 1 - s + s) := by {
+    rw [hs_add1]
+    exact hc₁
+  }
+  have hc₂_s : IsConsecValOcc (vanEckNthTerm (m₁ - 1)) (m₂ - 1 - s) (m₂ - 1 - s + s) := by {
+    rw [hs_add2]
+    exact hc₂
+  }
+  exact h_no_two _ (m₁ - 1 - s) (m₂ - 1) (by { omega }) (by { omega }) hc₁.2.1 hc₂.2.2.1
+    (m₁ - 1 - s) (m₂ - 1 - s) le_rfl (by { omega }) (by { omega }) hc₁_s hc₂_s
+}
+
+lemma pow2_small_val_card_le (N_0 M_1 s K : ℕ) (hs_pos : 0 < s)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) (hM1 : N_0 ≤ M_1)
+    (h_no_two : ∀ v a b, M_1 < a → a ≤ b → vanEckNthTerm a = v → vanEckNthTerm b = v →
+      NoTwoValSteps v a b s) :
+    ((Finset.Icc (M_1 + s + 2) (2 ^ K)).filter (fun m => vanEckNthTerm m = s)).card ≤
+      K + 2 := by {
+  let S_m := (Finset.Icc (M_1 + s + 2) (2 ^ K)).filter (fun m => vanEckNthTerm m = s)
+  have h_inj : Set.InjOn (fun m => vanEckNthTerm (m - 1)) (S_m : Set ℕ) := by {
+    intro m₁ hm₁ m₂ hm₂ heq
+    have hf₁ := Finset.mem_filter.mp hm₁
+    have hf₂ := Finset.mem_filter.mp hm₂
+    have hb₁ := Finset.mem_Icc.mp hf₁.1
+    have hb₂ := Finset.mem_Icc.mp hf₂.1
+    rcases lt_trichotomy m₁ m₂ with hlt | h_eq | hgt
+    · exact False.elim (no_two_steps_pred_inj_lt hs_pos h_no_two hb₁.1 hlt hf₁.2 hf₂.2 heq)
+    · exact h_eq
+    · exact False.elim (no_two_steps_pred_inj_lt hs_pos h_no_two hb₂.1 hgt hf₂.2 hf₁.2 heq.symm)
+  }
+  have h_sub : S_m.image (fun m => vanEckNthTerm (m - 1)) ⊆ pow2Finset K := by {
+    intro v hv
+    rcases Finset.mem_image.mp hv with ⟨m, hm, rfl⟩
+    have hmb := Finset.mem_Icc.mp (Finset.mem_filter.mp hm).1
+    have hle_m := vanEckNthTerm_le_n (m - 1)
+    exact (mem_pow2Finset_and_card K _ (h_pow (m - 1) (by { omega })) (by { omega })).1
+  }
+  calc S_m.card = (S_m.image (fun m => vanEckNthTerm (m - 1))).card :=
+        (Finset.card_image_of_injOn h_inj).symm
+    _ ≤ (pow2Finset K).card := Finset.card_le_card h_sub
+    _ ≤ K + 2 := (mem_pow2Finset_and_card K 0 (Or.inl rfl) (Nat.zero_le _)).2
+}
+
+lemma occ_card_ge_of_bounded_consec (s m_0 X t : ℕ) (hm0 : vanEckNthTerm m_0 = s)
+    (h_inf : ∀ H_idx, ∃ m > H_idx, vanEckNthTerm m = s)
+    (h_bdd : ∀ p q, m_0 ≤ p → IsConsecValOcc s p q → q - p ≤ X) :
+    t + 1 ≤
+      ((Finset.Icc m_0 (m_0 + t * (X + 1))).filter (fun m => vanEckNthTerm m = s)).card := by {
+  induction t with
+  | zero =>
+    rw [Nat.zero_mul, Nat.add_zero]
+    exact Finset.card_pos.mpr
+      ⟨m_0, Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨le_rfl, le_rfl⟩, hm0⟩⟩
+  | succ t ih =>
+    let N_t := m_0 + t * (X + 1)
+    let F_t := (Finset.Icc m_0 N_t).filter (fun m => vanEckNthTerm m = s)
+    change t + 1 ≤ F_t.card at ih
+    have hne : F_t.Nonempty := Finset.card_pos.mp (by { omega })
+    let p := F_t.max' hne
+    have hp_mem := Finset.mem_filter.mp (Finset.max'_mem F_t hne)
+    have hp_icc := Finset.mem_Icc.mp hp_mem.1
+    have hex : ∃ q, p < q ∧ vanEckNthTerm q = s := h_inf p
+    let q := Nat.find hex
+    have hq_sp : p < q ∧ vanEckNthTerm q = s := Nat.find_spec hex
+    have hcon : IsConsecValOcc s p q :=
+      ⟨hq_sp.1, hp_mem.2, hq_sp.2, fun j hj1 hj2 hc => Nat.find_min hex hj2 ⟨hj1, hc⟩⟩
+    have hle_X : q - p ≤ X := h_bdd p q hp_icc.1 hcon
+    have hgt_N : N_t < q := by {
+      by_contra hle_N
+      have hq_in : q ∈ F_t :=
+        Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨by { omega }, by { omega }⟩, hq_sp.2⟩
+      have hle_p := Finset.le_max' F_t q hq_in
+      omega
+    }
+    let F_next := (Finset.Icc m_0 (m_0 + (t + 1) * (X + 1))).filter (fun m => vanEckNthTerm m = s)
+    have hmul : (t + 1) * (X + 1) = t * (X + 1) + (X + 1) := Nat.succ_mul t (X + 1)
+    have hsub : insert q F_t ⊆ F_next := by {
+      intro x hx
+      rcases Finset.mem_insert.mp hx with rfl | hxt
+      · exact Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨by { omega }, by { omega }⟩, hq_sp.2⟩
+      · rcases Finset.mem_filter.mp hxt with ⟨hxi, hxs⟩
+        have hxb := Finset.mem_Icc.mp hxi
+        exact Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨hxb.1, by { omega }⟩, hxs⟩
+    }
+    have hnot : q ∉ F_t := fun hm =>
+      absurd (Finset.mem_Icc.mp (Finset.mem_filter.mp hm).1).2 (by { omega })
+    have hcard := Finset.card_le_card hsub
+    rw [Finset.card_insert_of_notMem hnot] at hcard
+    change t + 2 ≤ F_next.card
+    omega
+}
+
+lemma unbounded_consec_gaps_of_log_count (s A M X : ℕ) (hAM : A ≤ M)
+    (h_inf : ∀ H_idx, ∃ m > H_idx, vanEckNthTerm m = s)
+    (h_cnt : ∀ K, ((Finset.Icc A (2 ^ K)).filter (fun m => vanEckNthTerm m = s)).card ≤ K + 2) :
+    ∃ p q, M < p ∧ IsConsecValOcc s p q ∧ X < q - p := by {
+  by_contra hnot
+  rcases h_inf M with ⟨m_0, hm0_gt, hm0_s⟩
+  have h_bdd : ∀ p q, m_0 ≤ p → IsConsecValOcc s p q → q - p ≤ X := fun p q hp hc =>
+    by_contra (fun hgt => hnot ⟨p, q, by { omega }, hc, by { omega }⟩)
+  let k := m_0 + X + 4
+  let K := k + 2
+  have h_low := occ_card_ge_of_bounded_consec s m_0 X (K + 2) hm0_s h_inf h_bdd
+  have h_pow_ge := succ_sq_le_pow_two_add_two k
+  have h_top : m_0 + (K + 2) * (X + 1) ≤ 2 ^ K := by {
+    have hsq : m_0 + (k + 4) * (X + 1) ≤ (k + 1) ^ 2 := by {
+      have hk_def : k = m_0 + X + 4 := rfl
+      nlinarith
+    }
+    exact le_trans hsq h_pow_ge
+  }
+  have h_sub : (Finset.Icc m_0 (m_0 + (K + 2) * (X + 1))).filter (fun m => vanEckNthTerm m = s) ⊆
+      (Finset.Icc A (2 ^ K)).filter (fun m => vanEckNthTerm m = s) := by {
+    intro x hx
+    rcases Finset.mem_filter.mp hx with ⟨hxi, hxs⟩
+    have hxb := Finset.mem_Icc.mp hxi
+    exact Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨by { omega }, by { omega }⟩, hxs⟩
+  }
+  have h_up := le_trans (Finset.card_le_card h_sub) (h_cnt K)
+  omega
+}
+
+lemma pow2_large_val_birth_span (M_1 z_star H_idx idx : ℕ)
+    (hz : ∀ m > M_1, vanEckNthTerm m = 0 → m % 8 = z_star)
+    (h_large : max (vanEckPrefixMax (M_1 + 2)) (vanEckPrefixMax H_idx) < vanEckNthTerm idx) :
+    ∃ a, M_1 < a ∧ H_idx < a ∧ a ≤ idx ∧
+      vanEckNthTerm a = vanEckNthTerm idx ∧ a % 8 = (z_star + 7) % 8 := by {
+  have hpos : 0 < vanEckNthTerm idx := by { omega }
+  rcases pos_term_has_unique_birth_zero idx hpos with ⟨z_b, hzb_ge3, hzb_le, hzb_0, hzb_eq, _, _⟩
+  have hgt_M1 : M_1 + 2 < z_b - 1 := by {
+    by_contra hle
+    have hpm := vanEckNthTerm_le_prefixMax (M_1 + 2) (z_b - 1) (by { omega })
+    omega
+  }
+  have hgt_H : H_idx < z_b - 1 := by {
+    by_contra hle
+    have hpm := vanEckNthTerm_le_prefixMax H_idx (z_b - 1) (by { omega })
+    omega
+  }
+  have hzb_mod : z_b % 8 = z_star := hz z_b (by { omega }) hzb_0
+  exact ⟨z_b - 1, by { omega }, hgt_H, by { omega }, hzb_eq, by { omega }⟩
+}
+
+lemma mod8_bits_eq {r b₁ b₂ b₄ : ℕ} (h1 : b₁ ≤ 1) (h2 : b₂ ≤ 1) (h4 : b₄ ≤ 1)
+    (hmod : r = (b₁ + 2 * b₂ + 4 * b₄) % 8) :
+    (r = 2 → b₁ = 0 ∧ b₂ = 1 ∧ b₄ = 0) ∧
+      (r = 4 → b₁ = 0 ∧ b₂ = 0 ∧ b₄ = 1) ∧
+      (r = 6 → b₁ = 0 ∧ b₂ = 1 ∧ b₄ = 1) := by {
+  omega
+}
+
+lemma pow2_step_two_forced (N_0 M_1 r_0 r_1 r_2 z_star : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) (hM1 : N_0 ≤ M_1)
+    (hr0 : ∀ m > M_1, vanEckNthTerm m = 1 → m % 8 = r_0)
+    (hr1 : ∀ m > M_1, vanEckNthTerm m = 2 → m % 8 = r_1)
+    (hr2 : ∀ m > M_1, vanEckNthTerm m = 4 → m % 8 = r_2)
+    (hz : ∀ m > M_1, vanEckNthTerm m = 0 → m % 8 = z_star) (hr1_lt : r_1 < 8) :
+    r_1 = (z_star + 2) % 8 ∧ ∀ H_idx, ∃ m > H_idx, vanEckNthTerm m = 2 := by {
+  have h_for_H : ∀ H_idx, r_1 = (z_star + 2) % 8 ∧ ∃ m > H_idx, vanEckNthTerm m = 2 := by {
+    intro H_idx
+    rcases infinite_zeros_vanEck M_1 with ⟨z_nx, hznx_gt, hznx_0⟩
+    let B := max z_nx (max (vanEckPrefixMax (M_1 + 2)) (vanEckPrefixMax H_idx))
+    rcases vanEck_zero_gaps_unbounded B with ⟨Z1, Z2, hZ1_0, hZ2_0, hZ_lt, hZ_bet, hZ_gt⟩
+    have hZ1_gt : M_1 < Z1 := by {
+      by_contra hle
+      rcases lt_or_eq_of_le (show Z1 ≤ z_nx by { omega }) with h1 | rfl
+      · exact hZ_bet z_nx h1 (by { omega }) hznx_0
+      · omega
+    }
+    have hZ2_1 : vanEckNthTerm (Z2 + 1) = Z2 - Z1 :=
+      gap_between_zeros Z2 Z1 hZ2_0 (by { omega }) hZ1_0 hZ_lt hZ_bet
+    have hZ2_mod : Z2 % 8 = z_star := hz Z2 (by { omega }) hZ2_0
+    rcases pow2_large_val_birth_span M_1 z_star H_idx (Z2 + 1) hz (by { omega }) with
+      ⟨a, ha_M1, ha_H, ha_le, ha_eq, ha_mod⟩
+    have hsp := pow2_mod8_span_decomp N_0 M_1 r_0 r_1 r_2 (vanEckNthTerm (Z2 + 1))
+      h_pow hM1 hr0 hr1 hr2 _ a (Z2 + 1) rfl ha_M1 ha_le ha_eq rfl
+    have hbits := (mod8_bits_eq (stepBit_spec _).1 (stepBit_spec _).1 (stepBit_spec _).1
+      hsp.2.2.2).1 (by { omega })
+    rcases (stepBit_spec _).2.1.mp hbits.2.1 with ⟨p, hap, hp2, hcp⟩
+    have hsp_ap := pow2_mod8_span_decomp N_0 M_1 r_0 r_1 r_2 (vanEckNthTerm (Z2 + 1))
+      h_pow hM1 hr0 hr1 hr2 _ a p rfl ha_M1 hap ha_eq hcp.2.1
+    have hn1 : ¬ HasValStep _ a p 1 := fun ⟨q, h1, h2, hcq⟩ =>
+      ((stepBit_spec _).2.2.mp hbits.1) ⟨q, h1, by { omega }, hcq⟩
+    have hn4 : ¬ HasValStep _ a p 4 := fun ⟨q, h1, h2, hcq⟩ =>
+      ((stepBit_spec _).2.2.mp hbits.2.2) ⟨q, h1, by { omega }, hcq⟩
+    have hn2 : ¬ HasValStep _ a p 2 := fun ⟨q, h1, h2, hcq⟩ => hsp.2.1 q p h1 h2 hp2 hcq hcp
+    rw [(stepBit_spec _).2.2.mpr hn1, (stepBit_spec _).2.2.mpr hn2,
+      (stepBit_spec _).2.2.mpr hn4] at hsp_ap
+    have hp3_2 : vanEckNthTerm (p + 3) = 2 := consecValOcc_add_next_eq hcp
+    have hp3_mod := hr1 (p + 3) (by { omega }) hp3_2
+    exact ⟨by { omega }, ⟨p + 3, by { omega }, hp3_2⟩⟩
+  }
+  exact ⟨(h_for_H 0).1, fun H_idx => (h_for_H H_idx).2⟩
+}
+
+lemma pow2_step_four_forced (N_0 M_1 r_0 r_1 r_2 z_star : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) (hM1 : N_0 ≤ M_1)
+    (hr0 : ∀ m > M_1, vanEckNthTerm m = 1 → m % 8 = r_0)
+    (hr1 : ∀ m > M_1, vanEckNthTerm m = 2 → m % 8 = r_1)
+    (hr2 : ∀ m > M_1, vanEckNthTerm m = 4 → m % 8 = r_2)
+    (hz : ∀ m > M_1, vanEckNthTerm m = 0 → m % 8 = z_star)
+    (hr1_eq : r_1 = (z_star + 2) % 8) (hr2_lt : r_2 < 8)
+    (h_inf2 : ∀ H_idx, ∃ m > H_idx, vanEckNthTerm m = 2) :
+    r_2 = (z_star + 4) % 8 ∧ ∀ H_idx, ∃ m > H_idx, vanEckNthTerm m = 4 := by {
+  have hcnt2 : ∀ K, ((Finset.Icc (M_1 + 4) (2 ^ K)).filter
+      (fun m => vanEckNthTerm m = 2)).card ≤ K + 2 :=
+    fun K => pow2_small_val_card_le N_0 M_1 2 K (by { decide }) h_pow hM1
+      (fun v a b ha hab hva hvb => (pow2_mod8_span_decomp N_0 M_1 r_0 r_1 r_2 v
+        h_pow hM1 hr0 hr1 hr2 _ a b rfl ha hab hva hvb).2.1)
+  have h_for_H : ∀ H_idx, r_2 = (z_star + 4) % 8 ∧ ∃ m > H_idx, vanEckNthTerm m = 4 := by {
+    intro H_idx
+    let B := max (vanEckPrefixMax (M_1 + 2)) (vanEckPrefixMax H_idx)
+    rcases unbounded_consec_gaps_of_log_count 2 (M_1 + 4) (M_1 + 4) B le_rfl h_inf2 hcnt2 with
+      ⟨m₁, m₂, hm₁_gt, hcm, hm_gap⟩
+    have hm2_lt : m₁ < m₂ := hcm.1
+    have hm2_mod : m₂ % 8 = r_1 := hr1 m₂ (by { omega }) hcm.2.2.1
+    have hm2_val : vanEckNthTerm (m₂ + 1) = m₂ - m₁ := consecValOcc_next_eq hcm
+    rcases pow2_large_val_birth_span M_1 z_star H_idx (m₂ + 1) hz (by { omega }) with
+      ⟨a, ha_M1, ha_H, ha_le, ha_eq, ha_mod⟩
+    have hsp := pow2_mod8_span_decomp N_0 M_1 r_0 r_1 r_2 (vanEckNthTerm (m₂ + 1))
+      h_pow hM1 hr0 hr1 hr2 _ a (m₂ + 1) rfl ha_M1 ha_le ha_eq rfl
+    have hbits := (mod8_bits_eq (stepBit_spec _).1 (stepBit_spec _).1 (stepBit_spec _).1
+      hsp.2.2.2).2.1 (by { omega })
+    rcases (stepBit_spec _).2.1.mp hbits.2.2 with ⟨q, haq, hq4, hcq⟩
+    have hsp_aq := pow2_mod8_span_decomp N_0 M_1 r_0 r_1 r_2 (vanEckNthTerm (m₂ + 1))
+      h_pow hM1 hr0 hr1 hr2 _ a q rfl ha_M1 haq ha_eq hcq.2.1
+    have hn1 : ¬ HasValStep _ a q 1 := fun ⟨u, h1, h2, hcu⟩ =>
+      ((stepBit_spec _).2.2.mp hbits.1) ⟨u, h1, by { omega }, hcu⟩
+    have hn2 : ¬ HasValStep _ a q 2 := fun ⟨u, h1, h2, hcu⟩ =>
+      ((stepBit_spec _).2.2.mp hbits.2.1) ⟨u, h1, by { omega }, hcu⟩
+    have hn4 : ¬ HasValStep _ a q 4 := fun ⟨u, h1, h2, hcu⟩ => hsp.2.2.1 u q h1 h2 hq4 hcu hcq
+    rw [(stepBit_spec _).2.2.mpr hn1, (stepBit_spec _).2.2.mpr hn2,
+      (stepBit_spec _).2.2.mpr hn4] at hsp_aq
+    have hq5_4 : vanEckNthTerm (q + 5) = 4 := consecValOcc_add_next_eq hcq
+    have hq5_mod := hr2 (q + 5) (by { omega }) hq5_4
+    exact ⟨by { omega }, ⟨q + 5, by { omega }, hq5_4⟩⟩
+  }
+  exact ⟨(h_for_H 0).1, fun H_idx => (h_for_H H_idx).2⟩
+}
+
+lemma powers_of_two_lookback_contradiction (d : ℕ) (hd_pow : d ∈ PowersOfTwoSet)
+    (hd_eq : d = 5) : False := by {
   rw [hd_eq] at hd_pow
   exact five_not_in_powers_of_two hd_pow
 }
 
-lemma growth_contradiction_pow_two (N_0 : ℕ) (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) : False := by {
-  have h_unb : ∃ z > N_0, vanEckNthTerm z = 0 ∧ ∃ z_prev < z, vanEckNthTerm z_prev = 0 ∧
-    (∀ k, z_prev < k → k < z → vanEckNthTerm k ≠ 0) ∧ z - z_prev ≥ 8 ∧ z - z_prev > vanEckPrefixMax z := by {
-    sorry
-  }
-  rcases h_unb with ⟨z, hz_gt, hz_zero, z_prev, hz_prev_lt, hz_prev_zero, h_gap, h_gt_8, h_gt_prefix⟩
-  have h_new : ∀ i < z + 1, vanEckNthTerm i ≠ vanEckNthTerm (z + 1) := by {
-    apply gap_gt_prefix_max_is_new z z_prev hz_zero (by omega) hz_prev_zero hz_prev_lt h_gap h_gt_prefix
-  }
-  have h_contra := powers_of_two_gap_contradiction N_0 h_pow z z_prev hz_zero hz_gt hz_prev_zero hz_prev_lt h_gap h_new h_gt_8
-  rcases h_contra with ⟨d, hd_pow, hd_eq, _⟩
-  exact powers_of_two_lookback_contradiction d hd_pow hd_eq
+lemma pow2_span_six_impossible (N_0 M_1 r_0 r_1 r_2 z_star v a b : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) (hM1 : N_0 ≤ M_1)
+    (hr0 : ∀ m > M_1, vanEckNthTerm m = 1 → m % 8 = r_0)
+    (hr1 : ∀ m > M_1, vanEckNthTerm m = 2 → m % 8 = r_1)
+    (hr2 : ∀ m > M_1, vanEckNthTerm m = 4 → m % 8 = r_2)
+    (hr1_eq : r_1 = (z_star + 2) % 8) (hr2_eq : r_2 = (z_star + 4) % 8)
+    (ha_M1 : M_1 < a) (hab : a ≤ b) (ha_eq : vanEckNthTerm a = v) (hb_eq : vanEckNthTerm b = v)
+    (ha_mod : a % 8 = (z_star + 7) % 8) (hb_mod : b % 8 = (z_star + 5) % 8) : False := by {
+  have hsp := pow2_mod8_span_decomp N_0 M_1 r_0 r_1 r_2 v h_pow hM1 hr0 hr1 hr2
+    _ a b rfl ha_M1 hab ha_eq hb_eq
+  have hbits := (mod8_bits_eq (stepBit_spec _).1 (stepBit_spec _).1 (stepBit_spec _).1
+    hsp.2.2.2).2.2 (by { omega })
+  rcases (stepBit_spec _).2.1.mp hbits.2.1 with ⟨p, hap, hp2, hcp⟩
+  rcases (stepBit_spec _).2.1.mp hbits.2.2 with ⟨q, haq, hq4, hcq⟩
+  have hp_mod := hr1 (p + 3) (by { omega }) (consecValOcc_add_next_eq hcp)
+  have hq_mod := hr2 (q + 5) (by { omega }) (consecValOcc_add_next_eq hcq)
+  rcases lt_trichotomy p q with hpq | rfl | hqp
+  · have hp2q : p + 2 ≤ q := consecValOcc_disjoint_order hcp hcq hpq
+    have hsp_q := pow2_mod8_span_decomp N_0 M_1 r_0 r_1 r_2 v h_pow hM1 hr0 hr1 hr2
+      _ a q rfl ha_M1 haq ha_eq hcq.2.1
+    have hn1_q : ¬ HasValStep v a q 1 :=
+      fun ⟨u, hu1, hu2, hcu⟩ => ((stepBit_spec _).2.2.mp hbits.1) ⟨u, hu1, by { omega }, hcu⟩
+    have hn4_q : ¬ HasValStep v a q 4 :=
+      fun ⟨u, hu1, hu2, hcu⟩ => hsp.2.2.1 u q hu1 hu2 hq4 hcu hcq
+    rw [(stepBit_spec _).2.2.mpr hn1_q, (stepBit_spec _).2.1.mpr ⟨p, hap, hp2q, hcp⟩,
+      (stepBit_spec _).2.2.mpr hn4_q] at hsp_q
+    omega
+  · exact hcq.2.2.2 (p + 2) (by { omega }) (by { omega }) hcp.2.2.1
+  · have hq4p : q + 4 ≤ p := consecValOcc_disjoint_order hcq hcp hqp
+    have hsp_p := pow2_mod8_span_decomp N_0 M_1 r_0 r_1 r_2 v h_pow hM1 hr0 hr1 hr2
+      _ a p rfl ha_M1 hap ha_eq hcp.2.1
+    have hn1_p : ¬ HasValStep v a p 1 :=
+      fun ⟨u, hu1, hu2, hcu⟩ => ((stepBit_spec _).2.2.mp hbits.1) ⟨u, hu1, by { omega }, hcu⟩
+    have hn2_p : ¬ HasValStep v a p 2 :=
+      fun ⟨u, hu1, hu2, hcu⟩ => hsp.2.1 u p hu1 hu2 hp2 hcu hcp
+    rw [(stepBit_spec _).2.2.mpr hn1_p, (stepBit_spec _).2.2.mpr hn2_p,
+      (stepBit_spec _).2.1.mpr ⟨q, haq, hq4p, hcq⟩] at hsp_p
+    omega
+}
+
+lemma growth_contradiction_pow_two (N_0 : ℕ)
+    (h_pow : ∀ m > N_0, vanEckNthTerm m ∈ PowersOfTwoSet) : False := by {
+  rcases pow2_all_locked_mod_eight N_0 h_pow with
+    ⟨M_1, hM1, r_0, r_1, r_2, z_star, _, hr1_lt, hr2_lt, _, hr0, hr1, hr2, hz⟩
+  rcases pow2_step_two_forced N_0 M_1 r_0 r_1 r_2 z_star h_pow hM1 hr0 hr1 hr2 hz hr1_lt with
+    ⟨hr1_eq, h_inf2⟩
+  rcases pow2_step_four_forced N_0 M_1 r_0 r_1 r_2 z_star h_pow hM1 hr0 hr1 hr2 hz
+      hr1_eq hr2_lt h_inf2 with ⟨hr2_eq, h_inf4⟩
+  have hcnt4 : ∀ K, ((Finset.Icc (M_1 + 6) (2 ^ K)).filter
+      (fun m => vanEckNthTerm m = 4)).card ≤ K + 2 :=
+    fun K => pow2_small_val_card_le N_0 M_1 4 K (by { decide }) h_pow hM1
+      (fun v a b ha hab hva hvb => (pow2_mod8_span_decomp N_0 M_1 r_0 r_1 r_2 v
+        h_pow hM1 hr0 hr1 hr2 _ a b rfl ha hab hva hvb).2.2.1)
+  rcases unbounded_consec_gaps_of_log_count 4 (M_1 + 6) (M_1 + 6)
+      (max (vanEckPrefixMax (M_1 + 2)) (vanEckPrefixMax 0)) le_rfl h_inf4 hcnt4 with
+    ⟨n₁, n₂, hn₁_gt, hcn, hn_gap⟩
+  have hn_lt : n₁ < n₂ := hcn.1
+  have hn2_mod : n₂ % 8 = r_2 := hr2 n₂ (by { omega }) hcn.2.2.1
+  have hn2_val : vanEckNthTerm (n₂ + 1) = n₂ - n₁ := consecValOcc_next_eq hcn
+  rcases pow2_large_val_birth_span M_1 z_star 0 (n₂ + 1) hz (by { omega }) with
+    ⟨a, ha_M1, _, ha_le, ha_eq, ha_mod⟩
+  exact pow2_span_six_impossible N_0 M_1 r_0 r_1 r_2 z_star (vanEckNthTerm (n₂ + 1)) a (n₂ + 1)
+    h_pow hM1 hr0 hr1 hr2 hr1_eq hr2_eq ha_M1 ha_le ha_eq rfl ha_mod (by { omega })
 }
 
 theorem vanEck_not_eventually_powers_of_two :
@@ -3467,7 +4480,8 @@ theorem vanEck_not_eventually_powers_of_two :
   exact growth_contradiction_pow_two N_0 h_pow
 }
 
-lemma growth_contradiction (N_0 : ℕ) (h_fib : ∀ m > N_0, vanEckNthTerm m ∈ FibonacciSet) : False := by {
+lemma growth_contradiction (N_0 : ℕ)
+    (h_fib : ∀ m > N_0, vanEckNthTerm m ∈ FibonacciSet) : False := by {
   sorry
 }
 
