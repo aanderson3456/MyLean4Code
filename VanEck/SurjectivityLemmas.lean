@@ -68,17 +68,57 @@ full surjectivity of the Van Eck sequence (that it contains every natural number
 If an element `x` only appears finitely many times in the Van Eck sequence,
 there must exist some maximum index `Z` such that for all `k > Z`, `vanEckNthTerm k ≠ x`.
 -/
-lemma finite_occurrences_implies_last_index (x : ℕ) (h_finite : ∃ Z, ∀ k > Z, vanEckNthTerm k ≠ x) :
+lemma finite_occurrences_implies_last_index (x : ℕ) (h_seen : ∃ m, vanEckNthTerm m = x)
+    (h_finite : ∃ Z, ∀ k > Z, vanEckNthTerm k ≠ x) :
     ∃ Z, vanEckNthTerm Z = x ∧ ∀ k > Z, vanEckNthTerm k ≠ x := by {
-  sorry
+  rcases h_seen with ⟨m, hmx⟩
+  rcases h_finite with ⟨N, hN⟩
+  have hm_le : m ≤ N := by {
+    by_contra hc
+    have hm_gt : m > N := by { omega }
+    exact hN m hm_gt hmx
+  }
+  let S := (Finset.range (N + 1)).filter (fun k => vanEckNthTerm k = x)
+  have hm_mem : m ∈ S := by {
+    apply Finset.mem_filter.mpr
+    constructor
+    · exact Finset.mem_range.mpr (by { omega })
+    · exact hmx
+  }
+  have hS : S.Nonempty := ⟨m, hm_mem⟩
+  let Z := S.max' hS
+  have hZ_mem : Z ∈ S := Finset.max'_mem S hS
+  have hZ_val : vanEckNthTerm Z = x := (Finset.mem_filter.mp hZ_mem).2
+  refine ⟨Z, hZ_val, ?_⟩
+  intro k hk h_kx
+  by_cases hkN : k > N
+  · exact hN k hkN h_kx
+  · have hk_mem : k ∈ S := by {
+      apply Finset.mem_filter.mpr
+      constructor
+      · exact Finset.mem_range.mpr (by { omega })
+      · exact h_kx
+    }
+    have hk_le : k ≤ Z := Finset.le_max' S k hk_mem
+    omega
 }
 
 /--
 If an element `x` never appears after index `Z`, then no element after `Z+1` can have its previous occurrence exactly `x` steps ago.
 -/
-lemma never_appears_again_implies_no_gap_x (x Z : ℕ) (hx : ∀ k > Z, vanEckNthTerm k ≠ x) :
-    ∀ k > Z + 1, listNth (vanEck (k - 1)) (k - 1) ≠ listNth (vanEck (k - 1)) (k - 1 - x) := by {
-  sorry
+lemma never_appears_again_implies_no_gap_x (x Z : ℕ) (hx_pos : x > 0)
+    (hx : ∀ k > Z, vanEckNthTerm k ≠ x) :
+    ∀ m > Z, x ≤ m → ¬ (vanEckNthTerm (m - x) = vanEckNthTerm m ∧
+      ∀ j, m - x < j → j < m → vanEckNthTerm j ≠ vanEckNthTerm m) := by {
+  intro m hm hxm ⟨h_match, h_no_int⟩
+  have h_lt : m - x < m := by { omega }
+  have h_next := strict_prior_match_gives_gap (m - x) m h_lt h_match.symm h_no_int
+  have h_value : vanEckNthTerm (m + 1) = x := by {
+    rw [h_next]
+    omega
+  }
+  have hm1 : m + 1 > Z := by { omega }
+  exact hx (m + 1) hm1 h_value
 }
 
 /--
