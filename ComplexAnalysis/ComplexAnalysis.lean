@@ -8,6 +8,7 @@ import Sarason.Definitions
 import Sarason.Chapter1
 import Sarason.Chapter2
 import Sarason.Chapter3
+import Sarason.Chapter4
 import ConformalDiskGeometry
 import Contour
 import Laplace

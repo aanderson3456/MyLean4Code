@@ -626,6 +626,56 @@ def isClircle (S : Set $\mathbb{C}$) : Prop :=
     \[ \operatorname{isLine}(S) \iff \exists a, b \in \mathbb{C},\; \forall c \in S,\; \exists t \in \mathbb{R},\; c = a + bt, \qquad \operatorname{isClircle}(S) \iff \operatorname{isLine}(S) \vee \operatorname{isCircle}(S) \]
 \end{itemize}
 
+\section{\texttt{Sarason/Chapter4.lean}}
+
+\begin{itemize}
+    \item \textbf{\texttt{exp\_Sarason}} ($z \in \mathbb{C} \to \mathbb{C}$): Sarason's Euler-formula definition of the complex exponential function (\S IV.1).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def exp_Sarason (z : $\mathbb{C}$) : $\mathbb{C}$ :=
+  ((Real.exp z.re * Real.cos z.im : $\mathbb{R}$) : $\mathbb{C}$) + ((Real.exp z.re * Real.sin z.im : $\mathbb{R}$) : $\mathbb{C}$) * I
+\end{lstlisting}
+    \[ \exp_{\mathrm{Sar}}(x + iy) = e^x (\cos y + i \sin y) \]
+
+    \item \textbf{\texttt{horizontalStrip}} \& \textbf{\texttt{openHorizontalStrip}} ($y_0 \in \mathbb{R} \to \mathcal{P}(\mathbb{C})$): Half-open and open horizontal strips of height $2\pi$ on which $e^z$ is injective (\S IV.5).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def horizontalStrip (y$_0$ : $\mathbb{R}$) : Set $\mathbb{C}$ :=
+  {z : $\mathbb{C}$ | y$_0$ < z.im $\wedge$ z.im $\le$ y$_0$ + 2 * Real.pi}
+
+def openHorizontalStrip (y$_0$ : $\mathbb{R}$) : Set $\mathbb{C}$ :=
+  {z : $\mathbb{C}$ | y$_0$ < z.im $\wedge$ z.im < y$_0$ + 2 * Real.pi}
+\end{lstlisting}
+    \[ S_{y_0} = \{z \in \mathbb{C} : y_0 < \operatorname{Im} z \le y_0 + 2\pi\}, \qquad S^\circ_{y_0} = \{z \in \mathbb{C} : y_0 < \operatorname{Im} z < y_0 + 2\pi\} \]
+
+    \item \textbf{\texttt{cosh\_Sarason}} \& \textbf{\texttt{sinh\_Sarason}} ($z \in \mathbb{C} \to \mathbb{C}$): Complex hyperbolic cosine and sine (\S IV.6).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def cosh_Sarason (z : $\mathbb{C}$) : $\mathbb{C}$ := (exp_Sarason z + exp_Sarason (-z)) / 2
+
+def sinh_Sarason (z : $\mathbb{C}$) : $\mathbb{C}$ := (exp_Sarason z - exp_Sarason (-z)) / 2
+\end{lstlisting}
+    \[ \cosh z = \frac{e^z + e^{-z}}{2}, \qquad \sinh z = \frac{e^z - e^{-z}}{2} \]
+
+    \item \textbf{\texttt{cos\_Sarason}} \& \textbf{\texttt{sin\_Sarason}} ($z \in \mathbb{C} \to \mathbb{C}$): Complex cosine and sine defined via Euler's formulas (\S IV.8).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def cos_Sarason (z : $\mathbb{C}$) : $\mathbb{C}$ := (exp_Sarason (I * z) + exp_Sarason (-(I * z))) / 2
+
+def sin_Sarason (z : $\mathbb{C}$) : $\mathbb{C}$ := (exp_Sarason (I * z) - exp_Sarason (-(I * z))) / (2 * I)
+\end{lstlisting}
+    \[ \cos z = \frac{e^{iz} + e^{-iz}}{2}, \qquad \sin z = \frac{e^{iz} - e^{-iz}}{2i} \]
+
+    \item \textbf{\texttt{IsLogOf}}, \textbf{\texttt{slitPlane\_Sarason}}, \textbf{\texttt{IsBranchOfLog}}, \& \textbf{\texttt{Log\_Sarason}} ($w, z \in \mathbb{C}$, $L : \mathbb{C} \to \mathbb{C}$, $G \subseteq \mathbb{C}$): Multi-valued logarithm relation, the slit plane $\mathbb{C} \setminus (-\infty, 0]$, continuous branches of $\log z$, and the principal branch $\operatorname{Log} z$ (\S IV.9--\S IV.11).
+\begin{lstlisting}[language=Caml, mathescape=true]
+def IsLogOf (w z : $\mathbb{C}$) : Prop := exp_Sarason w = z
+
+def slitPlane_Sarason : Set $\mathbb{C}$ := {z : $\mathbb{C}$ | 0 < z.re $\vee$ z.im $\neq$ 0}
+
+def IsBranchOfLog (L : $\mathbb{C}$ $\to$ $\mathbb{C}$) (G : Set $\mathbb{C}$) : Prop :=
+  ContinuousOn L G $\wedge$ $\forall$ z $\in$ G, exp_Sarason (L z) = z
+
+def Log_Sarason (z : $\mathbb{C}$) : $\mathbb{C}$ := (Real.log $\Vert$z$\Vert$ : $\mathbb{C}$) + (Complex.arg z : $\mathbb{C}$) * I
+\end{lstlisting}
+    \[ \operatorname{IsLogOf}(w, z) \iff e^w = z, \qquad \operatorname{Log}(z) = \ln |z| + i \operatorname{arg} z \quad (z \in \mathbb{C} \setminus (-\infty, 0]) \]
+\end{itemize}
+
 \section{\texttt{ConformalDiskGeometry.lean}}
 
 \begin{itemize}
